@@ -21,9 +21,10 @@ import subprocess
 
 def call_jiffy(jiffy, fam_file, outdir=None):
     '''
-        This function was designed to call the perl script defined by the jiffy 
-        parameter. Used in Rfam 12.1 with jiffies writeAnnotatedCM.pl and
-        writeAnnotatedSeed.pl to generate CM and SEED files for the FTP server.
+        This function was designed to call the perl script defined by the jiffy
+        parameter. Used in Rfam 12.1 with jiffies writeAnnotatedCM.pl,
+        writeAnnotatedSeed.pl and writeAnnotatedTree.pl to generate CM, SEED
+        and seed_Tree files for the FTP server.
 
         jiffy: The path to the perl script to call
         fam_file: A list of all rfam_accessions
@@ -38,7 +39,7 @@ def call_jiffy(jiffy, fam_file, outdir=None):
     # output generated in the specified directory, the jiffy needs to be called
     # inside that
     if outdir is not None:
-        os.chdir(outdir)
+        os.chdir(os.path.abspath(outdir))
 
     fp = open(os.path.abspath(fam_file), 'r')
 

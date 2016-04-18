@@ -131,11 +131,11 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
 
     # command for lsf to copy .out file to output directory
     fp.write("#BSUB -f \"%s/%s_%sJ.out < /tmp/%s/%sJ.out\"\n" %
-             (out_dir, filename, chr(37), uuid, chr(37)))
+             (os.path.abspath(out_dir), filename, chr(37), uuid, chr(37)))
 
     # command for lsf to copy .err file to output directory
     fp.write("#BSUB -f \"%s/%s_%sJ.err < /tmp/%s/%sJ.err\"\n" %
-             (out_dir, filename, chr(37), uuid, chr(37)))
+             (os.path.abspath(out_dir), filename, chr(37), uuid, chr(37)))
 
     # clean /tmp directory on execution host
     fp.write("#BSUB -Ep \"rm -rf /tmp/%s\"\n" % (uuid))

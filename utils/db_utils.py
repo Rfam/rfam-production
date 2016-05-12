@@ -6,11 +6,21 @@ Created on 27 Jan 2016
 Description: A set of database functions to ease processing and data
              retrieval from rfam_live
 
-TO DO: modify reset_is_significant() to enable single clan reset
+TO DO: - modify reset_is_significant() to enable single clan reset
+       - set_num_sig_seqs() we need a new field in the family table to hold the
+         number of significant sequences per family. This can be performed after
+         clan competition
+       - merge functions set_num_sig_seqs and set_number_of_species to one and
+         pass query and fields as parameters
+
+       *Perhaps include this module within an RfamLive class as all of the
+        functions are database specific.
+        Convert the code to use python mysql transactions
 '''
 # ---------------------------------IMPORTS---------------------------------
 
 import string
+import sys
 from utils import RfamDB
 
 # -------------------------------------------------------------------------
@@ -336,12 +346,121 @@ def update_post_process(jobs_file):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-
 # -------------------------------------------------------------------------
 
+
+def set_number_of_species():
+    '''
+        Updates number_of_species in family table
+    '''
+
+    cnx = RfamDB.connect()
+
+    cursor = cnx.cursor(buffered=True)
+    c_cursor = cnx.cursor(buffered=True)
+
+    cursor.execute("Select rfam_acc from family")
+
+    rfam_accs = cursor.fetchall()
+
+    cursor.close()
+
+    count_query = ("select count(distinct ncbi_id)\n"
+                   "from full_region f, rfamseq r\n"
+                   "where r.rfamseq_acc=f.rfamseq_acc\n"
+                   "and is_significant=1 and rfam_acc=\'%s\'")
+
+    # counts list
+    counts = []
+    for acc in rfam_accs:
+        c_cursor.execute(count_query % str(acc[0]))
+        count = c_cursor.fetchall()
+
+        counts.append((count[0][0], str(acc[0])))
+
+        count = 0
+
+    c_cursor.close()
+    c_cursor = cnx.cursor(buffered=True)
+
+    # query to update number_of_species in the family table
+    update_query = (
+        "update family set number_of_species=%s where rfam_acc=%s")
+
+    try:
+        c_cursor.executemany(update_query, counts)
+        cnx.commit()
+    except:
+        cnx.rollback()
+
+    c_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    print "Done"
+# ----------------------------------------------------------------------------
+
+
+def set_num_sig_seqs():
+    '''
+        Updates num_full in family table to hold the number of significant
+        sequences rather than the number of sequences in the full alignment
+    '''
+
+    cnx = RfamDB.connect()
+
+    cursor = cnx.cursor(buffered=True)
+    c_cursor = cnx.cursor(buffered=True)
+
+    cursor.execute("Select rfam_acc from family")
+
+    rfam_accs = cursor.fetchall()
+
+    cursor.close()
+
+    # query to count all significant sequences of a family
+
+    count_query = ("select count(*)\n"
+                   "from full_region f\n"
+                   "where is_significant=1\n"
+                   "and rfam_acc=\'%s\'")
+
+    # counts list
+    counts = []
+    for acc in rfam_accs:
+        c_cursor.execute(count_query % str(acc[0]))
+        count = c_cursor.fetchall()
+
+        counts.append((count[0][0], str(acc[0])))
+
+        count = 0
+
+    c_cursor.close()
+    c_cursor = cnx.cursor(buffered=True)
+
+    update_query = (
+        "update family set num_full=%s where rfam_acc=%s")
+
+    try:
+        c_cursor.executemany(update_query, counts)
+        cnx.commit()
+    except:
+        cnx.rollback()
+
+    c_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    print "Done"
+
+# ----------------------------------------------------------------------------
 if __name__ == '__main__':
 
     # reset_is_significant()
 
-    jobs_file = "/Users/ikalvari/Desktop/Rfam12.1/fam_view_process/view_out/famview_jobs.txt"
-    update_post_process(jobs_file)
+    #jobs_file = "/path/to/famview_jobs.txt"
+    # update_post_process(jobs_file)
+
+    # set_number_of_species()
+
+    # set_num_sig_seqs()
+
+    pass

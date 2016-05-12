@@ -10,6 +10,8 @@ Description: A Python handler to run family view process by calling
 
 Notes: 1. Call this script as rfamprod
        2. Keep # of concurrent jobs to 10 to avoid deadlocks
+       3. Families defined in DEM_FAMS required double the memory to complete
+          the view process
 '''
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -17,20 +19,23 @@ import os
 import sys
 import subprocess
 import time
+from config import rfam_config
 
 # -----------------------------------------------------------------------------
-
+# memory to allocate
 MEM_R = 10000  # regular families
 MEM_D = 20000  # mem demanding families
-TMP_MEM = 4000
+TMP_MEM = 4000  # temporary memory to allocate
+
+PER_SYM_ASCII = 37  # ascii code for the percent symbol (%)
 
 # memory demanding family accessions
 DEM_FAMS = ["RF00002", "RF00005", "RF00177", "RF02542"]
 
 # Path to rfam_family_view.pl on lsf
-FAM_VIEW_PL = "/ebi/production/xfam/rfam/production_software/rfam_production/Rfam/Scripts/view/rfam_family_view.pl"
-TMP_PATH = "/tmp"
-GROUP_NAME = "/rfam_view"  # this has been created under rfamprod
+FAM_VIEW_PL = rfam_config.FAM_VIEW_PL
+TMP_PATH = rfam_config.TMP_PATH
+GROUP_NAME = rfam_config.RFAM_VIEW_GROUP
 
 # -----------------------------------------------------------------------------
 
@@ -126,16 +131,16 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
     fp.write("#BSUB -E \"mkdir -m 777 -p /tmp/%s\"\n" % (uuid))
     fp.write("#BSUB -cwd \"/tmp/%s\"\n" % (uuid))
     # generate error/output files
-    fp.write("#BSUB -o \"/tmp/%s/%sJ.out\"\n" % (uuid, chr(37)))
-    fp.write("#BSUB -e \"/tmp/%s/%sJ.err\"\n" % (uuid, chr(37)))
+    fp.write("#BSUB -o \"/tmp/%s/%sJ.out\"\n" % (uuid, chr(PER_SYM_ASCII)))
+    fp.write("#BSUB -e \"/tmp/%s/%sJ.err\"\n" % (uuid, chr(PER_SYM_ASCII)))
 
     # command for lsf to copy .out file to output directory
     fp.write("#BSUB -f \"%s/%s_%sJ.out < /tmp/%s/%sJ.out\"\n" %
-             (os.path.abspath(out_dir), filename, chr(37), uuid, chr(37)))
+             (os.path.abspath(out_dir), filename, chr(PER_SYM_ASCII), uuid, chr(PER_SYM_ASCII)))
 
     # command for lsf to copy .err file to output directory
     fp.write("#BSUB -f \"%s/%s_%sJ.err < /tmp/%s/%sJ.err\"\n" %
-             (os.path.abspath(out_dir), filename, chr(37), uuid, chr(37)))
+             (os.path.abspath(out_dir), filename, chr(PER_SYM_ASCII), uuid, chr(PER_SYM_ASCII)))
 
     # clean /tmp directory on execution host
     fp.write("#BSUB -Ep \"rm -rf /tmp/%s\"\n" % (uuid))

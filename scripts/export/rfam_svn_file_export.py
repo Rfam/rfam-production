@@ -77,6 +77,21 @@ def export_rfam_family_files(f_types, out_dir):
         # copy files and rename
         for f_type in f_types:
             filename = rfam_acc + '.' + f_type.lower()
+            '''
+            if (f_type == "SEED"):
+                # 1. open out file handler
+                seed_out_fp = open(
+                    os.path.join(os.path.join(out_dir, f_type), filename), 'w')
+                # 2. open desc handler
+                desc_fp = open(os.path.join(fam_dir, "DESC"), 'r')
+                # 3. write desc to outfile
+                seed_out_fp.writelines(desc_fp.readlines())
+                seed_out_fp.write('\n')
+                desc_fp.close()
+                # 5. open seed and write in outfile
+
+                continue
+            '''
             shutil.copyfile(os.path.join(fam_dir, f_type),
                             os.path.join(os.path.join(out_dir, f_type), filename))
 

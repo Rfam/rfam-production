@@ -8,9 +8,16 @@ Created on 20 Apr 2016
 
 import os
 import sys
-from utils import RfamDB
+from utils import RfamDB  # convert this to connector class and implement an
+# Rfamlive class
 
 # -----------------------------------------------------------------------------
+# alignment_and_tree file types
+ANT_TYPES = ['seed', 'seedTax', 'genome', 'genomeTax']
+
+# -----------------------------------------------------------------------------
+
+# either use number of fams, author or date
 
 
 def check_ss_images(cnx_obj, no_fams):
@@ -26,7 +33,9 @@ def check_ss_images(cnx_obj, no_fams):
              "AND f.author like \'%Arga%\'\n"
              "GROUP BY ss.type")
 
-    # TO BE IMPLEMENTED
+    cursor = cnx_obj.cursor(buffered=True)
+    cursor.execute(query)
+
 
 # -----------------------------------------------------------------------------
 

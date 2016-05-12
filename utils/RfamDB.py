@@ -4,15 +4,15 @@ Created on 18 Feb 2016
 @author: ikalvari
 
 TO DO: Need to generalize this to make the scripts independent and enable
-       connecting to multiple databases simultaneously
+       connecting to multiple databases simultaneously. Convert this to a class
 '''
 
 # ---------------------------------IMPORTS-------------------------------------
 import mysql.connector
 from mysql.connector import errorcode
-from utils.config import RFAMLIVEPUB  # rfam_live on public host
-from utils.config import RFAMLIVE  # rfam_live on curation host
-from utils.config import RFAMLIVELOC  # local instance of rfam_live
+from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
+from config.rfam_config import RFAMLIVE  # rfam_live on curation host
+from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
 
 # -----------------------------------------------------------------------------
 # need to generalize this enabling database selection upon execution
@@ -37,7 +37,7 @@ def connect():
     except mysql.connector.Error as err:
 
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print"Wrong username or password"
+            print "Wrong username or password"
 
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
             print "Database does not exist"
@@ -64,7 +64,3 @@ def disconnect(cnx):
         print "Error closing database connection"
 
 # -----------------------------------------------------------------------------
-
-if __name__ == '__main__':
-
-    pass

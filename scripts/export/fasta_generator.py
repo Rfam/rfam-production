@@ -10,6 +10,7 @@ Description: Script to generate fasta files for all family regions
 '''
 
 # ---------------------------------IMPORTS-------------------------------------
+
 import os
 import sys
 import subprocess
@@ -17,11 +18,12 @@ import logging
 import re
 import gzip
 from utils import RfamDB
+from config import rfam_config
+from config import config_local
 
 # -----------------------------------------------------------------------------
 # To be modified accordingly
 LSF = False
-
 
 RFAM_ACC = 0
 SEQ_ACC = 1
@@ -30,8 +32,9 @@ END = 3
 DESC = 4
 
 ESL_PATH = None
-ESL_LSF = "/nfs/production/xfam/rfam/software/bin/esl-sfetch"
-ESL_LOCAL = "/path/to/local/infernal-1.1/easel/miniapps/esl-sfetch"
+
+ESL_LSF = rfam_config.ESL_PATH
+ESL_LOCAL = rfam_config.ESL_PATH
 
 if LSF is True:
     ESL_PATH = ESL_LSF
@@ -76,6 +79,7 @@ def generate_fasta(seq_file, out_dir):
     query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
              "FROM full_region fr, rfamseq rf\n"
              "WHERE fr.rfamseq_acc=rf.rfamseq_acc\n"
+             "AND fr.is_significant=1\n"
              "ORDER BY fr.rfam_acc")
 
     # execute the query
@@ -167,10 +171,11 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
     # get a new buffered cursor
     cursor = cnx.cursor(raw=True)
 
-    # fetch sequence accessions for specific family
+    # fetch sequence accessions for specific family - significant only!!
     query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
              "FROM full_region fr, rfamseq rf\n"
              "WHERE fr.rfamseq_acc=rf.rfamseq_acc\n"
+             "AND fr.is_significant=1\n"
              "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
 
     # execute the query

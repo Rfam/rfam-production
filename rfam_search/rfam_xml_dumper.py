@@ -15,6 +15,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 import datetime
+import string
 from xml.dom import minidom
 from config import rfam_search as rs_conf
 from utils import RfamDB  # will load those from rfam-public
@@ -43,7 +44,7 @@ def xml4db_dumper(outdir):
     entries = ET.SubElement(db_xml, "entries")
 
     # call family xml builder to add a new family to the xml tree
-    family_xml_builder(entries, rfam_acc='RF00177')
+    family_xml_builder(entries, rfam_acc='RF02560')
 
     tree = ET.ElementTree(db_xml)
 
@@ -70,15 +71,38 @@ def family_xml_builder(entries, rfam_acc=None):
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True)
 
+    cross_refs = {}
+
+    # fetch family fields
+    cursor.execute(rs_conf.FAM_QUERY % rfam_acc)
+    fam_fields = cursor.fetchall()[0]
+
     # fetch family specific ncbi_ids
     ncbi_ids = fetch_value_list(rfam_acc, rs_conf.NCBI_IDs_QUERY)
 
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs_conf.PDB_IDs_QUERY)
 
-    # fetch family fields
-    cursor.execute(rs_conf.FAM_QUERY % rfam_acc)
-    fam_fields = cursor.fetchall()[0]
+    # get pubmed ids
+    pmids = get_value_list(fam_fields["pmids"], ',')
+
+    # get dbxrefs (GO, SO)
+    dbxrefs = get_value_list(fam_fields["dbxrefs"], ',')
+
+    clan = fetch_value(rs_conf.FAM_CLAN, rfam_acc)
+
+    # need a function here to split dbxrefs
+    go_ids = filter(lambda x: x.find("GO") != -1, dbxrefs)
+    so_ids = filter(lambda x: x.find("SO") != -1, dbxrefs)
+
+    # update cross references dictionary
+    cross_refs["ncbi_taxonomy_id"] = ncbi_ids
+    cross_refs["PDB"] = pdb_ids
+    cross_refs["PUBMED"] = pmids
+    cross_refs["GO"] = go_ids
+    cross_refs["SO"] = so_ids
+    if clan != None:
+        cross_refs["RFAM"] = [clan]
 
     # add a new family entry to the xml tree
     entry = ET.SubElement(entries, "entry", id=rfam_acc)
@@ -99,11 +123,11 @@ def family_xml_builder(entries, rfam_acc=None):
     ET.SubElement(dates, "date", value=updated, type="updated")
 
     # loop to add cross references
+    build_cross_references(entry, cross_refs)
 
     # expand xml tree with additional fields
-    add_additional_fields(entry, fam_fields, len(pdb_ids), entry_type='Family')
-
-    # CANN function to fetch_pdb_ids
+    build_additional_fields(
+        entry, fam_fields, len(pdb_ids), entry_type='Family')
 
     cursor.close()
     cnx.disconnect()
@@ -121,17 +145,38 @@ def expand_xml_tree(xml_tree_node, value_list):
     pass
 # ----------------------------------------------------------------------------
 
+# cross_ref_dict will be different for the different types, but the dictionary
+# has to be in the same format
 
-def add_cross_references(entry):
-    # motif cross references
 
-    pass
+def build_cross_references(entry, cross_ref_dict):
+    '''
+        Expands the entry xml tree by adding the entry's cross references
+
+        entry: The entry node of the xml tree object (xml.etree.ElementTree)
+        cross_ref_dict: A dictionary with the entity's cross references in the
+        form of ({db_name:[db_key1,db_key2,..],}) where db_name is a string and
+        values a list of db ids
+
+    '''
+
+    cross_refs = ET.SubElement(entry, "cross_references")
+
+    for db_name in cross_ref_dict.keys():
+
+        # get db_keys
+        db_keys = cross_ref_dict[db_name]
+        if len(db_keys) > 0:
+            for value in db_keys:
+                ET.SubElement(
+                    cross_refs, "ref", dbkey=str(value), dbname=db_name)
+
 # ----------------------------------------------------------------------------
 
 # perhaps fields can be a dictionary and move fields to type specific builder??
 
 
-def add_additional_fields(entry, fields, num_3d_structures, entry_type):
+def build_additional_fields(entry, fields, num_3d_structures, entry_type):
     '''
         This function expands the entry xml field with the additional fields
 
@@ -217,6 +262,15 @@ def clan_xml_builder():
 # ----------------------------------------------------------------------------
 
 
+def create_cross_ref_dict(db_name, db_keys, cross_refs):
+    '''
+        Updates the cross references' dictionary by adding
+    '''
+
+    pass
+# ----------------------------------------------------------------------------
+
+
 def get_value_list(val_str, delimeter=','):  # done
     '''
         val_str: A string of family specific values. This string is a
@@ -286,7 +340,10 @@ def fetch_value(query, accession):
     cursor.close()
     cnx.disconnect()
 
-    return value[0][0]
+    if len(value) > 0:
+        return value[0][0]
+
+    return None
 
 # ----------------------------------------------------------------------------
 

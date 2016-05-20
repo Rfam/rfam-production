@@ -4,7 +4,7 @@
 ### **About**
 --------
 This repository provides a set of tools related to the Rfam production pipeline. 
-The collection includes script for data export, database processing,visualization 
+The collection includes script for data export, database processing, visualization 
 and validation.
 
 ### **Scripts**
@@ -22,16 +22,12 @@ and validation.
 * Python Mysql Connector 2.1.3
 * Python MySQL 0.7.1
 
-
 ### **To Do**
 --------
 * Clan Competition validation script
 * View process validation script
-* utils/RfamDB.py to be converted to a class
+* `utils/RfamDB.py` to be converted to a class
 
 ### **Contact Us**
 -------------
-Feel free to contact us via email rfam-help@ebi.ac.uk or using [GitHub](https://github.com/Rfam/rfam-production/issues) issues.
-
-
-
+Feel free to contact us via email rfam-help@ebi.ac.uk or submit an [issue](https://github.com/Rfam/rfam-production/issues).

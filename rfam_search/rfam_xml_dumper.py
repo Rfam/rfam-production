@@ -298,7 +298,7 @@ def build_additional_fields(entry, fields, num_3d_structures, entry_type):
     for author in author_list:
         ET.SubElement(add_fields, "field", name="author").text = author
 
-    if entry_type == rs.FAMILY:
+    if entry_type == 'Family':
 
         # number of species
         ET.SubElement(add_fields, "field", name="num_species").text = str(fields[

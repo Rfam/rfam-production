@@ -1,0 +1,3 @@
+json==1.1.1
+PyMySQL==0.7.2
+mysql-connector-python-cext==2.1.3

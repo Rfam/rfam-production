@@ -5,34 +5,34 @@ Created on 13 May 2016
 
 Description: This module exports Rfam data
 
-TO DO: Need to add functions to parse and update an Xml4dbDumper file and 
-       update entries (family, clan, motif)
+TO DO: - Need to add functions to parse and update an Xml4dbDumper file and
+         update entries (family, clan, motif)
+       - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
+       - Set release version and date automatically
+       - Usage implementation
+       - Take the arguments from the command line
 '''
 
 # ----------------------------------------------------------------------------
 
 import os
-import sys
+import logging
+import timeit
 import xml.etree.ElementTree as ET
-import datetime
-import string
 from xml.dom import minidom
 from config import rfam_search as rs
-from utils import RfamDB  # will load those from rfam-public
+from utils import RfamDB
 
 # ----------------------------------------------------------------------------
 
-# this should be able to dump a single family, clan, motif or the entire db..
-# entry type applies for all families
-# entry_acc for single entry export
-# need a flag for all or single entry export
-
 
 def xml4db_dumper(entry_type, entry_acc, outdir):
-
-    # params entry_type,
     '''
-        exports query results into EB-eye's XML4dbDUMP format
+        Exports query results into EB-eye's XML4dbDUMP format
+
+        entry_type: Single char signifying the type of the entry accession
+        ('M': Motif, 'F': Family, 'C': Clan)
+        entry_acc: An Rfam related accession (Clan, Motif, Family)
         outdir: Destination directory
 
         Maybe here provide the fields as a txt file and the dump in txt format
@@ -45,6 +45,8 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
     db_xml = ET.Element("database")
     ET.SubElement(db_xml, "name").text = rs.DB_NAME
     ET.SubElement(db_xml, "description").text = rs.DB_DESC
+
+    # need to fetch from db
     ET.SubElement(db_xml, "release").text = rs.DB_RELEASE
     ET.SubElement(db_xml, "release_date").text = rs.DB_REL_DATE
 
@@ -156,7 +158,7 @@ def clan_xml_builder(entries, clan_acc=None):
         Expands the Xml4dbDumper object by adding a new clan entry.
 
         entries: The xml entries node to be expanded
-        clan_acc: A specific Rfam clan accession
+        clan_acc: An Rfam associated clan accession
 
     '''
 
@@ -197,6 +199,9 @@ def clan_xml_builder(entries, clan_acc=None):
 def motif_xml_builder(entries, motif_acc=None):
     '''
         Expands the Xml4dbDump with a Motif entry.
+
+        entries: Entries node on xml tree
+        motif_acc: An Rfam associated motif accession
     '''
 
     entry_type = 'Motif'
@@ -242,9 +247,6 @@ def expand_xml_tree(xml_tree_node, value_list):
     pass
 # ----------------------------------------------------------------------------
 
-# cross_ref_dict will be different for the different types, but the dictionary
-# has to be in the same format
-
 
 def build_cross_references(entry, cross_ref_dict):
     '''
@@ -256,6 +258,9 @@ def build_cross_references(entry, cross_ref_dict):
         values a list of db ids
 
     '''
+
+    # cross_ref_dict will be different for the different types,
+    # but the dictionary has to be in the same format
 
     cross_refs = ET.SubElement(entry, "cross_references")
 
@@ -269,8 +274,6 @@ def build_cross_references(entry, cross_ref_dict):
                     cross_refs, "ref", dbkey=str(value), dbname=db_name)
 
 # ----------------------------------------------------------------------------
-
-# perhaps fields can be a dictionary and move fields to type specific builder??
 
 
 def build_additional_fields(entry, fields, num_3d_structures, entry_type):
@@ -344,18 +347,7 @@ def build_additional_fields(entry, fields, num_3d_structures, entry_type):
 # ----------------------------------------------------------------------------
 
 
-def create_cross_ref_dict(db_name, db_keys, cross_refs):
-    '''
-        Updates the cross references' dictionary by adding
-    '''
-
-    pass
-# ----------------------------------------------------------------------------
-
-# move this to db_utils
-
-
-def get_value_list(val_str, delimeter=','):  # done
+def get_value_list(val_str, delimiter=','):
     '''
         val_str: A string of family specific values. This string is a
         concatenation of multiple values related to a single family
@@ -363,7 +355,7 @@ def get_value_list(val_str, delimeter=','):  # done
     '''
 
     val_str = val_str.strip()
-    values = val_str.split(delimeter)
+    values = val_str.split(delimiter)
 
     value_list = map(lambda x: x.strip(), values)
     value_list = filter(lambda x: x != '', value_list)
@@ -373,11 +365,11 @@ def get_value_list(val_str, delimeter=','):  # done
 
 # ----------------------------------------------------------------------------
 
-# maybe move this to db_utils
-def fetch_value_list(rfam_acc, query):  # done
+def fetch_value_list(rfam_acc, query):
     '''
         Retrieves and returns a list of all rfam_acc related values, returned
         by executing the query. Values in list are converted to string format.
+        If rfam_acc is None then query is executed without an rfam_acc
 
         rfam_acc: A family specific accession
         query: A string with the MySQL query to be executed
@@ -387,22 +379,31 @@ def fetch_value_list(rfam_acc, query):  # done
 
     cursor = cnx.cursor(raw=True)
 
-    cursor.execute(query % rfam_acc)
+    if rfam_acc is None:
+        cursor.execute(query)
 
-    pdb_structures = cursor.fetchall()
+    else:
+        cursor.execute(query % rfam_acc)
+
+    values = cursor.fetchall()
 
     cursor.close()
     cnx.disconnect()
 
-    return map(lambda x: str(x[0]), pdb_structures)
+    return map(lambda x: str(x[0]), values)
 
 # ----------------------------------------------------------------------------
 
 
-def fetch_entry_fields(entry_acc, entry_type):  # done
+def fetch_entry_fields(entry_acc, entry_type):
     '''
         Returns a dictionary with the entry's fields.
+
+        entry_acc: An Rfam associated accession (Motif, Clan, Family)
+        entry_type: The type of the entry accession
     '''
+
+    # maybe the entry type not required... use rfam_acc[0:2]
 
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True)
@@ -411,13 +412,13 @@ def fetch_entry_fields(entry_acc, entry_type):  # done
 
     try:
         if entry_type == rs.FAMILY:
-            cursor.execute(rs.FAM_QUERY % entry_acc)
+            cursor.execute(rs.FAM_FIELDS % entry_acc)
 
         elif entry_type == rs.CLAN:
-            cursor.execute(rs.CLAN_QUERY % entry_acc)
+            cursor.execute(rs.CLAN_FIELDS % entry_acc)
 
         elif entry_type == rs.MOTIF:
-            cursor.execute(rs.MOTIF_QUERY % entry_acc)
+            cursor.execute(rs.MOTIF_FIELDS % entry_acc)
 
         fields = cursor.fetchall()[0]
 
@@ -463,11 +464,81 @@ def fetch_value(query, accession):
 # ----------------------------------------------------------------------------
 
 
+def main(entry_type, rfam_acc, outdir):
+    '''
+        This function puts everything together.
+
+        entry_type: One of the three entry types in Rfam (Motif, Clan, Family)
+        rfam_acc: An Rfam associated accession (RF*,CL*,RM*). If rfam_acc is set
+        to None, then all data related to the entry type will be exported.
+        outdir: Destination directory
+
+        TO DO: - Fix logging
+    '''
+
+    rfam_accs = None
+    entry = ""
+
+    try:
+
+        # this will create the output directory if it doesn't exist
+        if not os.path.exists(outdir):
+
+            try:
+                os.mkdir(outdir)
+            except:
+                print "Error creating output directory at: ", outdir
+
+        if rfam_acc is None:
+            # open a log file
+            logging.basicConfig(
+                filename=os.path.join('missing_accs' + '.log'), filemode='w', level=logging.DEBUG)
+
+            # Motif accessions
+            if entry_type == rs.MOTIF:
+                rfam_accs = fetch_value_list(
+                    None, rs.MOTIF_ACC)
+
+            # Clan accessions
+            elif entry_type == rs.CLAN:
+                rfam_accs = fetch_value_list(
+                    None, rs.CLAN_ACC)
+
+            # Family accessions
+            elif entry_type == rs.FAMILY:
+                rfam_accs = fetch_value_list(
+                    None, rs.FAM_ACC)
+
+            for entry in rfam_accs:
+                t0 = timeit.default_timer()
+                xml4db_dumper(entry_type, entry, outdir)
+                print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
+
+        # need to check the validity of an rfam_acc (rfam, motif, clan)
+        else:
+            xml4db_dumper(entry_type, rfam_acc, outdir)
+
+    except:
+        # need to correct this one
+        if rfam_acc is None:
+            # for rfam_acc in rfam_accs:
+            #    logging.debug(rfam_acc)
+            pass
+        else:
+            print "Error exporting %s ." % rfam_acc
+
+
+# ----------------------------------------------------------------------------
+
 def usage():
     '''
-        TO BE IMPLEMENTED
+        Displays usage information on screen.
     '''
-    pass
+    print "\nUsage:\n------"
+
+    # TO DO
+
+    print "-h option to display usage\n"
 
 # ----------------------------------------------------------------------------
 

@@ -5,12 +5,11 @@ Created on 13 May 2016
 
 Description: This module exports Rfam data
 
-TO DO: - Need to add functions to parse and update an Xml4dbDumper file and
-         update entries (family, clan, motif)
+TO DO:
        - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
        - Set release version and date automatically
-       - Usage implementation
-       - Take the arguments from the command line (argparse)
+       - Logging
+       - Finalize usage
 '''
 
 # ----------------------------------------------------------------------------
@@ -20,6 +19,7 @@ import timeit
 import sys
 import os
 import datetime
+import argparse
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from config import rfam_search as rs
@@ -30,18 +30,16 @@ from parse_taxbrowser import *
 # ----------------------------------------------------------------------------
 
 
-def xml4db_dumper(entry_type, entry_acc, hrefs, outdir):
+def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hrefs, outdir):
     '''
         Exports query results into EB-eye's XML4dbDUMP format
 
+        name_dict: A dictionary with all ncbi names per tax id
+        name_object: NCBI tax prowser node dictionary
         entry_type: Single char signifying the type of the entry accession
         ('M': Motif, 'F': Family, 'C': Clan)
         entry_acc: An Rfam related accession (Clan, Motif, Family)
         outdir: Destination directory
-
-
-        Maybe here provide the fields as a txt file and the dump in txt format
-        and according to that dump the xml file
     '''
 
     entry_type = entry_type[0].capitalize()
@@ -66,7 +64,8 @@ def xml4db_dumper(entry_type, entry_acc, hrefs, outdir):
 
     # call family xml builder to add a new family to the xml tree
     if (entry_type == rs.FAMILY):
-        family_xml_builder(entries, rfam_acc=entry_acc, hrefs=hrefs)
+        family_xml_builder(
+            name_dict, name_object, entries, rfam_acc=entry_acc, hrefs=hrefs)
 
     elif (entry_type == rs.CLAN):
         clan_xml_builder(entries, clan_acc=entry_acc)
@@ -87,13 +86,15 @@ def xml4db_dumper(entry_type, entry_acc, hrefs, outdir):
 # ----------------------------------------------------------------------------
 
 
-def family_xml_builder(entries, rfam_acc=None, hrefs=True):
+def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hrefs=True):
     '''
         Expands the Xml4dbDumper object by adding a new family entry.
 
+        name_dict: A dictionary with all ncbi names per tax id
+        name_object: NCBI tax prowser node dictionary
         entries: The xml entries node to be expanded
         rfam_acc: A specific Rfam family accession
-        hrefs: A bool value indicating whether to build hierarchical cross 
+        hrefs: A bool value indicating whether to build hierarchical cross
                references. True by default.
     '''
 
@@ -106,8 +107,7 @@ def family_xml_builder(entries, rfam_acc=None, hrefs=True):
 
     # fetch family specific ncbi_ids
     ncbi_ids = fetch_value_list(rfam_acc, rs.NCBI_IDs_QUERY)
-    valid_ncbi_ids = get_valid_family_tax_ids(rfc.TAX_NODES_DUMP,
-                                              rfc.TAX_NAMES_DUMP, ncbi_ids)
+    valid_ncbi_ids = get_valid_family_tax_ids(name_object, ncbi_ids)
 
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs.PDB_IDs_QUERY)
@@ -158,7 +158,7 @@ def family_xml_builder(entries, rfam_acc=None, hrefs=True):
 
     # add hierarchical references
     if hrefs is True:
-        geneology_dict = get_family_hrefs(ncbi_ids)
+        geneology_dict = get_family_hrefs(name_object, name_dict, ncbi_ids)
         if len(geneology_dict.keys()) > 1:
             add_hierarchical_refs(cross_refs, geneology_dict)
 
@@ -296,7 +296,8 @@ def add_hierarchical_refs(cross_ref_tree, geneology_dict):
     '''
 
     # add a new hierarchical ref in the cross refs tree
-    hrefs = ET.SubElement(cross_ref_tree, "hierarchical_ref")
+    hrefs = ET.SubElement(cross_ref_tree, "hierarchical_ref",
+                          name="taxonomy_lineage")
 
     # need to create one root node in order for the xml dump to validate
     ET.SubElement(hrefs, "root", label="root").text = '1'
@@ -537,6 +538,7 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
             except:
                 print "Error creating output directory at: ", outdir
 
+        # export all entries
         if rfam_acc is None:
             # open a log file
             logging.basicConfig(
@@ -554,12 +556,19 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
 
             # Family accessions
             elif entry_type == rs.FAMILY:
+
+                # load ncbi taxonomy browser here
+                (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
+                    rfc.TAX_NAMES_DUMP)
+                name_object = read_ncbi_taxonomy_nodes(rfc.TAX_NODES_DUMP)
+
                 rfam_accs = fetch_value_list(
                     None, rs.FAM_ACC)
 
                 for entry in rfam_accs:
                     t0 = timeit.default_timer()
-                    xml4db_dumper(entry_type, entry, hrefs, outdir)
+                    xml4db_dumper(
+                        name_dict, name_object, entry_type, entry, hrefs, outdir)
                     print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
 
                 return
@@ -567,15 +576,24 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
             # Don't build hierarchical references for Clans and Motifs
             for entry in rfam_accs:
                 t0 = timeit.default_timer()
-                xml4db_dumper(entry_type, entry, False, outdir)
+                xml4db_dumper(
+                    None, None, entry_type, entry, False, outdir)
                 print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
 
-        # need to check the validity of an rfam_acc (rfam, motif, clan)
+        # export single entry
         else:
+            # need to check the validity of an rfam_acc (rfam, motif, clan)
             if entry_type == rs.MOTIF or entry_type == rs.CLAN:
-                xml4db_dumper(entry_type, rfam_acc, False, outdir)
+                xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir)
+            # export single family entry
             else:
-                xml4db_dumper(entry_type, rfam_acc, True, outdir)
+                # load ncbi taxonomy browser here
+                (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
+                    rfc.TAX_NAMES_DUMP)
+                name_object = read_ncbi_taxonomy_nodes(rfc.TAX_NODES_DUMP)
+
+                xml4db_dumper(
+                    name_dict, name_object, entry_type, rfam_acc, True, outdir)
 
     except:
         # need to correct this one
@@ -589,12 +607,11 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
 # ----------------------------------------------------------------------------
 
 
-def get_valid_family_tax_ids(ncbi_nodes_dmp, ncbi_names_dmp, family_tax_ids):
+def get_valid_family_tax_ids(name_object, family_tax_ids):
     '''
         Returns a list of all family tax ids found in the NCBI dumps.
 
-        ncbi_nodes_dmp: NCBI taxonomy browser nodes dump
-        ncbi_names_dmp: NCBI taxonomy browser names dump
+        name_object: NCBI tax prowser node dictionary
         family_tax_ids: A list of all family ncbi ids
     '''
 
@@ -608,10 +625,12 @@ def get_valid_family_tax_ids(ncbi_nodes_dmp, ncbi_names_dmp, family_tax_ids):
 # ----------------------------------------------------------------------------
 
 
-def get_family_hrefs(family_tax_ids):
+def get_family_hrefs(name_object, name_dict, family_tax_ids):
     '''
         Returns the family geneology list
 
+        name_object: NCBI tax prowser node dictionary
+        name_dict: A dictionary with all ncbi names per tax id
         family_tax_ids: A list of family specific ncbi ids
 
     '''
@@ -636,23 +655,31 @@ def get_family_hrefs(family_tax_ids):
 # ----------------------------------------------------------------------------
 
 
-def usage():
+def usage(parser):
     '''
-        Displays usage information on screen.
+        Parses arguments and displays usage information on screen.
     '''
-    print "\nUsage:\n------"
 
-    # TO DO
-
-    print "-h option to display usage\n"
+    parser.add_argument('--type', help='rfam entry type',
+                        type=str, choices=['F', 'M', 'C'], required=True)
+    parser.add_argument(
+        '--acc', help='a valid rfam entry accession RF*****|CL*****|RM*****', type=str)
+    parser.add_argument(
+        '--hrefs', help='include hierarchical references', action='store_true')
+    parser.add_argument(
+        '--all', help='dump all existing entries', action='store_true')
+    parser.add_argument(
+        '--out', help='path to destination directory', type=str, required=True)
 
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    # entry type and outdir only - to export all entries of the same type
-    # (Motif, Clan, Family)
+    parser = argparse.ArgumentParser(description='Rfam XML4db Dumper')
 
-    # use python's argparse to parse arguments
+    usage(parser)
 
-    pass
+    args = parser.parse_args()
+
+    # implement some checks here and make --type, --out appear under required
+    # params and call main

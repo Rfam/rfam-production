@@ -8,14 +8,16 @@ Description: A library of scripts and constants to support rfam_xml_dumper
 TO DO: - Set release version and release date automatically
 
 '''
+
 import datetime
+
 # -----------------------------------------------------------------------------
 
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
 DB_RELEASE = "12.1"  # release version
-DB_REL_DATE = "26/04/2016"  # datetime.date.today()
+# DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
 RNA_TYPE_DEL = ';'
@@ -26,8 +28,25 @@ MOTIF = 'M'
 CLAN = 'C'
 FAMILY = 'F'
 
+
+# 9606 - human
+# 10090 - mouse
+# 7955 - zebrafish
+# 3702 - Arabidopsis thaliana
+# 6239 - Caenorhabditis elegans
+# 7227 - Drosophila melanogaster
+# 559292 - Saccharomyces cerevisiae S288c
+# 4896 - Schizosaccharomyces pombe
+# 511145 - Escherichia coli str. K-12 substr. MG1655
+
+# MODEL ORGANISMS - popular species
+POPULAR_SPECIES = (
+    '9606', '10090', '7955', '3702', '6239', '7227', '559292', '4896', '511145')
+
+
 # RFAM SEARCH QUERIES
 REL_FIELDS = ("SELECT rfam_release, rfam_release_date FROM version")
+
 
 # -------------------------------RFAM ACCESSIONS--------------------------
 

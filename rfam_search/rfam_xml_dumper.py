@@ -10,23 +10,27 @@ TO DO: - Need to add functions to parse and update an Xml4dbDumper file and
        - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
        - Set release version and date automatically
        - Usage implementation
-       - Take the arguments from the command line
+       - Take the arguments from the command line (argparse)
 '''
 
 # ----------------------------------------------------------------------------
 
-import os
 import logging
 import timeit
+import sys
+import os
+import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from config import rfam_search as rs
+from config import rfam_config as rfc
 from utils import RfamDB
+from parse_taxbrowser import *
 
 # ----------------------------------------------------------------------------
 
 
-def xml4db_dumper(entry_type, entry_acc, outdir):
+def xml4db_dumper(entry_type, entry_acc, hrefs, outdir):
     '''
         Exports query results into EB-eye's XML4dbDUMP format
 
@@ -34,6 +38,7 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
         ('M': Motif, 'F': Family, 'C': Clan)
         entry_acc: An Rfam related accession (Clan, Motif, Family)
         outdir: Destination directory
+
 
         Maybe here provide the fields as a txt file and the dump in txt format
         and according to that dump the xml file
@@ -48,7 +53,11 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
 
     # need to fetch from db
     ET.SubElement(db_xml, "release").text = rs.DB_RELEASE
-    ET.SubElement(db_xml, "release_date").text = rs.DB_REL_DATE
+
+    rel_date = datetime.date.today()
+    rel_date = rel_date.strftime("%d/%m/%Y")
+
+    ET.SubElement(db_xml, "release_date").text = rel_date
 
     # need to add a parameter for this...
     ET.SubElement(db_xml, "entry_count").text = '1'
@@ -57,7 +66,7 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
 
     # call family xml builder to add a new family to the xml tree
     if (entry_type == rs.FAMILY):
-        family_xml_builder(entries, rfam_acc=entry_acc)
+        family_xml_builder(entries, rfam_acc=entry_acc, hrefs=hrefs)
 
     elif (entry_type == rs.CLAN):
         clan_xml_builder(entries, clan_acc=entry_acc)
@@ -65,9 +74,7 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
     elif (entry_type == rs.MOTIF):
         motif_xml_builder(entries, motif_acc=entry_acc)
 
-    # export xml tree
-    tree = ET.ElementTree(db_xml)
-
+    # export xml tree - writes xml tree into a file
     fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
 
     db_str = ET.tostring(db_xml, 'utf-8')
@@ -80,12 +87,14 @@ def xml4db_dumper(entry_type, entry_acc, outdir):
 # ----------------------------------------------------------------------------
 
 
-def family_xml_builder(entries, rfam_acc=None):
+def family_xml_builder(entries, rfam_acc=None, hrefs=True):
     '''
         Expands the Xml4dbDumper object by adding a new family entry.
 
         entries: The xml entries node to be expanded
         rfam_acc: A specific Rfam family accession
+        hrefs: A bool value indicating whether to build hierarchical cross 
+               references. True by default.
     '''
 
     entry_type = 'Family'
@@ -97,6 +106,8 @@ def family_xml_builder(entries, rfam_acc=None):
 
     # fetch family specific ncbi_ids
     ncbi_ids = fetch_value_list(rfam_acc, rs.NCBI_IDs_QUERY)
+    valid_ncbi_ids = get_valid_family_tax_ids(rfc.TAX_NODES_DUMP,
+                                              rfc.TAX_NAMES_DUMP, ncbi_ids)
 
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs.PDB_IDs_QUERY)
@@ -115,7 +126,7 @@ def family_xml_builder(entries, rfam_acc=None):
     so_ids = filter(lambda x: x.find("SO") != -1, dbxrefs)
 
     # update cross references dictionary
-    cross_refs["ncbi_taxonomy_id"] = ncbi_ids
+    cross_refs["ncbi_taxonomy_id"] = valid_ncbi_ids
     cross_refs["PDB"] = pdb_ids
     cross_refs["PUBMED"] = pmids
     cross_refs["GO"] = go_ids
@@ -143,11 +154,17 @@ def family_xml_builder(entries, rfam_acc=None):
     ET.SubElement(dates, "date", value=updated, type="updated")
 
     # loop to add cross references
-    build_cross_references(entry, cross_refs)
+    cross_refs = build_cross_references(entry, cross_refs)
+
+    # add hierarchical references
+    if hrefs is True:
+        geneology_dict = get_family_hrefs(ncbi_ids)
+        if len(geneology_dict.keys()) > 1:
+            add_hierarchical_refs(cross_refs, geneology_dict)
 
     # expand xml tree with additional fields
     build_additional_fields(
-        entry, fam_fields, len(pdb_ids), entry_type=entry_type)
+        entry, fam_fields, len(pdb_ids), valid_ncbi_ids, entry_type=entry_type)
 
 
 # ----------------------------------------------------------------------------
@@ -191,7 +208,7 @@ def clan_xml_builder(entries, clan_acc=None):
 
     # clan additional fields
     build_additional_fields(
-        entry, clan_fields, clan_fields['num_families'], entry_type=entry_type)
+        entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type)
 
 # ----------------------------------------------------------------------------
 
@@ -231,26 +248,16 @@ def motif_xml_builder(entries, motif_acc=None):
     cross_ref_dict["RFAM"] = motif_fams
     build_cross_references(entry, cross_ref_dict)
 
-    build_additional_fields(entry, motif_fields, 0, entry_type=entry_type)
+    build_additional_fields(
+        entry, motif_fields, 0, None, entry_type=entry_type)
 
-
-# ----------------------------------------------------------------------------
-
-
-def expand_xml_tree(xml_tree_node, value_list):
-    '''
-        Expands an xml tree from a point onwards by adding new fields.
-
-        TO BE IMPLEMENTED
-    '''
-
-    pass
 # ----------------------------------------------------------------------------
 
 
 def build_cross_references(entry, cross_ref_dict):
     '''
         Expands the entry xml tree by adding the entry's cross references
+        Returns the cross references xml tree
 
         entry: The entry node of the xml tree object (xml.etree.ElementTree)
         cross_ref_dict: A dictionary with the entity's cross references in the
@@ -273,10 +280,39 @@ def build_cross_references(entry, cross_ref_dict):
                 ET.SubElement(
                     cross_refs, "ref", dbkey=str(value), dbname=db_name)
 
+    return cross_refs
+
 # ----------------------------------------------------------------------------
 
 
-def build_additional_fields(entry, fields, num_3d_structures, entry_type):
+def add_hierarchical_refs(cross_ref_tree, geneology_dict):
+    '''
+        Expands the cross references xml tree by adding hierarchical references
+        for the ncbi ids in valid_ncbi_ids.
+
+        cross_ref_tree: Cross references xml node
+        geneology_dict: -
+
+    '''
+
+    # add a new hierarchical ref in the cross refs tree
+    hrefs = ET.SubElement(cross_ref_tree, "hierarchical_ref")
+
+    # need to create one root node in order for the xml dump to validate
+    ET.SubElement(hrefs, "root", label="root").text = '1'
+
+    # create children nodes
+    for tax_id in geneology_dict.keys():
+        # skip root while creating child nodes
+        if tax_id != '1':
+            ET.SubElement(
+                hrefs, "child", label=geneology_dict[tax_id]).text = tax_id
+
+
+# ----------------------------------------------------------------------------
+
+
+def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type):
     '''
         This function expands the entry xml field with the additional fields
 
@@ -290,7 +326,9 @@ def build_additional_fields(entry, fields, num_3d_structures, entry_type):
     ET.SubElement(add_fields, "field", name="entry_type").text = entry_type
 
     # adding authors
-    author_list = get_value_list(fields["author"], rs.AUTH_DEL)
+    authors = fields["author"]
+    authors = authors.replace(';', ',')
+    author_list = get_value_list(authors, rs.AUTH_DEL)
 
     # to be deleted when author name is corrected on the db
     if author_list.count("Argasinska") > 0:
@@ -330,6 +368,12 @@ def build_additional_fields(entry, fields, num_3d_structures, entry_type):
             ET.SubElement(
                 add_fields, "field", name="has_3d_structure").text = "No"
 
+        # add popular species if any
+        for species in rs.POPULAR_SPECIES:
+            if species in fam_ncbi_ids:
+                ET.SubElement(
+                    add_fields, "field", name="popular_species").text = str(species)
+
     # perhaps move this to clan and motif xml builder
     else:
         num_families = None
@@ -351,7 +395,8 @@ def get_value_list(val_str, delimiter=','):
     '''
         val_str: A string of family specific values. This string is a
         concatenation of multiple values related to a single family
-        delimeter: The delimeter that will be used to split the values' string
+
+        delimiter: The delimeter that will be used to split the values' string
     '''
 
     val_str = val_str.strip()
@@ -464,13 +509,16 @@ def fetch_value(query, accession):
 # ----------------------------------------------------------------------------
 
 
-def main(entry_type, rfam_acc, outdir):
+def main(entry_type, rfam_acc, outdir, hrefs=True):
     '''
         This function puts everything together.
 
         entry_type: One of the three entry types in Rfam (Motif, Clan, Family)
         rfam_acc: An Rfam associated accession (RF*,CL*,RM*). If rfam_acc is set
-        to None, then all data related to the entry type will be exported.
+                  to None, then all data related to the entry type will be
+                  exported
+        hrefs: A flag (True/False) indicating whether to add hierarchical
+               references on not. True by default to add hrefs.
         outdir: Destination directory
 
         TO DO: - Fix logging
@@ -509,14 +557,25 @@ def main(entry_type, rfam_acc, outdir):
                 rfam_accs = fetch_value_list(
                     None, rs.FAM_ACC)
 
+                for entry in rfam_accs:
+                    t0 = timeit.default_timer()
+                    xml4db_dumper(entry_type, entry, hrefs, outdir)
+                    print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
+
+                return
+
+            # Don't build hierarchical references for Clans and Motifs
             for entry in rfam_accs:
                 t0 = timeit.default_timer()
-                xml4db_dumper(entry_type, entry, outdir)
+                xml4db_dumper(entry_type, entry, False, outdir)
                 print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
 
         # need to check the validity of an rfam_acc (rfam, motif, clan)
         else:
-            xml4db_dumper(entry_type, rfam_acc, outdir)
+            if entry_type == rs.MOTIF or entry_type == rs.CLAN:
+                xml4db_dumper(entry_type, rfam_acc, False, outdir)
+            else:
+                xml4db_dumper(entry_type, rfam_acc, True, outdir)
 
     except:
         # need to correct this one
@@ -527,8 +586,55 @@ def main(entry_type, rfam_acc, outdir):
         else:
             print "Error exporting %s ." % rfam_acc
 
+# ----------------------------------------------------------------------------
+
+
+def get_valid_family_tax_ids(ncbi_nodes_dmp, ncbi_names_dmp, family_tax_ids):
+    '''
+        Returns a list of all family tax ids found in the NCBI dumps.
+
+        ncbi_nodes_dmp: NCBI taxonomy browser nodes dump
+        ncbi_names_dmp: NCBI taxonomy browser names dump
+        family_tax_ids: A list of all family ncbi ids
+    '''
+
+    valid_family_tax_ids = []
+
+    for taxid in family_tax_ids:
+        if (taxid in name_object):
+            valid_family_tax_ids.append(taxid)
+
+    return valid_family_tax_ids
+# ----------------------------------------------------------------------------
+
+
+def get_family_hrefs(family_tax_ids):
+    '''
+        Returns the family geneology list
+
+        family_tax_ids: A list of family specific ncbi ids
+
+    '''
+
+    geneology = set()
+    tax_names = {}
+
+    for taxid in family_tax_ids:
+
+        if (taxid in name_object):
+            geneology.update(name_object[taxid].get_lineage())
+
+    for taxid in geneology:
+        if taxid != '1':
+            tax_names[taxid] = name_dict[taxid]
+        else:
+            tax_names[taxid] = 'root'
+
+    return tax_names
+
 
 # ----------------------------------------------------------------------------
+
 
 def usage():
     '''
@@ -543,5 +649,10 @@ def usage():
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
+    # entry type and outdir only - to export all entries of the same type
+    # (Motif, Clan, Family)
+
+    # use python's argparse to parse arguments
 
     pass

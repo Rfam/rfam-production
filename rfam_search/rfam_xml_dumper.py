@@ -8,8 +8,6 @@ Description: This module exports Rfam data
 TO DO:
        - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
        - Set release version and date automatically
-       - Logging
-       - Finalize usage
 '''
 
 # ----------------------------------------------------------------------------
@@ -21,6 +19,7 @@ import os
 import datetime
 import argparse
 import xml.etree.ElementTree as ET
+from sets import Set
 from xml.dom import minidom
 from config import rfam_search as rs
 from config import rfam_config as rfc
@@ -158,9 +157,10 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hrefs=Tru
 
     # add hierarchical references
     if hrefs is True:
-        geneology_dict = get_family_hrefs(name_object, name_dict, ncbi_ids)
-        if len(geneology_dict.keys()) > 1:
-            add_hierarchical_refs(cross_refs, geneology_dict)
+        species_tax_trees = get_family_hrefs(
+            name_object, name_dict, valid_ncbi_ids)
+        if len(species_tax_trees.keys()) > 1:
+            add_hierarchical_refs(cross_refs, species_tax_trees, name_dict)
 
     # expand xml tree with additional fields
     build_additional_fields(
@@ -285,29 +285,36 @@ def build_cross_references(entry, cross_ref_dict):
 # ----------------------------------------------------------------------------
 
 
-def add_hierarchical_refs(cross_ref_tree, geneology_dict):
+def add_hierarchical_refs(cross_ref_tree, tax_tree_dict, name_dict):
     '''
         Expands the cross references xml tree by adding hierarchical references
         for the ncbi ids in valid_ncbi_ids.
 
         cross_ref_tree: Cross references xml node
-        geneology_dict: -
+        tax_tree_dict: -
 
     '''
 
-    # add a new hierarchical ref in the cross refs tree
-    hrefs = ET.SubElement(cross_ref_tree, "hierarchical_ref",
-                          name="taxonomy_lineage")
+    # add a new hierarchical ref for every tax_id in the family
+    for tax_id in tax_tree_dict.keys():
+        hrefs = ET.SubElement(cross_ref_tree, "hierarchical_ref",
+                              name="taxonomy_lineage")
 
-    # need to create one root node in order for the xml dump to validate
-    ET.SubElement(hrefs, "root", label="root").text = '1'
+        # fetch lineage
+        lineage = tax_tree_dict[tax_id]
+        tax_tree = lineage[::-1]
 
-    # create children nodes
-    for tax_id in geneology_dict.keys():
-        # skip root while creating child nodes
-        if tax_id != '1':
-            ET.SubElement(
-                hrefs, "child", label=geneology_dict[tax_id]).text = tax_id
+        for tax_tree_node in tax_tree:
+            # create the root node
+            if tax_tree_node == '1':
+                # need to create one root node in order for the xml dump to
+                # validate
+                ET.SubElement(hrefs, "root", label="root").text = '1'
+            else:
+                # skip root while creating child nodes
+                if tax_tree_node != '1':
+                    ET.SubElement(
+                        hrefs, "child", label=name_dict[tax_tree_node]).text = tax_tree_node
 
 
 # ----------------------------------------------------------------------------
@@ -521,12 +528,13 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
         hrefs: A flag (True/False) indicating whether to add hierarchical
                references on not. True by default to add hrefs.
         outdir: Destination directory
-
-        TO DO: - Fix logging
     '''
 
     rfam_accs = None
     entry = ""
+
+    name_object = {}
+    name_dict = {}
 
     try:
 
@@ -540,9 +548,6 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
 
         # export all entries
         if rfam_acc is None:
-            # open a log file
-            logging.basicConfig(
-                filename=os.path.join('missing_accs' + '.log'), filemode='w', level=logging.DEBUG)
 
             # Motif accessions
             if entry_type == rs.MOTIF:
@@ -560,7 +565,8 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
                 # load ncbi taxonomy browser here
                 (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)
-                name_object = read_ncbi_taxonomy_nodes(rfc.TAX_NODES_DUMP)
+                name_object = read_ncbi_taxonomy_nodes(
+                    name_dict, rfc.TAX_NODES_DUMP)
 
                 rfam_accs = fetch_value_list(
                     None, rs.FAM_ACC)
@@ -585,24 +591,36 @@ def main(entry_type, rfam_acc, outdir, hrefs=True):
             # need to check the validity of an rfam_acc (rfam, motif, clan)
             if entry_type == rs.MOTIF or entry_type == rs.CLAN:
                 xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir)
+
             # export single family entry
             else:
+
                 # load ncbi taxonomy browser here
                 (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)
-                name_object = read_ncbi_taxonomy_nodes(rfc.TAX_NODES_DUMP)
+                name_object = read_ncbi_taxonomy_nodes(
+                    name_dict, rfc.TAX_NODES_DUMP)
 
                 xml4db_dumper(
-                    name_dict, name_object, entry_type, rfam_acc, True, outdir)
+                    name_dict, name_object, entry_type, rfam_acc, hrefs, outdir)
 
     except:
         # need to correct this one
         if rfam_acc is None:
-            # for rfam_acc in rfam_accs:
-            #    logging.debug(rfam_acc)
-            pass
+            gen_fams = Set([x.partition('.')[0] for x in os.listdir(outdir)])
+            loaded_fams = Set(rfam_accs)
+            # get remaining families
+            rem_fams = loaded_fams - gen_fams
+
+            # open a log file
+            logging.basicConfig(
+                filename=os.path.join('missing_accs' + '.log'), filemode='w', level=logging.DEBUG)
+
+            # write accessions to log file
+            for rfam_acc in rem_fams:
+                logging.debug(rfam_acc)
         else:
-            print "Error exporting %s ." % rfam_acc
+            print "Error exporting %s." % rfam_acc
 
 # ----------------------------------------------------------------------------
 
@@ -611,7 +629,7 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
     '''
         Returns a list of all family tax ids found in the NCBI dumps.
 
-        name_object: NCBI tax prowser node dictionary
+        name_object: NCBI tax browser node dictionary
         family_tax_ids: A list of all family ncbi ids
     '''
 
@@ -622,64 +640,87 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
             valid_family_tax_ids.append(taxid)
 
     return valid_family_tax_ids
+
+
 # ----------------------------------------------------------------------------
 
 
 def get_family_hrefs(name_object, name_dict, family_tax_ids):
     '''
-        Returns the family geneology list
+        Returns the family genealogy list
 
-        name_object: NCBI tax prowser node dictionary
+        name_object: NCBI tax browser node dictionary
         name_dict: A dictionary with all ncbi names per tax id
         family_tax_ids: A list of family specific ncbi ids
 
     '''
-
-    geneology = set()
-    tax_names = {}
+    species_tax_trees = {}
 
     for taxid in family_tax_ids:
 
         if (taxid in name_object):
-            geneology.update(name_object[taxid].get_lineage())
+            species_tax_trees[taxid] = name_object[
+                taxid].get_lineage(name_object)
 
-    for taxid in geneology:
-        if taxid != '1':
-            tax_names[taxid] = name_dict[taxid]
-        else:
-            tax_names[taxid] = 'root'
-
-    return tax_names
+    return species_tax_trees
 
 
 # ----------------------------------------------------------------------------
 
-
-def usage(parser):
+def usage():
     '''
         Parses arguments and displays usage information on screen.
     '''
 
-    parser.add_argument('--type', help='rfam entry type',
-                        type=str, choices=['F', 'M', 'C'], required=True)
+    parser = argparse.ArgumentParser(
+        description='Rfam Search Xml4db Dumper.', epilog='')
+
+    # group required arguments together
+    req_args = parser.add_argument_group('required arguments')
+
+    req_args.add_argument('--type', help='rfam entry type (F: Family, M: Motif, C: Clan)',
+                          type=str, choices=['F', 'M', 'C'], required=True)
+
     parser.add_argument(
-        '--acc', help='a valid rfam entry accession RF*****|CL*****|RM*****', type=str)
+        '--acc', help='a valid rfam entry accession (RF*|CL*|RM*)',
+        type=str, default=None)
+
     parser.add_argument(
         '--hrefs', help='include hierarchical references', action='store_true')
-    parser.add_argument(
-        '--all', help='dump all existing entries', action='store_true')
-    parser.add_argument(
-        '--out', help='path to destination directory', type=str, required=True)
+
+    req_args.add_argument(
+        '--out', help='path to output directory', type=str, required=True)
+
+    return parser
 
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Rfam XML4db Dumper')
-
-    usage(parser)
-
+    parser = usage()
     args = parser.parse_args()
 
-    # implement some checks here and make --type, --out appear under required
-    # params and call main
+    # Additional checks
+    # Check if export type matches accession
+    wrong_input = False
+    if (args.acc is not None):
+
+        if (args.type == 'F' and args.acc[0:2] != 'RF'):
+            wrong_input = True
+        elif(args.type == 'M' and args.acc[0:2] != 'RM'):
+            wrong_input = True
+        elif(args.type == 'C' and args.acc[0:2] != 'CL'):
+            wrong_input = True
+
+    if (wrong_input is True):
+        print "\nAccession does not match the export type.\n"
+        parser.print_help()
+        sys.exit()
+
+    # check output directory
+    if (os.path.isdir(args.out) is False):
+        print "\nPlease provide a valid output directory.\n"
+        parser.print_help()
+        sys.exit()
+
+    main(args.type, args.acc, args.out, hrefs=args.hrefs)

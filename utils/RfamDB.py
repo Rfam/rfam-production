@@ -16,7 +16,7 @@ from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
 
 # -----------------------------------------------------------------------------
 # need to generalize this enabling database selection upon execution
-db_conf = RFAMLIVELOC
+db_conf = RFAMLIVE
 
 # -----------------------------------------------------------------------------
 

@@ -24,7 +24,7 @@ from xml.dom import minidom
 from config import rfam_search as rs
 from config import rfam_config as rfc
 from utils import RfamDB
-from parse_taxbrowser import *
+from utils.parse_taxbrowser import *
 
 # ----------------------------------------------------------------------------
 

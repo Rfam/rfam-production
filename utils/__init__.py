@@ -1,1 +1,1 @@
-__all__ = ['db_utils', 'RfamDB', 'config']
+__all__ = ['db_utils', 'RfamDB', 'parse_taxbrowser']

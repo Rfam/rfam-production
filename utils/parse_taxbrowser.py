@@ -17,8 +17,6 @@ Modifications: - name_object passed as param to Node's method get_linage
 
 import os
 import sys
-from config import rfam_config as rfc
-from config import rfam_search as rs
 
 # ----------------------------------------------------------------------------
 

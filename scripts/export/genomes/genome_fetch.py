@@ -8,9 +8,11 @@ TO DO:    - logging
           - assembly report parser
           - handle proteomes with missing GCAs
 '''
+
 # ---------------------------------IMPORTS-------------------------------------
 
 import os
+import sys  # for testing purposes
 import string
 import xml.etree.ElementTree as ET
 import urllib2
@@ -59,7 +61,7 @@ def fetch_ref_proteomes():
 def extract_genome_acc(prot_rdf):
     '''
         Extracts and returns the assembly accession from the proteome rdf
-        which provided as input. Returns -1 if not available
+        which provided as input. Returns -1 if not available.
 
         prot_rdf: A Uniprot's proteome rdf url or file path
     '''
@@ -74,6 +76,8 @@ def extract_genome_acc(prot_rdf):
     return -1
 
 # ---------------------------------------------------------------------- #STEP2
+
+# need to switch to more descriptive names
 
 
 def fetch_genome_acc(prot):
@@ -152,7 +156,7 @@ def fetch_ena_file(acc, file_format, dest_dir):
 # ---------------------------------------------------------------------- #STEP3
 
 
-def extract_chrom_accs(gen_acc):
+def extract_assembly_accs(gen_acc):
     '''
         Loads an xml tree from a file or a string (usually an http response),
         and returns a list with the genome assembly's chromosomes
@@ -160,9 +164,13 @@ def extract_chrom_accs(gen_acc):
         gen_acc: A valid ENA assembly accession (without the assembly version)
     '''
 
-    chrom_accs = []
+    accessions = []
     root = None
     chroms = None
+    assembly_link = None
+    assembly = None
+
+    # could used root for validation
 
     assembly_xml = requests.get(GCA_XML_URL % gen_acc).content
 
@@ -173,22 +181,39 @@ def extract_chrom_accs(gen_acc):
         # fromstring returns the xml root directly
         root = ET.fromstring(assembly_xml)
 
-    # find ASSEMBLY node within genome xml tree
-    chroms = root.find('ASSEMBLY').find('CHROMOSOMES')
+    assembly = root.find('ASSEMBLY')
 
-    # if genome assembly is at chromosomal level
-    if chroms is not None:
-        # fetch chromosome tree
-        for chrom in chroms.findall('CHROMOSOME'):
-            chrom_accs.append(chrom.get('accession').partition('.')[0])
+    if assembly is not None:
 
-    # lower level of assembly - need to look for the url and fetch the data
-    # in the report file
+        # find CHROMOSOMES node within genome xml tree
+        chroms = root.find('ASSEMBLY').find('CHROMOSOMES')
+
+        # if genome assembly is at chromosome level
+        if chroms is not None:
+            # parse chromosome tree and fetch all accessions
+            for chrom in chroms.findall('CHROMOSOME'):
+                accessions.append(chrom.get('accession').partition('.')[0])
+
+        else:
+            # assembly link lookup
+            assembly_link = root.find('ASSEMBLY').find(
+                'ASSEMBLY_LINKS')
+
+            if assembly_link is not None:
+                # export url link and fetch all relevant assembly accessions
+                url_link = assembly_link.find(
+                    'ASSEMBLY_LINK').find('URL_LINK').findtext('URL')
+
+                accessions = assembly_report_parser(url_link)
+
+            else:
+                # no assembly link provided - do something
+                pass
     else:
-        # do something - need to read from the xml url here
-        pass
+        # need a function here that parses this type of xmls
+        return assembly
 
-    return chrom_accs
+    return accessions
 
 # ---------------------------------------------------------------------- #STEP4
 
@@ -203,7 +228,9 @@ def download_genomes(gen, dest_dir):
         files
     '''
 
-    chroms = None
+    # need to add logging
+
+    accessions = None
 
     if(os.path.isfile(gen)):
         fp = open(gen, 'r')
@@ -219,17 +246,17 @@ def download_genomes(gen, dest_dir):
             try:
                 os.mkdir(gen_dir)
             except:
-                pass
+                print 'Unable to generate directory for accession: ', gen
 
-            chroms = extract_chrom_accs(gen_acc)
+            accessions = extract_assembly_accs(gen_acc)
 
-            if len(chroms) > 0:
-                for chrom in chroms:
-                    fetch_ena_file(chrom, "fasta", gen_dir)
+            if len(accessions) > 0:
+                for acc in accessions:
+                    fetch_ena_file(acc, "fasta", gen_dir)
 
             gen_acc = None
             gen_dir = None
-            chroms = None
+            accessions = None
 
     else:
         if(string.find(gen, '.') != -1):
@@ -241,14 +268,15 @@ def download_genomes(gen, dest_dir):
         try:
             os.mkdir(gen_dir)
         except:
-            pass
+            print 'Unable to generate directory for accession: ', gen
 
-        chroms = extract_chrom_accs(gen)
+        accessions = extract_assembly_accs(gen)
 
-        if len(chroms) > 0:
-            for chrom in chroms:
-                fetch_ena_file(chrom, "fasta", gen_dir)
-        # do nothing if no chroms - should write a log file
+        if len(accessions) > 0:
+            for acc in accessions:
+                fetch_ena_file(acc, "fasta", gen_dir)
+
+        # if no accessions found, write to log file
         else:
             return
 
@@ -278,7 +306,7 @@ def fetch_genome(gen, dest_dir):
     fetch_ena_file(gen, "xml", gen_dir)
 
     gen_xml = os.path.join(gen_dir, gen + ".xml")
-    chroms = extract_chrom_accs(gen_xml)
+    chroms = extract_assembly_accs(gen_xml)
 
     for chrom in chroms:
         fetch_ena_file(chrom, "fasta", gen_dir)
@@ -287,20 +315,70 @@ def fetch_genome(gen, dest_dir):
 
 # -----------------------------------------------------------------------------
 
+# rename to something else
 
-def assembly_report_parser(assembly_report_url):
+
+def rdf_accession_search(rdf_url, keyword):
     '''
-        Parses an assembly report file and returns a list of available
-        accessions. To be called within extract_chrom_accs
+        Parses rdf url and returns a list of ENA accessions
+
+        rdf_url: The url to a Uniprot's reference proteome rdf url
+        keyword: A string representing a keyword to look for in the rdf file
     '''
 
-    # TODO
+    accessions = []
+    rdf_graph = Graph()
+    rdf_graph.load(rdf_url)
 
-    pass
+    for s, p, o in rdf_graph:
+        if(string.find(o, "/%s/" % keyword) != -1):
+            accessions.append(os.path.split(o)[1])
+
+    return accessions
+
+
+# -----------------------------------------------------------------------------
+
+
+def assembly_report_parser(report_url):
+    '''
+        Parses an assembly report file and returns a list of all available
+        accessions (scaffolds, contigs etc).
+        To be called within extract_assembly_accs
+
+        report_url: A url provided within an ENA assembly xml file. This is the
+                    text of URL tag under ASSEMBLY/ASSEMBLY_LINKS/ASSEMBLY_LINK.
+                    By default this is an ftp request url. Converting to http to
+                    fetch assembly accessions.
+
+        NOTE: accessions are exported including version
+
+    '''
+
+    accessions = []
+
+    # switch from ftp to http to fetch assembly report on the go
+    link_parts = ['http']
+    link_parts.extend(report_url.partition(':')[1:])
+
+    http_link = ''.join(link_parts)
+
+    # fetch assembly report file contents and store in a list, omitting header
+    ass_rep_file = requests.get(http_link).content.split('\n')[1:]
+
+    # if empty line, remove it
+    if ass_rep_file[len(ass_rep_file) - 1] == '':
+        ass_rep_file.pop(len(ass_rep_file) - 1)
+
+    # parse list and export assembly accessions
+    for line in ass_rep_file:
+        line = line.strip().split('\t')
+        accessions.append(line[0])
+
+    return accessions
 
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass

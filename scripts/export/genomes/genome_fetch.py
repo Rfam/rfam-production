@@ -27,10 +27,10 @@ from rdflib import Graph
 REF_PROT_LIST_URL = "http://www.uniprot.org/proteomes/?query=*&fil=reference%3Ayes&format=list"
 
 # Retrieve the proteome rdf file
-PROTEOME_URL = "http://www.uniprot.org/proteomes/%s&display=rdf"
+PROTEOME_URL = "http://www.uniprot.org/proteomes/%s.rdf"
 
 # Retrieve the genome's xml file
-GCA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
+ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
 
 # ENA url for file download
 ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s&download=gzip"
@@ -69,11 +69,47 @@ def extract_genome_acc(prot_rdf):
     g.load(prot_rdf)
 
     for s, p, o in g:
-
         if(string.find(o, "GCA") != -1):
             return os.path.split(o)[1]
 
     return -1
+
+# -----------------------------------------------------------------------------
+
+
+def proteome_rdf_scanner(proteome):
+    '''
+        Scans a Uniprot's reference proteome rdf file and looks for all
+        available accessions. Returns a dictionary with GCA and WGS accessions
+        where applicable
+
+        prot_rdf: A Uniprot's proteome rdf url or file path
+    '''
+
+    prot_rdf = PROTEOME_URL % proteome
+    g = Graph()
+    g.load(prot_rdf)
+
+    accessions = {"GCA": -1, "WGS": -1}
+
+    wgs_flag = False
+
+    # scan for accessions
+    for s, p, o in g:
+        # look for ENA accessions
+        if(string.find(o, "/embl/") != -1):
+
+            if (string.find(o, "GCA") != -1):
+                accessions["GCA"] = os.path.split(o)[1]
+
+            elif (wgs_flag is True):
+                accessions["WGS"] = os.path.split(o)[1]
+
+        # if WGS keyword found, set flag to true
+        elif (string.find(o, "WGS") != -1):
+            wgs_flag = True
+
+    return accessions
 
 # ---------------------------------------------------------------------- #STEP2
 
@@ -172,7 +208,7 @@ def extract_assembly_accs(gen_acc):
 
     # could used root for validation
 
-    assembly_xml = requests.get(GCA_XML_URL % gen_acc).content
+    assembly_xml = requests.get(ENA_XML_URL % gen_acc).content
 
     if os.path.isfile(assembly_xml):
         # parse xml tree and return root node
@@ -186,17 +222,17 @@ def extract_assembly_accs(gen_acc):
     if assembly is not None:
 
         # find CHROMOSOMES node within genome xml tree
-        chroms = root.find('ASSEMBLY').find('CHROMOSOMES')
+        chroms = assembly.find('CHROMOSOMES')
 
         # if genome assembly is at chromosome level
         if chroms is not None:
-            # parse chromosome tree and fetch all accessions
+            # search chromosome element and fetch all accessions
             for chrom in chroms.findall('CHROMOSOME'):
                 accessions.append(chrom.get('accession').partition('.')[0])
 
         else:
-            # assembly link lookup
-            assembly_link = root.find('ASSEMBLY').find(
+            # assembly link search
+            assembly_link = assembly.find(
                 'ASSEMBLY_LINKS')
 
             if assembly_link is not None:
@@ -207,11 +243,18 @@ def extract_assembly_accs(gen_acc):
                 accessions = assembly_report_parser(url_link)
 
             else:
-                # no assembly link provided - do something
-                pass
+                # no assembly link provided - look for WGS element
+                wgs = None
+                wgs = assembly.find('WGS_SET')
+                # get wgs accession
+                wgs_acc = get_wgs_set_accession(
+                    wgs.find("PREFIX").text, wgs.find("VERSION").text)
+                # get wgs range and return as single accession
+                accessions.append(get_wgs_range(wgs_acc))
+
+    # do something here
     else:
-        # need a function here that parses this type of xmls
-        return assembly
+        return None
 
     return accessions
 
@@ -318,20 +361,21 @@ def fetch_genome(gen, dest_dir):
 # rename to something else
 
 
-def rdf_accession_search(rdf_url, keyword):
+def rdf_accession_search(ref_prot_acc, sub_str):
     '''
         Parses rdf url and returns a list of ENA accessions
 
         rdf_url: The url to a Uniprot's reference proteome rdf url
-        keyword: A string representing a keyword to look for in the rdf file
+        sub_str: A sub string to look for in the rdf file
     '''
 
     accessions = []
     rdf_graph = Graph()
+    rdf_url = PROTEOME_URL % ref_prot_acc
     rdf_graph.load(rdf_url)
 
     for s, p, o in rdf_graph:
-        if(string.find(o, "/%s/" % keyword) != -1):
+        if(string.find(o, sub_str) != -1):
             accessions.append(os.path.split(o)[1])
 
     return accessions
@@ -377,6 +421,54 @@ def assembly_report_parser(report_url):
 
     return accessions
 
+# -----------------------------------------------------------------------------
+
+
+def get_wgs_set_accession(prefix, version):
+    '''
+        Generates ENA WGS accession using the WGS accession pattern
+        (4 letter prefix) and 2-digit build version. The WGS accession is
+        generated by appending prefix and version with a postfix of 6-zeros.
+        For more information please visit ENA service-news: http://goo.gl/LnIyQ3
+
+        prefix: A 4-char string representing the ENA WGS accession
+        version: A 2-digit representing the WGS build version
+
+    '''
+
+    postfix = '000000'
+    wgs_accession = None
+
+    if int(version) % 10 != 0:
+        wgs_accession = prefix + '0' + version + postfix
+    else:
+        wgs_accession = prefix + version + postfix
+
+    return wgs_accession
+
+# -----------------------------------------------------------------------------
+
+
+def get_wgs_range(wgs_acc):
+    '''
+        Fetches the wgs xml file from ENA and exports the wgs range 
+
+        wgs_acc: A valid ENA wgs accession
+    '''
+
+    wgs_range = None
+    wgs_xml_str = requests.get(ENA_XML_URL % wgs_acc).content
+    wgs_xml_root = ET.fromstring(wgs_xml_str)
+
+    if wgs_xml_root.find('entry') is not None:
+
+        wgs_xrefs = wgs_xml_root.find('entry').findall('xref')
+
+        for xref_el in wgs_xrefs:
+            if xref_el.get('db') == "ENA-WGS":
+                wgs_range = xref_el.get('id')
+
+    return wgs_range
 
 # -----------------------------------------------------------------------------
 

@@ -5,19 +5,21 @@ Created on 19 Nov 2015
 @author: ikalvari
 
 TO DO:    - logging
-          - assembly report parser
-          - handle proteomes with missing GCAs
+          - http request error handling (DEBUG.log)
+          - move URLs in a config file
+          - need to split WGS range to single accessions
 '''
 
 # ---------------------------------IMPORTS-------------------------------------
 
+
 import os
-import sys  # for testing purposes
 import string
 import xml.etree.ElementTree as ET
 import urllib2
+import urllib
 import requests
-
+import httplib
 from rdflib import Graph
 
 # ----------------------------------GLOBALS------------------------------------
@@ -35,8 +37,13 @@ ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
 # ENA url for file download
 ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s&download=gzip"
 
+# ENA url for assembly data retrieval via taxon id
+ENA_TAX_URL = "http://www.ebi.ac.uk/ena/data/warehouse/search?query=\"tax_eq(%s)\"&result=assembly&display=xml"
+
 # ENA file formats
 FORMATS = {"xml": ".xml", "fasta": ".fa"}
+
+GCA_REP_LABEL = 'Sequence Report'
 
 # ---------------------------------------------------------------------- #STEP1
 
@@ -58,6 +65,33 @@ def fetch_ref_proteomes():
 # -----------------------------------------------------------------------------
 
 
+def export_gca_accessions(upid_gca):
+    '''
+        Retrieves reference proteomes ids and their associated gca accessions
+        as well as the taxonomic rank/domain (eukaryotes, bacteria etc)
+
+        upid_gca: Uniprot's tab separated file (UPID_GCA.tsv )
+    '''
+
+    # need to check if the path provided is a valid file
+    upid_gca_fp = open(upid_gca, 'r')
+
+    prot_gca_pairs = {}
+
+    for prot in upid_gca_fp:
+        prot = prot.strip().split('\t')
+        if prot[1] != '':
+            prot_gca_pairs[prot[0]] = prot[1]
+        else:
+            prot_gca_pairs[prot[0]] = -1
+
+    upid_gca_fp.close()
+
+    return prot_gca_pairs
+
+# -----------------------------------------------------------------------------
+
+
 def extract_genome_acc(prot_rdf):
     '''
         Extracts and returns the assembly accession from the proteome rdf
@@ -66,11 +100,16 @@ def extract_genome_acc(prot_rdf):
         prot_rdf: A Uniprot's proteome rdf url or file path
     '''
     g = Graph()
-    g.load(prot_rdf)
 
-    for s, p, o in g:
-        if(string.find(o, "GCA") != -1):
-            return os.path.split(o)[1]
+    response = requests.get(prot_rdf).status_code
+
+    if response == httplib.OK:
+
+        g.load(prot_rdf)
+
+        for s, p, o in g:
+            if(string.find(o, "GCA") != -1):
+                return os.path.split(o)[1]
 
     return -1
 
@@ -86,34 +125,37 @@ def proteome_rdf_scanner(proteome):
         prot_rdf: A Uniprot's proteome rdf url or file path
     '''
 
+    # need to do some http error handling here and if resource is unavailable
+    # return None and or http error code
+
     prot_rdf = PROTEOME_URL % proteome
-    g = Graph()
-    g.load(prot_rdf)
 
     accessions = {"GCA": -1, "WGS": -1}
-
     wgs_flag = False
+    g = Graph()
 
-    # scan for accessions
-    for s, p, o in g:
-        # look for ENA accessions
-        if(string.find(o, "/embl/") != -1):
+    if requests.get(prot_rdf).status_code == httplib.OK:
+        g.load(prot_rdf)
 
-            if (string.find(o, "GCA") != -1):
-                accessions["GCA"] = os.path.split(o)[1]
+        # scan for accessions
+        for s, p, o in g:
+            # look for ENA accessions
+            if(string.find(o, "/embl/") != -1):
+                if (string.find(o, "GCA") != -1):
+                    accessions["GCA"] = os.path.split(o)[1]
 
-            elif (wgs_flag is True):
-                accessions["WGS"] = os.path.split(o)[1]
+                elif (wgs_flag is True):
+                    accessions["WGS"] = os.path.split(o)[1]
 
-        # if WGS keyword found, set flag to true
-        elif (string.find(o, "WGS") != -1):
-            wgs_flag = True
+            # if WGS keyword found, set flag to true
+            elif (string.find(o, "WGS") != -1):
+                wgs_flag = True
+    else:
+        pass
 
     return accessions
 
 # ---------------------------------------------------------------------- #STEP2
-
-# need to switch to more descriptive names
 
 
 def fetch_genome_acc(prot):
@@ -146,7 +188,9 @@ def fetch_genome_acc(prot):
     else:
         proteome = string.strip(prot)
         rdf_url = "http://www.uniprot.org/proteomes/%s.rdf" % (proteome)
-        gen_acc = extract_genome_acc(rdf_url)
+        res_handle = urllib.urlopen(rdf_url)
+        if res_handle.getcode() == httplib.OK:
+            gen_acc = extract_genome_acc(res_handle)
         gens[proteome] = gen_acc
 
         return gens
@@ -155,7 +199,9 @@ def fetch_genome_acc(prot):
     for proteome in ref_prot_list:
         proteome = string.strip(proteome)
         rdf_url = "http://www.uniprot.org/proteomes/%s.rdf" % (proteome)
-        gen_acc = extract_genome_acc(rdf_url)
+        res_handle = urllib.urlopen(rdf_url)
+        if res_handle.getcode() == httplib.OK:
+            gen_acc = extract_genome_acc(res_handle)
 
         gens[proteome] = gen_acc
 
@@ -192,12 +238,12 @@ def fetch_ena_file(acc, file_format, dest_dir):
 # ---------------------------------------------------------------------- #STEP3
 
 
-def extract_assembly_accs(gen_acc):
+def extract_assembly_accs(accession):
     '''
         Loads an xml tree from a file or a string (usually an http response),
         and returns a list with the genome assembly's chromosomes
 
-        gen_acc: A valid ENA assembly accession (without the assembly version)
+        accession: A valid ENA assembly accession (without the assembly version)
     '''
 
     accessions = []
@@ -206,9 +252,7 @@ def extract_assembly_accs(gen_acc):
     assembly_link = None
     assembly = None
 
-    # could used root for validation
-
-    assembly_xml = requests.get(ENA_XML_URL % gen_acc).content
+    assembly_xml = requests.get(ENA_XML_URL % accession).content
 
     if os.path.isfile(assembly_xml):
         # parse xml tree and return root node
@@ -221,40 +265,33 @@ def extract_assembly_accs(gen_acc):
 
     if assembly is not None:
 
-        # find CHROMOSOMES node within genome xml tree
-        chroms = assembly.find('CHROMOSOMES')
+        # either parse the assembly report file or get the WGS range
+        assembly_link = assembly.find(
+            'ASSEMBLY_LINKS')
 
-        # if genome assembly is at chromosome level
-        if chroms is not None:
-            # search chromosome element and fetch all accessions
-            for chrom in chroms.findall('CHROMOSOME'):
-                accessions.append(chrom.get('accession').partition('.')[0])
+        if assembly_link is not None:
+            # export url link and fetch all relevant assembly accessions
+            url_link = assembly_link.find(
+                'ASSEMBLY_LINK').find('URL_LINK').find('URL').text
+
+            # need to check for GCA_REP_LABEL
+            accessions = assembly_report_parser(url_link)
 
         else:
-            # assembly link search
-            assembly_link = assembly.find(
-                'ASSEMBLY_LINKS')
+            # no assembly link provided - look for WGS element
+            wgs = None
+            wgs = assembly.find('WGS_SET')
 
-            if assembly_link is not None:
-                # export url link and fetch all relevant assembly accessions
-                url_link = assembly_link.find(
-                    'ASSEMBLY_LINK').find('URL_LINK').findtext('URL')
+            # get wgs accession
+            wgs_acc = get_wgs_set_accession(
+                wgs.find("PREFIX").text, wgs.find("VERSION").text)
 
-                accessions = assembly_report_parser(url_link)
+            # get wgs range and return as single accession
+            accessions.append(get_wgs_range(wgs_acc))
 
-            else:
-                # no assembly link provided - look for WGS element
-                wgs = None
-                wgs = assembly.find('WGS_SET')
-                # get wgs accession
-                wgs_acc = get_wgs_set_accession(
-                    wgs.find("PREFIX").text, wgs.find("VERSION").text)
-                # get wgs range and return as single accession
-                accessions.append(get_wgs_range(wgs_acc))
-
-    # do something here
+    # move this outside this function to where accessions are requested ??
     else:
-        return None
+        accessions.append(get_wgs_range(accession))
 
     return accessions
 
@@ -358,12 +395,10 @@ def fetch_genome(gen, dest_dir):
 
 # -----------------------------------------------------------------------------
 
-# rename to something else
-
 
 def rdf_accession_search(ref_prot_acc, sub_str):
     '''
-        Parses rdf url and returns a list of ENA accessions
+        Parses rdf url and returns a list of ENA accessions.
 
         rdf_url: The url to a Uniprot's reference proteome rdf url
         sub_str: A sub string to look for in the rdf file
@@ -372,11 +407,20 @@ def rdf_accession_search(ref_prot_acc, sub_str):
     accessions = []
     rdf_graph = Graph()
     rdf_url = PROTEOME_URL % ref_prot_acc
-    rdf_graph.load(rdf_url)
 
-    for s, p, o in rdf_graph:
-        if(string.find(o, sub_str) != -1):
-            accessions.append(os.path.split(o)[1])
+    response = requests.get(rdf_url).status_code
+
+    if response == httplib.OK:
+
+        rdf_graph.load(rdf_url)
+
+        for s, p, o in rdf_graph:
+            if(string.find(o, sub_str) != -1):
+                accessions.append(os.path.split(o)[1])
+    else:
+        # return http status code
+        # return response.status_code
+        pass
 
     return accessions
 
@@ -451,7 +495,7 @@ def get_wgs_set_accession(prefix, version):
 
 def get_wgs_range(wgs_acc):
     '''
-        Fetches the wgs xml file from ENA and exports the wgs range 
+        Fetches the wgs xml file from ENA and exports the wgs range
 
         wgs_acc: A valid ENA wgs accession
     '''

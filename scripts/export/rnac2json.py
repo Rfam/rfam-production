@@ -13,6 +13,8 @@ import logging
 import sys
 import re
 import string
+from config import config_local as cl
+from config import rfam_config as rfc
 
 LSF_MODE = False
 
@@ -34,12 +36,12 @@ VERSION = 13
 SPECIES = 14
 TAX_STR = 15
 
-ESL_LOCAL = "/Users/ikalvari/Downloads/infernal-1.1/easel/miniapps/esl-sfetch"
-ESL_FSEQ_PATH = "/nfs/production/xfam/rfam/software/bin/esl-sfetch"
-TMP_PATH = "/tmp"
-FSR_PATH = "/nfs/research2/nobackup/rfam/exec/faSomeRecords"
-FSR_LOCAL = "/Users/ikalvari/Desktop/faSomeRecords"
-ENA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=fasta&range=%s-%s"
+ESL_LOCAL = cl.ESL_PATH
+ESL_FSEQ_PATH = rfc.ESL_PATH
+FSR_PATH = rfc.FSR_PATH
+FSR_LOCAL = cl.FSR_LOCAL
+ENA_URL = rfc.ENA_URL
+TMP_PATH = rfc.TMP_PATH
 
 ESL_PATH = None
 

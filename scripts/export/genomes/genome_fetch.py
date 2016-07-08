@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# !/usr/bin/python
 '''
 Created on 19 Nov 2015
 
@@ -6,7 +6,6 @@ Created on 19 Nov 2015
 
 TO DO:    - logging
           - http request error handling (DEBUG.log)
-          - move URLs in a config file
           - need to split WGS range to single accessions
 '''
 
@@ -22,28 +21,32 @@ import requests
 import httplib
 from rdflib import Graph
 
+from config import gen_config as gc
+
 # ----------------------------------GLOBALS------------------------------------
 
 # URLs
 # This returns the list of reference proteomes from Uniprot
-REF_PROT_LIST_URL = "http://www.uniprot.org/proteomes/?query=*&fil=reference%3Ayes&format=list"
+REF_PROT_LIST_URL = gc.REF_PROT_LIST_URL
 
 # Retrieve the proteome rdf file
-PROTEOME_URL = "http://www.uniprot.org/proteomes/%s.rdf"
+PROTEOME_URL = gc.PROTEOME_URL
 
 # Retrieve the genome's xml file
-ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
+ENA_XML_URL = gc.ENA_XML_URL
 
 # ENA url for file download
-ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s&download=gzip"
+ENA_DATA_URL = gc.ENA_DATA_URL
 
 # ENA url for assembly data retrieval via taxon id
-ENA_TAX_URL = "http://www.ebi.ac.uk/ena/data/warehouse/search?query=\"tax_eq(%s)\"&result=assembly&display=xml"
+ENA_TAX_URL = gc.ENA_TAX_URL
+
+# ENA GCA report file label
+GCA_REP_LABEL = gc.GCA_REP_LABEL
 
 # ENA file formats
 FORMATS = {"xml": ".xml", "fasta": ".fa"}
 
-GCA_REP_LABEL = 'Sequence Report'
 
 # ---------------------------------------------------------------------- #STEP1
 
@@ -303,7 +306,7 @@ def download_genomes(gen, dest_dir):
         Downloads all chromosome files of a given assembly accession (ENA) in
         dest_dir
 
-        gen: Single or a list of genome accessions (GC*)
+        gen: Single accession or a list of genome accessions (GC*)
         dest_dir: The path of the destination directory to export the fasta
         files
     '''
@@ -362,7 +365,6 @@ def download_genomes(gen, dest_dir):
 
 
 # -----------------------------------------------------------------------------
-
 
 def fetch_genome(gen, dest_dir):
     '''
@@ -501,6 +503,7 @@ def get_wgs_range(wgs_acc):
     '''
 
     wgs_range = None
+    wgs_acc_list = []
     wgs_xml_str = requests.get(ENA_XML_URL % wgs_acc).content
     wgs_xml_root = ET.fromstring(wgs_xml_str)
 
@@ -512,8 +515,175 @@ def get_wgs_range(wgs_acc):
             if xref_el.get('db') == "ENA-WGS":
                 wgs_range = xref_el.get('id')
 
+        # need to finish this
+        '''
+        wgs_range_limits = wgs_range.partition('-')
+        low = int(wgs_range_limits[0].strip()[6:])
+        high = int(wgs_range_limits[0].strip()[6:])
+
+        while low <= high:
+            wgs_acc_list.append("")
+        '''
     return wgs_range
 
+# -----------------------------------------------------------------------------
+
+
+def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
+    '''
+        Generates an lsf job command for downloading a new genome. Returns an 
+        LSF specific bsub command.
+
+        upid: Uniprot's reference proteome id
+        gca_acc: ENA's genome accession. -1 if there's no available id
+        domain: Proteome's taxonomic domain
+        exec_path: The path to the pipeline executable
+        proj_dir: The path to the project directory
+
+    '''
+
+    prot_dir = os.path.join(os.path.join(proj_dir, domain), upid)
+
+    cmd = ("bsub -M %s "
+           "-R \"rusage[mem=%s,tmp=%s]\" "
+           "-o \"/tmp/%sJ.out\" "
+           "-e \"/tmp/%sJ.err\" "
+           "-f \"%s/download.out < /tmp/%sJ.out\" "
+           "-f \"%s/download.err < /tmp/%sJ.err\" "
+           "-u \"%s\" "
+           "-Ep \"rm /tmp/$LSB_JOBID.* \" "
+           "-g %s/%s "
+           "python %s DownloadGenome --upid %s, --gca-acc %s --project-dir %s --domain %s") % (
+        gc.MEM, gc.MEM, gc.TMP_MEM, chr(37), chr(
+            37), prot_dir, chr(37), prot_dir, chr(37),
+        gc.USER_EMAIL, gc.LSF_GEN_GROUP, domain, exec_path, upid, gca_acc,
+        proj_dir, domain)
+
+    return cmd
+
+# -----------------------------------------------------------------------------
+
+
+def genome_script_generator(upid, domain, gen_size, out_dir):
+    '''
+        Generates a shell script for a proteome with ip upid under out_dir.
+        Memory is reserved according to genome size
+
+        upid: Uniprot's unique proteome id
+        domain: The domain under which a proteome has been classified
+        gen_size: The genome's size
+        out_dir: Destination directory
+    '''
+
+    # create shell script for upid within
+    fp = open(os.path.join(out_dir, upid + ".sh"), 'w')
+
+    # mem = gen_size * something might not need these for downloads
+    mem_size = 8000
+    tmp_size = gen_size * 2
+    tmp_dir = "/tmp/%s_$LSB_JOBID" % (upid)
+
+    # generate proteome destination directory
+    prot_dest_dir = os.path.join(
+        os.path.join(os.path.split(out_dir)[0], domain), upid)
+
+    fp.write("#!/bin/csh\n")
+    fp.write("#BSUB -M %s\n" % mem_size)
+    fp.write("#BSUB -R \"rusage[mem=%s,tmp=%s]\"\n" % (mem_size, tmp_size))
+
+    # create a directory using the proteomes unique id extended by jobid
+    fp.write("#BSUB -E \"mkdir -m 777 -p %s\"\n" % tmp_dir)
+    fp.write("#BSUB -o \"%s/%sJ.out\"\n" % (tmp_dir, chr(37)))
+    fp.write("#BSUB -e \"%s/%sJ.err\"\n" %
+             (tmp_dir, chr(37)))  # just the error output
+
+    fp.write("#BSUB -u \"%s\"\n" % gc.USER_EMAIL)  # email this user
+
+    # need to write files back to genome dir prot_dest_dir
+    fp.write(
+        "#BSUB -f \"%s/download.out < /tmp/%sJ/%sJ.out\"\n" % (prot_dest_dir, chr(37), chr(37)))
+
+    fp.write(
+        "#BSUB -f \"%s/download.err < /tmp/%sJ/%sJ.err\"\n" % (prot_dest_dir, chr(37), chr(37)))
+
+    # delete everything on termination or completion of job
+    fp.write("#BSUB -Ep \"rm -rf %s\"\n" % tmp_dir)
+
+    fp.write("#BSUB -g %s/%s \n\n" % (gc.LSF_GEN_GROUP % domain))
+
+    # call executable
+    fp.write("python %s %s %s \n\n" %
+             (gc.GEN_DWLD_EXEC, os.path.join(prot_dest_dir, upid + ".json"),
+              prot_dest_dir))
+
+    # copy files to destination
+    fp.write("cp %s/*.gz %s/.\n" % (tmp_dir, prot_dest_dir))
+
+# -----------------------------------------------------------------------------
+
+
+def load_upid_gca_file(upid_gca_file):
+    '''
+    Parses Uniprot's upid tsv file and exports all important information in json
+    format.
+    '''
+
+    upid_gca_dict = {}
+    upid_fp = open(upid_gca_file, 'r')
+
+    for upid_line in upid_fp:
+        upid_line = upid_line.strip().split('\t')
+
+        # add GCA accession
+        if upid_line[1] != '':
+            upid_gca_dict[upid_line[0]] = {'GCA': upid_line[1]}
+        else:
+            upid_gca_dict[upid_line[0]] = {'GCA': -1}
+
+        upid_gca_dict[upid_line[0]]['DOM'] = upid_line[2]
+
+    upid_fp.close()
+
+    return upid_gca_dict
+
+# -----------------------------------------------------------------------------
+
+
+def fetch_genome_accessions(upid, gca_acc):
+    '''
+    Fetches and returns a list of all accessions for a specific ref. proteome
+
+    upid: Uniprot's ref. proteome id
+    gca_acc: An ENA GCA accession associated with the upid (if available or -1)
+    '''
+
+    gen_accs = []
+    gca_acc = str(gca_acc)
+
+    # there's a GCA accession
+    if gca_acc != '-1':
+        gca_acc = gca_acc.split('.')[0]
+        gen_accs = extract_assembly_accs(gca_acc)
+
+    else:
+        prot_accs = proteome_rdf_scanner(upid)
+
+        # no GCA or WGS, get any accessions from proteome rdf
+        if(prot_accs['GCA'] == -1 and prot_accs['WGS'] == -1):
+            gen_accs = rdf_accession_search(upid, "/embl/")
+
+        # found a GCA accession in the rdf file
+        elif (prot_accs['GCA'] != -1 and prot_accs['WGS'] == -1):
+            gen_accs = extract_assembly_accs(prot_accs['GCA'])
+
+        # WGS found
+        elif (prot_accs['GCA'] == -1 and prot_accs['WGS'] != -1):
+            # call get_wgs_range directly here
+            gen_accs = extract_assembly_accs(prot_accs['WGS'])
+
+        # for all other cases this function will return an empty list
+
+    return gen_accs
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

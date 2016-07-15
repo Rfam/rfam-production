@@ -3,19 +3,32 @@ Created on 7 Jul 2016
 
 @author: ikalvari
 
-Usage: 
+Usage:
 
-python genome_downloader.py GenomesDownloadEngine --project-name <project name> --upid-file <upid_gca file path> --lsf False <--local-scheduler>
+python genome_downloader.py GenomesDownloadEngine --project-name <project name>
+--upid-file <upid_gca file path> --lsf <Bool> [--local-scheduler]
+
 --project-name: A string indicating the project's name
 --upid-file: The path to Uniprot's upid_gca file
 --lsf: False (local), True (cluster)
 --local-scheduler to run the pipeline with the local scheduler
 
-Calling the Central scheduler:
-luigid --background --pidfile <PATH_TO_PIDFILE> --logdir <PATH_TO_LOGDIR> --state-path <PATH_TO_STATEFILE>
+Running the Central scheduler on the cluster:
 
+1. Get an interactive node using bsub
+    bsub -Is $SHELL
 
-luigi.cfg - See Luigi's Configuration (http://luigi.readthedocs.io/en/stable/configuration.html)
+2. Start the central scheduler
+    luigid
+
+3. ssh to the interactive node
+
+4. Run the pipeline
+python genome_downloader.py GenomesDownloadEngine --project-name <project name>
+--upid-file <upid_gca file path> --lsf True
+
+luigi.cfg - See Luigi's Configuration
+(http://luigi.readthedocs.io/en/stable/configuration.html)
 '''
 
 # ---------------------------------IMPORTS-------------------------------------

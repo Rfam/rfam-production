@@ -546,18 +546,15 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
 
     cmd = ("bsub -M %s "
            "-R \"rusage[mem=%s,tmp=%s]\" "
-           "-o \"/tmp/%sJ.out\" "
-           "-e \"/tmp/%sJ.err\" "
-           "-f \"%s/download.out < /tmp/%sJ.out\" "
-           "-f \"%s/download.err < /tmp/%sJ.err\" "
+           "-o \"%s\" "
+           "-e \"%s\" "
            "-u \"%s\" "
-           "-Ep \"rm /tmp/$LSB_JOBID.* \" "
+           "-Ep \"rm -rf luigi\" "
            "-g %s/%s "
-           "python %s DownloadGenome --upid %s, --gca-acc %s --project-dir %s --domain %s") % (
-        gc.MEM, gc.MEM, gc.TMP_MEM, chr(37), chr(
-            37), prot_dir, chr(37), prot_dir, chr(37),
-        gc.USER_EMAIL, gc.LSF_GEN_GROUP, domain, exec_path, upid, gca_acc,
-        proj_dir, domain)
+           "python %s DownloadGenome --upid %s --gca-acc %s --project-dir %s --domain %s") % (
+        gc.MEM, gc.MEM, gc.TMP_MEM, os.path.join(
+            prot_dir, "download.out"), os.path.join(prot_dir, "download.err"),
+        gc.USER_EMAIL, gc.LSF_GEN_GROUP, domain, exec_path, upid, gca_acc, proj_dir, domain)
 
     return cmd
 
@@ -684,7 +681,39 @@ def fetch_genome_accessions(upid, gca_acc):
         # for all other cases this function will return an empty list
 
     return gen_accs
+
 # -----------------------------------------------------------------------------
+
+
+def fetch_wgs_range_accs(wgs_range):
+    """
+    Splits the WGS range into distinct accessions for metadata retrieval
+
+    wgs_range: A valid ENA-WGS set range
+    """
+
+    wgs_accs = []
+
+    wgs_end_points = wgs_range.strip().split("-")
+    wgs_prefix = wgs_end_points[0][0:5]
+
+    wgs_start = int(wgs_end_points[0][5:])
+    wgs_end = int(wgs_end_points[1][5:])
+
+    wgs_acc = ''
+
+    while wgs_start < wgs_end:
+        wgs_acc = wgs_prefix + str(wgs_start)
+        wgs_accs.append(wgs_acc)
+        wgs_start += 1
+        wgs_acc = ''
+
+    # include the last accession
+    wgs_accs.append(wgs_end_points[1])
+
+    return wgs_accs
+# -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
     pass

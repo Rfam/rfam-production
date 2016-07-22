@@ -56,9 +56,6 @@ class UPAccessionLoader(luigi.Task):
     and the genome's domain.
     """
 
-    # the 1st task to be executed
-    priority = 9
-
     project_dir = luigi.Parameter()
     upid_gca_file = luigi.Parameter()
 
@@ -89,8 +86,6 @@ class DownloadFile(luigi.Task):
     Downloads a file for a specific accession
     """
 
-    priority = 8
-
     ena_acc = luigi.Parameter()
     prot_dir = luigi.Parameter()
 
@@ -113,7 +108,6 @@ class DownloadFile(luigi.Task):
 
 
 class DownloadGenome(luigi.Task):
-
     """
     Downloads all genome related accessions
     """
@@ -125,8 +119,6 @@ class DownloadGenome(luigi.Task):
     upid_dir = None
     acc_data = []
     db_entries = {}
-
-    priority = 7
 
     def setup_proteome_dir(self):
         """
@@ -165,8 +157,6 @@ class GenomesDownloadEngine(luigi.Task):
     This Task will initialize project environment parse Uniprot's the UPID_GCA
     file and call DownloadGenome Task for each available reference proteome
     """
-
-    priority = 6
 
     project_name = luigi.Parameter()  # a project name for the download
     upid_file = luigi.Parameter()  # uniprot's upid_gca file

@@ -36,8 +36,10 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
     fields = {}
     tmp_acc = assembly_acc
 
+    '''
     if tmp_acc.find('.') != -1:
         tmp_acc = tmp_acc.partition('.')[0]
+    '''
 
     assembly_xml = requests.get(gc.ENA_XML_URL % tmp_acc).content
 
@@ -47,9 +49,7 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
     fields["gca_acc"] = assembly.find("IDENTIFIERS").find("PRIMARY_ID").text
 
     version = fields["gca_acc"].partition('.')[2]
-    fields["gca_version"] = version
-
-    # fields["assembly_type"] = "GCA"  # GCA xml specific munction
+    fields["gca_version"] = int(version)
 
     fields["ensembl_id"] = None  # add these as a post-processing step
     fields["assembly_name"] = assembly.find("NAME").text
@@ -66,7 +66,7 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
             wgs_fields.find("PREFIX").text, wgs_fields.find("VERSION").text)
 
         fields["wgs_acc"] = wgs_acc
-        fields["wgs_version"] = wgs_fields.find("VERSION").text
+        fields["wgs_version"] = int(wgs_fields.find("VERSION").text)
     else:
         fields["wgs_acc"] = None
         fields["wgs_version"] = None
@@ -80,8 +80,8 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
     attributes = fetch_assembly_attributes(
         assembly.find("ASSEMBLY_ATTRIBUTES"))
 
-    fields["total_length"] = attributes["total-length"]
-    fields["ungapped_length"] = attributes["ungapped-length"]
+    fields["total_length"] = int(attributes["total-length"])
+    fields["ungapped_length"] = int(attributes["ungapped-length"])
 
     genome_desc = assembly.find("DESCRIPTION").text
 
@@ -91,7 +91,7 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
         fields["circular"] = 0
 
     taxid = assembly.find("TAXON")
-    fields["ncbi_id"] = taxid.find("TAXON_ID").text
+    fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)
 
     fields["scientific_name"] = taxid.find("SCIENTIFIC_NAME").text
 
@@ -101,9 +101,9 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
         fields["common_name"] = taxid.find("COMMON_NAME").text
     fields["kingdom"] = kingdom
 
-    fields["num_gen_regions"] = attributes["count-regions"]
-    fields["num_rfam_regions"] = None  # post process
-    fields["num_families"] = None  # post process
+    fields["num_gen_regions"] = int(attributes["count-regions"])
+    fields["num_rfam_regions"] = None
+    fields["num_families"] = None
 
     # this takes the date of the entry is created
     entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -114,12 +114,9 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
     genome_entry["pk"] = upid
     genome_entry["fields"] = fields
 
-    # perhaps return true of false whether the assembly is contig level or not
     return genome_entry
 
 # -----------------------------------------------------------------------------
-
-# rename this to something else
 
 
 def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
@@ -136,6 +133,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
     assembly_accs = []
     fields = {}
     entry = {}
+    regions = None
 
     # load accession regions
     if reg_ftp_link is not None:
@@ -153,22 +151,27 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
         accession = acc_line.strip().split('\t')
 
         entry["model"] = gc.GENSEQ_MODEL
-        entry["pk"] = accession[0]  # seq_acc
+        entry["pk"] = str(accession[0])  # seq_acc
 
+        acc_meta = fetch_gca_acc_metadata(accession[0])
+
+        fields["ncbi_id"] = acc_meta["ncbi_id"]
+        fields["description"] = acc_meta["description"]
         fields["upid"] = upid
         fields["gen_acc"] = gca_acc
-        fields["seq_version"] = accession[0].partition('.')[2]
-        fields["seq_length"] = accession[2]
+        fields["seq_version"] = int(accession[0].partition('.')[2])
+        fields["seq_length"] = int(accession[2])
         fields["seq_role"] = accession[3]  # patch, loci etc
+
         # need to parse the regions file for these fields
         if reg_ftp_link is not None and (accession[0] in regions.keys()):
-            fields["seq_start"] = regions[accession[0]][0]
-            fields["seq_end"] = regions[accession[0]][1]
+            fields["seq_start"] = int(regions[accession[0]][0])
+            fields["seq_end"] = int(regions[accession[0]][1])
         else:
             fields["seq_start"] = 0
             fields["seq_end"] = 0
 
-        fields["type"] = accession[5]  # replicon_type
+        fields["mol_type"] = acc_meta["mol_type"]
         # primary, PATCHES, ALT_REF_LOCI_1
         fields["assembly_unit"] = accession[6]
         # this takes the date of the entry is created
@@ -236,14 +239,21 @@ def fetch_wgs_metadata(upid, assembly_acc, kingdom):
     fields["gca_version"] = None
 
     fields["wgs_acc"] = entry.get("accession")
-    fields["wgs_version"] = entry.get("version")
+    fields["wgs_version"] = int(entry.get("version"))
     fields["ensembl_id"] = None  # post processing
 
     # fetching assembly name out of entry's comment lines
 
-    assembly_name = get_wgs_assembly_name(
-        entry.find("comment").text)
-    fields["assembly_name"] = assembly_name
+    entry_cmnt = None
+    entry_cmnt = entry.find("comment")
+
+    if entry_cmnt is not None:
+        assembly_name = get_wgs_assembly_name(
+            entry.find("comment").text)
+        fields["assembly_name"] = assembly_name
+
+    else:
+        fields["assembly_name"] = None
 
     if entry.get("topology") == "linear":
         fields["circular"] = 0
@@ -259,10 +269,10 @@ def fetch_wgs_metadata(upid, assembly_acc, kingdom):
     taxon = entry.find("feature").find("taxon")
     fields["scientific_name"] = taxon.get("scientificName")
     fields["common_name"] = None
-    fields["ncbi_id"] = taxon.get("taxId")
+    fields["ncbi_id"] = int(taxon.get("taxId"))
 
     fields["total_length"] = None
-    fields["ungapped_lenth"] = None
+    fields["ungapped_length"] = None
 
     fields["num_gen_regions"] = None
 
@@ -272,7 +282,7 @@ def fetch_wgs_metadata(upid, assembly_acc, kingdom):
     # this takes the date of the entry is created
     entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     fields["created"] = entry_date
-    fields["updated"] = entry_date  # when adding a new genome
+    fields["updated"] = entry_date
 
     wgs_entry["model"] = gc.GENOME_MODEL
     wgs_entry["pk"] = upid
@@ -323,10 +333,14 @@ def fetch_wgs_acc_metadata(wgs_acc):
     acc_xml = ET.fromstring(response)
     entry = acc_xml.find("entry")
 
-    fields["seq_version"] = entry.get("entryVersion")
+    fields["seq_version"] = int(entry.get("entryVersion"))
     fields["seq_length"] = int(entry.get("sequenceLength"))
     fields["seq_role"] = "contig"
-    fields["type"] = entry.get("moleculeType")
+    fields["mol_type"] = entry.get("moleculeType")
+
+    taxon_node = None
+    taxon_node = entry.find("feature").find("taxon")
+    fields["ncbi_id"] = int(taxon_node.get("taxId"))
 
     loc = entry.find("reference").get("location")
 
@@ -335,7 +349,7 @@ def fetch_wgs_acc_metadata(wgs_acc):
     fields["seq_start"] = int(loc[0])
     fields["seq_end"] = int(loc[1])
     fields["assembly_unit"] = None  # need to check this one
-    fields["description"] = ''
+    fields["description"] = entry.find("description").text
 
     # this takes the date of the entry is created
     entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -384,8 +398,32 @@ def fetch_assembly_attributes(attrs_node):
         attribute_values[tag] = value
 
     return attribute_values
+
+# -----------------------------------------------------------------------------
+
+
+def fetch_gca_acc_metadata(accession):
+    """
+    Fetch accession metadata and return a dictionary with ncbi_id, molecule's
+    type, description
+
+    accession: A valid GCA related ENA accession
+    """
+
+    metadata = {}
+    xml_str = requests.get(gc.ENA_XML_URL % accession).content
+
+    xml_root = ET.fromstring(xml_str)
+
+    entry = xml_root.find("entry")
+
+    metadata["mol_type"] = entry.get("moleculeType")
+    metadata["description"] = entry.find("description").text
+    metadata["ncbi_id"] = int(entry.find("feature").find("taxon").get("taxId"))
+
+    return metadata
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass

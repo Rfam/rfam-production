@@ -328,6 +328,7 @@ def fetch_wgs_acc_metadata(wgs_acc):
 
     wgs_acc: A valid ENA wgs accession
     """
+
     fields = {}
     response = requests.get(gf.ENA_XML_URL % wgs_acc).content
     acc_xml = ET.fromstring(response)
@@ -342,12 +343,19 @@ def fetch_wgs_acc_metadata(wgs_acc):
     taxon_node = entry.find("feature").find("taxon")
     fields["ncbi_id"] = int(taxon_node.get("taxId"))
 
-    loc = entry.find("reference").get("location")
+    location = None
+    refs = None
+    refs = entry.findall("reference")
 
-    loc = loc.strip().split('-')
+    for ref in refs:
+        location = ref.get("location")
+        if location is not None:
+            break
 
-    fields["seq_start"] = int(loc[0])
-    fields["seq_end"] = int(loc[1])
+    location = location.strip().split('-')
+
+    fields["seq_start"] = int(location[0])
+    fields["seq_end"] = int(location[1])
     fields["assembly_unit"] = None  # need to check this one
     fields["description"] = entry.find("description").text
 

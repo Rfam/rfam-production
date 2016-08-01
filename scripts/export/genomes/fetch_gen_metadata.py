@@ -22,7 +22,7 @@ from config import gen_config as gc
 # -----------------------------------------------------------------------------
 
 
-def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
+def fetch_gca_data(upid, assembly_acc, kingdom):
     """
     Parses ENA GCA accession xml, and returns the accession's data in the
     form of a dictionary
@@ -46,7 +46,12 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
     root = ET.fromstring(assembly_xml)
     assembly = root.find("ASSEMBLY")
 
-    fields["gca_acc"] = assembly.find("IDENTIFIERS").find("PRIMARY_ID").text
+    primary_id = assembly.find("IDENTIFIERS").find("PRIMARY_ID")
+
+    if primary_id is not None:
+        fields["gca_acc"] = primary_id.text
+    else:
+        fields["gca_acc"] = primary_id
 
     version = fields["gca_acc"].partition('.')[2]
     fields["gca_version"] = int(version)
@@ -85,10 +90,13 @@ def fetch_gca_data(upid, assembly_acc, kingdom):  # split into two
 
     genome_desc = assembly.find("DESCRIPTION").text
 
-    if genome_desc.find("circular") != -1:
-        fields["circular"] = 1
+    if genome_desc is not None:
+        if genome_desc.find("circular") != -1:
+            fields["circular"] = 1
+        else:
+            fields["circular"] = 0
     else:
-        fields["circular"] = 0
+        fields["circular"] = None
 
     taxid = assembly.find("TAXON")
     fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)
@@ -150,38 +158,47 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
     for acc_line in accessions:
         accession = acc_line.strip().split('\t')
 
-        entry["model"] = gc.GENSEQ_MODEL
-        entry["pk"] = str(accession[0])  # seq_acc
+        if (accession[0].find('.') != -1):
+            entry["model"] = gc.GENSEQ_MODEL
+            entry["pk"] = str(accession[0])  # seq_acc
 
-        acc_meta = fetch_gca_acc_metadata(accession[0])
+            if len(accession) == 7:
+                acc_meta = fetch_gca_acc_metadata(accession[0])
 
-        fields["ncbi_id"] = acc_meta["ncbi_id"]
-        fields["description"] = acc_meta["description"]
-        fields["upid"] = upid
-        fields["gen_acc"] = gca_acc
-        fields["seq_version"] = int(accession[0].partition('.')[2])
-        fields["seq_length"] = int(accession[2])
-        fields["seq_role"] = accession[3]  # patch, loci etc
+                fields["ncbi_id"] = acc_meta["ncbi_id"]
+                fields["description"] = acc_meta["description"]
+                fields["upid"] = upid
+                fields["gen_acc"] = gca_acc
+                fields["seq_version"] = int(accession[0].partition('.')[2])
+                fields["seq_length"] = int(accession[2])
+                fields["seq_role"] = accession[3]  # patch, loci etc
 
-        # need to parse the regions file for these fields
-        if reg_ftp_link is not None and (accession[0] in regions.keys()):
-            fields["seq_start"] = int(regions[accession[0]][0])
-            fields["seq_end"] = int(regions[accession[0]][1])
+                # need to parse the regions file for these fields
+                if reg_ftp_link is not None and (accession[0] in regions.keys()):
+                    fields["seq_start"] = int(regions[accession[0]][0])
+                    fields["seq_end"] = int(regions[accession[0]][1])
+                else:
+                    fields["seq_start"] = 0
+                    fields["seq_end"] = 0
+
+                fields["mol_type"] = acc_meta["mol_type"]
+                # primary, PATCHES, ALT_REF_LOCI_1
+                fields["assembly_unit"] = accession[6]
+                # this takes the date of the entry is created
+                entry_date = datetime.datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S")
+                fields["created"] = entry_date
+                fields["updated"] = entry_date
+
+            elif(len(accession) < 7 and accession[0].find('.') != -1):
+                fields = fetch_wgs_acc_metadata(accession[0])
+
         else:
-            fields["seq_start"] = 0
-            fields["seq_end"] = 0
-
-        fields["mol_type"] = acc_meta["mol_type"]
-        # primary, PATCHES, ALT_REF_LOCI_1
-        fields["assembly_unit"] = accession[6]
-        # this takes the date of the entry is created
-        entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        fields["created"] = entry_date
-        fields["updated"] = entry_date
+            # skip cases no accession is provided
+            pass
 
         entry["fields"] = fields
         assembly_accs.append(entry)
-
         fields = {}
         entry = {}
 
@@ -352,10 +369,14 @@ def fetch_wgs_acc_metadata(wgs_acc):
         if location is not None:
             break
 
-    location = location.strip().split('-')
+    if location is not None:
+        location = location.strip().split('-')
+        fields["seq_start"] = int(location[0])
+        fields["seq_end"] = int(location[1])
+    else:
+        fields["seq_start"] = 0
+        fields["seq_end"] = 0
 
-    fields["seq_start"] = int(location[0])
-    fields["seq_end"] = int(location[1])
     fields["assembly_unit"] = None  # need to check this one
     fields["description"] = entry.find("description").text
 
@@ -425,6 +446,12 @@ def fetch_gca_acc_metadata(accession):
 
     entry = xml_root.find("entry")
 
+    '''
+    mol_type = None
+    mol_type = entry.get("moleculeType")
+    '''
+
+    # None if no moleculeType found
     metadata["mol_type"] = entry.get("moleculeType")
     metadata["description"] = entry.find("description").text
     metadata["ncbi_id"] = int(entry.find("feature").find("taxon").get("taxId"))
@@ -433,5 +460,37 @@ def fetch_gca_acc_metadata(accession):
 
 # -----------------------------------------------------------------------------
 
+
+def fetch_assembly_links(gca_acc):
+    """
+    Retrieves and returns a dictionary with all ftp links found in the GCA xml
+    file.
+
+    gca_acc: A valid ENA GCA accession
+    """
+
+    gca_ftp_links = {}
+
+    response = requests.get(gc.ENA_XML_URL % gca_acc).content
+
+    xml = ET.fromstring(response)
+
+    # fetch assembly links node
+    assembly_links = xml.find("ASSEMBLY").find(
+        "ASSEMBLY_LINKS").findall("ASSEMBLY_LINK")
+
+    # loop over all available links
+    for link in assembly_links:
+        label = link.find("URL_LINK").find("LABEL").text.replace(' ', '_')
+        url = link.find("URL_LINK").find("URL").text
+
+        gca_ftp_links[label] = url
+
+        label = None
+        url = None
+
+    return gca_ftp_links
+
+# -----------------------------------------------------------------------------
 if __name__ == '__main__':
     pass

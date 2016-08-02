@@ -52,8 +52,8 @@ if __name__ == '__main__' and __package__ is None:
 
 class UPAccessionLoader(luigi.Task):
     """
-    Reads Uniprot's UPID_GCA file and generates a dictionary of UPID-GCA pairs
-    and the genome's domain.
+    Generates a dictionary of UPID-GCA pairs and the genome's domain by either
+    parsing Uniprot's upid_gca file or using Uniprot's REST API.
     """
 
     project_dir = luigi.Parameter()
@@ -65,7 +65,14 @@ class UPAccessionLoader(luigi.Task):
         json format
         """
 
-        id_pairs = gflib.load_upid_gca_file(self.upid_gca_file)
+        id_pairs = None
+
+        # load accessions from upid_gca file
+        if self.upid_gca_file is None:
+            id_pairs = gflib.load_upid_gca_pairs()
+        # fetch accessions from Uniprots REST API
+        else:
+            id_pairs = gflib.load_upid_gca_file(self.upid_gca_file)
 
         outfile = self.output().open('w')
         json.dump(id_pairs, outfile)
@@ -77,6 +84,18 @@ class UPAccessionLoader(luigi.Task):
         """
         out_file = os.path.join(self.project_dir, "upid_gca_dict.json")
         return luigi.LocalTarget(out_file)
+
+# -----------------------------------------------------------------------------
+
+
+class GenerateGenomeDBDump(luigi.Task):
+    """
+    Creates a Genome Dump based on the accession provided to populate Rfam's
+    genome table
+    """
+
+    pass
+
 
 # -----------------------------------------------------------------------------
 
@@ -200,6 +219,8 @@ class GenomesDownloadEngine(luigi.Task):
         Initializes project directory and calls UPAccessionLoader task to load
         upid-gca accession pairs into a json object
         """
+        if self.upid_file == 'None':
+            self.upid_file = None
 
         self.initialize_project()
 
@@ -257,4 +278,4 @@ class GenomesDownloadEngine(luigi.Task):
 
 if __name__ == '__main__':
     # defining main pipeline's main task
-    luigi.run(GenomesDownloadEngine)
+    luigi.run()

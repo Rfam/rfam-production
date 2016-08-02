@@ -56,7 +56,9 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
     version = fields["gca_acc"].partition('.')[2]
     fields["gca_version"] = int(version)
 
-    fields["ensembl_id"] = None  # add these as a post-processing step
+    # add ensembl fields as a post-processing step
+    fields["ensembl_id"] = None
+    fields["ensembl_source"] = None
     fields["assembly_name"] = assembly.find("NAME").text
 
     ass_links = None

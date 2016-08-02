@@ -445,14 +445,12 @@ def assembly_report_parser(report_url):
 
     accessions = []
 
-    # switch from ftp to http to fetch assembly report on the go
-    link_parts = ["http"]
-    link_parts.extend(report_url.partition(':')[1:])
+    # switch from ftp to http to fetch assembly accessions on the go
 
-    http_link = ''.join(link_parts)
+    report_url = report_url.replace("ftp://", "http://")
 
     # fetch assembly report file contents and store in a list, omitting header
-    ass_rep_file = requests.get(http_link).content.split('\n')[1:]
+    ass_rep_file = requests.get(report_url).content.split('\n')[1:]
 
     # if empty line, remove it
     if ass_rep_file[len(ass_rep_file) - 1] == '':
@@ -461,7 +459,8 @@ def assembly_report_parser(report_url):
     # parse list and export assembly accessions
     for line in ass_rep_file:
         line = line.strip().split('\t')
-        accessions.append(line[0])
+        if line[0].find('.') != -1:
+            accessions.append(line[0])
 
     return accessions
 

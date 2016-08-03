@@ -59,15 +59,19 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
     # add ensembl fields as a post-processing step
     fields["ensembl_id"] = None
     fields["ensembl_source"] = None
+
     fields["assembly_name"] = assembly.find("NAME").text
 
-    ass_links = None
-    ass_level = assembly.find("ASSEMBLY_LEVEL").text
-    ass_links = assembly.find("ASSEMBLY_LINKS")
+    assembly_links = None
+    assembly_level = assembly.find("ASSEMBLY_LEVEL").text
+    assembly_links = assembly.find("ASSEMBLY_LINKS")
 
-    fields["assembly_level"] = ass_level
+    if assembly_level == "complete genome":
+        assembly_level = assembly_level.replace(' ', '-')
 
-    if ass_level == "contig" and ass_links is None:
+    fields["assembly_level"] = assembly_level
+
+    if assembly_level == "contig" and assembly_links is None:
         wgs_fields = assembly.find("WGS_SET")
         wgs_acc = gf.get_wgs_set_accession(
             wgs_fields.find("PREFIX").text, wgs_fields.find("VERSION").text)

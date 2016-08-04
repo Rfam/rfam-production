@@ -191,7 +191,7 @@ def fetch_genome_acc(prot):
     # single ref proteome accession
     else:
         proteome = string.strip(prot)
-        rdf_url = "http://www.uniprot.org/proteomes/%s.rdf" % (proteome)
+        rdf_url = gc.PROTEOME_URL % (proteome)
         res_handle = urllib.urlopen(rdf_url)
         if res_handle.getcode() == httplib.OK:
             gen_acc = extract_genome_acc(res_handle)
@@ -202,7 +202,7 @@ def fetch_genome_acc(prot):
     # do this for files and lists
     for proteome in ref_prot_list:
         proteome = string.strip(proteome)
-        rdf_url = "http://www.uniprot.org/proteomes/%s.rdf" % (proteome)
+        rdf_url = gc.PROTEOME_URL % (proteome)
         res_handle = urllib.urlopen(rdf_url)
         if res_handle.getcode() == httplib.OK:
             gen_acc = extract_genome_acc(res_handle)

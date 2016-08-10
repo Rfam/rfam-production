@@ -511,15 +511,6 @@ def get_wgs_range(wgs_acc):
             if xref_el.get("db") == "ENA-WGS":
                 wgs_range = xref_el.get("id")
 
-        # need to finish this
-        '''
-        wgs_range_limits = wgs_range.partition('-')
-        low = int(wgs_range_limits[0].strip()[6:])
-        high = int(wgs_range_limits[0].strip()[6:])
-
-        while low <= high:
-            wgs_acc_list.append("")
-        '''
     return wgs_range
 
 # -----------------------------------------------------------------------------

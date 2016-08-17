@@ -208,8 +208,6 @@ class GenomesDownloadEngine(luigi.Task):
 
         self.proj_dir = os.path.join(location, self.project_name)
 
-        dom_dir = None
-
         # create project directory
         if not os.path.exists(self.proj_dir):
             os.mkdir(self.proj_dir)
@@ -221,8 +219,6 @@ class GenomesDownloadEngine(luigi.Task):
             if not os.path.exists(dom_dir):
                 os.mkdir(dom_dir)
                 os.chmod(dom_dir, 0777)
-
-            dom_dir = None
 
     def requires(self):
         """

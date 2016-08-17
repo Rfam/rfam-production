@@ -124,3 +124,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+####################
+# project specific
+####################
+
+config/rfam_local.py

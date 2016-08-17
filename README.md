@@ -16,6 +16,19 @@ and validation.
 * **Utils:** Support modules/utilities 
 
 ### **Requirements** 
+### Installation
+
+```
+# install Python dependencies
+pip install -r requirements.txt
+
+# set up Python path
+export PYTHONPATH=/path/to/the/project
+
+# create and edit configuration file (excluded from version control)
+cp config/rfam_local_template.py config/rfam_local.py
+```
+
 ---------------
 * Python 2.6 or later 
 * Json 1.1.1

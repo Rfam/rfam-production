@@ -66,7 +66,6 @@ class UPAccessionLoader(luigi.Task):
     Generate a dictionary of UPID-GCA pairs and the genome's domain by either
     parsing Uniprot's upid_gca file or using Uniprot's REST API.
     """
-
     project_dir = luigi.Parameter()
     upid_gca_file = luigi.Parameter()
 
@@ -75,7 +74,6 @@ class UPAccessionLoader(luigi.Task):
         Call load_upid_gca_file to export all upid_gca accession pairs in
         json format.
         """
-
         id_pairs = None
 
         # load accessions from upid_gca file
@@ -115,7 +113,6 @@ class DownloadFile(luigi.Task):
     """
     Download a file for a specific accession.
     """
-
     ena_acc = luigi.Parameter()
     prot_dir = luigi.Parameter()
 
@@ -123,7 +120,6 @@ class DownloadFile(luigi.Task):
         """
         Download ENA file.
         """
-
         # need to parametrise file format
         gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir)
 
@@ -141,7 +137,6 @@ class DownloadGenome(luigi.Task):
     """
     Download all genome related accessions.
     """
-
     upid = luigi.Parameter()  # uniprot's ref proteome id
     gca_acc = luigi.Parameter()  # proteome corresponding GCA accession
     project_dir = luigi.Parameter()
@@ -164,7 +159,6 @@ class DownloadGenome(luigi.Task):
         """
         Fetch genome accessions and call DownloadFile Task.
         """
-
         # generate directory for this proteome
         self.setup_proteome_dir()
 
@@ -187,7 +181,6 @@ class GenomesDownloadEngine(luigi.Task):
     Initialize project environment parse Uniprot's the UPID_GCA file
     and call DownloadGenome task for each available reference proteome.
     """
-
     project_name = luigi.Parameter()  # a project name for the download
     upid_file = luigi.Parameter()  # uniprot's upid_gca file
     lsf = luigi.Parameter()  # if True run it on lsf otherwise locally
@@ -198,7 +191,6 @@ class GenomesDownloadEngine(luigi.Task):
         Create main project directory and generate species domain subdirectories
         for proteome directories will be located.
         """
-
         location = ""
 
         if self.lsf == "True":
@@ -239,7 +231,6 @@ class GenomesDownloadEngine(luigi.Task):
         """
         Execute the pipeline.
         """
-
         location = ""
 
         if self.lsf == "True":

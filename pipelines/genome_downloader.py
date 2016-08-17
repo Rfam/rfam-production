@@ -169,7 +169,7 @@ class GenomesDownloadEngine(luigi.Task):
     Initialize project environment parse Uniprot's the UPID_GCA file
     and call DownloadGenome task for each available reference proteome.
     """
-    project_name = luigi.Parameter()  # a project name for the download
+    project_name = luigi.Parameter(default='genome-download')  # a project name for the download
     upid_file = luigi.Parameter(default=None)  # uniprot's upid_gca file
     lsf = luigi.BoolParameter(default=False)  # if True run on lsf otherwise run locally
     proj_dir = ''

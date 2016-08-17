@@ -16,13 +16,10 @@ Download reference genome sequences.
 
 Usage:
 
-python genome_downloader.py GenomesDownloadEngine --project-name <project name>
---upid-file <upid_gca file path> --lsf <Bool> [--local-scheduler]
+python genome_downloader.py GenomesDownloadEngine
 
---project-name: A string indicating the project's name
---upid-file: The path to Uniprot's upid_gca file
---lsf (optional): if specified, run on the cluster. By default, run locally.
---local-scheduler to run the pipeline with the local scheduler
+To see more information about available options run
+python genome_downloader.py GenomesDownloadEngine --help
 
 Running the Central scheduler on the cluster:
 
@@ -169,9 +166,12 @@ class GenomesDownloadEngine(luigi.Task):
     Initialize project environment parse Uniprot's the UPID_GCA file
     and call DownloadGenome task for each available reference proteome.
     """
-    project_name = luigi.Parameter(default='genome-download')  # a project name for the download
-    upid_file = luigi.Parameter(default=None)  # uniprot's upid_gca file
-    lsf = luigi.BoolParameter(default=False)  # if True run on lsf otherwise run locally
+    project_name = luigi.Parameter(default='genome-download',
+        description='Files will be stored in LOC_PATH/project_name folder')
+    upid_file = luigi.Parameter(default=None,
+        description='UniProt upid_gca file. Use UniProt REST API by default')
+    lsf = luigi.BoolParameter(default=False,
+        description='If specified then run on lsf, otherwise run locally')
     proj_dir = ''
 
     def initialize_project(self):

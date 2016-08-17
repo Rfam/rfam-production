@@ -21,7 +21,7 @@ python genome_downloader.py GenomesDownloadEngine --project-name <project name>
 
 --project-name: A string indicating the project's name
 --upid-file: The path to Uniprot's upid_gca file
---lsf: False (local), True (cluster)
+--lsf (optional): if specified, run on the cluster. By default, run locally.
 --local-scheduler to run the pipeline with the local scheduler
 
 Running the Central scheduler on the cluster:
@@ -171,7 +171,7 @@ class GenomesDownloadEngine(luigi.Task):
     """
     project_name = luigi.Parameter()  # a project name for the download
     upid_file = luigi.Parameter()  # uniprot's upid_gca file
-    lsf = luigi.Parameter()  # if True run it on lsf otherwise locally
+    lsf = luigi.BoolParameter(default=False)  # if True run on lsf otherwise run locally
     proj_dir = ''
 
     def initialize_project(self):

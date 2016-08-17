@@ -97,18 +97,6 @@ class UPAccessionLoader(luigi.Task):
 # -----------------------------------------------------------------------------
 
 
-class GenerateGenomeDBDump(luigi.Task):
-    """
-    Create a Genome Dump based on the accession provided to populate Rfam's
-    genome table.
-    """
-
-    pass
-
-
-# -----------------------------------------------------------------------------
-
-
 class DownloadFile(luigi.Task):
     """
     Download a file for a specific accession.

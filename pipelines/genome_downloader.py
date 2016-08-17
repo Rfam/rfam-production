@@ -63,7 +63,7 @@ if __name__ == '__main__' and __package__ is None:
 
 class UPAccessionLoader(luigi.Task):
     """
-    Generates a dictionary of UPID-GCA pairs and the genome's domain by either
+    Generate a dictionary of UPID-GCA pairs and the genome's domain by either
     parsing Uniprot's upid_gca file or using Uniprot's REST API.
     """
 
@@ -72,8 +72,8 @@ class UPAccessionLoader(luigi.Task):
 
     def run(self):
         """
-        Calls load_upid_gca_file to export all upid_gca accession pairs in
-        json format
+        Call load_upid_gca_file to export all upid_gca accession pairs in
+        json format.
         """
 
         id_pairs = None
@@ -101,8 +101,8 @@ class UPAccessionLoader(luigi.Task):
 
 class GenerateGenomeDBDump(luigi.Task):
     """
-    Creates a Genome Dump based on the accession provided to populate Rfam's
-    genome table
+    Create a Genome Dump based on the accession provided to populate Rfam's
+    genome table.
     """
 
     pass
@@ -113,7 +113,7 @@ class GenerateGenomeDBDump(luigi.Task):
 
 class DownloadFile(luigi.Task):
     """
-    Downloads a file for a specific accession
+    Download a file for a specific accession.
     """
 
     ena_acc = luigi.Parameter()
@@ -121,7 +121,7 @@ class DownloadFile(luigi.Task):
 
     def run(self):
         """
-        Download ENA file
+        Download ENA file.
         """
 
         # need to parametrise file format
@@ -129,7 +129,7 @@ class DownloadFile(luigi.Task):
 
     def output(self):
         """
-        Check if file exists
+        Check if file exists.
         """
         return luigi.LocalTarget(os.path.join(self.prot_dir,
                                               self.ena_acc + ".fa.gz"))
@@ -139,7 +139,7 @@ class DownloadFile(luigi.Task):
 
 class DownloadGenome(luigi.Task):
     """
-    Downloads all genome related accessions
+    Download all genome related accessions.
     """
 
     upid = luigi.Parameter()  # uniprot's ref proteome id
@@ -152,7 +152,7 @@ class DownloadGenome(luigi.Task):
 
     def setup_proteome_dir(self):
         """
-        Setup project directory
+        Setup project directory.
         """
         self.upid_dir = os.path.join(
             os.path.join(self.project_dir, self.domain), self.upid)
@@ -162,7 +162,7 @@ class DownloadGenome(luigi.Task):
 
     def run(self):
         """
-        Fetch genome accessions and call DownloadFile Task
+        Fetch genome accessions and call DownloadFile Task.
         """
 
         # generate directory for this proteome
@@ -184,8 +184,8 @@ class DownloadGenome(luigi.Task):
 
 class GenomesDownloadEngine(luigi.Task):
     """
-    This Task will initialize project environment parse Uniprot's the UPID_GCA
-    file and call DownloadGenome Task for each available reference proteome
+    Initialize project environment parse Uniprot's the UPID_GCA file
+    and call DownloadGenome task for each available reference proteome.
     """
 
     project_name = luigi.Parameter()  # a project name for the download
@@ -195,9 +195,8 @@ class GenomesDownloadEngine(luigi.Task):
 
     def initialize_project(self):
         """
-        This function initializes the project directories. Creates ptoject main
-        directory and generates all species domain subdirs where all proteome
-        dirs will further be sorted out.
+        Create main project directory and generate species domain subdirectories
+        for proteome directories will be located.
         """
 
         location = ""
@@ -227,8 +226,8 @@ class GenomesDownloadEngine(luigi.Task):
 
     def requires(self):
         """
-        Initializes project directory and calls UPAccessionLoader task to load
-        upid-gca accession pairs into a json object
+        Initialize project directory and call UPAccessionLoader task to load
+        upid-gca accession pairs into a json object.
         """
         if self.upid_file == 'None':
             self.upid_file = None
@@ -242,7 +241,7 @@ class GenomesDownloadEngine(luigi.Task):
 
     def run(self):
         """
-        Executes the pipeline
+        Execute the pipeline.
         """
 
         location = ""

@@ -170,7 +170,7 @@ class GenomesDownloadEngine(luigi.Task):
     and call DownloadGenome task for each available reference proteome.
     """
     project_name = luigi.Parameter()  # a project name for the download
-    upid_file = luigi.Parameter()  # uniprot's upid_gca file
+    upid_file = luigi.Parameter(default=None)  # uniprot's upid_gca file
     lsf = luigi.BoolParameter(default=False)  # if True run on lsf otherwise run locally
     proj_dir = ''
 
@@ -205,9 +205,6 @@ class GenomesDownloadEngine(luigi.Task):
         Initialize project directory and call UPAccessionLoader task to load
         upid-gca accession pairs into a json object.
         """
-        if self.upid_file == 'None':
-            self.upid_file = None
-
         self.initialize_project()
 
         return {

@@ -370,7 +370,7 @@ def download_genomes(gen, dest_dir):
 def fetch_genome(gen, dest_dir):
     """
     Downloads and parses xml file of the given genome accession (gen), and
-    downloads all chromosome files in fasta format in destination directory 
+    downloads all chromosome files in fasta format in destination directory
     (dest_dir)
     The xml file is removed after completion
 

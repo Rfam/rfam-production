@@ -1,17 +1,25 @@
 """
-Created on 7 Jul 2016
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
+"""
+Download reference genome sequences.
 
 Usage:
 
-python genome_downloader.py GenomesDownloadEngine --project-name <project name>
---upid-file <upid_gca file path> --lsf <Bool> [--local-scheduler]
+python genome_downloader.py GenomesDownloadEngine
 
---project-name: A string indicating the project's name
---upid-file: The path to Uniprot's upid_gca file
---lsf: False (local), True (cluster)
---local-scheduler to run the pipeline with the local scheduler
+To see more information about available options run
+python genome_downloader.py GenomesDownloadEngine --help
 
 Running the Central scheduler on the cluster:
 
@@ -52,19 +60,17 @@ if __name__ == '__main__' and __package__ is None:
 
 class UPAccessionLoader(luigi.Task):
     """
-    Generates a dictionary of UPID-GCA pairs and the genome's domain by either
+    Generate a dictionary of UPID-GCA pairs and the genome's domain by either
     parsing Uniprot's upid_gca file or using Uniprot's REST API.
     """
-
     project_dir = luigi.Parameter()
     upid_gca_file = luigi.Parameter()
 
     def run(self):
         """
-        Calls load_upid_gca_file to export all upid_gca accession pairs in
-        json format
+        Call load_upid_gca_file to export all upid_gca accession pairs in
+        json format.
         """
-
         id_pairs = None
 
         # load accessions from upid_gca file
@@ -88,37 +94,23 @@ class UPAccessionLoader(luigi.Task):
 # -----------------------------------------------------------------------------
 
 
-class GenerateGenomeDBDump(luigi.Task):
-    """
-    Creates a Genome Dump based on the accession provided to populate Rfam's
-    genome table
-    """
-
-    pass
-
-
-# -----------------------------------------------------------------------------
-
-
 class DownloadFile(luigi.Task):
     """
-    Downloads a file for a specific accession
+    Download a file for a specific accession.
     """
-
     ena_acc = luigi.Parameter()
     prot_dir = luigi.Parameter()
 
     def run(self):
         """
-        Download ENA file
+        Download ENA file.
         """
-
         # need to parametrise file format
         gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir)
 
     def output(self):
         """
-        Check if file exists
+        Check if file exists.
         """
         return luigi.LocalTarget(os.path.join(self.prot_dir,
                                               self.ena_acc + ".fa.gz"))
@@ -128,9 +120,8 @@ class DownloadFile(luigi.Task):
 
 class DownloadGenome(luigi.Task):
     """
-    Downloads all genome related accessions
+    Download all genome related accessions.
     """
-
     upid = luigi.Parameter()  # uniprot's ref proteome id
     gca_acc = luigi.Parameter()  # proteome corresponding GCA accession
     project_dir = luigi.Parameter()
@@ -141,7 +132,7 @@ class DownloadGenome(luigi.Task):
 
     def setup_proteome_dir(self):
         """
-        Setup project directory
+        Setup project directory.
         """
         self.upid_dir = os.path.join(
             os.path.join(self.project_dir, self.domain), self.upid)
@@ -151,9 +142,8 @@ class DownloadGenome(luigi.Task):
 
     def run(self):
         """
-        Fetch genome accessions and call DownloadFile Task
+        Fetch genome accessions and call DownloadFile Task.
         """
-
         # generate directory for this proteome
         self.setup_proteome_dir()
 
@@ -173,22 +163,22 @@ class DownloadGenome(luigi.Task):
 
 class GenomesDownloadEngine(luigi.Task):
     """
-    This Task will initialize project environment parse Uniprot's the UPID_GCA
-    file and call DownloadGenome Task for each available reference proteome
+    Initialize project environment parse Uniprot's the UPID_GCA file
+    and call DownloadGenome task for each available reference proteome.
     """
-
-    project_name = luigi.Parameter()  # a project name for the download
-    upid_file = luigi.Parameter()  # uniprot's upid_gca file
-    lsf = luigi.Parameter()  # if True run it on lsf otherwise locally
+    project_name = luigi.Parameter(default='genome-download',
+        description='Files will be stored in LOC_PATH/project_name folder')
+    upid_file = luigi.Parameter(default=None,
+        description='UniProt upid_gca file. Use UniProt REST API by default')
+    lsf = luigi.BoolParameter(default=False,
+        description='If specified then run on lsf, otherwise run locally')
     proj_dir = ''
 
     def initialize_project(self):
         """
-        This function initializes the project directories. Creates ptoject main
-        directory and generates all species domain subdirs where all proteome
-        dirs will further be sorted out.
+        Create main project directory and generate species domain subdirectories
+        for proteome directories will be located.
         """
-
         location = ""
 
         if self.lsf == "True":
@@ -197,8 +187,6 @@ class GenomesDownloadEngine(luigi.Task):
             location = gc.LOC_PATH
 
         self.proj_dir = os.path.join(location, self.project_name)
-
-        dom_dir = None
 
         # create project directory
         if not os.path.exists(self.proj_dir):
@@ -212,16 +200,11 @@ class GenomesDownloadEngine(luigi.Task):
                 os.mkdir(dom_dir)
                 os.chmod(dom_dir, 0777)
 
-            dom_dir = None
-
     def requires(self):
         """
-        Initializes project directory and calls UPAccessionLoader task to load
-        upid-gca accession pairs into a json object
+        Initialize project directory and call UPAccessionLoader task to load
+        upid-gca accession pairs into a json object.
         """
-        if self.upid_file == 'None':
-            self.upid_file = None
-
         self.initialize_project()
 
         return {
@@ -231,9 +214,8 @@ class GenomesDownloadEngine(luigi.Task):
 
     def run(self):
         """
-        Executes the pipeline
+        Execute the pipeline.
         """
-
         location = ""
 
         if self.lsf == "True":

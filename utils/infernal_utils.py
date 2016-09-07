@@ -93,11 +93,17 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
                 sec_struct = convert_short_wuss_to_dbn(sec_struct)
 
             # write output to file
-            fp_out.write(
-                "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (seq_id, start, end, strand,
-                                                      rna_type, e_value, bit_score, sec_struct))
+            if strand == '+':
+                fp_out.write(
+                    "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (seq_id, start, end, rna_type,
+                                                          bit_score, strand, e_value, sec_struct))
+            else:
+                fp_out.write(
+                    "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (seq_id, end, start, rna_type,
+                                                          bit_score, strand, e_value, sec_struct))
 
             ss_str_list = []
+            rna_type = ''
 
         else:
             line = fp.readline()

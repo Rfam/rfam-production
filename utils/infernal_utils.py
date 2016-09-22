@@ -21,7 +21,6 @@ END = 10
 STRAND = 11
 EVAL = 2
 BSCORE = 3
-DBN_LEFT = '('
 DBN_REGEX = {r"\(|\[|<|\{": '(', r"\)|\]|>|\}": ')', r"_|-|\.|,|~|:": '.'}
 
 
@@ -37,7 +36,7 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
     rna_type = ''
     ss_str_list = []
 
-    fp = open(inf_output_file, 'r')
+    fp_in = open(inf_output_file, 'r')
 
     out_file_name = os.path.basename(inf_output_file)
 
@@ -46,7 +45,7 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
 
     fp_out = open(os.path.join(dest_dir, out_file_name + ".bed"), 'w')
 
-    line = fp.readline()
+    line = fp_in.readline()
 
     while line != '':
         # new hit
@@ -58,7 +57,7 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             # get hit region
             index = 0
             while index < 3:
-                line = fp.readline().strip()
+                line = fp_in.readline().strip()
                 index += 1
 
             # bed file fields
@@ -71,7 +70,7 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             bit_score = score_line[3]
 
             # get secondary structure
-            line = fp.readline()
+            line = fp_in.readline()
 
             while line[0:2] != '>>' and line[0] != '#':
 
@@ -82,10 +81,10 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
                     ss_str_list.append(ss_line)
 
                     if rna_type == '':  # 1st time we hit this
-                        line = fp.readline().strip()  # read next line
+                        line = fp_in.readline().strip()  # read next line
                         rna_type = line.split(' ')[0].strip()
 
-                line = fp.readline()  # read the rest
+                line = fp_in.readline()  # read the rest
 
             sec_struct = ''.join(ss_str_list)
 
@@ -106,10 +105,71 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             rna_type = ''
 
         else:
-            line = fp.readline()
+            line = fp_in.readline()
 
-    fp.close()
+    fp_in.close()
     fp_out.close()
+
+
+# --------------------------------------------------------------------------------------------------
+
+def infernal_to_rfam(inf_tblout_file, dest_dir, file_format='tsv'):
+    """
+    Parses Infernal's output file and exports results in Rfam's genome full region format
+    (tsv option is used by default)
+
+    inf_tblout_file: Infernal's output file in tabular format
+    format: This is an option whether to output results in  tabular format or create a json file
+    """
+
+    in_file = open(inf_tblout_file, 'r')
+    filename = os.path.basename(inf_tblout_file).partition('.')[0]
+
+    out_file = None
+    if file_format == "tsv":
+        out_file = open(os.path.join(dest_dir, filename + ".tsv"), 'w')
+    else:
+        out_file = open(os.path.join(dest_dir, filename + ".json"), 'w')
+
+    upid = filename
+    is_significant = 1  # always the same before clan competition
+    seq_type = "null"
+
+    line = in_file.readline().strip()
+
+    while line != '':
+        if line[0] != '#':
+            line = line.split(' ')
+            line_cont = [x for x in line if x != '']
+
+            genseq_acc = line_cont[0].split('|')
+            genseq_acc = genseq_acc[len(genseq_acc) - 1]  # get last field
+            rfam_acc = line_cont[3]
+            cm_start = line_cont[5]
+            cm_end = line_cont[6]
+            seq_start = line_cont[7]
+            seq_end = line_cont[8]
+
+            trunc = line_cont[10]
+            if trunc == "no" or trunc == '-':
+                trunc = 0
+
+            bit_score = line_cont[14]
+            evalue = line_cont[15]
+
+            out_file.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (rfam_acc, genseq_acc,
+                                                                                 upid, seq_start,
+                                                                                 seq_end, bit_score,
+                                                                                 evalue, cm_start,
+                                                                                 cm_end, trunc,
+                                                                                 seq_type, is_significant))
+            line = in_file.readline().strip()
+
+        else:
+            line = in_file.readline().strip()
+
+    in_file.close()
+    out_file.close()
 
 
 # --------------------------------------------------------------------------------------------------
@@ -130,6 +190,4 @@ def convert_short_wuss_to_dbn(ss_string):
 # --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass
-

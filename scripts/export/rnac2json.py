@@ -1,9 +1,17 @@
 #!/usr/bin/python
-'''
-Created on 24 Feb 2016
 
-@author: ikalvari
-'''
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
 import os
 import json
@@ -56,25 +64,24 @@ else:
 
 
 def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
-    '''
-        This was initially developed for processing the entire Rfam2RNAcentral
-        export with the output split to multiple output files with the number
-        of sequences per file set by the parameter no_seqs.
+    """
+    This was initially developed for processing the entire Rfam2RNAcentral
+    export with the output split to multiple output files with the number
+    of sequences per file set by the parameter no_seqs.
 
-        rfam2rnac_file:  Rfam2RNAcentral db dump
-        fasta_dir:       The path to the directory containing the fasta files
-                         of the current Rfam release
-        no_seqs:         The number of sequences to split input file to
-        out_dir:         The path to the output directory
-
-    '''
+    rfam2rnac_file:  Rfam2RNAcentral db dump
+    fasta_dir:       The path to the directory containing the fasta files
+                     of the current Rfam release
+    no_seqs:         The number of sequences to split input file to
+    out_dir:         The path to the output directory
+    """
 
     json_obj_list = []
     sequence = None
 
     # open a log file for tracking the obsolete sequences
     logging.basicConfig(
-        filename='empty_seqs.log', filemode='w', level=logging.DEBUG)
+        filename="empty_seqs.log", filemode='w', level=logging.DEBUG)
 
     rnac_fp = open(rfam2rnac_file, 'r')
     filename = os.path.basename(rfam2rnac_file).partition('.')[0]
@@ -100,7 +107,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             seq_id = entry[SEQACC] + '/' + \
                 entry[SEQ_START] + '-' + entry[SEQ_END]
 
-            cmd = '%s %s %s' % (ESL_PATH, fam_fa_path, seq_id)
+            cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
             seq = proc.communicate()[0]
@@ -133,7 +140,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             f_index = f_index + 1
             json_obj_list = []
 
-        cmd = ""
+        cmd = ''
 
     # if list != empty write remaining seqs to new file
     if (len(json_obj_list) > 0):
@@ -150,18 +157,18 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
 
 
 def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
-    '''
-        This is an implementation of the rnac_to_json function with the
-        difference that input is split to smaller files prior to the json
-        generation. It exports the sequences out of the Rfam's currenct version
-        of fasta files.
+    """
+    This is an implementation of the rnac_to_json function with the
+    difference that input is split to smaller files prior to the json
+    generation. It exports the sequences out of the Rfam's currenct version
+    of fasta files.
 
-        seq_dir:    The path to the directory containing multiple sequence
-                    files to be converted to json
-        fasta_dir:  The path to the directory containing the fasta files of the
-                    current Rfam release
-        out_dir:    The path to the output directory
-    '''
+    seq_dir:    The path to the directory containing multiple sequence
+                files to be converted to json
+    fasta_dir:  The path to the directory containing the fasta files of the
+                current Rfam release
+    out_dir:    The path to the output directory
+    """
 
     if(out_dir is None):
         out_dir = seq_dir
@@ -170,7 +177,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
     seq_files = filter(lambda x: string.find(x, ".out") != -1, seq_files)
 
     # open a new log file and keep track of the sequences not found in the
-    logging.basicConfig(filename=os.path.join(out_dir, 'obsolete_seqs.log'),
+    logging.basicConfig(filename=os.path.join(out_dir, "obsolete_seqs.log"),
                         filemode='w', level=logging.DEBUG)
 
     json_obj_list = []
@@ -191,7 +198,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
                 seq_id = entry[SEQACC] + '/' + \
                     entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                cmd = '%s %s %s' % (ESL_PATH, fam_fa_path, seq_id)
+                cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
 
                 proc = subprocess.Popen(
                     cmd, shell=True, stdout=subprocess.PIPE)
@@ -231,18 +238,18 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
 # -----------------------------------------------------------------------------
 
 def build_json_dict(entry, sequence):
-    '''
-        RNAcentral specific method to build the json dictionary for each entry.
-        Sequences are provided as a parameter as they are exported using
-        esl-sfetch and ENA via the url API.
+    """
+    RNAcentral specific method to build the json dictionary for each entry.
+    Sequences are provided as a parameter as they are exported using
+    esl-sfetch and ENA via the url API.
 
-        entry:    A list of the fields in a DB entry resulting from
-                  Rfam2RNAcentral export
-        sequence: Entry's corresponding sequence
-    '''
+    entry:    A list of the fields in a DB entry resulting from
+              Rfam2RNAcentral export
+    sequence: Entry's corresponding sequence
+    """
 
     edict = {}
-    species = ""
+    species = ''
 
     edict["parent_accession"] = entry[SEQACC].partition('.')[0]
     edict["seq_version"] = entry[VERSION]
@@ -266,7 +273,7 @@ def build_json_dict(entry, sequence):
     edict["lineage"] = entry[TAX_STR].replace(';', '')
 
     species = entry[SPECIES]
-    common_name = ""
+    common_name = ''
 
     if(species.find('(') != -1):
         if (species.count('(') > 1):
@@ -296,13 +303,13 @@ def build_json_dict(entry, sequence):
 
 
 def fetch_seq_from_ena(entry):
-    '''
-        This function uses the URL API of the European Nucleotide Archive to
-        fetch sequence regions according to the provided rfamseq_acc in entry.
+    """
+    This function uses the URL API of the European Nucleotide Archive to
+    fetch sequence regions according to the provided rfamseq_acc in entry.
 
-        entry: A list of the fields in a DB entry resulting from
-               Rfam2RNAcentral.pl export
-    '''
+    entry: A list of the fields in a DB entry resulting from
+           Rfam2RNAcentral.pl export
+    """
 
     # check the strand
     start = int(entry[SEQ_START])
@@ -328,12 +335,12 @@ def fetch_seq_from_ena(entry):
 
 
 def seq_validator(sequence):
-    '''
-        Checks if the sequence provided is valid fasta sequence. Returns True
-        if the sequence is valid, otherwise returns False.
+    """
+    Checks if the sequence provided is valid fasta sequence. Returns True
+    if the sequence is valid, otherwise returns False.
 
-        sequence: A string for validation
-    '''
+    sequence: A string for validation
+    """
 
     # checks for ascii characters that should not appear in a fasta sequence
     seq_val = re.compile(r"[.-@|\s| -)|z-~|Z-`|EFIJLOPQX|efijlopqx+,]+")
@@ -341,23 +348,23 @@ def seq_validator(sequence):
     if(seq_val.search(sequence) is None):
         return True
 
-    False
+    return False
 
 # -----------------------------------------------------------------------------
 
 
 def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
-    '''
-        This is a slightly different version of the rnac_to_json methods,
-        calling UCSCs faSomeRecords executable to retrieve sequences out of
-        fasta input files.
+    """
+    This is a slightly different version of the rnac_to_json methods,
+    calling UCSCs faSomeRecords executable to retrieve sequences out of
+    fasta input files.
 
-        seq_dir:   The path to the directory containing multiple sequence files
-                   to be converted to json
-        fasta_dir: The path to the directory containing the fasta files of the
-                   current Rfam release
-        out_dir:   The path to the output directory
-    '''
+    seq_dir:   The path to the directory containing multiple sequence files
+               to be converted to json
+    fasta_dir: The path to the directory containing the fasta files of the
+               current Rfam release
+    out_dir:   The path to the output directory
+    """
 
     if(out_dir is None):
         out_dir = seq_dir
@@ -366,10 +373,10 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
     seq_files = filter(lambda x: string.find(x, ".out") != -1, seq_files)
 
     # open a new log file for obsolete sequences
-    logging.basicConfig(filename=os.path.join(out_dir, 'obsolete_seqs.log'),
+    logging.basicConfig(filename=os.path.join(out_dir, "obsolete_seqs.log"),
                         filemode='w', level=logging.DEBUG)
     # new family seqs
-    logging.basicConfig(filename=os.path.join(out_dir, 'newfamily_seqs.log'),
+    logging.basicConfig(filename=os.path.join(out_dir, "newfamily_seqs.log"),
                         filemode='w', level=logging.WARNING)
 
     json_obj_list = []
@@ -390,13 +397,13 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                 seq_id = entry[SEQACC] + '/' + \
                     entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                lfile_path = os.path.join(TMP_PATH, entry[SEQACC] + '.list')
-                ofile_path = os.path.join(TMP_PATH, entry[SEQACC] + '.out')
+                lfile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".list")
+                ofile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".out")
                 f_temp = open(lfile_path, 'w')
                 f_temp.write(seq_id)
                 f_temp.close()
 
-                cmd = '%s %s %s %s' % (
+                cmd = "%s %s %s %s" % (
                     FSR_LOCAL, fam_fa_path, lfile_path, ofile_path)
 
                 # call faSomeRecords to retrieve sequence
@@ -429,14 +436,14 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                     json_obj_list.append(build_json_dict(entry, sequence))
                 else:
                     # log obsolete sequence
-                    logging.debug("%s", "\t".join(entry))
+                    logging.debug("%s", '\t'.join(entry))
 
             else:
                 # update new families log
-                logging.warning("%s", "\t".join(entry))
+                logging.warning("%s", '\t'.join(entry))
 
         fp_out = open(
-            os.path.join(out_dir, seq_file.partition(".")[0] + ".json"), 'w')
+            os.path.join(out_dir, seq_file.partition('.')[0] + ".json"), 'w')
 
         json.dump(json_obj_list, fp_out, indent=2, separators=(',', ':'))
 
@@ -449,9 +456,9 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
 # -----------------------------------------------------------------------------
 
 def usage():
-    '''
-        Prints out guidelines on how to run rnac2json script.
-    '''
+    """
+    Prints out guidelines on how to run rnac2json script.
+    """
 
     print "\nUsage:\n-----"
 

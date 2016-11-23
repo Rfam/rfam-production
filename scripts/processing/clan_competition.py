@@ -1,16 +1,23 @@
 #!/usr/bin/python
-
-'''
-Created on 15 Jan 2016
-
-@author: ikalvari
-
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+"""
 Description: Clan competition script
 
 Notes: clan files are generated using export script clan_file_generator.py
        and sorted on rfamseq_acc (col2) using linux sort command as:
-       sort -k2 -t $'\t' clan_file.txt > clan_file_sorted.txt
-'''
+       sort -k2 -t $\'\t\' clan_file.txt > clan_file_sorted.txt
+"""
 
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -38,14 +45,13 @@ NO_OVL = 0.0    # no overlap
 
 
 def get_strand(start, end):
-    '''
-        Checks the start and end coordinates of a sequence and returns
-        -1 if the sequence comes from the 3' strand and 1 if it comes from the
-        5' strand.
+    """
+    Checks the start and end coordinates of a sequence and returns -1 if the
+    sequence comes from the 3' strand and 1 if it comes from the 5' strand
 
-        start: An integer indicating sequence start location
-        end: An integer indicating sequence end location
-    '''
+    start: An integer indicating sequence start location
+    end: An integer indicating sequence end location
+    """
 
     # -
     if (start > end):
@@ -60,17 +66,14 @@ def get_strand(start, end):
 
 
 def calc_seq_overlap(s1, e1, s2, e2):
-    '''
-        Calculate sequence overlap if any...
+    """
+    Calculate sequence overlaps
 
-        split this function into smaller segments
-
-        s1: SEQ1 start coordinate
-        e1: SEQ1 end coordinate
-        s2: SEQ2 start coordinate
-        e2: SEQ2 end coordinate
-
-    '''
+    s1: SEQ1 start coordinate
+    e1: SEQ1 end coordinate
+    s2: SEQ2 start coordinate
+    e2: SEQ2 end coordinate
+    """
 
     len1 = abs(e1 - s1)
     len2 = abs(e2 - s2)
@@ -99,16 +102,15 @@ def calc_seq_overlap(s1, e1, s2, e2):
 
 
 def cal_overlap_pos_strand(s1, e1, s2, e2):
-    '''
-        Calculates the region overlap between two regions on the 5' strand.
-        Returns the degree of overlap.
+    """
+    Calculates the region overlap between two regions on the 5' strand and
+    returns the degree of overlap
 
-        s1: Seq1 start coordinates
-        e1: Seq1 end coordinates
-        s2: Seq2 start coordinates
-        e2: Seq2 end coordinates
-
-    '''
+    s1: Seq1 start coordinates
+    e1: Seq1 end coordinates
+    s2: Seq2 start coordinates
+    e2: Seq2 end coordinates
+    """
 
     overlap = None
 
@@ -147,16 +149,16 @@ def cal_overlap_pos_strand(s1, e1, s2, e2):
 
 
 def cal_overlap_neg_strand(s1, e1, s2, e2):
-    '''
-        Calculates the region overlap between two regions on the 3' strand.
-        Returns the degree of overlap.
+    """
+    Calculates the region overlap between two regions on the 3' strand and
+    returns the degree of overlap
 
-        s1: Seq1 start coordinates
-        e1: Seq1 end coordinates
-        s2: Seq2 start coordinates
-        e2: Seq2 end coordinates
+    s1: Seq1 start coordinates
+    e1: Seq1 end coordinates
+    s2: Seq2 start coordinates
+    e2: Seq2 end coordinates
 
-    '''
+    """
 
     overlap = None
 
@@ -195,10 +197,10 @@ def cal_overlap_neg_strand(s1, e1, s2, e2):
 
 
 def compete_seq_regions(regions, log):
-    '''
-        regions: A list of duplicate regions for seq_acc
-        log: log file pointer for tracking regions we haven't captured
-    '''
+    """
+    regions: A list of duplicate regions for seq_acc
+    log: log file pointer for tracking regions we haven't captured
+    """
 
     index = 0
 
@@ -240,8 +242,8 @@ def compete_seq_regions(regions, log):
                                 (reg1[RFAM_ACC], reg1[SEQ_ACC], reg1[START]))
 
                 elif(overlap is None):
-                    log.debug("reg1: %s" % "\t".join(reg1))
-                    log.debug("reg2: %s" % "\t".join(reg2))
+                    log.debug("reg1: %s" % '\t'.join(reg1))
+                    log.debug("reg2: %s" % '\t'.join(reg2))
 
         index = index + 1
         comp_regs = None
@@ -252,19 +254,18 @@ def compete_seq_regions(regions, log):
 
 
 def complete_clan_seqs(sorted_clan):
-    '''
-        Parses a sorted clan file and generates a list of regions per rfam_acc,
-        which are then competed by compete_seq_regions.
+    """
+    Parses a sorted clan file and generates a list of regions per rfam_acc,
+    which are then competed by compete_seq_regions
 
-        sorted_clan: A valid path to a sorted clan file.
-
-    '''
+    sorted_clan: A valid path to a sorted clan file
+    """
 
     fp = open(sorted_clan, 'r')
 
     # log regions in which calculate overlap returns None
     logging.basicConfig(
-        filename='missed_overlaps.log', filemode='w', level=logging.DEBUG)
+        filename="missed_overlaps.log", filemode='w', level=logging.DEBUG)
 
     non_sig_regs = []
     regions = []
@@ -313,9 +314,9 @@ def complete_clan_seqs(sorted_clan):
 
 
 def usage():
-    '''
-        Displays information on how to run clan competition
-    '''
+    """
+    Displays information on how to run clan competition
+    """
 
     print "\nUsage:\n------"
 
@@ -352,7 +353,7 @@ if __name__ == '__main__':
     if os.path.isdir(clan_source):
 
         clan_files = filter(
-            lambda x: x.find('.txt') != -1, os.listdir(clan_source))
+            lambda x: x.find(".txt") != -1, os.listdir(clan_source))
 
         non_sig_seqs = None
 

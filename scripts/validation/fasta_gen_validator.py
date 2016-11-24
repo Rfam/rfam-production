@@ -1,12 +1,20 @@
 #!/usr/bin/python
-'''
-Created on 31 Mar 2016
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
-
-Description: Validation script to check fasta file generation process
-
-'''
+"""
+Description:    Validation script to check fasta file generation process
+"""
 
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -20,11 +28,11 @@ from utils import RfamDB
 
 
 def get_full_region_seq_counts():
-    '''
-        Builds a dictionary where keys are Rfam family accessions (rfam_acc)
-        and values the number of sequences in full_region per family.
-        (e.g. {'RFXXXXX':N,...}
-    '''
+    """
+    Builds a dictionary where keys are Rfam family accessions (rfam_acc)
+    and values the number of sequences in full_region per family
+    (e.g. {'RFXXXXX':N,...})
+    """
 
     seq_counts = {}
 
@@ -33,7 +41,7 @@ def get_full_region_seq_counts():
 
     cursor = cnx.cursor(buffered=True)
 
-    query = ("SELECT rfam_acc,count(*) FROM full_region\n"
+    query = ("SELECT rfam_acc, count(*) FROM full_region\n"
              "GROUP BY rfam_acc")
 
     cursor.execute(query)
@@ -56,13 +64,13 @@ def get_full_region_seq_counts():
 
 
 def get_fasta_seq_counts(fasta_files):
-    '''
-        This module uses database data to check whether the fasta generation
-        process was successful and returns a list of the families that need to
-        be processed again.
+    """
+    This module uses database data to check whether the fasta generation
+    process was successful and returns a list of the families that need to
+    be processed again
 
-        fasta_files: The path to the fasta files directory
-    '''
+    fasta_files: The path to the fasta files directory
+    """
 
     # work on fasta files
     fa_files = os.listdir(fasta_files)
@@ -95,16 +103,16 @@ def get_fasta_seq_counts(fasta_files):
 
 
 def compare_seq_counts(db_counts, fa_counts):
-    '''
-        Compares the number of sequences per family in full_region table with
-        the number of sequences written in the distinct fasta files.
+    """
+    Compares the number of sequences per family in full_region table with
+    the number of sequences written in the distinct fasta files
 
-        db_counts: A dictionary with the number of sequences per family as
-                   found in full_region (e.g. {'RFXXXXX':N,...}). Output of
-                   get_full_region_seq_counts.
-        fa_counts: A dictionary with the number of sequences per family fasta
-                   file (e.g. {'RFXXXXX':N,...}). Output of get_fasta_seq_counts
-    '''
+    db_counts:  A dictionary with the number of sequences per family as
+                found in full_region (e.g. {'RFXXXXX':N,...}). Output of
+                get_full_region_seq_counts
+    fa_counts:  A dictionary with the number of sequences per family fasta
+                file (e.g. {'RFXXXXX':N,...}). Output of get_fasta_seq_counts
+    """
 
     faulty_fams = []
 
@@ -119,9 +127,9 @@ def compare_seq_counts(db_counts, fa_counts):
 
 
 def usage():
-    '''
-        Displays information on how to run fasta_gen_validator
-    '''
+    """
+    Displays information on how to run fasta_gen_validator
+    """
     print "\nUsage:\n------"
     print "\npython fasta_gen_validator.py /path/to/fasta_files"
     print "\nfasta_files: The path to the fasta files directory\n"
@@ -139,7 +147,7 @@ if __name__ == '__main__':
         usage()
         sys.exit()
 
-    elif(sys.argv[1] == '-h'):
+    elif(sys.argv[1] == "-h"):
         usage()
         sys.exit()
 

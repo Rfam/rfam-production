@@ -1,13 +1,21 @@
-'''
-Created on 21 Mar 2016
-
-@author: ikalvari
-
-Description: Script to generate fasta files for all family regions
-             in full_region. For execution on lsf call fasta_gen_handler
-             that generates distinct shell scripts per family to enable
-             recovery.
-'''
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+"""
+Description:    Script to generate fasta files for all family regions
+                in full_region. For execution on lsf call fasta_gen_handler
+                that generates distinct shell scripts per family to enable
+                recovery.
+"""
 
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -45,18 +53,17 @@ else:
 # -----------------------------------------------------------------------------
 
 def generate_fasta(seq_file, out_dir):
-    '''
-        Uses esl-sfetch to generate family specific fasta files out of seq_file
-        which is provided as source (e.g. rfamseq11.fa). It will generate fasta
-        files for all families by default.
+    """
+    Uses esl-sfetch to generate family specific fasta files out of seq_file
+    which is provided as source (e.g. rfamseq11.fa). It will generate fasta
+    files for all families by default
 
-        seq_file: The path to rfamseq input file in fasta format, for
-                  generating the fasta files
+    seq_file:   The path to rfamseq input file in fasta format, for
+                generating the fasta files
 
-        out_dir: Destination directory where the files will be
-                 generated
-
-    '''
+    out_dir:    Destination directory where the files will be
+                generated
+    """
 
     sequence = ''
     fp_out = None
@@ -64,7 +71,7 @@ def generate_fasta(seq_file, out_dir):
 
     # logging sequences not exported
     # rename this to family log
-    log_file = os.path.join(out_dir, 'missing_seqs.log')
+    log_file = os.path.join(out_dir, "missing_seqs.log")
     logging.basicConfig(
         filename=log_file, filemode='w', level=logging.INFO)
 
@@ -95,7 +102,7 @@ def generate_fasta(seq_file, out_dir):
 
             # open new fasta file
             fp_out = gzip.open(
-                os.path.join(out_dir, str(region[RFAM_ACC]) + '.fa.gz'), 'w')
+                os.path.join(out_dir, str(region[RFAM_ACC]) + ".fa.gz"), 'w')
 
         rfam_acc = region[RFAM_ACC]
 
@@ -140,20 +147,19 @@ def generate_fasta(seq_file, out_dir):
 
 
 def generate_fasta_single(seq_file, rfam_acc, out_dir):
-    '''
-        Uses esl-sfetch to generate family specific fasta files out of seq_file
-        which is provided as source. Works on single family based on rfam_acc.
-        Files are generated in a compressed .fa.gz format.
+    """
+    Uses esl-sfetch to generate family specific fasta files out of seq_file
+    which is provided as source. Works on single family based on rfam_acc.
+    Files are generated in a compressed .fa.gz format
 
-        seq_file: This is the the path to rfamseq input file in fasta format,
-                 for generating the fasta files
+    seq_file:   This is the the path to rfamseq input file in fasta format,
+                for generating the fasta files
 
-        rfam_acc: The rfam_acc of a specific family
+    rfam_acc:   The rfam_acc of a specific family
 
-        out_dir: This is the destination directory where the files will be
-                 generated
-
-    '''
+    out_dir:    This is the destination directory where the files will be
+                generated
+    """
 
     sequence = ''
     fp_out = None
@@ -161,7 +167,7 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 
     # logging sequences not exported
     # rename this to family log
-    log_file = os.path.join(out_dir, rfam_acc + '.log')
+    log_file = os.path.join(out_dir, rfam_acc + ".log")
     logging.basicConfig(
         filename=log_file, filemode='w', level=logging.INFO)
 
@@ -183,7 +189,7 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 
     # open a new fasta output file
     fp_out = gzip.open(
-        os.path.join(out_dir, str(rfam_acc) + '.fa.gz'), 'w')
+        os.path.join(out_dir, str(rfam_acc) + ".fa.gz"), 'w')
 
     for region in cursor:
 
@@ -247,9 +253,10 @@ def seq_validator(sequence):
 
 
 def usage():
-    '''
-        Displays information on how to run fasta_generator
-    '''
+    """
+    Displays information on how to run fasta_generator
+    """
+
     print "\n Usage\n-------"
     print "\npython fasta_generator.py seq_file rfam_acc out_dir"
     print "\n-h option for help\n"
@@ -271,7 +278,7 @@ if __name__ == '__main__':
         generate_fasta_single(seq_file, rfam_acc, out_dir)
 
     else:
-        if sys.argv[1] == '-h':
+        if sys.argv[1] == "-h":
             usage()
         else:
             print "\nIncorrect Input."

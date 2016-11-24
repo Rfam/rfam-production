@@ -1,14 +1,23 @@
-'''
-Created on 30 Mar 2016
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
+"""
+Description:    Calls fasta_generator to generate fasta files for all Rfam
+                families in rfam_live
 
-Description: Calls fasta_generator to generate fasta files for all Rfam
-             families in rfam_live
-
-Comments:    It is a prerequisite that the sequence file is indexed using
-             esl-sfetch --index option
-'''
+Comments:       It is a prerequisite that the sequence file is indexed using
+                esl-sfetch --index option
+"""
 
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -26,15 +35,15 @@ LSF_GROUP = rfam_config.FA_EXPORT_GROUP
 
 
 def fasta_gen_handler(seq_file, out_dir):
-    '''
-        This purpose of this script is to handle the fasta generation process,
-        generate individual shell scripts for each available family and submit
-        them to the cluster.
+    """
+    The purpose of this script is to handle the fasta generation process,
+    generate individual shell scripts for each available family and submit
+    them to the cluster
 
-        seq_file: Path to the input sequence file (e.g. rfamseq11.fa)
-        out_dir: The output directory where the fasta files will be generated.
+    seq_file:   Path to the input sequence file (e.g. rfamseq11.fa)
+    out_dir:    The output directory where the fasta files will be generated
 
-    '''
+    """
 
     # fetch family accessions
     cnx = RfamDB.connect()
@@ -71,28 +80,33 @@ def fasta_gen_handler(seq_file, out_dir):
 
 
 def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
-    '''
-        Generates family specific shell scripts to split fasta generation into
-        individual jobs.
+    """
+    Generates family specific shell scripts to split fasta generation into
+    individual jobs
 
-        seq_file: The path to sequence file (e.g. )
-    '''
+    seq_file:   The path to sequence file (e.g. )
+    rfam_acc:   A valid Rfam family accession
+    fa_outdir:  A path to where fasta files will be generated
+    out_dir:    A path to an output directory where the shell scripts will be
+                generated. If None, fa_outdir is used by default
+    """
 
     # If no specific directory is provided for the shell scripts, generate them
     # in the fa output directory
 
-    file_path = ""
+    file_path = ''
     if out_dir is None:
-        file_path = os.path.join(fa_outdir, rfam_acc + '.sh')
+        file_path = os.path.join(fa_outdir, rfam_acc + ".sh")
 
     else:
-        file_path = os.path.join(out_dir, rfam_acc + '.sh')
+        file_path = os.path.join(out_dir, rfam_acc + ".sh")
 
     log_dir = os.path.join(fa_outdir, "log")
 
     fp = open(file_path, 'w')
 
     fp.write("#!/bin/csh\n")
+    fp.write("#BSUB -q research-rh7\n")
     fp.write("#BSUB -M 8000\n")
     fp.write("#BSUB -R \"rusage[mem=8000,tmp=1000]\"\n")
     fp.write("#BSUB -o \"/tmp/%J.out\"\n")
@@ -117,9 +131,9 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
 
 
 def usage():
-    '''
-        Displays information on how to run fasta_gen_handler
-    '''
+    """
+    Displays information on how to run fasta_gen_handler
+    """
 
     print "\nUsage:\n------"
 

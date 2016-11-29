@@ -1,10 +1,19 @@
 #!/usr/bin/python
 
-'''
-Created on 29 Feb 2016
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
-
+"""
 Description: A Python handler to run family view process by calling
              rfam_family_view.pl. Replaces job_dequeuer.pl.
 
@@ -12,14 +21,14 @@ Notes: 1. Call this script as rfamprod
        2. Keep # of concurrent jobs to 10 to avoid deadlocks
        3. Families defined in DEM_FAMS required double the memory to complete
           the view process
-'''
+"""
 # ---------------------------------IMPORTS-------------------------------------
 
 import os
 import sys
 import subprocess
 import time
-from config import rfam_config
+from config import rfam_config as rfc
 
 # -----------------------------------------------------------------------------
 # memory to allocate
@@ -33,25 +42,23 @@ PER_SYM_ASCII = 37  # ascii code for the percent symbol (%)
 DEM_FAMS = ["RF00002", "RF00005", "RF00177", "RF02542"]
 
 # Path to rfam_family_view.pl on lsf
-FAM_VIEW_PL = rfam_config.FAM_VIEW_PL
-TMP_PATH = rfam_config.TMP_PATH
-GROUP_NAME = rfam_config.RFAM_VIEW_GROUP
+FAM_VIEW_PL = rfc.FAM_VIEW_PL
+TMP_PATH = rfc.TMP_PATH
+GROUP_NAME = rfc.RFAM_VIEW_GROUP
 
 # -----------------------------------------------------------------------------
 
 
 def job_dequeue_from_file(fam_pend_jobs, out_dir):
-    '''
-        Calls family_view_process based on a list of family job_uuid pairs as
-        listed in fam_jobs file
+    """
+    Calls family_view_process based on a list of family job_uuid pairs as
+    listed in fam_jobs file
 
-        fam_pend_jobs: A list of all pending rfam jobs obtained from
-                       _post_process table export (rfam_acc\tuuid)
-
-        out_dir: Path to output directory where .err and .out will be generated
-                 upon lsf job completion (to be used for debugging purposes).
-
-    '''
+    fam_pend_jobs: A list of all pending rfam jobs obtained from
+                   _post_process table export (rfam_acc\tuuid)
+    out_dir: Path to output directory where .err and .out will be generated
+             upon lsf job completion (to be used for debugging purposes)
+    """
 
     # output file listing all lsf job ids per family accession. To be used as
     # a post-processing step to update rfam_live _post_process table
@@ -96,14 +103,14 @@ def job_dequeue_from_file(fam_pend_jobs, out_dir):
 
 
 def lsf_script_generator(rfam_acc, uuid, out_dir):
-    '''
-        Generates a shell script per family to ease re-running family view
-        process upon failure.
+    """
+    Generates a shell script per family to ease re-running family view
+    process upon failure
 
-        rfam_acc: Family specific accession
-        uuid: Family associated uuid
-        out_dir: Path to output directory where scripts will be generated
-    '''
+    rfam_acc: Family specific accession
+    uuid: Family associated uuid
+    out_dir: Path to output directory where scripts will be generated
+    """
 
     mem = None
 
@@ -123,6 +130,8 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
 
     fp.write("#!/bin/csh\n")
 
+    #queue
+    fp.write("#BSUB -q %s\n" % (rfc.VIEW_QUEUE))
     # memory allocation
     fp.write("#BSUB -M %d\n" % (mem))
     fp.write("#BSUB -R \"rusage[mem=%d,tmp=%d]\"\n" % (mem, TMP_MEM))
@@ -161,9 +170,9 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
 
 
 def usage():
-    '''
-        Displays information on how to use job_dequeuer
-    '''
+    """
+    Displays information on how to use job_dequeuer
+    """
 
     print "\nUsage:\n------"
     print "\npython job_dequeuer.py /path/to/pending/view/list.txt /path/to/outdir"

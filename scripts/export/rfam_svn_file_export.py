@@ -1,11 +1,19 @@
-'''
-Created on 7 Apr 2016
-
-@author: ikalvari
-
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+"""
 Description: Export script fetching family specific files from the SVN 
              (e.g. "SEED", "CM")
-'''
+"""
 # ---------------------------------IMPORTS-------------------------------------
 
 import os
@@ -20,20 +28,21 @@ from utils import RfamDB
 FILE_TYPES = ["CM", "SEED"]
 SVN_CHECKOUT = "rfco %s"
 
+
 # -----------------------------------------------------------------------------
 
 
 def export_rfam_family_files(f_types, out_dir):
-    '''
-        Fetches all Rfam family accessions from rfam_live, checks out each
-        family and copies the files in f_types in their corresponding
-        directories
+    """
+    Fetches all Rfam family accessions from rfam_live, checks out each
+    family and copies the files in f_types in their corresponding
+    directories
 
-        f_types: A list of file type keywords we need to
-                 export (e.g. ["SEED", "CM"])
-        out_dir: The path to the output directory. If it does not exist it will
-                 be created
-    '''
+    f_types: A list of file type keywords we need to
+             export (e.g. ["SEED", "CM"])
+    out_dir: The path to the output directory. If it does not exist it will
+             be created
+    """
 
     # Create the output directory if it does not exist
     if (not os.path.exists(out_dir)):
@@ -77,7 +86,7 @@ def export_rfam_family_files(f_types, out_dir):
         # copy files and rename
         for f_type in f_types:
             filename = rfam_acc + '.' + f_type.lower()
-            '''
+            """
             if (f_type == "SEED"):
                 # 1. open out file handler
                 seed_out_fp = open(
@@ -88,10 +97,10 @@ def export_rfam_family_files(f_types, out_dir):
                 seed_out_fp.writelines(desc_fp.readlines())
                 seed_out_fp.write('\n')
                 desc_fp.close()
-                # 5. open seed and write in outfile
+                # 4. open seed and write in outfile
 
                 continue
-            '''
+            """
             shutil.copyfile(os.path.join(fam_dir, f_type),
                             os.path.join(os.path.join(out_dir, f_type), filename))
 
@@ -106,13 +115,14 @@ def export_rfam_family_files(f_types, out_dir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
+
 # -----------------------------------------------------------------------------
 
 
 def usage():
-    '''
-        Displays information on how to run rfam_svn_file_export
-    '''
+    """
+    Displays information on how to run rfam_svn_file_export
+    """
 
     print "\nUsage:\n------"
 
@@ -122,6 +132,7 @@ def usage():
 
 
 # -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     out_dir = sys.argv[1]

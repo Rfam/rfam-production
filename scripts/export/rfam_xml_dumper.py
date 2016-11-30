@@ -1,14 +1,23 @@
-'''
-Created on 13 May 2016
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
-
+"""
 Description: This module exports Rfam data
 
 TO DO:
        - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
        - Set release version and date automatically
-'''
+"""
 
 # ----------------------------------------------------------------------------
 
@@ -26,20 +35,21 @@ from config import rfam_config as rfc
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
+
 # ----------------------------------------------------------------------------
 
 
 def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
-    '''
-        Exports query results into EB-eye's XML4dbDUMP format
+    """
+    Exports query results into EB-eye's XML4dbDUMP format
 
-        name_dict: A dictionary with all ncbi names per tax id
-        name_object: NCBI tax browser node dictionary
-        entry_type: Single char signifying the type of the entry accession
-        ('M': Motif, 'F': Family, 'C': Clan)
-        entry_acc: An Rfam related accession (Clan, Motif, Family)
-        outdir: Destination directory
-    '''
+    name_dict:  A dictionary with all ncbi names per tax id
+    name_object: NCBI tax browser node dictionary
+    entry_type: Single char signifying the type of the entry accession
+                ('M': Motif, 'F': Family, 'C': Clan)
+    entry_acc:  An Rfam related accession (Clan, Motif, Family)
+    outdir: Destination directory
+    """
 
     entry_type = entry_type[0].capitalize()
 
@@ -75,29 +85,29 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     # export xml tree - writes xml tree into a file
     fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
 
-    db_str = ET.tostring(db_xml, 'utf-8')
+    db_str = ET.tostring(db_xml, "utf-8")
     db_str_reformated = minidom.parseString(db_str)
 
-    fp_out.write(db_str_reformated.toprettyxml(indent="\t"))
+    fp_out.write(db_str_reformated.toprettyxml(indent='\t''))
 
     fp_out.close()
 
-# ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
 
 def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=True):
-    '''
-        Expands the Xml4dbDumper object by adding a new family entry.
+    """
+    Expands the Xml4dbDumper object by adding a new family entry
 
-        name_dict: A dictionary with all ncbi names per tax id
-        name_object: NCBI tax browser node dictionary
-        entries: The xml entries node to be expanded
-        rfam_acc: A specific Rfam family accession
-        hfields: A bool value indicating whether to build hierarchical fields
-                 for each species. True by default.
-    '''
+    name_dict:  A dictionary with all ncbi names per tax id
+    name_object: NCBI tax browser node dictionary
+    entries:    The xml entries node to be expanded
+    rfam_acc:   A specific Rfam family accession
+    hfields:    A bool value indicating whether to build hierarchical fields
+                for each species. True by default
+    """
 
-    entry_type = 'Family'
+    entry_type = "Family"
 
     cross_refs = {}
 
@@ -165,19 +175,19 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
         if len(species_tax_trees.keys()) > 1:
             add_hierarchical_fields(add_fields, species_tax_trees, name_dict)
 
+
 # ----------------------------------------------------------------------------
 
 
 def clan_xml_builder(entries, clan_acc=None):
-    '''
-        Expands the Xml4dbDumper object by adding a new clan entry.
+    """
+    Expands the Xml4dbDumper object by adding a new clan entry
 
-        entries: The xml entries node to be expanded
-        clan_acc: An Rfam associated clan accession
+    entries:    The xml entries node to be expanded
+    clan_acc:   An Rfam associated clan accession
+    """
 
-    '''
-
-    entry_type = 'Clan'
+    entry_type = "Clan"
 
     cross_ref_dict = {}
 
@@ -208,18 +218,19 @@ def clan_xml_builder(entries, clan_acc=None):
     build_additional_fields(
         entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type)
 
+
 # ----------------------------------------------------------------------------
 
 
 def motif_xml_builder(entries, motif_acc=None):
-    '''
-        Expands the Xml4dbDump with a Motif entry.
+    """
+    Expands the Xml4dbDump with a Motif entry
 
-        entries: Entries node on xml tree
-        motif_acc: An Rfam associated motif accession
-    '''
+    entries:    Entries node on xml tree
+    motif_acc:  An Rfam associated motif accession
+    """
 
-    entry_type = 'Motif'
+    entry_type = "Motif"
 
     cross_ref_dict = {}
 
@@ -249,20 +260,20 @@ def motif_xml_builder(entries, motif_acc=None):
     build_additional_fields(
         entry, motif_fields, 0, None, entry_type=entry_type)
 
+
 # ----------------------------------------------------------------------------
 
 
 def build_cross_references(entry, cross_ref_dict):
-    '''
-        Expands the entry xml tree by adding the entry's cross references
-        Returns the cross references xml tree
+    """
+    Expands the entry xml tree by adding the entry's cross references.
+    Returns the cross references xml tree
 
-        entry: The entry node of the xml tree object (xml.etree.ElementTree)
-        cross_ref_dict: A dictionary with the entity's cross references in the
-        form of ({db_name:[db_key1,db_key2,..],}) where db_name is a string and
-        values a list of db ids
-
-    '''
+    entry:  The entry node of the xml tree object (xml.etree.ElementTree)
+    cross_ref_dict: A dictionary with the entity's cross references in the
+                    form of ({db_name:[db_key1,db_key2,..],}) where db_name is
+                    a string and values a list of db ids
+    """
 
     # cross_ref_dict will be different for the different types,
     # but the dictionary has to be in the same format
@@ -280,20 +291,21 @@ def build_cross_references(entry, cross_ref_dict):
 
     return cross_refs
 
+
 # ----------------------------------------------------------------------------
 
 
 def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
-    '''
-        Expands the cross references xml tree by adding hierarchical references
-        for the ncbi ids in valid_ncbi_ids.
+    """
+    Expands the cross references xml tree by adding hierarchical references
+    for the ncbi ids in valid_ncbi_ids.
 
-        xml_tree_node: An existing xml tree node to expand with hierarchical
-                       fields
-        tax_tree_dict: Species taxonomy tree dictionary as generated by
-                       get_family_tax_tree
-        name_dict:    NCBI's name dictionary as returned by read_ncbi_names_dmp
-    '''
+    xml_tree_node:  An existing xml tree node to expand with hierarchical
+                    fields
+    tax_tree_dict:  Species taxonomy tree dictionary as generated by
+                    get_family_tax_tree
+    name_dict:  NCBI's name dictionary as returned by read_ncbi_names_dmp
+    """
 
     # add a new hierarchical ref for every tax_id in the family
     for tax_id in tax_tree_dict.keys():
@@ -321,13 +333,13 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
 
 
 def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type):
-    '''
-        This function expands the entry xml field with the additional fields
+    """
+    This function expands the entry xml field with the additional fields
 
-        entry: This is the xml.etree.ElementTree at the point of entry
-        fields: A list of additional fields to expand the entry with
+    entry:  This is the xml.etree.ElementTree at the point of entry
+    fields: A list of additional fields to expand the entry with
+    """
 
-    '''
     add_fields = ET.SubElement(entry, "additional_fields")
 
     # adding entry type
@@ -347,20 +359,20 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
     for author in author_list:
         ET.SubElement(add_fields, "field", name="author").text = author
 
-    if entry_type == 'Family':
+    if entry_type == "Family":
 
         # number of species
         ET.SubElement(add_fields, "field", name="num_species").text = str(fields[
-            "num_species"])
+                                                                              "num_species"])
         # number of 3D structures
         ET.SubElement(
             add_fields, "field", name="num_3d_structures").text = str(num_3d_structures)
         # num seed
         ET.SubElement(add_fields, "field", name="num_seed").text = str(fields[
-            "num_seed"])
+                                                                           "num_seed"])
         # num full
         ET.SubElement(add_fields, "field", name="num_full").text = str(fields[
-            "num_full"])
+                                                                           "num_full"])
 
         # rna types
         rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)
@@ -382,17 +394,17 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
                 ET.SubElement(
                     add_fields, "field", name="popular_species").text = str(species)
 
-        # build hierarchical_fields tree here...
+                # build hierarchical_fields tree here...
 
     # perhaps move this to clan and motif xml builder
     else:
         num_families = None
 
-        if entry_type == 'Motif':
+        if entry_type == "Motif":
             num_families = fetch_value(
                 rs.NUM_FAMS_MOTIF, fields["id"])
 
-        elif entry_type == 'Clan':
+        elif entry_type == "Clan":
             num_families = fields["num_families"]
 
         ET.SubElement(add_fields, "field", name="num_families").text = str(
@@ -400,16 +412,20 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
     # returning node
     return add_fields
+
+
 # ----------------------------------------------------------------------------
 
 
 def get_value_list(val_str, delimiter=','):
-    '''
-        val_str: A string of family specific values. This string is a
-        concatenation of multiple values related to a single family
+    """
+    Splits an input string according to delimiter and returns a list of the
+    elements
 
-        delimiter: The delimeter that will be used to split the values' string
-    '''
+    val_str:    A string of family specific values. This string is a
+                concatenation of multiple values related to a single family
+    delimiter:  The delimeter that will be used to split the values' string
+    """
 
     val_str = val_str.strip()
     values = val_str.split(delimiter)
@@ -423,14 +439,14 @@ def get_value_list(val_str, delimiter=','):
 # ----------------------------------------------------------------------------
 
 def fetch_value_list(rfam_acc, query):
-    '''
-        Retrieves and returns a list of all rfam_acc related values, returned
-        by executing the query. Values in list are converted to string format.
-        If rfam_acc is None then query is executed without an rfam_acc
+    """
+    Retrieves and returns a list of all rfam_acc related values, returned
+    by executing the query. Values in list are converted to string format.
+    If rfam_acc is None then query is executed without an rfam_acc
 
-        rfam_acc: A family specific accession
-        query: A string with the MySQL query to be executed
-    '''
+    rfam_acc:   A family specific accession
+    query:  A string with the MySQL query to be executed
+    """
 
     cnx = RfamDB.connect()
 
@@ -449,16 +465,17 @@ def fetch_value_list(rfam_acc, query):
 
     return map(lambda x: str(x[0]), values)
 
+
 # ----------------------------------------------------------------------------
 
 
 def fetch_entry_fields(entry_acc, entry_type):
-    '''
-        Returns a dictionary with the entry's fields.
+    """
+    Returns a dictionary with the entry's fields.
 
-        entry_acc: An Rfam associated accession (Motif, Clan, Family)
-        entry_type: The type of the entry accession
-    '''
+    entry_acc:  An Rfam associated accession (Motif, Clan, Family)
+    entry_type: The type of the entry accession
+    """
 
     # maybe the entry type not required... use rfam_acc[0:2]
 
@@ -487,20 +504,19 @@ def fetch_entry_fields(entry_acc, entry_type):
 
     return fields
 
+
 # ----------------------------------------------------------------------------
 
 
 def fetch_value(query, accession):
-    '''
-        Retrieves and returns a value from the database depending to the query
-        executed.
+    """
+    Retrieves and returns a value from the database depending to the query
+    executed. The query should return a single value
 
-        query: The query to be executed in the form of string.
-        accession: Rfam specific accession (family, clan, motif)
-                   to execute the query on.
-
-        *Query should return a single value
-    '''
+    query:  The query to be executed in the form of string.
+    accession:  Rfam specific accession (family, clan, motif)
+                to execute the query on
+    """
 
     cnx = RfamDB.connect()
 
@@ -518,21 +534,22 @@ def fetch_value(query, accession):
 
     return None
 
+
 # ----------------------------------------------------------------------------
 
 
 def main(entry_type, rfam_acc, outdir, hfields=True):
-    '''
-        This function puts everything together.
+    """
+    This function puts everything together.
 
-        entry_type: One of the three entry types in Rfam (Motif, Clan, Family)
-        rfam_acc: An Rfam associated accession (RF*,CL*,RM*). If rfam_acc is set
-                  to None, then all data related to the entry type will be
-                  exported
-        hfields: A flag (True/False) indicating whether to add hierarchical
-               fields on not. True by default
-        outdir: Destination directory
-    '''
+    entry_type: One of the three entry types in Rfam (Motif, Clan, Family)
+    rfam_acc: An Rfam associated accession (RF*,CL*,RM*). If rfam_acc is set
+              to None, then all data related to the entry type will be
+              exported
+    hfields: A flag (True/False) indicating whether to add hierarchical
+             fields on not. True by default
+    outdir: Destination directory
+    """
 
     rfam_accs = None
     entry = ""
@@ -618,7 +635,7 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
             # open a log file
             logging.basicConfig(
-                filename=os.path.join('missing_accs' + '.log'), filemode='w', level=logging.DEBUG)
+                filename=os.path.join("missing_accs" + ".log"), filemode='w', level=logging.DEBUG)
 
             # write accessions to log file
             for rfam_acc in rem_fams:
@@ -626,16 +643,17 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
         else:
             print "Error exporting %s." % rfam_acc
 
+
 # ----------------------------------------------------------------------------
 
 
 def get_valid_family_tax_ids(name_object, family_tax_ids):
-    '''
-        Returns a list of all family tax ids found in the NCBI dumps.
+    """
+    Returns a list of all family tax ids found in the NCBI dumps
 
-        name_object: NCBI tax browser node dictionary
-        family_tax_ids: A list of all family ncbi ids
-    '''
+    name_object: NCBI tax browser node dictionary
+    family_tax_ids: A list of all family ncbi ids
+    """
 
     valid_family_tax_ids = []
 
@@ -650,14 +668,14 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
 
 
 def get_family_tax_tree(name_object, name_dict, family_tax_ids):
-    '''
-        Returns the family genealogy list
+    """
+    Returns the family genealogy list
 
-        name_object: NCBI tax browser node dictionary
-        name_dict: A dictionary with all ncbi names per tax id
-        family_tax_ids: A list of family specific ncbi ids
+    name_object: NCBI tax browser node dictionary
+    name_dict: A dictionary with all ncbi names per tax id
+    family_tax_ids: A list of family specific ncbi ids
+    """
 
-    '''
     species_tax_trees = {}
 
     for taxid in family_tax_ids:
@@ -672,30 +690,31 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
 # ----------------------------------------------------------------------------
 
 def usage():
-    '''
-        Parses arguments and displays usage information on screen.
-    '''
+    """
+    Parses arguments and displays usage information on screen
+    """
 
     parser = argparse.ArgumentParser(
-        description='Rfam Search Xml4db Dumper.', epilog='')
+        description="Rfam Search Xml4db Dumper.", epilog='')
 
     # group required arguments together
-    req_args = parser.add_argument_group('required arguments')
+    req_args = parser.add_argument_group("required arguments")
 
-    req_args.add_argument('--type', help='rfam entry type (F: Family, M: Motif, C: Clan)',
+    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan)",
                           type=str, choices=['F', 'M', 'C'], required=True)
 
     parser.add_argument(
-        '--acc', help='a valid rfam entry accession (RF*|CL*|RM*)',
+        "--acc", help="a valid rfam entry accession (RF*|CL*|RM*)",
         type=str, default=None)
 
     parser.add_argument(
-        '--hfields', help='include hierarchical fields', action='store_true')
+        "--hfields", help="include hierarchical fields", action="store_true")
 
     req_args.add_argument(
-        '--out', help='path to output directory', type=str, required=True)
+        "--out", help="path to output directory", type=str, required=True)
 
     return parser
+
 
 # ----------------------------------------------------------------------------
 
@@ -709,11 +728,11 @@ if __name__ == '__main__':
     wrong_input = False
     if (args.acc is not None):
 
-        if (args.type == 'F' and args.acc[0:2] != 'RF'):
+        if (args.type == 'F' and args.acc[0:2] != "RF"):
             wrong_input = True
-        elif(args.type == 'M' and args.acc[0:2] != 'RM'):
+        elif (args.type == 'M' and args.acc[0:2] != "RM"):
             wrong_input = True
-        elif(args.type == 'C' and args.acc[0:2] != 'CL'):
+        elif (args.type == 'C' and args.acc[0:2] != "CL"):
             wrong_input = True
 
     if (wrong_input is True):

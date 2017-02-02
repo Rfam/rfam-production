@@ -1,8 +1,17 @@
 """
-Created on 12 Jul 2016
+Copyright [2009-2017] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
-
+"""
 TO DO:   - Rename functions
          - Split fetch_gca_data
 """
@@ -19,8 +28,8 @@ import requests
 import genome_fetch as gf
 from config import gen_config as gc
 
-# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 
 def fetch_gca_data(upid, assembly_acc, kingdom):
     """
@@ -35,11 +44,6 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
     genome_entry = {}
     fields = {}
     tmp_acc = assembly_acc
-
-    '''
-    if tmp_acc.find('.') != -1:
-        tmp_acc = tmp_acc.partition('.')[0]
-    '''
 
     assembly_xml = requests.get(gc.ENA_XML_URL % tmp_acc).content
 
@@ -130,13 +134,14 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
 
     return genome_entry
 
+
 # -----------------------------------------------------------------------------
 
 
 def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
     """
     Parses assembly report file and exports all assembly accessions in a
-    django dict format..
+    dict format to be easily loaded via Django ORM
 
     upid: A valid Uniprot proteome accession (e.g. UP000005640 - Homo Sapiens)
     gca_acc: A valid ENA GCA accession
@@ -196,7 +201,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
                 fields["created"] = entry_date
                 fields["updated"] = entry_date
 
-            elif(len(accession) < 7 and accession[0].find('.') != -1):
+            elif (len(accession) < 7 and accession[0].find('.') != -1):
                 fields = fetch_wgs_acc_metadata(accession[0])
 
         else:
@@ -209,6 +214,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
         entry = {}
 
     return assembly_accs
+
 
 # -----------------------------------------------------------------------------
 
@@ -237,6 +243,7 @@ def region_loader(reg_ftp_link):
         region_dict[region[1]] = (int(coords[0]), int(coords[1]))
 
     return region_dict
+
 
 # -----------------------------------------------------------------------------
 
@@ -313,6 +320,7 @@ def fetch_wgs_metadata(upid, assembly_acc, kingdom):
 
     return wgs_entry
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -341,6 +349,7 @@ def fetch_wgs_accs_metadata(upid, assembly_acc, wgs_range):
         entry = {}
 
     return wgs_entries
+
 
 # -----------------------------------------------------------------------------
 
@@ -392,6 +401,8 @@ def fetch_wgs_acc_metadata(wgs_acc):
     fields["updated"] = entry_date  # when adding a new genome
 
     return fields
+
+
 # -----------------------------------------------------------------------------
 
 
@@ -413,6 +424,8 @@ def get_wgs_assembly_name(wgs_comment):
     assembly_name = assembly_name.strip().partition("::")[2].strip()
 
     return assembly_name
+
+
 # -----------------------------------------------------------------------------
 
 
@@ -434,15 +447,16 @@ def fetch_assembly_attributes(attrs_node):
 
     return attribute_values
 
+
 # -----------------------------------------------------------------------------
 
 
 def fetch_gca_acc_metadata(accession):
     """
     Fetch accession metadata and return a dictionary with ncbi_id, molecule's
-    type, description
+    type, description and tax id
 
-    accession: A valid GCA related ENA accession
+    accession: A valid GCA accession from ENA
     """
 
     metadata = {}
@@ -452,17 +466,18 @@ def fetch_gca_acc_metadata(accession):
 
     entry = xml_root.find("entry")
 
-    '''
-    mol_type = None
-    mol_type = entry.get("moleculeType")
-    '''
-
     # None if no moleculeType found
-    metadata["mol_type"] = entry.get("moleculeType")
+    mol_type = entry.find("moleculeType")
+
+    if mol_type is not None:
+        metadata["mol_type"] = entry.get("moleculeType")
+
+    # get molecule description and tax id
     metadata["description"] = entry.find("description").text
     metadata["ncbi_id"] = int(entry.find("feature").find("taxon").get("taxId"))
 
     return metadata
+
 
 # -----------------------------------------------------------------------------
 
@@ -470,9 +485,9 @@ def fetch_gca_acc_metadata(accession):
 def fetch_assembly_links(gca_acc):
     """
     Retrieves and returns a dictionary with all ftp links found in the GCA xml
-    file.
+    file
 
-    gca_acc: A valid ENA GCA accession
+    gca_acc: A valid GCA accession from ENA
     """
 
     gca_ftp_links = {}
@@ -481,7 +496,7 @@ def fetch_assembly_links(gca_acc):
 
     xml = ET.fromstring(response)
 
-    # fetch assembly links node
+    # fetch assembly links nodet
     assembly_links = xml.find("ASSEMBLY").find(
         "ASSEMBLY_LINKS").findall("ASSEMBLY_LINK")
 
@@ -496,6 +511,7 @@ def fetch_assembly_links(gca_acc):
         url = None
 
     return gca_ftp_links
+
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':

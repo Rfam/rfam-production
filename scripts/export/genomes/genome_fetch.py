@@ -61,7 +61,7 @@ FORMATS = {"xml": ".xml", "fasta": ".fa"}
 def fetch_ref_proteomes():
     """
     This method returns a list of all reference proteome accessions available
-    from Uniprot.
+    from Uniprot
     """
 
     ref_prot_list = []
@@ -79,9 +79,9 @@ def fetch_ref_proteomes():
 def export_gca_accessions(upid_gca):
     """
     Retrieves reference proteomes ids and their associated gca accessions
-    as well as the taxonomic rank/domain (eukaryotes, bacteria etc).
+    as well as the taxonomic rank/domain (eukaryotes, bacteria etc)
 
-    upid_gca: Uniprot's tab separated file (UPID_GCA.tsv )
+    upid_gca: Uniprot's tab separated file (UPID_GCA.tsv)
     """
 
     # need to check if the path provided is a valid file
@@ -107,7 +107,7 @@ def export_gca_accessions(upid_gca):
 def extract_genome_acc(prot_rdf):
     """
     Extracts and returns the assembly accession from the proteome rdf
-    which provided as input. Returns -1 if not available.
+    which provided as input. Returns -1 if not available
 
     prot_rdf: A Uniprot's proteome rdf url or file path
     """
@@ -133,9 +133,9 @@ def proteome_rdf_scanner(proteome):
     """
     Scans a Uniprot's reference proteome rdf file and looks for all
     available accessions. Returns a dictionary with GCA and WGS accessions
-    where applicable.
+    where applicable
 
-    prot_rdf: A Uniprot's proteome rdf url or file path
+    prot_rdf: Uniprot's proteome rdf url or file path
     """
 
     # need to do some http error handling here and if resource is unavailable
@@ -175,7 +175,7 @@ def proteome_rdf_scanner(proteome):
 def fetch_genome_acc(prot):
     """
     Returns a proteome's corresponding assembly accession (ENA) in a
-    dictionary format {proteome_acc:gca_acc}.
+    dictionary format {proteome_acc:gca_acc}
 
 
     prot: One of (file|list|acc)
@@ -228,10 +228,10 @@ def fetch_genome_acc(prot):
 def fetch_ena_file(acc, file_format, dest_dir):
     """
     Retrieves a file given a valid ENA accession and stores it in the
-    indicated destination in the selected format.
+    indicated destination in the selected format
 
     acc: A valid ENA entry accession
-    format: A valid ENA file format
+    format: A valid ENA file format (xml, fasta, txt)
     dest_dit: A valid path to destination directory
     """
 
@@ -267,7 +267,7 @@ def fetch_ena_file(acc, file_format, dest_dir):
 def extract_assembly_accs(accession):
     """
     Loads an xml tree from a file or a string (usually an http response),
-    and returns a list with the genome assembly's chromosomes.
+    and returns a list with the genome assembly's chromosomes
 
     accession: A valid ENA assembly accession (without the assembly version)
     """
@@ -328,7 +328,7 @@ def extract_assembly_accs(accession):
 def download_genomes(gen, dest_dir):
     """
     Downloads all chromosome files of a given assembly accession (ENA) in
-    dest_dir.
+    dest_dir
 
     gen: Single accession (string) or a list of genome accessions (GC*)
     dest_dir: The path of the destination directory to export the fasta
@@ -425,7 +425,7 @@ def fetch_genome(gen, dest_dir):
 
 def rdf_accession_search(ref_prot_acc, sub_str):
     """
-    Parses rdf url and returns a list of ENA accessions.
+    Parses rdf url and returns a list of ENA accessions
 
     rdf_url: The url to a Uniprot's reference proteome rdf url
     sub_str: A sub string to look for in the rdf file
@@ -458,7 +458,7 @@ def rdf_accession_search(ref_prot_acc, sub_str):
 def assembly_report_parser(report_url):
     """
     Parses an assembly report file and returns a list of all available
-    accessions (scaffolds, contigs etc).
+    accessions (scaffolds, contigs etc)
 
     report_url: A url provided within an ENA assembly xml file. This is the
     text of URL tag under ASSEMBLY/ASSEMBLY_LINKS/ASSEMBLY_LINK.By default this
@@ -517,7 +517,7 @@ def get_wgs_set_accession(prefix, version):
 
 def get_wgs_range(wgs_acc):
     """
-    Fetches the wgs xml file from ENA and exports the wgs range.
+    Fetches the wgs related xml file from ENA and exports the wgs range
 
     wgs_acc: A valid ENA wgs accession
     """
@@ -544,7 +544,7 @@ def get_wgs_range(wgs_acc):
 def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
     """
     Generates an lsf job command for downloading a new genome. Returns an
-    LSF specific bsub command.
+    LSF specific bsub command
 
     upid: Uniprot's reference proteome id
     gca_acc: ENA's genome accession. -1 if there's no available id
@@ -580,7 +580,7 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
 def genome_script_generator(upid, domain, gen_size, out_dir):
     """
     Generates a shell script for a proteome with ip upid under out_dir.
-    Memory is reserved according to genome size.
+    Memory is reserved according to genome size
 
     upid: Uniprot's unique proteome id
     domain: The domain under which a proteome has been classified
@@ -643,7 +643,7 @@ def genome_script_generator(upid, domain, gen_size, out_dir):
 def load_upid_gca_file(upid_gca_file):
     """
     Parses Uniprot's upid tsv file and exports all important information in json
-    format.
+    format
     """
 
     upid_gca_dict = {}
@@ -672,7 +672,7 @@ def load_upid_gca_pairs():
     """
     This is an alternative version to load_upid_gca_file loading the pairs from
     Uniprot's REST API. Returns a dictionary of upid, gca accession pairs,
-    including the species kindom.
+    including the species kingdom
     """
 
     id_pairs = {}
@@ -707,7 +707,7 @@ def load_upid_gca_pairs():
 
 def fetch_genome_accessions(upid, gca_acc):
     """
-    Fetches and returns a list of all accessions for a specific ref. proteome.
+    Fetches and returns a list of all accessions for a specific ref. proteome
 
     upid: Uniprot's ref. proteome id
     gca_acc: An ENA GCA accession associated with the upid (if available or -1)
@@ -737,7 +737,7 @@ def fetch_genome_accessions(upid, gca_acc):
             # call get_wgs_range directly here
             gen_accs = extract_assembly_accs(prot_accs["WGS"])
 
-            # for all other cases this function will return an empty list
+    # for all other cases this function will return an empty list
 
     return gen_accs
 
@@ -747,7 +747,7 @@ def fetch_genome_accessions(upid, gca_acc):
 
 def fetch_wgs_range_accs(wgs_range):
     """
-    Splits the WGS range into distinct accessions for metadata retrieval.
+    Splits the WGS range into distinct accessions for metadata retrieval
 
     wgs_range: A valid ENA-WGS set range
     """
@@ -772,6 +772,61 @@ def fetch_wgs_range_accs(wgs_range):
     wgs_accs.append(wgs_end_points[1])
 
     return wgs_accs
+
+
+# -----------------------------------------------------------------------------
+
+def genome_download_validator(genome_dir):
+    """
+    Loop over Genome Download output directory and report any upids with
+    erroneous output
+
+    genome_dir: The path to Genome Download output directory
+    """
+
+    erroneous_genomes = {}
+
+    # list all kingdom dirs under genome output directory
+    project_dirs = os.listdir(genome_dir)
+    # filter out items that are not directories
+    kingdom_dirs = [x for x in project_dirs if os.path.isdir(os.path.join(genome_dir, x))]
+
+    for kingdom in kingdom_dirs:
+        erroneous_genomes[kingdom] = []
+        # list all genome directories per kindom
+        kingdom_dir_loc = os.path.join(genome_dir, kingdom)
+        kingdom_dirs = os.listdir(kingdom_dir_loc)
+
+        for genome in kingdom_dirs:
+            genome_dir_loc = os.path.join(kingdom_dir_loc, genome)
+
+            if os.path.exists(os.path.join(genome_dir_loc, "download.out")):
+                fp = open(os.path.join(genome_dir_loc, "download.out"))
+                for line in fp.readlines():
+                    if line.find("Success") != -1:
+                        success = 1
+                        break
+                fp.close()
+
+                if success == 0:
+                    erroneous_genomes[kingdom].append(genome)
+
+            success = 0
+
+    fp_out = open(os.path.join(genome_dir, "download_report.txt"), 'w')
+
+    # print out erroneous genomes
+    for kingdom in erroneous_genomes.keys():
+        if len(erroneous_genomes[kingdom]) > 0:
+            fp_out.write(kingdom + '\n')
+            for proteome in erroneous_genomes[kingdom]:
+                fp_out.write(proteome + '\n')
+
+            fp_out.write('\n')
+
+    # report numbers as well
+
+    fp_out.close()
 
 
 # -----------------------------------------------------------------------------

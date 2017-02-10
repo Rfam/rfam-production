@@ -133,7 +133,8 @@ def infernal_to_rfam(inf_tblout_file, dest_dir, file_format='tsv'):
 
     upid = filename
     is_significant = 1  # always the same before clan competition
-    seq_type = "null"
+    #seq_type = "null"
+    seq_type = "full" # set all to full until we update seed sequences
 
     line = in_file.readline().strip()
 
@@ -142,17 +143,20 @@ def infernal_to_rfam(inf_tblout_file, dest_dir, file_format='tsv'):
             line = line.split(' ')
             line_cont = [x for x in line if x != '']
 
-            genseq_acc = line_cont[0].split('|')
+            genseq_acc = line_cont[2].split('|') # could also be position 0 for cmsearch
             genseq_acc = genseq_acc[len(genseq_acc) - 1]  # get last field
-            rfam_acc = line_cont[3]
+            rfam_acc = line_cont[1] # 1 or 3 for cmscan
             cm_start = line_cont[5]
             cm_end = line_cont[6]
             seq_start = line_cont[7]
             seq_end = line_cont[8]
 
-            trunc = line_cont[10]
+            trunc = line_cont[10].replace('\'', '')
             if trunc == "no" or trunc == '-':
-                trunc = 0
+                trunc = str(0)
+
+            elif trunc.find('&') != -1:
+                trunc = trunc.replace('&', '')
 
             bit_score = line_cont[14]
             evalue = line_cont[15]
@@ -190,4 +194,6 @@ def convert_short_wuss_to_dbn(ss_string):
 # --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
     pass
+

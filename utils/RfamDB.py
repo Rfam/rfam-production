@@ -1,8 +1,17 @@
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 '''
-Created on 18 Feb 2016
-
-@author: ikalvari
-
 TO DO: Need to generalize this to make the scripts independent and enable
        connecting to multiple databases simultaneously. Convert this to a class
 '''
@@ -10,22 +19,23 @@ TO DO: Need to generalize this to make the scripts independent and enable
 # ---------------------------------IMPORTS-------------------------------------
 import mysql.connector
 from mysql.connector import errorcode
+
 from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
 from config.rfam_config import RFAMLIVE  # rfam_live on curation host
 from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
+from config.rfam_config import XFAMDEV
 
 # -----------------------------------------------------------------------------
-# need to generalize this enabling database selection upon execution
-db_conf = RFAMLIVE
+# need to generalize this to enable DB setting upon implementation 
+db_conf = XFAMDEV
 
 # -----------------------------------------------------------------------------
 
 
 def connect():
-    '''
-    Connects to a specific database and returns a mysql connection object.
-
-    '''
+    """
+    Connects to a specific database and returns a mysql connection object
+    """
 
     try:
         cnx = mysql.connector.connect(user=db_conf["user"],
@@ -51,11 +61,11 @@ def connect():
 
 
 def disconnect(cnx):
-    '''
-        Closes a database connection.
+    """
+    Closes a database connection
 
-        cnx: MySQL connection object
-    '''
+    cnx: MySQL connection object
+    """
 
     try:
         cnx.close()

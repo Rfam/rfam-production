@@ -247,13 +247,7 @@ def fetch_ena_file(acc, file_format, dest_dir):
         seq_url = ENA_DATA_URL % (acc, file_format)
         file_path = os.path.join(dest_dir, acc + FORMATS[file_format] + ".gz")
 
-    ena_file = open(file_path, 'w')
-
-    file_content = requests.get(seq_url).content
-
-    ena_file.write(file_content)
-
-    ena_file.close()
+    urllib.urlretrieve(seq_url, file_path)
 
     if os.path.exists(file_path):
         return True
@@ -823,8 +817,6 @@ def genome_download_validator(genome_dir):
                 fp_out.write(proteome + '\n')
 
             fp_out.write('\n')
-
-    # report numbers as well
 
     fp_out.close()
 

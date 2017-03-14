@@ -19,13 +19,14 @@ TO DO:    - logging
 # ---------------------------------IMPORTS-------------------------------------
 
 
+import httplib
 import os
 import string
-import xml.etree.ElementTree as ET
-import urllib2
 import urllib
+import urllib2
+import xml.etree.ElementTree as ET
+
 import requests
-import httplib
 from rdflib import Graph
 
 from config import gen_config as gc
@@ -50,6 +51,9 @@ ENA_TAX_URL = gc.ENA_TAX_URL
 
 # ENA GCA report file label
 GCA_REP_LABEL = gc.GCA_REP_LBL
+
+# NCBI URL for sequence download
+NCBI_SEQ_URL = gc.NCBI_SEQ_URL
 
 # ENA file formats
 FORMATS = {"xml": ".xml", "fasta": ".fa"}
@@ -120,7 +124,7 @@ def extract_genome_acc(prot_rdf):
         g.load(prot_rdf)
 
         for s, p, o in g:
-            if (string.find(o, "GCA") != -1):
+            if string.find(o, "GCA") != -1:
                 return os.path.split(o)[1]
 
     return -1
@@ -770,6 +774,7 @@ def fetch_wgs_range_accs(wgs_range):
 
 # -----------------------------------------------------------------------------
 
+
 def genome_download_validator(genome_dir):
     """
     Loop over Genome Download output directory and report any upids with
@@ -819,6 +824,32 @@ def genome_download_validator(genome_dir):
             fp_out.write('\n')
 
     fp_out.close()
+
+# -----------------------------------------------------------------------------
+
+
+def download_fasta_from_ncbi(accession, dest_dir):
+    """
+    Download fasta sequences from NCBI. In case of ENA obsolete sequences use
+    this function to download the relevant files
+
+    accession: A genome accession to download
+    dest_dir: Destination directory to save the file to
+
+    return: True on success, otherwise False
+    """
+    seq_url = None
+    file_path = None
+
+    seq_url = NCBI_SEQ_URL % (accession)
+    file_path = os.path.join(dest_dir, accession + '.fa')
+
+    urllib.urlretrieve(seq_url, file_path)
+
+    if os.path.exists(file_path):
+        return True
+
+    return False
 
 
 # -----------------------------------------------------------------------------

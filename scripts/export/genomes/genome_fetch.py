@@ -157,15 +157,15 @@ def proteome_rdf_scanner(proteome):
         # scan for accessions
         for s, p, o in g:
             # look for ENA accessions
-            if (string.find(o, "/embl/") != -1):
-                if (string.find(o, "GCA") != -1):
+            if string.find(o, "/embl/") != -1:
+                if string.find(o, "GCA") != -1:
                     accessions["GCA"] = os.path.split(o)[1]
 
-                elif (wgs_flag is True):
+                elif wgs_flag is True:
                     accessions["WGS"] = os.path.split(o)[1]
 
             # if WGS keyword found, set flag to true
-            elif (string.find(o, "WGS") != -1):
+            elif string.find(o, "WGS") != -1:
                 wgs_flag = True
     else:
         pass
@@ -440,7 +440,7 @@ def rdf_accession_search(ref_prot_acc, sub_str):
         rdf_graph.load(rdf_url)
 
         for s, p, o in rdf_graph:
-            if (string.find(o, sub_str) != -1):
+            if string.find(o, sub_str) != -1:
                 accessions.append(os.path.split(o)[1])
     else:
         # return http status code
@@ -521,7 +521,6 @@ def get_wgs_range(wgs_acc):
     """
 
     wgs_range = None
-    wgs_acc_list = []
     wgs_xml_str = requests.get(ENA_XML_URL % wgs_acc).content
     wgs_xml_root = ET.fromstring(wgs_xml_str)
 

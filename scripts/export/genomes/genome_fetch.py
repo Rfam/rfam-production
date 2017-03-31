@@ -59,7 +59,6 @@ NCBI_SEQ_URL = gc.NCBI_SEQ_URL
 # ENA file formats
 FORMATS = {"xml": ".xml", "fasta": ".fa"}
 
-
 # ---------------------------------------------------------------------- #STEP1
 
 
@@ -827,7 +826,6 @@ def genome_download_validator(genome_dir):
 
 # -----------------------------------------------------------------------------
 
-
 def download_fasta_from_ncbi(accession, dest_dir):
     """
     Download fasta sequences from NCBI. In case of ENA obsolete sequences use
@@ -853,6 +851,7 @@ def download_fasta_from_ncbi(accession, dest_dir):
 
 
 # -----------------------------------------------------------------------------
+
 def download_sequence_report_files(project_dir, upid_gca_file):
     """
     Loads upid_gca_file json file and downloads from ENA all sequence report
@@ -888,9 +887,6 @@ def download_sequence_report_files(project_dir, upid_gca_file):
                                                      acc_pairs[upid]["GCA"][0:10],
                                                      acc_pairs[upid]["GCA"])
 
-            print acc_pairs[upid]["GCA"]
-            print seq_rep_url
-
             filename = "%s_sequence_report.txt" % acc_pairs[upid]["GCA"]
 
             urllib.urlretrieve(seq_rep_url, os.path.join(updir, filename))
@@ -910,8 +906,44 @@ def download_sequence_report_files(project_dir, upid_gca_file):
         json.dump(err_seq_rep_files, fp_out)
         fp_out.close()
 
+# -----------------------------------------------------------------------------
+
+def sequence_report_to_json(seq_report_file, dest_dir=None):
+    """
+    Convert a GCA sequence report file (ENA) from .txt to .json format
+
+    seq_report_file: The path to a valid GCA related sequence report file
+    dest_dir: The path to destination directory. If None use the directory
+    of the input file
+
+    return: Accession dictionary
+    """
+
+    acc_dict = {}
+    fp = open(seq_report_file, 'r')
+    # discard header line
+    fp.readline()
+
+    for line in fp:
+        line = line.strip().split('\t')
+
+        acc_dict[line[0]] = {"sequence_name": line[1], "sequence-length": line[2],
+                             "sequence-role": line[3], "replicon-name": line[4],
+                             "replicon-type": line[5], "assembly-unit": line[6]}
+    fp.close()
+
+    if dest_dir is None:
+        dest_dir = os.path.split(seq_report_file)[0]
+
+    filename = os.path.basename(seq_report_file).partition(".")[0]
+    fp_out = open(os.path.join(dest_dir, filename+".json"), 'w')
+    json.dump(acc_dict, fp_out)
+    fp_out.close()
+
+    return acc_dict
 
 # -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
     pass

@@ -12,9 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""
-TO DO:    - logging
-"""
+# TO DO:    - logging
 
 # ---------------------------------IMPORTS-------------------------------------
 
@@ -59,8 +57,11 @@ NCBI_SEQ_URL = gc.NCBI_SEQ_URL
 # ENA file formats
 FORMATS = {"xml": ".xml", "fasta": ".fa"}
 
-# ---------------------------------------------------------------------- #STEP1
+# Maximum sequences per file
+MAX_SEQS = 100000
 
+
+# ---------------------------------------------------------------------- #STEP1
 
 def fetch_ref_proteomes():
     """
@@ -78,7 +79,6 @@ def fetch_ref_proteomes():
 
 
 # -----------------------------------------------------------------------------
-
 
 def export_gca_accessions(upid_gca):
     """
@@ -107,7 +107,6 @@ def export_gca_accessions(upid_gca):
 
 # -----------------------------------------------------------------------------
 
-
 def extract_genome_acc(prot_rdf):
     """
     Extracts and returns the assembly accession from the proteome rdf
@@ -120,7 +119,6 @@ def extract_genome_acc(prot_rdf):
     response = requests.get(prot_rdf).status_code
 
     if response == httplib.OK:
-
         g.load(prot_rdf)
 
         for s, p, o in g:
@@ -131,7 +129,6 @@ def extract_genome_acc(prot_rdf):
 
 
 # -----------------------------------------------------------------------------
-
 
 def proteome_rdf_scanner(proteome):
     """
@@ -174,7 +171,6 @@ def proteome_rdf_scanner(proteome):
 
 
 # ---------------------------------------------------------------------- #STEP2
-
 
 def fetch_genome_acc(prot):
     """
@@ -228,7 +224,6 @@ def fetch_genome_acc(prot):
 
 # -----------------------------------------------------------------------------
 
-
 def fetch_ena_file(acc, file_format, dest_dir):
     """
     Retrieves a file given a valid ENA accession and stores it in the
@@ -261,7 +256,6 @@ def fetch_ena_file(acc, file_format, dest_dir):
 
 # ---------------------------------------------------------------------- #STEP3
 
-
 def extract_assembly_accs(accession):
     """
     Loads an xml tree from a file or a string (usually an http response),
@@ -272,7 +266,6 @@ def extract_assembly_accs(accession):
 
     accessions = []
     root = None
-    chroms = None
     assembly_link = None
     assembly = None
 
@@ -322,7 +315,6 @@ def extract_assembly_accs(accession):
 
 # ---------------------------------------------------------------------- #STEP4
 
-
 def download_genomes(gen, dest_dir):
     """
     Downloads all chromosome files of a given assembly accession (ENA) in
@@ -334,13 +326,12 @@ def download_genomes(gen, dest_dir):
     """
 
     # need to add logging
-
     accessions = None
 
     if os.path.isfile(gen):
-        fp = open(gen, 'r')
+        gen_fp = open(gen, 'r')
 
-        for gen_acc in fp:
+        for gen_acc in gen_fp:
             gen_acc = string.strip(gen_acc)
             if string.find(gen_acc, '.') != -1:
                 gen_acc = gen_acc.partition('.')
@@ -362,6 +353,8 @@ def download_genomes(gen, dest_dir):
             gen_acc = None
             gen_dir = None
             accessions = None
+
+        gen_fp.close()
 
     else:
         if string.find(gen, '.') != -1:
@@ -420,7 +413,6 @@ def fetch_genome(gen, dest_dir):
 
 # -----------------------------------------------------------------------------
 
-
 def rdf_accession_search(ref_prot_acc, sub_str):
     """
     Parses rdf url and returns a list of ENA accessions
@@ -451,7 +443,6 @@ def rdf_accession_search(ref_prot_acc, sub_str):
 
 
 # -----------------------------------------------------------------------------
-
 
 def assembly_report_parser(report_url):
     """
@@ -487,7 +478,6 @@ def assembly_report_parser(report_url):
 
 # -----------------------------------------------------------------------------
 
-
 def get_wgs_set_accession(prefix, version):
     """
     Generates ENA WGS accession using the WGS accession pattern
@@ -512,7 +502,6 @@ def get_wgs_set_accession(prefix, version):
 
 # -----------------------------------------------------------------------------
 
-
 def get_wgs_range(wgs_acc):
     """
     Fetches the wgs related xml file from ENA and exports the wgs range
@@ -536,7 +525,6 @@ def get_wgs_range(wgs_acc):
 
 
 # -----------------------------------------------------------------------------
-
 
 def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
     """
@@ -570,8 +558,8 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
 
     return cmd
 
-# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 
 def genome_script_generator(upid, domain, gen_size, out_dir):
     """
@@ -585,7 +573,7 @@ def genome_script_generator(upid, domain, gen_size, out_dir):
     """
 
     # create shell script for upid within
-    fp = open(os.path.join(out_dir, upid + ".sh"), 'w')
+    shell_fp = open(os.path.join(out_dir, upid + ".sh"), 'w')
 
     # mem = gen_size * something might not need these for downloads
     mem_size = 8000
@@ -596,45 +584,43 @@ def genome_script_generator(upid, domain, gen_size, out_dir):
     prot_dest_dir = os.path.join(
         os.path.join(os.path.split(out_dir)[0], domain), upid)
 
-    fp.write("#!/bin/csh\n")
-    fp.write("#BSUB -M %s\n" % mem_size)
-    fp.write("#BSUB -R \"rusage[mem=%s,tmp=%s]\"\n" % (mem_size, tmp_size))
+    shell_fp.write("#!/bin/csh\n")
+    shell_fp.write("#BSUB -M %s\n" % mem_size)
+    shell_fp.write("#BSUB -R \"rusage[mem=%s,tmp=%s]\"\n" % (mem_size, tmp_size))
 
     # create a directory using the proteomes unique id extended by jobid
-    fp.write("#BSUB -E \"mkdir -m 777 -p %s\"\n" % tmp_dir)
-    fp.write("#BSUB -o \"%s/%sJ.out\"\n" % (tmp_dir, chr(37)))
-    fp.write("#BSUB -e \"%s/%sJ.err\"\n" %
-             (tmp_dir, chr(37)))  # just the error output
+    shell_fp.write("#BSUB -E \"mkdir -m 777 -p %s\"\n" % tmp_dir)
+    shell_fp.write("#BSUB -o \"%s/%sJ.out\"\n" % (tmp_dir, chr(37)))
+    shell_fp.write("#BSUB -e \"%s/%sJ.err\"\n" % (tmp_dir, chr(37)))
 
-    fp.write("#BSUB -u \"%s\"\n" % gc.USER_EMAIL)  # email this user
+    shell_fp.write("#BSUB -u \"%s\"\n" % gc.USER_EMAIL)  # email this user
 
     # need to write files back to genome dir prot_dest_dir
-    fp.write(
+    shell_fp.write(
         "#BSUB -f \"%s/download.out < /tmp/%sJ/%sJ.out\"\n" % (prot_dest_dir,
                                                                chr(37),
                                                                chr(37)))
 
-    fp.write(
+    shell_fp.write(
         "#BSUB -f \"%s/download.err < /tmp/%sJ/%sJ.err\"\n" % (prot_dest_dir,
                                                                chr(37),
                                                                chr(37)))
 
     # delete everything on termination or completion of job
-    fp.write("#BSUB -Ep \"rm -rf %s\"\n" % tmp_dir)
+    shell_fp.write("#BSUB -Ep \"rm -rf %s\"\n" % tmp_dir)
 
-    fp.write("#BSUB -g %s/%s \n\n" % (gc.LSF_GEN_GROUP % domain))
+    shell_fp.write("#BSUB -g %s/%s \n\n" % (gc.LSF_GEN_GROUP % domain))
 
     # call executable
-    fp.write("python %s %s %s \n\n" %
-             (gc.GEN_DWLD_EXEC, os.path.join(prot_dest_dir, upid + ".json"),
-              prot_dest_dir))
+    shell_fp.write("python %s %s %s \n\n" %
+                   (gc.GEN_DWLD_EXEC, os.path.join(prot_dest_dir, upid + ".json"),
+                    prot_dest_dir))
 
     # copy files to destination
-    fp.write("cp %s/*.gz %s/.\n" % (tmp_dir, prot_dest_dir))
+    shell_fp.write("cp %s/*.gz %s/.\n" % (tmp_dir, prot_dest_dir))
 
 
 # -----------------------------------------------------------------------------
-
 
 def load_upid_gca_file(upid_gca_file):
     """
@@ -662,7 +648,6 @@ def load_upid_gca_file(upid_gca_file):
 
 
 # -----------------------------------------------------------------------------
-
 
 def load_upid_gca_pairs():
     """
@@ -699,7 +684,6 @@ def load_upid_gca_pairs():
 
 
 # -----------------------------------------------------------------------------
-
 
 def fetch_genome_accessions(upid, gca_acc):
     """
@@ -740,7 +724,6 @@ def fetch_genome_accessions(upid, gca_acc):
 
 # -----------------------------------------------------------------------------
 
-
 def fetch_wgs_range_accs(wgs_range):
     """
     Splits the WGS range into distinct accessions for metadata retrieval
@@ -772,7 +755,6 @@ def fetch_wgs_range_accs(wgs_range):
 
 # -----------------------------------------------------------------------------
 
-
 def genome_download_validator(genome_dir):
     """
     Loop over Genome Download output directory and report any upids with
@@ -798,12 +780,14 @@ def genome_download_validator(genome_dir):
             genome_dir_loc = os.path.join(kingdom_dir_loc, genome)
 
             if os.path.exists(os.path.join(genome_dir_loc, "download.out")):
-                fp = open(os.path.join(genome_dir_loc, "download.out"))
-                for line in fp.readlines():
+                download_fp = open(os.path.join(genome_dir_loc, "download.out"))
+
+                for line in download_fp.readlines():
                     if line.find("Success") != -1:
                         success = 1
                         break
-                fp.close()
+
+                download_fp.close()
 
                 if success == 0:
                     erroneous_genomes[kingdom].append(genome)
@@ -867,9 +851,9 @@ def download_sequence_report_files(project_dir, upid_gca_file):
 
     err_seq_rep_files = {}
 
-    fp = open(upid_gca_file, 'r')
-    acc_pairs = json.load(fp)
-    fp.close()
+    upid_gca_fp = open(upid_gca_file, 'r')
+    acc_pairs = json.load(upid_gca_fp)
+    upid_gca_fp.close()
 
     for upid in acc_pairs.keys():
 
@@ -902,9 +886,10 @@ def download_sequence_report_files(project_dir, upid_gca_file):
                                            "DOM": acc_pairs[upid]["DOM"]}
 
     if len(err_seq_rep_files.keys()) > 0:
-        fp_out = open(project_dir, "err_seq_rep_files.json", 'w')
+        fp_out = open(os.path.join(project_dir, "err_seq_rep_files.json"), 'w')
         json.dump(err_seq_rep_files, fp_out)
         fp_out.close()
+
 
 # -----------------------------------------------------------------------------
 
@@ -920,30 +905,73 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
     """
 
     acc_dict = {}
-    fp = open(seq_report_file, 'r')
+    seq_rep_fp = open(seq_report_file, 'r')
     # discard header line
-    fp.readline()
+    seq_rep_fp.readline()
 
-    for line in fp:
+    for line in seq_rep_fp:
         line = line.strip().split('\t')
 
         acc_dict[line[0]] = {"sequence_name": line[1], "sequence-length": line[2],
                              "sequence-role": line[3], "replicon-name": line[4],
                              "replicon-type": line[5], "assembly-unit": line[6]}
-    fp.close()
+    seq_rep_fp.close()
 
     if dest_dir is None:
         dest_dir = os.path.split(seq_report_file)[0]
 
     filename = os.path.basename(seq_report_file).partition(".")[0]
-    fp_out = open(os.path.join(dest_dir, filename+".json"), 'w')
+    fp_out = open(os.path.join(dest_dir, filename + ".json"), 'w')
     json.dump(acc_dict, fp_out)
     fp_out.close()
 
     return acc_dict
 
+
 # -----------------------------------------------------------------------------
 
+def split_and_download(wgs_range, dest_dir):
+    """
+    Function to split and download smaller segments of large genome assemblies
+
+    :param wgs_range: A WGS assembly sequence accession range from ENA
+    (e.g. CBTL0100000001-CBTL0111673940)
+    :param dest_dir: The path to the destination directory
+
+    :return:  void
+    """
+
+    # split the range into separate accessions
+    accessions = fetch_wgs_range_accs(wgs_range)
+
+    file_no = len(accessions) / MAX_SEQS
+    remainder = len(accessions) % MAX_SEQS
+
+    count = 0
+    # indexes
+    idx1 = 0
+    idx2 = MAX_SEQS
+    while count < file_no:
+        accession = accessions[idx1] + '-' + accessions[idx2]
+        urllib.urlretrieve(ENA_DATA_URL % accession,
+                           os.path.join(dest_dir, accession + '.fa'))
+        idx1 = idx2 + 1
+        idx2 = idx2 + MAX_SEQS
+
+        count += 1
+
+    # check if sequences are not split evenly, and do and extra step for the
+    # remaining seqs
+
+    if remainder != 0:
+        idx1 = idx1 = idx2 + 1
+        # get the last accession
+        idx2 = accessions[-1]
+        accession = accessions[idx1] + '-' + accessions[idx2]
+        urllib.urlretrieve(ENA_DATA_URL % accession,
+                           os.path.join(dest_dir, accession + '.fa'))
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
     pass

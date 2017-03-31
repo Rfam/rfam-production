@@ -11,15 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""
-TO DO:   - Rename functions
-         - Split fetch_gca_data
-"""
+#TO DO:   - Rename functions
+#         - Split fetch_gca_data
 
 # ---------------------------------IMPORTS-------------------------------------
 
-import os
-import sys
 import datetime
 import xml.etree.ElementTree as ET
 import requests
@@ -27,7 +23,6 @@ import requests
 # Config Files
 import genome_fetch as gf
 from config import gen_config as gc
-
 
 # -----------------------------------------------------------------------------
 
@@ -169,7 +164,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
     for acc_line in accessions:
         accession = acc_line.strip().split('\t')
 
-        if (accession[0].find('.') != -1):
+        if accession[0].find('.') != -1:
             entry["model"] = gc.GENSEQ_MODEL
             entry["pk"] = str(accession[0])  # seq_acc
 
@@ -192,7 +187,10 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
                     fields["seq_start"] = 0
                     fields["seq_end"] = 0
 
-                fields["mol_type"] = acc_meta["mol_type"]
+                fields["mol_type"] = None
+                if acc_meta.has_key("mol_type"):
+                    fields["mol_type"] = acc_meta["mol_type"]
+
                 # primary, PATCHES, ALT_REF_LOCI_1
                 fields["assembly_unit"] = accession[6]
                 # this takes the date of the entry is created
@@ -201,7 +199,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
                 fields["created"] = entry_date
                 fields["updated"] = entry_date
 
-            elif (len(accession) < 7 and accession[0].find('.') != -1):
+            elif len(accession) < 7 and accession[0].find('.') != -1:
                 fields = fetch_wgs_acc_metadata(accession[0])
 
         else:
@@ -366,7 +364,13 @@ def fetch_wgs_acc_metadata(wgs_acc):
     acc_xml = ET.fromstring(response)
     entry = acc_xml.find("entry")
 
-    fields["seq_version"] = int(entry.get("entryVersion"))
+    if entry is None:
+        return fields
+
+    fields["seq_version"] = 0
+    if entry.get("entryVersion") is not None:
+        fields["seq_version"] = int(entry.get("entryVersion"))
+
     fields["seq_length"] = int(entry.get("sequenceLength"))
     fields["seq_role"] = "contig"
     fields["mol_type"] = entry.get("moleculeType")
@@ -512,7 +516,162 @@ def fetch_assembly_links(gca_acc):
 
     return gca_ftp_links
 
+# -----------------------------------------------------------------------------
+def get_general_accession_metadata(upid, accession_list):
+    """
+    Extracts the metadata for a list of accessions which correspond to a
+    specific genome. This function is for the case in which accessions are
+    extracted from Uniprot's proteome rdf files
+
+    upid: Uniprot's proteome id
+    accession_list: A list of valid sequence accessions to be used for
+    extracting the metadata
+
+    return: A json like structure to be used for generating the json dumps
+    """
+
+    genome_entries = []
+    entry = {}
+    fields = {}
+
+    for acc in accession_list:
+        entry["model"] = gc.GENSEQ_MODEL
+        entry["pk"] = acc
+        fields = fetch_wgs_acc_metadata(acc)
+        entry["fields"] = fields
+        # adding upid and wgs_acc in entry fields
+        entry["fields"]["upid"] = upid
+        entry["fields"]["gen_acc"] = None
+        genome_entries.append(entry)
+        entry = {}
+
+    return genome_entries
 
 # -----------------------------------------------------------------------------
+
+def extract_uniprot_genome_metadata(upid):
+    """
+    Parses a proteome's xml file from Uniprot and converts it to a json
+    like object which is returned
+
+    upid: A valid Uniprot Proteome identifier
+
+    returns: A dictionary
+    """
+
+    proteome_dict = {}
+
+    # namespace prefix # or register a namespace in the ET
+    prefix = "{http://uniprot.org/uniprot}%s"
+
+    response = requests.get(gc.PROTEOME_XML_URL % upid).content
+    prot_tree_root = ET.fromstring(response)
+
+    proteome = prot_tree_root.find(prefix % "proteome")
+
+    upid = proteome.find(prefix % "upid")
+    proteome_dict["upid"] = upid.text
+    proteome_dict["ncbi_id"] = int(proteome.find(prefix % "taxonomy").text)
+    proteome_dict["description"] = proteome.find(prefix % "description").text
+    proteome_dict["scientific_name"] = proteome.find(prefix % "name").text
+
+    # get sequence accessions
+    acc_dict = {}
+    other_accs = []
+    accession_nodes = proteome.findall(prefix % "component")
+
+    for node in accession_nodes:
+
+        if node.get("name").find("WGS") != -1:
+            acc_dict["WGS"] = node.find(prefix % "genome_accession").text
+
+        elif node.get("name").find("Chloroplast") != -1:
+            acc_dict["Chloroplast"] = node.find(prefix % "genome_accession").text
+
+        elif node.get("name").find("Mitochondrion") != -1:
+            acc_dict["Mitochondrion"] = node.find(prefix % "genome_accession").text
+
+        else:
+            other_accs.append(node.find(prefix % "genome_accession").text)
+
+    if len(other_accs) > 0:
+        acc_dict["other"] = other_accs
+
+    proteome_dict["accessions"] = acc_dict
+
+    return proteome_dict
+
+# -----------------------------------------------------------------------------
+
+def dump_uniprot_genome_metadata(upid, kingdom):
+    """
+    Parses ENA GCA accession xml, and returns the accession's data in the
+    form of a dictionary
+
+    proteome_dict: A proteome dict built from Uniprot's proteome xml files
+    upid: A valid Uniprot proteome accession (e.g. UP000005640 - Homo Sapiens)
+    assembly_acc: A valid ENA GCA accession
+    kingdom: The corresponding species kingdom
+    """
+
+    genome_entry = {}
+    fields = {}
+
+    # extract the values from the corresponding xml
+    proteome_dict = extract_uniprot_genome_metadata(upid)
+
+    fields["upid"] = upid
+    fields["gca_acc"] = None
+    fields["gca_version"] = None
+
+    # add ensembl fields as a post-processing step
+    fields["ensembl_id"] = None
+    fields["ensembl_source"] = None
+
+    fields["assembly_name"] = None
+    fields["assembly_level"] = None
+
+    # check if there is a WGS accession
+    if "WGS" in proteome_dict["accessions"].keys():
+        fields["wgs_acc"] = proteome_dict["accessions"]["WGS"]
+        fields["wgs_version"] = int(proteome_dict["accessions"]["WGS"][4:6])
+    else:
+        fields["wgs_acc"] = None
+        fields["wgs_version"] = None
+
+    fields["study_ref"] = None
+
+    # description can be very long, using title instead as short description
+    fields["description"] = proteome_dict["description"]
+
+    fields["total_length"] = None
+    fields["ungapped_length"] = None
+    fields["circular"] = None
+
+    fields["ncbi_id"] = proteome_dict["ncbi_id"]
+
+    fields["scientific_name"] = proteome_dict["scientific_name"]
+    fields["common_name"] = None
+    fields["kingdom"] = kingdom
+
+    fields["num_gen_regions"] = None
+    fields["num_rfam_regions"] = None
+    fields["num_families"] = None
+
+    # this takes the date of the entry is created
+    entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fields["created"] = entry_date
+    fields["updated"] = entry_date
+
+    genome_entry["model"] = gc.GENOME_MODEL
+    genome_entry["pk"] = upid
+    genome_entry["fields"] = fields
+
+    # return genome dictionary (in Django format)
+    return genome_entry
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
+
     pass

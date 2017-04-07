@@ -40,92 +40,103 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
     fields = {}
     tmp_acc = assembly_acc
 
-    assembly_xml = requests.get(gc.ENA_XML_URL % tmp_acc).content
+    # check status
+    response = requests.get(gc.ENA_XML_URL % tmp_acc)
 
-    root = ET.fromstring(assembly_xml)
-    assembly = root.find("ASSEMBLY")
+    # need to do this repeatedly
+    if response.status_code == 200:
+        assembly_xml = response.content
 
-    primary_id = assembly.find("IDENTIFIERS").find("PRIMARY_ID")
+        root = ET.fromstring(assembly_xml)
+        assembly = root.find("ASSEMBLY")
 
-    if primary_id is not None:
-        fields["gca_acc"] = primary_id.text
-    else:
-        fields["gca_acc"] = primary_id
+        if assembly is None:
+            return genome_entry
 
-    version = fields["gca_acc"].partition('.')[2]
-    fields["gca_version"] = int(version)
+        primary_id = assembly.find("IDENTIFIERS").find("PRIMARY_ID")
 
-    # add ensembl fields as a post-processing step
-    fields["ensembl_id"] = None
-    fields["ensembl_source"] = None
-
-    fields["assembly_name"] = assembly.find("NAME").text
-
-    assembly_links = None
-    assembly_level = assembly.find("ASSEMBLY_LEVEL").text
-    assembly_links = assembly.find("ASSEMBLY_LINKS")
-
-    if assembly_level == "complete genome":
-        assembly_level = assembly_level.replace(' ', '-')
-
-    fields["assembly_level"] = assembly_level
-
-    if assembly_level == "contig" and assembly_links is None:
-        wgs_fields = assembly.find("WGS_SET")
-        wgs_acc = gf.get_wgs_set_accession(
-            wgs_fields.find("PREFIX").text, wgs_fields.find("VERSION").text)
-
-        fields["wgs_acc"] = wgs_acc
-        fields["wgs_version"] = int(wgs_fields.find("VERSION").text)
-    else:
-        fields["wgs_acc"] = None
-        fields["wgs_version"] = None
-
-    fields["study_ref"] = assembly.find("STUDY_REF").find(
-        "IDENTIFIERS").find("PRIMARY_ID").text
-
-    # description can be very long, using title instead as short description
-    fields["description"] = assembly.find("TITLE").text
-
-    attributes = fetch_assembly_attributes(
-        assembly.find("ASSEMBLY_ATTRIBUTES"))
-
-    fields["total_length"] = int(attributes["total-length"])
-    fields["ungapped_length"] = int(attributes["ungapped-length"])
-
-    genome_desc = assembly.find("DESCRIPTION").text
-
-    if genome_desc is not None:
-        if genome_desc.find("circular") != -1:
-            fields["circular"] = 1
+        if primary_id is not None:
+            fields["gca_acc"] = primary_id.text
         else:
-            fields["circular"] = 0
+            fields["gca_acc"] = primary_id
+
+        version = fields["gca_acc"].partition('.')[2]
+        fields["gca_version"] = int(version)
+
+        # add ensembl fields as a post-processing step
+        fields["ensembl_id"] = None
+        fields["ensembl_source"] = None
+
+        fields["assembly_name"] = assembly.find("NAME").text
+
+        assembly_links = None
+        assembly_level = assembly.find("ASSEMBLY_LEVEL").text
+        assembly_links = assembly.find("ASSEMBLY_LINKS")
+
+        if assembly_level == "complete genome":
+            assembly_level = assembly_level.replace(' ', '-')
+
+        fields["assembly_level"] = assembly_level
+
+        if assembly_level == "contig" and assembly_links is None:
+            wgs_fields = assembly.find("WGS_SET")
+            wgs_acc = gf.get_wgs_set_accession(
+                wgs_fields.find("PREFIX").text, wgs_fields.find("VERSION").text)
+
+            fields["wgs_acc"] = wgs_acc
+            fields["wgs_version"] = int(wgs_fields.find("VERSION").text)
+        else:
+            fields["wgs_acc"] = None
+            fields["wgs_version"] = None
+
+        fields["study_ref"] = assembly.find("STUDY_REF").find(
+            "IDENTIFIERS").find("PRIMARY_ID").text
+
+        # description can be very long, using title instead as short description
+        fields["description"] = assembly.find("TITLE").text
+
+        attributes = fetch_assembly_attributes(
+            assembly.find("ASSEMBLY_ATTRIBUTES"))
+
+        fields["total_length"] = int(attributes["total-length"])
+        fields["ungapped_length"] = int(attributes["ungapped-length"])
+
+        genome_desc = assembly.find("DESCRIPTION").text
+
+        if genome_desc is not None:
+            if genome_desc.find("circular") != -1:
+                fields["circular"] = 1
+            else:
+                fields["circular"] = 0
+        else:
+            fields["circular"] = None
+
+        taxid = assembly.find("TAXON")
+        fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)
+
+        fields["scientific_name"] = taxid.find("SCIENTIFIC_NAME").text
+
+        common_name = None
+        common_name = taxid.find("COMMON_NAME")
+        if common_name is not None:
+            fields["common_name"] = taxid.find("COMMON_NAME").text
+        fields["kingdom"] = kingdom
+
+        fields["num_gen_regions"] = int(attributes["count-regions"])
+        fields["num_rfam_regions"] = None
+        fields["num_families"] = None
+
+        # this takes the date of the entry is created
+        entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fields["created"] = entry_date
+        fields["updated"] = entry_date
+
+        genome_entry["model"] = gc.GENOME_MODEL
+        genome_entry["pk"] = upid
+        genome_entry["fields"] = fields
+
     else:
-        fields["circular"] = None
-
-    taxid = assembly.find("TAXON")
-    fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)
-
-    fields["scientific_name"] = taxid.find("SCIENTIFIC_NAME").text
-
-    common_name = None
-    common_name = taxid.find("COMMON_NAME")
-    if common_name is not None:
-        fields["common_name"] = taxid.find("COMMON_NAME").text
-    fields["kingdom"] = kingdom
-
-    fields["num_gen_regions"] = int(attributes["count-regions"])
-    fields["num_rfam_regions"] = None
-    fields["num_families"] = None
-
-    # this takes the date of the entry is created
-    entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    fields["created"] = entry_date
-    fields["updated"] = entry_date
-
-    genome_entry["model"] = gc.GENOME_MODEL
-    genome_entry["pk"] = upid
-    genome_entry["fields"] = fields
+        print "GCA xml unavailable for %s" % upid
 
     return genome_entry
 
@@ -169,6 +180,7 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
             entry["pk"] = str(accession[0])  # seq_acc
 
             if len(accession) == 7:
+                print accession
                 acc_meta = fetch_gca_acc_metadata(accession[0])
 
                 fields["ncbi_id"] = acc_meta["ncbi_id"]
@@ -390,6 +402,7 @@ def fetch_wgs_acc_metadata(wgs_acc):
 
     if location is not None:
         location = location.strip().split('-')
+        print location
         fields["seq_start"] = int(location[0])
         fields["seq_end"] = int(location[1])
     else:
@@ -464,6 +477,7 @@ def fetch_gca_acc_metadata(accession):
     """
 
     metadata = {}
+
     xml_str = requests.get(gc.ENA_XML_URL % accession).content
 
     xml_root = ET.fromstring(xml_str)
@@ -537,7 +551,14 @@ def get_general_accession_metadata(upid, accession_list):
     for acc in accession_list:
         entry["model"] = gc.GENSEQ_MODEL
         entry["pk"] = acc
-        fields = fetch_wgs_acc_metadata(acc)
+
+        # wgs acc
+        if len(acc)==12:
+            fields = fetch_wgs_acc_metadata(acc)
+        # some other accession from Uniprot...
+        else:
+            fields = fetch_gca_acc_metadata(acc)
+
         entry["fields"] = fields
         # adding upid and wgs_acc in entry fields
         entry["fields"]["upid"] = upid

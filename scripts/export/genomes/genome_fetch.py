@@ -38,6 +38,7 @@ REF_PROT_LIST_URL = gc.REF_PROT_LIST_URL
 
 # Retrieve the proteome rdf file
 PROTEOME_URL = gc.PROTEOME_URL
+PROTEOME_XML_URL = gc.PROTEOME_XML_URL
 
 # Retrieve the genome's xml file
 ENA_XML_URL = gc.ENA_XML_URL
@@ -172,6 +173,49 @@ def proteome_rdf_scanner(proteome):
 
 # ---------------------------------------------------------------------- #STEP2
 
+def proteome_xml_scanner(proteome):
+    """
+    Scans a Uniprot's reference proteome rdf file and looks for all
+    available accessions. Returns a dictionary with GCA and WGS accessions
+    where applicable
+
+    prot_xml: Uniprot's proteome rdf url or file path
+    """
+
+    # need to do some http error handling here and if resource is unavailable
+    # return None and or http error code
+
+    prot_xml = PROTEOME_XML_URL % proteome
+    prefix = "{http://uniprot.org/uniprot}%s"
+
+    accessions = {"GCA": -1, "WGS": -1}
+    wgs_flag = False
+
+    if requests.get(prot_xml).status_code == httplib.OK:
+        xml_root = ET.fromstring(requests.get(prot_xml).content)
+        proteome = xml_root.find(prefix % "proteome")
+
+        # look for a GCA accession
+        gen_assembly = None
+        gen_assembly = proteome.find(prefix % "genome_assembly")
+        if gen_assembly is not None:
+            accessions["GCA"] = gen_assembly.text
+
+        prot_components = proteome.findall(prefix % "component")
+
+        # scan WGS accession
+        for component in prot_components:
+            component_name = component.get("name")
+            if component_name.find("WGS") != -1:
+                accessions["WGS"] = component.find(prefix % "genome_accession").text
+    else:
+        pass
+
+    return accessions
+
+
+# ---------------------------------------------------------------------- #STEP2
+
 def fetch_genome_acc(prot):
     """
     Returns a proteome's corresponding assembly accession (ENA) in a
@@ -261,7 +305,7 @@ def extract_assembly_accs(accession):
     Loads an xml tree from a file or a string (usually an http response),
     and returns a list with the genome assembly's chromosomes
 
-    accession: A valid ENA assembly accession (without the assembly version)
+    accession: A valid ENA GCA accession (without the assembly version)
     """
 
     accessions = []
@@ -281,7 +325,6 @@ def extract_assembly_accs(accession):
     assembly = root.find("ASSEMBLY")
 
     if assembly is not None:
-
         # either parse the assembly report file or get the WGS range
         assembly_link = assembly.find(
             "ASSEMBLY_LINKS")
@@ -298,11 +341,9 @@ def extract_assembly_accs(accession):
             # no assembly link provided - look for WGS element
             wgs = None
             wgs = assembly.find("WGS_SET")
-
             # get wgs accession
             wgs_acc = get_wgs_set_accession(
                 wgs.find("PREFIX").text, wgs.find("VERSION").text)
-
             # get wgs range and return as single accession
             accessions.append(get_wgs_range(wgs_acc))
 
@@ -333,6 +374,7 @@ def download_genomes(gen, dest_dir):
 
         for gen_acc in gen_fp:
             gen_acc = string.strip(gen_acc)
+
             if string.find(gen_acc, '.') != -1:
                 gen_acc = gen_acc.partition('.')
                 gen_acc = gen_acc[0]
@@ -341,6 +383,7 @@ def download_genomes(gen, dest_dir):
 
             try:
                 os.mkdir(gen_dir)
+
             except:
                 print "Unable to generate directory for accession: ", gen
 
@@ -510,16 +553,20 @@ def get_wgs_range(wgs_acc):
     """
 
     wgs_range = None
-    wgs_xml_str = requests.get(ENA_XML_URL % wgs_acc).content
-    wgs_xml_root = ET.fromstring(wgs_xml_str)
 
-    if wgs_xml_root.find("entry") is not None:
+    response = requests.get(ENA_XML_URL % wgs_acc)
 
-        wgs_xrefs = wgs_xml_root.find("entry").findall("xref")
+    if response.status_code == httplib.OK:
+        wgs_xml_str = response.content
+        wgs_xml_root = ET.fromstring(wgs_xml_str)
 
-        for xref_el in wgs_xrefs:
-            if xref_el.get("db") == "ENA-WGS":
-                wgs_range = xref_el.get("id")
+        if wgs_xml_root.find("entry") is not None:
+
+            wgs_xrefs = wgs_xml_root.find("entry").findall("xref")
+
+            for xref_el in wgs_xrefs:
+                if xref_el.get("db") == "ENA-WGS":
+                    wgs_range = xref_el.get("id")
 
     return wgs_range
 
@@ -548,13 +595,13 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
            "-Ep \"rm -rf luigi\" "
            "-g %s/%s "
            "python %s DownloadGenome --upid %s --gca-acc %s --project-dir %s --domain %s") % (
-               gc.MEM, gc.MEM, gc.TMP_MEM,
-               os.path.join(prot_dir, "download.out"),
-               os.path.join(prot_dir, "download.err"),
-               gc.USER_EMAIL, gc.LSF_GEN_GROUP,
-               domain, exec_path,
-               upid, gca_acc,
-               proj_dir, domain)
+              gc.MEM, gc.MEM, gc.TMP_MEM,
+              os.path.join(prot_dir, "download.out"),
+              os.path.join(prot_dir, "download.err"),
+              gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+              domain, exec_path,
+              upid, gca_acc,
+              proj_dir, domain)
 
     return cmd
 
@@ -624,25 +671,33 @@ def genome_script_generator(upid, domain, gen_size, out_dir):
 
 def load_upid_gca_file(upid_gca_file):
     """
-    Parses Uniprot's upid tsv file and exports all important information in json
-    format
+    Parses Uniprot's upid tsv file and exports all important information
+    in json format
+
+    upid_gca_file: UPID_GCA file provided by trembl
+
+    returns: A dictionary of upid, gca and domain mappings {upid: {"GCA": , "DOM": }}
     """
 
     upid_gca_dict = {}
     upid_fp = open(upid_gca_file, 'r')
 
-    for upid_line in upid_fp:
-        upid_line = upid_line.strip().split('\t')
+    try:
+        for upid_line in upid_fp:
+            upid_line = upid_line.strip().split('\t')
 
-        # add GCA accession
-        if upid_line[1] != '':
-            upid_gca_dict[upid_line[0]] = {"GCA": upid_line[1]}
-        else:
-            upid_gca_dict[upid_line[0]] = {"GCA": -1}
+            # add GCA accession
+            if upid_line[1] != '':
+                upid_gca_dict[upid_line[0]] = {"GCA": upid_line[1]}
+            else:
+                upid_gca_dict[upid_line[0]] = {"GCA": -1}
 
-        upid_gca_dict[upid_line[0]]["DOM"] = upid_line[2]
+            upid_gca_dict[upid_line[0]]["DOM"] = upid_line[2]
 
-    upid_fp.close()
+        upid_fp.close()
+
+    except:
+        raise IOError
 
     return upid_gca_dict
 
@@ -796,7 +851,6 @@ def genome_download_validator(genome_dir):
 
     fp_out = open(os.path.join(genome_dir, "download_report.txt"), 'w')
 
-    # print out erroneous genomes
     for kingdom in erroneous_genomes.keys():
         if len(erroneous_genomes[kingdom]) > 0:
             fp_out.write(kingdom + '\n')
@@ -906,6 +960,7 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
 
     acc_dict = {}
     seq_rep_fp = open(seq_report_file, 'r')
+
     # discard header line
     seq_rep_fp.readline()
 
@@ -934,11 +989,11 @@ def split_and_download(wgs_range, dest_dir):
     """
     Function to split and download smaller segments of large genome assemblies
 
-    :param wgs_range: A WGS assembly sequence accession range from ENA
+    wgs_range: A WGS assembly sequence accession range from ENA
     (e.g. CBTL0100000001-CBTL0111673940)
-    :param dest_dir: The path to the destination directory
+    dest_dir: The path to the destination directory
 
-    :return:  void
+    returns:  void
     """
 
     # split the range into separate accessions
@@ -970,6 +1025,69 @@ def split_and_download(wgs_range, dest_dir):
         accession = accessions[idx1] + '-' + accessions[idx2]
         urllib.urlretrieve(ENA_DATA_URL % accession,
                            os.path.join(dest_dir, accession + '.fa'))
+
+
+# -----------------------------------------------------------------------------
+
+def fetch_accessions_from_proteome_xml(proteome):
+    """
+    Parses Uniprot's proteome xml and extracts all available ENA accessions
+
+    proteome: A valid Uniprot's proteome accession
+
+    returns: A list of genome accessions
+    """
+    prot_accessions = []
+
+    # namespace prefix # or register a namespace in the ET
+    prefix = "{http://uniprot.org/uniprot}%s"
+
+    response = requests.get(gc.PROTEOME_XML_URL % proteome)
+
+    if response.status_code == 200:
+        # convert from string to xml format
+        prot_tree_root = ET.fromstring(response.content)
+
+        # get proteome node
+        proteome = prot_tree_root.find(prefix % "proteome")
+
+        # get proteome's component nodes/genome accession nodes
+        component_nodes = proteome.findall(prefix % "component")
+
+        # loop over all component nodes and extract genome accessions
+        for node in component_nodes:
+            gen_acc_nodes = node.findall(prefix % "genome_accession")
+
+            for gen_acc_node in gen_acc_nodes:
+                prot_accessions.append(gen_acc_node.text)
+
+    return prot_accessions
+
+
+# -----------------------------------------------------------------------------
+
+def check_accession_availability(accession):
+    """
+    Check whether a specific accession is available from ENA
+
+    accession: sequence accession
+    return: True if accession is available, False otherwise
+    """
+
+    # we can expand this by adding a db option (e.g. ena, uniprot, ncbi)
+    response = requests.get(ENA_XML_URL % accession)
+
+    if response.status_code == httplib.OK:
+        xml_root = ET.fromstring(response.content)
+
+        # If the entry exists, there should be an entry node in the xml file
+        entry_node = None
+        entry_node = xml_root.find("entry")
+
+        if entry_node is None:
+            return False
+
+    return True
 
 # -----------------------------------------------------------------------------
 

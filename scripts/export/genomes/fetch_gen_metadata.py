@@ -11,21 +11,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-#TO DO:   - Rename functions
-#         - Split fetch_gca_data
+# TO DO:   - Rename functions
+#          - Split fetch_gca_data
 
 # ---------------------------------IMPORTS-------------------------------------
 
 import datetime
+import httplib
 import xml.etree.ElementTree as ET
-import requests
 
+import requests
 # Config Files
 import genome_fetch as gf
 from config import gen_config as gc
 
-# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+# rename this to metadata
 def fetch_gca_data(upid, assembly_acc, kingdom):
     """
     Parses ENA GCA accession xml, and returns the accession's data in the
@@ -44,7 +46,7 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
     response = requests.get(gc.ENA_XML_URL % tmp_acc)
 
     # need to do this repeatedly
-    if response.status_code == 200:
+    if response.status_code == httplib.OK:
         assembly_xml = response.content
 
         root = ET.fromstring(assembly_xml)
@@ -180,7 +182,6 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
             entry["pk"] = str(accession[0])  # seq_acc
 
             if len(accession) == 7:
-                print accession
                 acc_meta = fetch_gca_acc_metadata(accession[0])
 
                 fields["ncbi_id"] = acc_meta["ncbi_id"]
@@ -188,7 +189,10 @@ def fetch_assembly_accessions(upid, gca_acc, acc_ftp_link, reg_ftp_link=None):
                 fields["upid"] = upid
                 fields["gen_acc"] = gca_acc
                 fields["seq_version"] = int(accession[0].partition('.')[2])
-                fields["seq_length"] = int(accession[2])
+                if accession[2] != '':
+                    fields["seq_length"] = int(accession[2])
+                else:
+                    fields["seq_length"] = 0
                 fields["seq_role"] = accession[3]  # patch, loci etc
 
                 # need to parse the regions file for these fields
@@ -271,62 +275,70 @@ def fetch_wgs_metadata(upid, assembly_acc, kingdom):
     wgs_entry = {}
     fields = {}
 
-    response = requests.get(gc.ENA_XML_URL % assembly_acc).content
-    assembly_xml = ET.fromstring(response)  # root
-    entry = assembly_xml.find("entry")
+    response = requests.get(gc.ENA_XML_URL % assembly_acc)
 
-    fields["gca_acc"] = None
-    fields["gca_version"] = None
+    if response.status_code == httplib.OK:
+        assembly_xml = ET.fromstring(response.content)  # root
 
-    fields["wgs_acc"] = entry.get("accession")
-    fields["wgs_version"] = int(entry.get("version"))
-    fields["ensembl_id"] = None  # post processing
+        entry = assembly_xml.find("entry")
 
-    # fetching assembly name out of entry's comment lines
+        fields["gca_acc"] = None
+        fields["gca_version"] = None
 
-    entry_cmnt = None
-    entry_cmnt = entry.find("comment")
+        fields["wgs_acc"] = entry.get("accession")
+        fields["wgs_version"] = int(entry.get("version"))
+        fields["ensembl_id"] = None  # post processing
 
-    if entry_cmnt is not None:
-        assembly_name = get_wgs_assembly_name(
-            entry.find("comment").text)
-        fields["assembly_name"] = assembly_name
+        # fetching assembly name out of entry's comment lines
+        entry_comment = None
+        entry_comment = entry.find("comment")
 
-    else:
-        fields["assembly_name"] = None
+        if entry_comment is not None:
+            assembly_name = get_wgs_assembly_name(
+                entry.find("comment").text)
+            fields["assembly_name"] = assembly_name
 
-    if entry.get("topology") == "linear":
-        fields["circular"] = 0
-    else:
-        fields["circular"] = 1
+        else:
+            fields["assembly_name"] = None
 
-    fields["assembly_level"] = "contig"
+        if entry.get("topology") == "linear":
+            fields["circular"] = 0
+        else:
+            fields["circular"] = 1
 
-    fields["study_ref"] = entry.find("projectAccession").text
-    fields["description"] = entry.find("reference").find("title").text
-    fields["kingdom"] = kingdom
+        fields["assembly_level"] = "contig"
 
-    taxon = entry.find("feature").find("taxon")
-    fields["scientific_name"] = taxon.get("scientificName")
-    fields["common_name"] = None
-    fields["ncbi_id"] = int(taxon.get("taxId"))
+        fields["study_ref"] = entry.find("projectAccession").text
 
-    fields["total_length"] = None
-    fields["ungapped_length"] = None
+        description = ''
+        if entry.find("reference") is not None:
+            if entry.find("reference").find("title") is not None:
+                description = entry.find("reference").find("title").text
+        fields["description"] = description
 
-    fields["num_gen_regions"] = None
+        fields["kingdom"] = kingdom
 
-    fields["num_rfam_regions"] = None  # post process
-    fields["num_families"] = None  # post process
+        taxon = entry.find("feature").find("taxon")
+        fields["scientific_name"] = taxon.get("scientificName")
+        fields["common_name"] = None
+        fields["ncbi_id"] = int(taxon.get("taxId"))
 
-    # this takes the date of the entry is created
-    entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    fields["created"] = entry_date
-    fields["updated"] = entry_date
+        fields["total_length"] = None
+        fields["ungapped_length"] = None
 
-    wgs_entry["model"] = gc.GENOME_MODEL
-    wgs_entry["pk"] = upid
-    wgs_entry["fields"] = fields
+        fields["num_gen_regions"] = None
+
+        fields["num_rfam_regions"] = None  # post process
+        fields["num_families"] = None  # post process
+
+        # this takes the date of the entry is created
+        entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fields["created"] = entry_date
+        fields["updated"] = entry_date
+
+        wgs_entry["model"] = gc.GENOME_MODEL
+        wgs_entry["pk"] = upid
+        wgs_entry["fields"] = fields
 
     return wgs_entry
 
@@ -345,6 +357,7 @@ def fetch_wgs_accs_metadata(upid, assembly_acc, wgs_range):
     wgs_entries = []
     entry = {}
     fields = {}
+
     wgs_accs = gf.fetch_wgs_range_accs(wgs_range)
 
     for acc in wgs_accs:
@@ -372,50 +385,51 @@ def fetch_wgs_acc_metadata(wgs_acc):
     """
 
     fields = {}
-    response = requests.get(gf.ENA_XML_URL % wgs_acc).content
-    acc_xml = ET.fromstring(response)
-    entry = acc_xml.find("entry")
+    response = requests.get(gf.ENA_XML_URL % wgs_acc)
 
-    if entry is None:
-        return fields
+    if response.status_code == httplib.OK:
+        acc_xml = ET.fromstring(response.content)
+        entry = acc_xml.find("entry")
 
-    fields["seq_version"] = 0
-    if entry.get("entryVersion") is not None:
-        fields["seq_version"] = int(entry.get("entryVersion"))
+        if entry is None:
+            return fields
 
-    fields["seq_length"] = int(entry.get("sequenceLength"))
-    fields["seq_role"] = "contig"
-    fields["mol_type"] = entry.get("moleculeType")
+        fields["seq_version"] = 0
+        if entry.get("entryVersion") is not None:
+            fields["seq_version"] = int(entry.get("entryVersion"))
 
-    taxon_node = None
-    taxon_node = entry.find("feature").find("taxon")
-    fields["ncbi_id"] = int(taxon_node.get("taxId"))
+        fields["seq_length"] = int(entry.get("sequenceLength"))
+        fields["seq_role"] = "contig"
+        fields["mol_type"] = entry.get("moleculeType")
 
-    location = None
-    refs = None
-    refs = entry.findall("reference")
+        taxon_node = None
+        taxon_node = entry.find("feature").find("taxon")
+        fields["ncbi_id"] = int(taxon_node.get("taxId"))
 
-    for ref in refs:
-        location = ref.get("location")
+        location = None
+        refs = None
+        refs = entry.findall("reference")
+
+        for ref in refs:
+            location = ref.get("location")
+            if location is not None:
+                break
+
         if location is not None:
-            break
+            location = location.strip().split('-')
+            fields["seq_start"] = int(location[0])
+            fields["seq_end"] = int(location[1])
+        else:
+            fields["seq_start"] = 0
+            fields["seq_end"] = 0
 
-    if location is not None:
-        location = location.strip().split('-')
-        print location
-        fields["seq_start"] = int(location[0])
-        fields["seq_end"] = int(location[1])
-    else:
-        fields["seq_start"] = 0
-        fields["seq_end"] = 0
+        fields["assembly_unit"] = None  # need to check this one
+        fields["description"] = entry.find("description").text
 
-    fields["assembly_unit"] = None  # need to check this one
-    fields["description"] = entry.find("description").text
-
-    # this takes the date of the entry is created
-    entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    fields["created"] = entry_date
-    fields["updated"] = entry_date  # when adding a new genome
+        # this takes the date of the entry is created
+        entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fields["created"] = entry_date
+        fields["updated"] = entry_date  # when adding a new genome
 
     return fields
 
@@ -478,21 +492,26 @@ def fetch_gca_acc_metadata(accession):
 
     metadata = {}
 
-    xml_str = requests.get(gc.ENA_XML_URL % accession).content
+    response = requests.get(gc.ENA_XML_URL % accession)
 
-    xml_root = ET.fromstring(xml_str)
+    if response.status_code == httplib.OK:
+        xml_str = response.content
 
-    entry = xml_root.find("entry")
+        xml_root = ET.fromstring(xml_str)
 
-    # None if no moleculeType found
-    mol_type = entry.find("moleculeType")
+        entry = xml_root.find("entry")
 
-    if mol_type is not None:
-        metadata["mol_type"] = entry.get("moleculeType")
+        # None if no moleculeType found
+        mol_type = entry.find("moleculeType")
 
-    # get molecule description and tax id
-    metadata["description"] = entry.find("description").text
-    metadata["ncbi_id"] = int(entry.find("feature").find("taxon").get("taxId"))
+        if mol_type is not None:
+            metadata["mol_type"] = entry.get("moleculeType")
+
+        # get molecule description and tax id
+        metadata["description"] = entry.find("description").text
+        metadata["ncbi_id"] = int(entry.find("feature").find("taxon").get("taxId"))
+
+        # perhaps get a an else statement and return None?
 
     return metadata
 
@@ -510,25 +529,32 @@ def fetch_assembly_links(gca_acc):
 
     gca_ftp_links = {}
 
-    response = requests.get(gc.ENA_XML_URL % gca_acc).content
+    response = requests.get(gc.ENA_XML_URL % gca_acc)
 
-    xml = ET.fromstring(response)
+    if response.status_code == httplib.OK:
 
-    # fetch assembly links nodet
-    assembly_links = xml.find("ASSEMBLY").find(
-        "ASSEMBLY_LINKS").findall("ASSEMBLY_LINK")
+        xml_tree = ET.fromstring(response.content)
 
-    # loop over all available links
-    for link in assembly_links:
-        label = link.find("URL_LINK").find("LABEL").text.replace(' ', '_')
-        url = link.find("URL_LINK").find("URL").text
+        # fetch assembly links node
+        assembly_node = xml_tree.find("ASSEMBLY")
+        assembly_links = assembly_node.find(
+            "ASSEMBLY_LINKS")
 
-        gca_ftp_links[label] = url
+        if assembly_links is not None:
+            assembly_links = assembly_links.findall("ASSEMBLY_LINK")
 
-        label = None
-        url = None
+            # loop over all available links
+            for link in assembly_links:
+                label = link.find("URL_LINK").find("LABEL").text.replace(' ', '_')
+                url = link.find("URL_LINK").find("URL").text
+
+                gca_ftp_links[label] = url
+
+                label = None
+                url = None
 
     return gca_ftp_links
+
 
 # -----------------------------------------------------------------------------
 def get_general_accession_metadata(upid, accession_list):
@@ -553,8 +579,9 @@ def get_general_accession_metadata(upid, accession_list):
         entry["pk"] = acc
 
         # wgs acc
-        if len(acc)==12:
+        if len(acc) == 12:
             fields = fetch_wgs_acc_metadata(acc)
+
         # some other accession from Uniprot...
         else:
             fields = fetch_gca_acc_metadata(acc)
@@ -567,6 +594,7 @@ def get_general_accession_metadata(upid, accession_list):
         entry = {}
 
     return genome_entries
+
 
 # -----------------------------------------------------------------------------
 
@@ -585,42 +613,54 @@ def extract_uniprot_genome_metadata(upid):
     # namespace prefix # or register a namespace in the ET
     prefix = "{http://uniprot.org/uniprot}%s"
 
-    response = requests.get(gc.PROTEOME_XML_URL % upid).content
-    prot_tree_root = ET.fromstring(response)
+    response = requests.get(gc.PROTEOME_XML_URL % upid)
 
-    proteome = prot_tree_root.find(prefix % "proteome")
+    # check if we got an OK http reponse
+    if response.status_code == httplib.OK:
+        prot_tree_root = ET.fromstring(response.content)
 
-    upid = proteome.find(prefix % "upid")
-    proteome_dict["upid"] = upid.text
-    proteome_dict["ncbi_id"] = int(proteome.find(prefix % "taxonomy").text)
-    proteome_dict["description"] = proteome.find(prefix % "description").text
-    proteome_dict["scientific_name"] = proteome.find(prefix % "name").text
+        proteome = prot_tree_root.find(prefix % "proteome")
 
-    # get sequence accessions
-    acc_dict = {}
-    other_accs = []
-    accession_nodes = proteome.findall(prefix % "component")
+        upid = proteome.find(prefix % "upid")
+        proteome_dict["upid"] = upid.text
+        proteome_dict["ncbi_id"] = int(proteome.find(prefix % "taxonomy").text)
+        proteome_dict["description"] = proteome.find(prefix % "description").text
+        proteome_dict["scientific_name"] = proteome.find(prefix % "name").text
 
-    for node in accession_nodes:
+        # get sequence accessions
+        acc_dict = {}
+        other_accs = []
+        accession_nodes = proteome.findall(prefix % "component")
 
-        if node.get("name").find("WGS") != -1:
-            acc_dict["WGS"] = node.find(prefix % "genome_accession").text
+        for node in accession_nodes:
 
-        elif node.get("name").find("Chloroplast") != -1:
-            acc_dict["Chloroplast"] = node.find(prefix % "genome_accession").text
+            if node.get("name").find("WGS") != -1:
+                # look for all WGS accessions
+                gen_acc_nodes = node.findall(prefix % "genome_accession")
 
-        elif node.get("name").find("Mitochondrion") != -1:
-            acc_dict["Mitochondrion"] = node.find(prefix % "genome_accession").text
+                # single WGS accession
+                if len(gen_acc_nodes) == 1:
+                    acc_dict["WGS"] = node.find(prefix % "genome_accession").text
+                else:
+                    for gen_acc_node in gen_acc_nodes:
+                        other_accs.append(gen_acc_node.text)
 
-        else:
-            other_accs.append(node.find(prefix % "genome_accession").text)
+            elif node.get("name").find("Chloroplast") != -1:
+                acc_dict["Chloroplast"] = node.find(prefix % "genome_accession").text
 
-    if len(other_accs) > 0:
-        acc_dict["other"] = other_accs
+            elif node.get("name").find("Mitochondrion") != -1:
+                acc_dict["Mitochondrion"] = node.find(prefix % "genome_accession").text
 
-    proteome_dict["accessions"] = acc_dict
+            else:
+                other_accs.append(node.find(prefix % "genome_accession").text)
+
+        if len(other_accs) > 0:
+            acc_dict["other"] = other_accs
+
+        proteome_dict["accessions"] = acc_dict
 
     return proteome_dict
+
 
 # -----------------------------------------------------------------------------
 
@@ -641,7 +681,6 @@ def dump_uniprot_genome_metadata(upid, kingdom):
     # extract the values from the corresponding xml
     proteome_dict = extract_uniprot_genome_metadata(upid)
 
-    fields["upid"] = upid
     fields["gca_acc"] = None
     fields["gca_version"] = None
 
@@ -691,8 +730,8 @@ def dump_uniprot_genome_metadata(upid, kingdom):
     # return genome dictionary (in Django format)
     return genome_entry
 
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass

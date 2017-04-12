@@ -59,14 +59,16 @@ class Node:
 # ----------------------------------------------------------------------------
 
 
-def read_ncbi_names_dmp(filename):
-    '''
+def read_ncbi_names_dmp(names_dmp):
+    """
     Load  NCBI names file ("names.dmp")
-    '''
+
+    names_dmp: NCBIs names.dmp file
+    """
     name_dict = {}          # Initialise dictionary with TAX_ID:NAME
     name_dict_reverse = {}  # Initialise dictionary with NAME:TAX_ID
 
-    name_file = open(filename, "r")
+    name_file = open(names_dmp, "r")
     while 1:
         line = name_file.readline()
         if line == "":
@@ -79,18 +81,21 @@ def read_ncbi_names_dmp(filename):
             name_dict[tax_id] = name          # ... and load them
             name_dict_reverse[name] = tax_id  # ... into dictionaries
     name_file.close()
-    return (name_dict, name_dict_reverse)
+
+    return name_dict, name_dict_reverse
 
 # ----------------------------------------------------------------------------
 
 
-def read_ncbi_taxonomy_nodes(name_dict, filename):
-    '''
+def read_ncbi_taxonomy_nodes(name_dict, nodes_dmp):
+    """
     Load NCBI taxonomy nodes file ("nodes.dmp")
+
     name_dict: NCBI names dict returned by read_ncbi_names_dmp
-    '''
+    nodes_dmp: NCBIs nodes.dmp file
+    """
     name_object = {}
-    taxonomy_file = open(filename, "r")
+    taxonomy_file = open(nodes_dmp, "r")
 
     while 1:
         line = taxonomy_file.readline()
@@ -110,7 +115,7 @@ def read_ncbi_taxonomy_nodes(name_dict, filename):
         if tax_id in name_dict:
             name = name_dict[tax_id]
 
-        if not name_object.has_key(tax_id):
+        if tax_id not in name_object.keys():
             name_object[tax_id] = Node()
         name_object[tax_id].tax_id = tax_id         # Assign tax_id
         name_object[tax_id].parent = tax_id_parent  # Assign tax_id parent

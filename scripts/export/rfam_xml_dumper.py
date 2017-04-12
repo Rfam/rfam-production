@@ -88,7 +88,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     db_str = ET.tostring(db_xml, "utf-8")
     db_str_reformated = minidom.parseString(db_str)
 
-    fp_out.write(db_str_reformated.toprettyxml(indent='\t''))
+    fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
 
     fp_out.close()
 
@@ -584,7 +584,7 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
             elif entry_type == rs.FAMILY:
 
                 # load ncbi taxonomy browser here
-                (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
+                name_dict, name_dict_reverse = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)
                 name_object = read_ncbi_taxonomy_nodes(
                     name_dict, rfc.TAX_NODES_DUMP)
@@ -617,7 +617,7 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
             else:
 
                 # load ncbi taxonomy browser here
-                (name_dict, name_dict_reverse) = read_ncbi_names_dmp(
+                name_dict, name_dict_reverse = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)
                 name_object = read_ncbi_taxonomy_nodes(
                     name_dict, rfc.TAX_NODES_DUMP)

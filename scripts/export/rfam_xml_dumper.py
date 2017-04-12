@@ -12,7 +12,7 @@ limitations under the License.
 """
 
 """
-Description: This module exports Rfam data
+Description: This module exports Rfam data for the search engine
 
 TO DO:
        - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
@@ -21,17 +21,15 @@ TO DO:
 
 # ----------------------------------------------------------------------------
 
+import datetime
 import logging
 import timeit
-import sys
-import os
-import datetime
 import argparse
 import xml.etree.ElementTree as ET
-from sets import Set
 from xml.dom import minidom
-from config import rfam_search as rs
+from sets import Set
 from config import rfam_config as rfc
+from config import rfam_search as rs
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
@@ -72,14 +70,14 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     entries = ET.SubElement(db_xml, "entries")
 
     # call family xml builder to add a new family to the xml tree
-    if (entry_type == rs.FAMILY):
+    if entry_type == rs.FAMILY:
         family_xml_builder(
             name_dict, name_object, entries, rfam_acc=entry_acc, hfields=hfields)
 
-    elif (entry_type == rs.CLAN):
+    elif entry_type == rs.CLAN:
         clan_xml_builder(entries, clan_acc=entry_acc)
 
-    elif (entry_type == rs.MOTIF):
+    elif entry_type == rs.MOTIF:
         motif_xml_builder(entries, motif_acc=entry_acc)
 
     # export xml tree - writes xml tree into a file
@@ -131,8 +129,8 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     clan = fetch_value(rs.FAM_CLAN, rfam_acc)
 
     # need a function here to split dbxrefs in a pretty way
-    go_ids = filter(lambda x: x.find("GO") != -1, dbxrefs)
-    so_ids = filter(lambda x: x.find("SO") != -1, dbxrefs)
+    go_ids = [x for x in dbxrefs if x.find("GO") != -1]
+    so_ids = [x for x in dbxrefs if x.find("SO") != -1]
 
     # update cross references dictionary
     cross_refs["ncbi_taxonomy_id"] = valid_ncbi_ids
@@ -298,7 +296,7 @@ def build_cross_references(entry, cross_ref_dict):
 def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
     """
     Expands the cross references xml tree by adding hierarchical references
-    for the ncbi ids in valid_ncbi_ids.
+    for the ncbi ids in valid_ncbi_ids
 
     xml_tree_node:  An existing xml tree node to expand with hierarchical
                     fields
@@ -362,17 +360,14 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
     if entry_type == "Family":
 
         # number of species
-        ET.SubElement(add_fields, "field", name="num_species").text = str(fields[
-                                                                              "num_species"])
+        ET.SubElement(add_fields, "field", name="num_species").text = str(fields["num_species"])
         # number of 3D structures
         ET.SubElement(
             add_fields, "field", name="num_3d_structures").text = str(num_3d_structures)
         # num seed
-        ET.SubElement(add_fields, "field", name="num_seed").text = str(fields[
-                                                                           "num_seed"])
+        ET.SubElement(add_fields, "field", name="num_seed").text = str(fields["num_seed"])
         # num full
-        ET.SubElement(add_fields, "field", name="num_full").text = str(fields[
-                                                                           "num_full"])
+        ET.SubElement(add_fields, "field", name="num_full").text = str(fields["num_full"])
 
         # rna types
         rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)
@@ -419,7 +414,7 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
 def get_value_list(val_str, delimiter=','):
     """
-    Splits an input string according to delimiter and returns a list of the
+    Splits an input string using delimiter and returns a list of the
     elements
 
     val_str:    A string of family specific values. This string is a
@@ -428,10 +423,10 @@ def get_value_list(val_str, delimiter=','):
     """
 
     val_str = val_str.strip()
+    # split string
     values = val_str.split(delimiter)
-
-    value_list = map(lambda x: x.strip(), values)
-    value_list = filter(lambda x: x != '', value_list)
+    # filter values
+    value_list = [x.strip() for x in values if x != '']
 
     return value_list
 
@@ -463,7 +458,7 @@ def fetch_value_list(rfam_acc, query):
     cursor.close()
     cnx.disconnect()
 
-    return map(lambda x: str(x[0]), values)
+    return [str(x) for x in values]
 
 
 # ----------------------------------------------------------------------------
@@ -471,7 +466,7 @@ def fetch_value_list(rfam_acc, query):
 
 def fetch_entry_fields(entry_acc, entry_type):
     """
-    Returns a dictionary with the entry's fields.
+    Returns a dictionary with the entry's fields
 
     entry_acc:  An Rfam associated accession (Motif, Clan, Family)
     entry_type: The type of the entry accession
@@ -540,7 +535,7 @@ def fetch_value(query, accession):
 
 def main(entry_type, rfam_acc, outdir, hfields=True):
     """
-    This function puts everything together.
+    This function puts everything together
 
     entry_type: One of the three entry types in Rfam (Motif, Clan, Family)
     rfam_acc: An Rfam associated accession (RF*,CL*,RM*). If rfam_acc is set
@@ -658,7 +653,7 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
     valid_family_tax_ids = []
 
     for taxid in family_tax_ids:
-        if (taxid in name_object):
+        if taxid in name_object:
             valid_family_tax_ids.append(taxid)
 
     return valid_family_tax_ids
@@ -680,7 +675,7 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
 
     for taxid in family_tax_ids:
 
-        if (taxid in name_object):
+        if taxid in name_object:
             species_tax_trees[taxid] = name_object[
                 taxid].get_lineage(name_object)
 
@@ -726,22 +721,22 @@ if __name__ == '__main__':
     # Additional checks
     # Check if export type matches accession
     wrong_input = False
-    if (args.acc is not None):
+    if args.acc is not None:
 
-        if (args.type == 'F' and args.acc[0:2] != "RF"):
+        if args.type == 'F' and args.acc[0:2] != "RF":
             wrong_input = True
-        elif (args.type == 'M' and args.acc[0:2] != "RM"):
+        elif args.type == 'M' and args.acc[0:2] != "RM":
             wrong_input = True
-        elif (args.type == 'C' and args.acc[0:2] != "CL"):
+        elif args.type == 'C' and args.acc[0:2] != "CL":
             wrong_input = True
 
-    if (wrong_input is True):
+    if wrong_input is True:
         print "\nAccession does not match the export type.\n"
         parser.print_help()
         sys.exit()
 
     # check output directory
-    if (os.path.isdir(args.out) is False):
+    if os.path.isdir(args.out) is False:
         print "\nPlease provide a valid output directory.\n"
         parser.print_help()
         sys.exit()

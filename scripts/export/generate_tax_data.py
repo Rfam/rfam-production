@@ -62,16 +62,18 @@ def get_taxonomy_entries_from_ncbi(tax_ids):
         response = requests.get(ncbi_tax_url % str(tax_id))
 
         if response.status_code == httplib.OK:
+
             xml_root = ET.fromstring(response.content)
             taxon_node = xml_root.find('Taxon')
 
             # add tax id to the list
             tax_entry_list.append(str(tax_id))
 
-            # get species name
-            species = ''
             # find scientific name
             scientific_name = taxon_node.find("ScientificName").text
+
+            # species will be scientific name unless common name is found
+            species = scientific_name
 
             # look for common name
             other_names = taxon_node.find("OtherNames")
@@ -120,6 +122,8 @@ def get_taxonomy_entries_from_ncbi(tax_ids):
             tax_entry_list.append(align_display_name)
 
             print '\t'.join(tax_entry_list)
+
+            tax_entry_list = []
 
 # -----------------------------------------------------------------------------
 

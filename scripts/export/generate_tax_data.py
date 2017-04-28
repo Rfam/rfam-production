@@ -119,7 +119,7 @@ def get_taxonomy_entries_from_ncbi(tax_ids):
             align_display_name = tree_display_name + "[%s]" % str(tax_id)
             tax_entry_list.append(align_display_name)
 
-            print "\t".join(tax_entry_list)
+            print '\t'.join(tax_entry_list)
 
 # -----------------------------------------------------------------------------
 
@@ -127,6 +127,5 @@ def get_taxonomy_entries_from_ncbi(tax_ids):
 if __name__ == '__main__':
 
     taxon_ids = sys.argv[1]
-    #taxid_list = "/Users/ikalvari/Desktop/genomes/13.0/input/rfamgenome_taxids_from_uniprot.txt"
     get_taxonomy_entries_from_ncbi(taxon_ids)
 

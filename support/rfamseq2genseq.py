@@ -33,14 +33,14 @@ def convert_rfamseq_to_genseq(rfamseq_file, dest_dir=None):
     if dest_dir is None:
         dest_dir = os.path.split(rfamseq_file)[0]
 
-    filename = rfamseq_file.partition('.')[0]
-    genseq_file = open(os.path.join(dest_dir,filename+'.genseq'), 'w')
+    # get the input filename to keep track of the upids
+    filename = os.path.basename(rfamseq_file).partition('.')[0]
+    genseq_file = open(os.path.join(dest_dir, filename+'.genseq'), 'w')
 
     rfamseq_fp = open(rfamseq_file, 'r')
 
     for line in rfamseq_fp:
         line = line.strip().split('\t')
-        # filename: upid, line[0]: rfamseq_acc
         genseq_file.write(filename + '\t' + line[0] + '\n')
 
     genseq_file.close()
@@ -50,13 +50,25 @@ def convert_rfamseq_to_genseq(rfamseq_file, dest_dir=None):
 
 if __name__ == '__main__':
 
-    rfamseq_dir = sys.argv[1]
-    rfamseq_files = os.listdir(rfamseq_dir)
-
     dest_dir = None
-    if len(sys.argv)==3:
+
+    if len(sys.argv) == 3:
         dest_dir = sys.argv[2]
 
-    for rfamseq_file in rfamseq_files:
-        rfamseq_loc = os.path.join(rfamseq_dir, rfamseq_file)
-        convert_rfamseq_to_genseq(rfamseq_file, dest_dir=dest_dir)
+    rfamseq_input = sys.argv[1]
+    if os.path.isdir():
+        rfamseq_files = [x for x in os.listdir(rfamseq_input) if x.endswith('.rfamseq')]
+        dest_dir = os.path.join(rfamseq_input, "genseq")
+
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
+
+        for rfamseq_file in rfamseq_files:
+            rfamseq_loc = os.path.join(rfamseq_input, rfamseq_file)
+            convert_rfamseq_to_genseq(rfamseq_loc, dest_dir=dest_dir)
+
+    elif os.path.isfile(rfamseq_input):
+        convert_rfamseq_to_genseq(rfamseq_input, dest_dir=dest_dir)
+
+    else:
+        sys.exit("\nWrong input! Please provide an rfamseq file or dir.")

@@ -11,12 +11,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 """
 Description: Clan competition script
 
 Notes: clan files are generated using export script clan_file_generator.py
        and sorted on rfamseq_acc (col2) using linux sort command as:
-       sort -k2 -t $\'\t\' clan_file.txt > clan_file_sorted.txt
+       sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt
 """
 
 # ---------------------------------IMPORTS-------------------------------------
@@ -54,10 +55,10 @@ def get_strand(start, end):
     """
 
     # -
-    if (start > end):
+    if start > end:
         return -1
     # +
-    elif(start <= end):
+    elif start <= end:
         return 1
 
     return 0
@@ -84,15 +85,15 @@ def calc_seq_overlap(s1, e1, s2, e2):
     strand = get_strand(s1, e1)
 
     # full overlap
-    if(s1 == s2 and len1 == len2):
+    if s1 == s2 and len1 == len2:
         return float(len1) / float(len2)
 
     # check5'
-    elif (strand == 1):
+    elif strand == 1:
         overlap = cal_overlap_pos_strand(s1, e1, s2, e2)
 
     # check 3'
-    elif(strand == -1):
+    elif strand == -1:
         overlap = cal_overlap_neg_strand(s1, e1, s2, e2)
 
     # will return None in a case that we didn't capture
@@ -120,27 +121,27 @@ def cal_overlap_pos_strand(s1, e1, s2, e2):
     min_len = min(len1, len2)
 
     # seq2 within seq1
-    if(s1 < s2 and e2 < e1):
+    if s1 < s2 and e2 < e1:
         overlap = COMP_OVL
 
     # partial overlap, seq1 before seq2
-    elif(s1 <= s2 and s2 < e1 and e1 <= e2):
+    elif s1 <= s2 and s2 < e1 and e1 <= e2:
         overlap = float(e1 - s2 + 1) / float(min_len)
 
     # no overlap, seq1 before seq2
-    elif(s1 < s2 and e1 <= s2):
+    elif s1 < s2 and e1 <= s2:
         overlap = NO_OVL
 
     # seq1 within seq2 region
-    elif(s2 < s1 and e1 < e2):
+    elif s2 < s1 and e1 < e2:
         overlap = COMP_OVL
 
     # no overlap, seq2 before seq1
-    elif(s2 < s1 and e2 <= s1):
+    elif s2 < s1 and e2 <= s1:
         overlap = NO_OVL
 
     # partial overlap, seq2 before seq1
-    elif(s2 <= s1 and s1 < e2 and e2 <= e1):
+    elif s2 <= s1 and s1 < e2 and e2 <= e1:
         overlap = float(e2 - s1 + 1) / float(min_len)
 
     return overlap
@@ -168,27 +169,27 @@ def cal_overlap_neg_strand(s1, e1, s2, e2):
     min_len = min(len1, len2)
 
     # seq2 within seq1 region - this may match the partial overlap case
-    if(s1 > s2 and e1 < e2):
+    if s1 > s2 and e1 < e2:
         overlap = COMP_OVL
 
     # no overlap, seq1 before seq2
-    elif(s1 > s2 and e1 >= s2):
+    elif s1 > s2 and e1 >= s2:
         overlap = NO_OVL
 
     # partial overlap, seq1 before seq2
-    elif(s1 >= s2 and s2 > e1 and e1 >= e2):
+    elif s1 >= s2 and s2 > e1 and e1 >= e2:
         overlap = float(s2 - e1 + 1) / float(min_len)
 
     # seq1 within seq2 region
-    elif(s2 > s1 and e1 > e2):
+    elif s2 > s1 and e1 > e2:
         overlap = COMP_OVL
 
     # no overlap, seq2 before seq1
-    elif(s2 > s1 and e2 >= s1):
+    elif s2 > s1 and e2 >= s1:
         overlap = NO_OVL
 
     # partial overlap, seq2 before seq1
-    elif(s2 >= s1 and s1 > e2 and e2 >= e1):
+    elif s2 >= s1 and s1 > e2 and e2 >= e1:
         overlap = float(s1 - e2 + 1) / float(min_len)
 
     return overlap
@@ -206,7 +207,7 @@ def compete_seq_regions(regions, log):
 
     non_sig_regs = []
 
-    while (index <= len(regions) - 2):
+    while index <= len(regions) - 2:
         reg1 = regions[index]
         comp_regs = regions[index + 1:]
 
@@ -216,19 +217,19 @@ def compete_seq_regions(regions, log):
             strand2 = get_strand(int(reg2[START]), int(reg2[END]))
 
             # check if the sequences come from the same strand
-            if(strand1 == strand2):
+            if strand1 == strand2:
 
                 # calculate overlap
                 overlap = calc_seq_overlap(int(reg1[START]), int(reg1[END]),
                                            int(reg2[START]), int(reg2[END]))
 
                 # check for a an overlap
-                if (overlap >= OVERLAP):
+                if overlap >= OVERLAP:
 
                     # at this point check the evalues and build the list for
                     # the non significant regions
 
-                    if(float(reg1[EVAL]) <= float(reg2[EVAL])):
+                    if float(reg1[EVAL]) <= float(reg2[EVAL]):
 
                         if ((reg2[RFAM_ACC], reg2[SEQ_ACC],
                              reg2[START]) not in non_sig_regs):
@@ -241,7 +242,7 @@ def compete_seq_regions(regions, log):
                             non_sig_regs.append(
                                 (reg1[RFAM_ACC], reg1[SEQ_ACC], reg1[START]))
 
-                elif(overlap is None):
+                elif overlap is None:
                     log.debug("reg1: %s" % '\t'.join(reg1))
                     log.debug("reg2: %s" % '\t'.join(reg2))
 
@@ -275,7 +276,7 @@ def complete_clan_seqs(sorted_clan):
     seq_next = fp.readline().strip().split('\t')
 
     # read while there are no duplicates
-    while (len(seq_next) > 1):
+    while len(seq_next) > 1:
 
         # the same accession - create region list, otherwise the sequence is
         # significant...
@@ -283,7 +284,7 @@ def complete_clan_seqs(sorted_clan):
                                                 seq_next[SEQ_ACC]) != -1):
             # add the previous only in the first occurence
 
-            if(len(regions) == 0):
+            if len(regions) == 0:
                 regions.append(seq_prev)  # add the first
                 regions.append(seq_next)
             # else only add the next one
@@ -305,7 +306,7 @@ def complete_clan_seqs(sorted_clan):
     fp.close()
 
     # at this point update full_region table
-    if(len(non_sig_regs) != 0):
+    if len(non_sig_regs) != 0:
         db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
 
     return non_sig_regs
@@ -337,12 +338,12 @@ if __name__ == '__main__':
     clan_source = sys.argv[1]
 
     # minor input checks
-    if (not os.path.isdir(clan_source) and not os.path.isfile(clan_source)):
+    if not os.path.isdir(clan_source) and not os.path.isfile(clan_source):
         usage()
         sys.exit()
 
     # with -r option reset all is_significant fields back to 1
-    if (sys.argv.count("-r") == 1):
+    if sys.argv.count("-r") == 1:
         print "\nReseting is_significant fields ..."
         db_utils.reset_is_significant()
 

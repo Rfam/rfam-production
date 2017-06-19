@@ -27,7 +27,6 @@ import re
 import gzip
 from utils import RfamDB
 from config import rfam_config
-from config import config_local
 
 # -----------------------------------------------------------------------------
 # To be modified accordingly
@@ -95,9 +94,9 @@ def generate_fasta(seq_file, out_dir):
     for region in cursor:
 
         # new family
-        if (str(region[RFAM_ACC]) != rfam_acc):
+        if str(region[RFAM_ACC]) != rfam_acc:
             # check if there's no open file
-            if(fp_out is not None):
+            if fp_out is not None:
                 fp_out.close()
 
             # open new fasta file
@@ -122,7 +121,7 @@ def generate_fasta(seq_file, out_dir):
 
         # print sequence
 
-        if (sequence != '' and seq_validator(sequence) is True):
+        if sequence != '' and seq_validator(sequence) is True:
             # write header
             fp_out.write(">%s/%s-%s %s\n" % (str(region[SEQ_ACC]),
                                              str(region[START]),
@@ -209,7 +208,7 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 
         # print sequence
 
-        if (sequence != '' and seq_validator(sequence) is True):
+        if sequence != '' and seq_validator(sequence) is True:
             # write header
             fp_out.write(">%s/%s-%s %s\n" % (str(region[SEQ_ACC]),
                                              str(region[START]),
@@ -234,17 +233,17 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 # -----------------------------------------------------------------------------
 
 def seq_validator(sequence):
-    '''
-        Checks if the sequence provided is valid fasta sequence. Returns True
-        if the sequence is valid, otherwise returns False.
+    """
+    Checks if the sequence provided is valid fasta sequence. Returns True
+    if the sequence is valid, otherwise returns False.
 
-        sequence: A string for validation
-    '''
+    sequence: A string for validation
+    """
 
     # checks for ascii characters that should not appear in a fasta sequence
     seq_val = re.compile(r"[.-@|\s| -)|z-~|Z-`|EFIJLOPQX|efijlopqx+,]+")
 
-    if(seq_val.search(sequence) is None):
+    if seq_val.search(sequence) is None:
         return True
 
     False
@@ -271,11 +270,11 @@ if __name__ == '__main__':
 
     # some parameter checking
     if len(sys.argv) > 3:
-        seq_file = sys.argv[1]
+        sequence_file = sys.argv[1]
         rfam_acc = sys.argv[2]
-        out_dir = sys.argv[3]
+        output_dir = sys.argv[3]
 
-        generate_fasta_single(seq_file, rfam_acc, out_dir)
+        generate_fasta_single(sequence_file, rfam_acc, output_dir)
 
     else:
         if sys.argv[1] == "-h":

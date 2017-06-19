@@ -60,10 +60,10 @@ def fasta_gen_handler(seq_file, out_dir):
     RfamDB.disconnect(cnx)
 
     # create scripts dir within output directory
-    if (not os.path.exists(os.path.join(out_dir, "scripts"))):
+    if not os.path.exists(os.path.join(out_dir, "scripts")):
         os.mkdir(os.path.join(out_dir, "scripts"))
 
-    if (not os.path.exists(os.path.join(out_dir, "log"))):
+    if not os.path.exists(os.path.join(out_dir, "log")):
         os.mkdir(os.path.join(out_dir, "log"))
 
     for fam in families:
@@ -103,27 +103,27 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
 
     log_dir = os.path.join(fa_outdir, "log")
 
-    fp = open(file_path, 'w')
+    output_fp = open(file_path, 'w')
 
-    fp.write("#!/bin/csh\n")
-    fp.write("#BSUB -q research-rh7\n")
-    fp.write("#BSUB -M 8000\n")
-    fp.write("#BSUB -R \"rusage[mem=8000,tmp=1000]\"\n")
-    fp.write("#BSUB -o \"/tmp/%J.out\"\n")
-    fp.write("#BSUB -e \"/tmp/%J.err\"\n")
+    output_fp.write("#!/bin/csh\n")
+    output_fp.write("#BSUB -q research-rh7\n")
+    output_fp.write("#BSUB -M 8000\n")
+    output_fp.write("#BSUB -R \"rusage[mem=8000,tmp=1000]\"\n")
+    output_fp.write("#BSUB -o \"/tmp/%J.out\"\n")
+    output_fp.write("#BSUB -e \"/tmp/%J.err\"\n")
 
-    fp.write(
+    output_fp.write(
         "#BSUB -f \"%s/%s.out < /tmp/%sJ.out\"\n" % (log_dir, rfam_acc, chr(37)))
 
-    fp.write(
+    output_fp.write(
         "#BSUB -f \"%s/%s.err < /tmp/%sJ.err\"\n" % (log_dir, rfam_acc, chr(37)))
 
-    fp.write("#BSUB -Ep \"rm /tmp/$LSB_JOBID.*\"\n")
-    fp.write("#BSUB -g %s \n\n" % (LSF_GROUP))
-    fp.write("python %s %s %s %s \n" %
-             (rfam_config.FA_GEN, seq_file, rfam_acc, fa_outdir))
+    output_fp.write("#BSUB -Ep \"rm /tmp/$LSB_JOBID.*\"\n")
+    output_fp.write("#BSUB -g %s \n\n" % (LSF_GROUP))
+    output_fp.write("python %s %s %s %s \n" % (rfam_config.FA_GEN, seq_file,
+                                               rfam_acc, fa_outdir))
 
-    fp.close()
+    output_fp.close()
 
     return file_path
 
@@ -148,16 +148,16 @@ def usage():
 if __name__ == '__main__':
 
     # minor input checks
-    if (sys.argv[1] == "-h"):
+    if sys.argv[1] == "-h":
         usage()
         sys.exit()
 
-    elif(len(sys.argv) == 3):
-        seq_file = sys.argv[1]
-        out_dir = sys.argv[2]
+    elif len(sys.argv) == 3:
+        sequence_file = sys.argv[1]
+        output_dir = sys.argv[2]
 
-        if (os.path.isfile(seq_file) and os.path.isdir(out_dir)):
-            fasta_gen_handler(seq_file, out_dir)
+        if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
+            fasta_gen_handler(sequence_file, output_dir)
 
         else:
             print "\nIncorrect Input."

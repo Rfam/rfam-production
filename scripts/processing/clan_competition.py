@@ -254,7 +254,7 @@ def compete_seq_regions(regions, log):
 # -----------------------------------------------------------------------------
 
 
-def complete_clan_seqs(sorted_clan):
+def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
     """
     Parses a sorted clan file and generates a list of regions per rfam_acc,
     which are then competed by compete_seq_regions
@@ -307,7 +307,10 @@ def complete_clan_seqs(sorted_clan):
 
     # at this point update full_region table
     if len(non_sig_regs) != 0:
-        db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
+        if clan_comp_type == 'FULL':
+            db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
+        else:
+            db_utils.set_pdb_is_significant_to_zero(non_sig_regs)
 
     return non_sig_regs
 
@@ -321,11 +324,13 @@ def usage():
 
     print "\nUsage:\n------"
 
-    print "\nclan_competition.py [clan_file|clan_dir] [-r]"
+    print "\nclan_competition.py [clan_file|clan_dir] [-r] [PDB|FULL]"
 
     print "\nclan_dir: A directory of sorted clan region files"
     print "clan_file: The path to a sorted clan region file"
     print "\n-r option to reset is_significant field"
+    print "\nPDB option for pdb clan competition"
+    print "\nFULL option for full region clan competition"
 
 
 # -----------------------------------------------------------------------------
@@ -336,6 +341,7 @@ if __name__ == '__main__':
     # file
 
     clan_source = sys.argv[1]
+    #clan_competition_type = sys.argv[2]
 
     # minor input checks
     if not os.path.isdir(clan_source) and not os.path.isfile(clan_source):
@@ -345,22 +351,31 @@ if __name__ == '__main__':
     # with -r option reset all is_significant fields back to 1
     if sys.argv.count("-r") == 1:
         print "\nReseting is_significant fields ..."
-        db_utils.reset_is_significant()
+        if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+            db_utils.reset_is_significant(clan_comp_type='PDB')
+        else:
+            db_utils.reset_is_significant(clan_comp_type='FULL')
 
     t_start = timeit.default_timer()
 
     print "\nCompeting Clans ...\n"
 
+    # compete multiple clans
     if os.path.isdir(clan_source):
-
-        clan_files = filter(
-            lambda x: x.find(".txt") != -1, os.listdir(clan_source))
+        clan_files = [x for x in os.listdir(clan_source) if x.endswith(".txt")]
 
         non_sig_seqs = None
-
         for clan in clan_files:
-            c_file = os.path.join(clan_source, clan)
-            non_sig_seqs = complete_clan_seqs(c_file)
+            print clan
+            clan_file = os.path.join(clan_source, clan)
+
+            # compete pdb_full_region
+            if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
+
+            # compete full_region
+            else:
+                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
             print "%s : %s" % (str(clan[0:8]), len(non_sig_seqs))
             non_sig_seqs = None
@@ -368,10 +383,16 @@ if __name__ == '__main__':
         elapsed_time = timeit.default_timer() - t_start
         print "elapsed time: ", elapsed_time
 
+    # compete a single clan
     elif os.path.isfile(clan_source):
+        clan_file = clan_source
 
-        c_file = clan_source
-        non_sig_seqs = complete_clan_seqs(c_file)
+        # compete pdb_full_region
+        if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+            non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
+        # compete full_region
+        else:
+            non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
         print "%s : %s" % (os.path.basename(clan_source).partition(".")[0],
                            len(non_sig_seqs))

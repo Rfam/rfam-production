@@ -1,4 +1,17 @@
-'''
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+"""
 Created on 27 Jan 2016
 
 @author: ikalvari
@@ -16,7 +29,7 @@ TO DO: - modify reset_is_significant() to enable single clan reset
        *Perhaps include this module within an RfamLive class as all of the
         functions are database specific.
         Convert the code to use python mysql transactions
-'''
+"""
 # ---------------------------------IMPORTS---------------------------------
 
 import string
@@ -34,14 +47,13 @@ EVAL = 4  # full region evalue
 
 
 def set_is_significant_to_zero(rfam_acc, rfamseq_acc):
-    '''
-        Fetch the correct db entry from full_region table according to
-        rfam_acc and rfamseq_acc and set is_significant field to zero (0)
+    """
+    Fetch the correct db entry from full_region table according to
+    rfam_acc and rfamseq_acc and set is_significant field to zero (0)
 
-        rfam_acc: RNA family accession
-        rfamseq_acc: Family specific sequence accession
-
-    '''
+    rfam_acc: RNA family accession
+    rfamseq_acc: Family specific sequence accession
+    """
 
     # maybe have this working out of the list which will be returned from
 
@@ -66,13 +78,13 @@ def set_is_significant_to_zero(rfam_acc, rfamseq_acc):
 
 
 def set_is_significant_to_zero_adv(rfam_acc, rfamseq_acc, region):
-    '''
-        Fetch the correct db entry from full_region table according to
-        rfam_acc and rfamseq_acc and set is_significant field to zero (0)
+    """
+    Fetch the correct db entry from full_region table according to
+    rfam_acc and rfamseq_acc and set is_significant field to zero (0)
 
-        rfam_acc: RNA family accession
-        rfamseq_acc: Family specific sequence accession
-    '''
+    rfam_acc: RNA family accession
+    rfamseq_acc: Family specific sequence accession
+    """
 
     # maybe have this working out of the list which will be returned from
 
@@ -97,15 +109,15 @@ def set_is_significant_to_zero_adv(rfam_acc, rfamseq_acc, region):
 
 
 def load_clan_seqs_from_db(clan_acc):  # tested
-    '''
-        Loads specific clan family sequences from full_region table and returns 
-        a dictionary structure as {Rfam_acc:{Rfseq_acc:[start, end, evalue]}}
-        for clan competition.
+    """
+    Loads specific clan family sequences from full_region table and returns
+    a dictionary structure as {Rfam_acc:{Rfseq_acc:[start, end, evalue]}}
+    for clan competition.
 
-        This has been modified to accommodate sequence duplicates
+    This has been modified to accommodate sequence duplicates
 
-        clan_acc: Clan accession as in Rfam
-    '''
+    clan_acc: Clan accession as in Rfam
+    """
 
     fam_seqs = {}
 
@@ -151,12 +163,12 @@ def load_clan_seqs_from_db(clan_acc):  # tested
 
 
 def load_clan_members_from_db(clan_acc):
-    '''
-        Retrieves all clan family members from DB and returns a list of the family
-        accessions.
+    """
+    Retrieves all clan family members from DB and returns a list of the family
+    accessions.
 
-        clan_acc: Clan accession as in Rfam
-    '''
+    clan_acc: Clan accession as in Rfam
+    """
 
     clan_members = []
 
@@ -182,12 +194,12 @@ def load_clan_members_from_db(clan_acc):
 
 
 def load_clans_from_db():
-    '''
-        Retrieves all clan family members from DB and returns a dictionary in the
-        in the form of {clan_id : [FAM1, FAM2, ... ], ... }
+    """
+    Retrieves all clan family members from DB and returns a dictionary in the
+    in the form of {clan_id : [FAM1, FAM2, ... ], ... }
 
-        clan_acc: Clan accession as in Rfam
-    '''
+    clan_acc: Clan accession as in Rfam
+    """
 
     clans = {}
 
@@ -217,16 +229,16 @@ def load_clans_from_db():
 
 
 def set_is_singificant_to_zero_multi(non_sig_seqs):
-    '''
-        A function for batching the process of updating full_region tables upon
-        clan competition. Updates the full_region table setting is_significant
-        field to zero (0) for the list of non significant sequences passed in
-        the form of (rfam_acc, rfamseq_acc, seq_start) tuples.
+    """
+    A function for batching the process of updating full_region tables upon
+    clan competition. Updates the full_region table setting is_significant
+    field to zero (0) for the list of non significant sequences passed in
+    the form of (rfam_acc, rfamseq_acc, seq_start) tuples.
 
-        non_sig_seqs: A list of the non significant regions to be set to zero.
-                      The list is product of clan competition.
+    non_sig_seqs: A list of the non significant regions to be set to zero.
+                  The list is product of clan competition.
 
-    '''
+    """
 
     # connect to db
     cnx = RfamDB.connect()
@@ -255,13 +267,12 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
 # -------------------------------------------------------------------------
 
 
-def reset_is_significant():
-    '''
-        This function resets full_region's is_singificant field's back to 1.
-        This should be able to update all or part of the table for clan
-        competition initialization and restoration.
-    '''
-
+def reset_is_significant(clan_comp_type='FULL'):
+    """
+    This function resets full_region's is_singificant field's back to 1.
+    This should be able to update all or part of the table for clan
+    competition initialization and restoration.
+    """
     seq_regs = []
 
     cnx = RfamDB.connect()
@@ -270,18 +281,32 @@ def reset_is_significant():
     d_cursor = cnx.cursor(buffered=True)
 
     # query to fetch all non significant sequences
-    s_query = ("SELECT rfam_acc, rfamseq_acc, seq_start FROM full_region "
-               "WHERE is_significant=0")
+    s_query = ''
+    query = ''
+    if clan_comp_type.upper() == 'FULL':
+        select_query = ("SELECT rfam_acc, rfamseq_acc, seq_start FROM full_region "
+                        "WHERE is_significant=0")
 
-    # query to update 0 fields from s_query
-    query = ("UPDATE full_region SET is_significant=1 "
-             "WHERE rfam_acc=%s AND rfamseq_acc=%s AND seq_start=%s")
+        # query to update 0 fields from s_query
+        update_query = ("UPDATE full_region SET is_significant=1 "
+                        "WHERE rfam_acc=%s AND rfamseq_acc=%s AND seq_start=%s")
 
-    d_cursor.execute(s_query)
+    elif clan_comp_type.upper() == 'PDB':
+        select_query = ("SELECT rfam_acc, pdb_id, chain, pdb_start from pdb_full_region "
+                        "WHERE is_significant=0")
+
+        update_query = ("UPDATE pdb_full_region SET is_significant=1 "
+                        "WHERE rfam_acc=%s AND pdb_id=%s AND chain=%s AND pdb_start=%s")
+
+    d_cursor.execute(select_query)
 
     # construct region list here
     for row in d_cursor:
-        seq_regs.append((str(row[0]), str(row[1]), int(row[2])))
+        if clan_comp_type.upper() == 'FULL':
+            seq_regs.append((str(row[0]), str(row[1]), int(row[2])))
+
+        elif clan_comp_type.upper() == 'PDB':
+            seq_regs.append((str(row[0]), str(row[1]), str(row[2]), int(row[3])))
 
     d_cursor.close()
 
@@ -290,7 +315,7 @@ def reset_is_significant():
 
     # update db
     try:
-        u_cursor.executemany(query, seq_regs)
+        u_cursor.executemany(update_query, seq_regs)
         cnx.commit()
     except:
         print "MySQL Update Error. Rolling back..."
@@ -305,14 +330,14 @@ def reset_is_significant():
 
 
 def update_post_process(jobs_file):
-    '''
-        Updates _post_process table with the job_ids per family assigned by lsf
+    """
+    Updates _post_process table with the job_ids per family assigned by lsf
 
-        jobs_file: This is a tab separated txt file generated from running the
-        job_dequeuer.py script that submits the rfam_view_process for each
-        family.
-        (rfam_acc uuid job_id ...)
-    '''
+    jobs_file: This is a tab separated txt file generated from running the
+    job_dequeuer.py script that submits the rfam_view_process for each
+    family.
+    (rfam_acc uuid job_id ...)
+    """
 
     job_ids = []
 
@@ -350,9 +375,9 @@ def update_post_process(jobs_file):
 
 
 def set_number_of_species():
-    '''
-        Updates number_of_species in family table
-    '''
+    """
+    Updates number_of_species in family table
+    """
 
     cnx = RfamDB.connect()
 
@@ -401,10 +426,10 @@ def set_number_of_species():
 
 
 def set_num_sig_seqs():
-    '''
-        Updates num_full in family table to hold the number of significant
-        sequences rather than the number of sequences in the full alignment
-    '''
+    """
+    Updates num_full in family table to hold the number of significant
+    sequences rather than the number of sequences in the full alignment
+    """
 
     cnx = RfamDB.connect()
 
@@ -452,15 +477,150 @@ def set_num_sig_seqs():
     print "Done"
 
 # ----------------------------------------------------------------------------
+
+
+def update_family_ncbi():
+    """
+    Updates table family ncbi by adding all distinct taxonomic ids per family
+
+    :return: void
+    """
+
+    cnx = RfamDB.connect()
+
+    cursor = cnx.cursor(buffered=True)
+    c_cursor = cnx.cursor(buffered=True)
+
+    cursor.execute("Select rfam_acc from family")
+
+    rfam_accs = cursor.fetchall()
+
+    cursor.close()
+
+    # family_ncbi query
+    get_ncbi_ids = ("select distinct rs.ncbi_id, f.rfam_id, f.rfam_acc from full_region fr, rfamseq rs, family f "
+                    "where fr.rfamseq_acc=rs.rfamseq_acc "
+                    "and f.rfam_acc=fr.rfam_acc "
+                    "and fr.rfam_acc=\'%s\' "
+                    "and fr.is_significant=1")
+
+    insert_query = "insert into family_ncbi (ncbi_id, rfam_id, rfam_acc) values (%s,%s,%s)"
+
+    family_ncbi_entries = []
+    cursor = cnx.cursor(buffered=True)
+    for rfam_acc in rfam_accs:
+        c_cursor.execute(get_ncbi_ids % rfam_acc[0])
+        family_ncbi_entries = list(c_cursor.fetchall())
+        entries_reformatted = [(str(x[0]), str(x[1]), str(x[2])) for x in family_ncbi_entries]
+
+        try:
+            cursor.executemany(insert_query, entries_reformatted)
+            cnx.commit()
+
+        except:
+            cnx.rollback()
+            sys.exit("\nError updating family_ncbi table for family %s." % rfam_acc[0])
+
+        family_ncbi_entries = []
+        entries_reformatted = []
+
+
+    cursor.close()
+    c_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    print "Done updating family_ncbi."
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_clanin_data():
+    """
+    Fetches all rfam_ids per clan. To be used for clanin file generation
+
+    :return: void
+    """
+
+    clan_members = {}
+    cnx = RfamDB.connect()
+
+    cursor = cnx.cursor(buffered=True)
+
+    cursor.execute("select cm.clan_acc, f.rfam_id from clan_membership cm, family f "
+                   "where f.rfam_acc=cm.rfam_acc "
+                   "order by cm.clan_acc")
+
+    clan_pairs = cursor.fetchall()
+
+    cursor.close()
+
+    # build clan membership dictionary
+    for clan_pair in clan_pairs:
+        clan_acc = clan_pair[0]
+        rfam_id = clan_pair[1]
+
+        if clan_acc not in clan_members.keys():
+            clan_members[clan_acc] = [rfam_id]
+        else:
+            clan_members[clan_acc].append(rfam_id)
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return clan_members
+
+# ----------------------------------------------------------------------------
+
+
+def set_pdb_is_significant_to_zero(non_sig_seqs):
+    """
+    Sets pdb_full_region is_significant to 0 for non significant regions in
+    non_sig_seqs list
+
+    non_sig_seqs: A list of the non significant regions to be set to zero.
+    The list is product of clan competition.
+
+    returns: void
+    """
+
+    # reformat list by splitting pdb_id and chain
+    pdb_reformatted_regions = []
+
+    for competed_region in non_sig_seqs:
+        # split pdb_id chain pairs by '_' used in concatenation for clan competition
+        # pdb_id: pdb_id_chain_pairs[0] and chain: pdb_id_chain_pairs[2]
+        pdb_id_chain_pairs = competed_region[1].partition('_')
+        pdb_reformatted_regions.append((str(competed_region[0]), str(pdb_id_chain_pairs[0]),
+                                        str(pdb_id_chain_pairs[2]), int(competed_region[2])))
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(raw=True)
+
+    # query to update is_significant field to 0
+    query = ("update pdb_full_region set is_significant=0 "
+             "where rfam_acc=%s and pdb_id=%s and chain=%s and pdb_start=%s")
+
+    try:
+        # execute query batched
+        cursor.executemany(query, pdb_reformatted_regions)
+        cnx.commit()
+
+    except:
+        print "MySQL Update Error. Rolling back..."
+        cnx.rollback()
+        cursor.close()
+        RfamDB.disconnect(cnx)
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-    # reset_is_significant()
-
-    #jobs_file = "/path/to/famview_jobs.txt"
-    # update_post_process(jobs_file)
-
-    # set_number_of_species()
-
-    # set_num_sig_seqs()
-
     pass
+
+

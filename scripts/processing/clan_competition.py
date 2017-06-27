@@ -35,6 +35,7 @@ RFAM_ACC = 0  # full region rfam_acc
 SEQ_ACC = 1  # full region rfamseq_acc
 START = 2  # full region seq_start
 END = 3  # full region seq_end
+BIT_SCORE = 4
 EVAL = 5  # full region evalue score
 TRUNC = 8  # full region truncated
 
@@ -229,18 +230,30 @@ def compete_seq_regions(regions, log):
                     # at this point check the evalues and build the list for
                     # the non significant regions
 
-                    if float(reg1[EVAL]) <= float(reg2[EVAL]):
+                    if float(reg1[EVAL]) != float(reg2[EVAL]):
+                        if float(reg1[EVAL]) < float(reg2[EVAL]):
+                            if ((reg2[RFAM_ACC], reg2[SEQ_ACC],
+                                 reg2[START]) not in non_sig_regs):
+                                non_sig_regs.append(
+                                    (reg2[RFAM_ACC], reg2[SEQ_ACC], reg2[START]))
+                        else:
+                            if ((reg1[RFAM_ACC], reg1[SEQ_ACC],
+                                 reg1[START]) not in non_sig_regs):
+                                non_sig_regs.append(
+                                    (reg1[RFAM_ACC], reg1[SEQ_ACC], reg1[START]))
 
-                        if ((reg2[RFAM_ACC], reg2[SEQ_ACC],
-                             reg2[START]) not in non_sig_regs):
-                            non_sig_regs.append(
-                                (reg2[RFAM_ACC], reg2[SEQ_ACC], reg2[START]))
+                    # check bit scores if e-values are equal
                     else:
-
-                        if ((reg1[RFAM_ACC], reg1[SEQ_ACC],
-                             reg1[START]) not in non_sig_regs):
-                            non_sig_regs.append(
-                                (reg1[RFAM_ACC], reg1[SEQ_ACC], reg1[START]))
+                        if float(reg1[BIT_SCORE]) >= float(reg2[BIT_SCORE]):
+                            if ((reg2[RFAM_ACC], reg2[SEQ_ACC],
+                                 reg2[START]) not in non_sig_regs):
+                                non_sig_regs.append(
+                                    (reg2[RFAM_ACC], reg2[SEQ_ACC], reg2[START]))
+                        else:
+                            if ((reg1[RFAM_ACC], reg1[SEQ_ACC],
+                                 reg1[START]) not in non_sig_regs):
+                                non_sig_regs.append(
+                                    (reg1[RFAM_ACC], reg1[SEQ_ACC], reg1[START]))
 
                 elif overlap is None:
                     log.debug("reg1: %s" % '\t'.join(reg1))

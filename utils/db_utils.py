@@ -619,8 +619,90 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
 
 # ----------------------------------------------------------------------------
 
+
+def fetch_clan_accessions():
+    """
+    Fetches all clan accessions from the database and returns then in the
+    form of a list
+
+    returns: A list of all clan accessions
+    """
+    cnx = RfamDB.connect()
+    clan_cursor = cnx.cursor(buffered=True)
+
+    clan_query = ("SELECT clan_acc FROM clan")
+
+    # fetch clans
+    clan_cursor.execute(clan_query)
+    clans = [str(x[0]) for x in clan_cursor.fetchall()]
+
+    clan_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return clans
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_clan_full_region_records(clan_acc):
+    """
+    Fetches all regions per clan
+
+    param clan_acc: A valid Rfam clan accession
+
+    returns: A list with all regions from full_region table for a specific  clan
+    """
+
+    cnx = RfamDB.connect()
+    clan_cursor = cnx.cursor(buffered=True)
+
+    clan_region_query = ("SELECT * FROM full_region\n"
+                         "JOIN (SELECT rfam_acc FROM clan_membership WHERE clan_acc=\'%s\') as CLAN_FAMS\n"
+                         "ON CLAN_FAMS.rfam_acc=full_region.rfam_acc")  # % (clan_acc)
+
+    clan_cursor.execute(clan_region_query % clan_acc)
+
+    clan_sequence_regions = clan_cursor.fetchall()
+
+    clan_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return clan_sequence_regions
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_clan_pdb_full_region_records(clan_acc):
+    """
+    Fetches all regions per clan
+
+    param clan_acc: A valid Rfam clan accession
+
+    returns: A list with all pdb regions per clan
+    """
+
+    cnx = RfamDB.connect()
+    clan_cursor = cnx.cursor(buffered=True)
+
+    clan_pdb_region_query = ("select pfr.rfam_acc, concat(pfr.pdb_id,'_',pfr.chain) as seq_acc, "
+                             "pfr.pdb_start, pfr.pdb_end, pfr.bit_score, pfr.evalue_score "
+                             "from pdb_full_region pfr, clan_membership cm "
+                             "where cm.rfam_acc=pfr.rfam_acc "
+                             "and cm.clan_acc=\'%s\' "
+                             "order by seq_acc")
+
+    clan_cursor.execute(clan_pdb_region_query % clan_acc)
+
+    clan_sequence_regions = clan_cursor.fetchall()
+
+    clan_cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return clan_sequence_regions
+
+
+# ----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-    pass
-
-
+   pass

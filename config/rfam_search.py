@@ -16,7 +16,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "12.1"  # release version
+DB_RELEASE = "12.3"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
@@ -95,7 +95,7 @@ MOTIF_FIELDS = ("SELECT m.motif_acc as id, m.motif_id as name, m.description,"
 # FAMILIES
 # Fetch pdb ids related to a family accession
 PDB_IDs_QUERY = ("SELECT distinct pdb_id FROM pdb_full_region\n"
-                 "WHERE rfam_acc=\'%s\'")
+                 "WHERE rfam_acc=\'%s\' and is_significant=1")
 
 # Fetch ncbi ids related to a family accession
 NCBI_IDs_QUERY = ("SELECT distinct tx.ncbi_id\n"

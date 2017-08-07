@@ -219,7 +219,7 @@ def load_clans_from_db():
 
     # create the dictionary
     for row in rows:
-        if (str(row[0]) not in clans.keys()):
+        if str(row[0]) not in clans.keys():
             clans[str(row[0])] = [str(row[1])]
         else:
             clans[str(row[0])].append(str(row[1]))
@@ -703,6 +703,168 @@ def fetch_clan_pdb_full_region_records(clan_acc):
 
 # ----------------------------------------------------------------------------
 
+
+def fetch_rfam_accs_sorted(order='DESC'):
+    """
+    Fetch all available Rfam accs and sort by specified order. DESC by default
+
+    order: The order in which to sort the records (ASC, DESC)
+    returns: void
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    # update is_significant field to 0
+    query = ("select rfam_acc from seed_region\n"
+             "group by rfam_acc\n"
+             "order by count(*) %s" % order)
+
+    cursor.execute(query)
+
+    rfam_accs = [str(x[0]) for x in cursor.fetchall()]
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return rfam_accs
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_all_upids():
+    """
+    Fetch all available genome accessions from genome table
+
+    return: A list of UP/RG ids as stored in genome
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    # update is_significant field to 0
+    query = ("select upid from genome")
+
+    cursor.execute(query)
+
+    genome_accs = [str(x[0]) for x in cursor.fetchall()]
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return genome_accs
+
+# ----------------------------------------------------------------------------
+
+
+def update_genome_length(genome_size_list):
+    """
+    Updates total_length in genome table
+
+    genome_size: Is a list of tuples. The list will contain a single tuple if
+    we are only updating a single genome.
+
+    return: A list of UP/RG ids as stored in genome
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    # update is_significant field to 0
+    query = ("update genome set total_length=%d where upid=\'%s\'")
+
+    cursor.executemany(query, genome_size_list)
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+
+def set_number_of_distinct_families_in_genome(upid):
+    """
+    Sets the number distinct families with hits in a specific genome defined
+    by its corresponding upid
+
+    upid: A specific genome upid to update the number of distinct families
+
+    return: void
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
+                    "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                    "and gs.upid=\'%s\'")
+
+    cursor.execute(select_query % upid)
+    count = cursor.fetchone()[0]
+
+    # update is_significant field to 0
+    update_query = ("update genome set num_families=%d where upid=\'%s\'")
+
+    # execute query
+    cursor.execute(update_query % (count, upid))
+
+    # commit changes and disconnect
+    cnx.commit()
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+
+# ----------------------------------------------------------------------------
+
+
+def set_number_of_genomic_significant_hits(upid):
+    """
+    Sets the number of significant fields for a specific genome according to
+    its corresponding upid id
+
+    upid: A specific genome upid to update the number of significant hits
+
+    return: void
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
+                    "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                    "and fr.is_significant=1\n"
+                    "and gs.upid=\'%s\'")
+
+    cursor.execute(count_query % upid)
+    count = cursor.fetchone()[0]
+
+    # update is_significant field to 0
+    update_query = ("update genome set num_rfam_regions=%d where upid=\'%s\'")
+
+    # execute query
+    cursor.execute(update_query % (count, upid))
+
+    # commit changes and disconnect
+    cnx.commit()
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-   pass
+    pass

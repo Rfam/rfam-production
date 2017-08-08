@@ -30,13 +30,16 @@ TO DO: - modify reset_is_significant() to enable single clan reset
         functions are database specific.
         Convert the code to use python mysql transactions
 """
+
 # ---------------------------------IMPORTS---------------------------------
 
 import string
 import sys
+
 from utils import RfamDB
 
 # -------------------------------------------------------------------------
+
 RFAM_ACC = 0  # full region rfam_acc
 SEQ_ACC = 1  # full region rfamseq_acc
 START = 2  # full region seq_start
@@ -140,7 +143,7 @@ def load_clan_seqs_from_db(clan_acc):  # tested
     # build family dictionary of sequences
     for row in cursor:
 
-        if(str(row[RFAM_ACC]) in fam_seqs.keys()):
+        if (str(row[RFAM_ACC]) in fam_seqs.keys()):
 
             if (str(row[SEQ_ACC]) in fam_seqs[str(row[RFAM_ACC])].keys()):
 
@@ -225,6 +228,7 @@ def load_clans_from_db():
             clans[str(row[0])].append(str(row[1]))
 
     return clans
+
 # -------------------------------------------------------------------------
 
 
@@ -422,6 +426,7 @@ def set_number_of_species():
     RfamDB.disconnect(cnx)
 
     print "Done"
+
 # ----------------------------------------------------------------------------
 
 
@@ -523,7 +528,6 @@ def update_family_ncbi():
 
         family_ncbi_entries = []
         entries_reformatted = []
-
 
     cursor.close()
     c_cursor.close()
@@ -700,7 +704,6 @@ def fetch_clan_pdb_full_region_records(clan_acc):
 
     return clan_sequence_regions
 
-
 # ----------------------------------------------------------------------------
 
 
@@ -824,7 +827,6 @@ def set_number_of_distinct_families_in_genome(upid):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-
 # ----------------------------------------------------------------------------
 
 
@@ -845,9 +847,9 @@ def set_number_of_genomic_significant_hits(upid):
     cursor = cnx.cursor(buffered=True)
 
     count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
-                    "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                    "and fr.is_significant=1\n"
-                    "and gs.upid=\'%s\'")
+                   "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                   "and fr.is_significant=1\n"
+                   "and gs.upid=\'%s\'")
 
     cursor.execute(count_query % upid)
     count = cursor.fetchone()[0]
@@ -866,5 +868,4 @@ def set_number_of_genomic_significant_hits(upid):
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass

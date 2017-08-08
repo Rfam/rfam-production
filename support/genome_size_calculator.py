@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 3:
         if os.path.isdir(sys.argv[1]):
-            output_fp = open(os.path.join(sys.argv[1], sys.argv[2]+'.json'))
+            output_fp = open(os.path.join(sys.argv[1], sys.argv[2]+'.json'), 'w')
             genome_sizes = calculate_genome_size(sys.argv[1])
             json.dump(genome_sizes, output_fp)
             output_fp.close()

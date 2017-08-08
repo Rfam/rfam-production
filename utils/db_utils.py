@@ -101,7 +101,9 @@ def set_is_significant_to_zero_adv(rfam_acc, rfamseq_acc, region):
 
     # update is_significant field to 0
     query = ("UPDATE full_region SET is_significant=0 "
-             "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\' AND seq_start=%d") % (rfam_acc, rfamseq_acc, region)
+             "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\' AND seq_start=%d") % (rfam_acc,
+                                                                                 rfamseq_acc,
+                                                                                 region)
 
     cursor.execute(query)
 
@@ -145,9 +147,9 @@ def load_clan_seqs_from_db(clan_acc):  # tested
     # build family dictionary of sequences
     for row in cursor:
 
-        if (str(row[RFAM_ACC]) in fam_seqs.keys()):
+        if str(row[RFAM_ACC]) in fam_seqs.keys():
 
-            if (str(row[SEQ_ACC]) in fam_seqs[str(row[RFAM_ACC])].keys()):
+            if str(row[SEQ_ACC]) in fam_seqs[str(row[RFAM_ACC])].keys():
 
                 fam_seqs[str(row[RFAM_ACC])][str(row[SEQ_ACC])].append(
                     (int(row[START]), int(row[END]), float(row[EVAL])))
@@ -211,7 +213,7 @@ def load_clans_from_db():
     cnx = RfamDB.connect()
     cursor = cnx.cursor(raw=True)
 
-    query = ("SELECT * FROM clan_membership")
+    query = "SELECT * FROM clan_membership"
 
     # execute query
     cursor.execute(query)
@@ -287,8 +289,6 @@ def reset_is_significant(clan_comp_type='FULL'):
     d_cursor = cnx.cursor(buffered=True)
 
     # query to fetch all non significant sequences
-    s_query = ''
-    query = ''
     if clan_comp_type.upper() == 'FULL':
         select_query = ("SELECT rfam_acc, rfamseq_acc, seq_start FROM full_region "
                         "WHERE is_significant=0")
@@ -347,16 +347,18 @@ def update_post_process(jobs_file):
 
     job_ids = []
 
-    fp = open(jobs_file, 'r')
+    jobs_file_fp = open(jobs_file, 'r')
 
     query = ("UPDATE _post_process SET lsf_id=%s "
              "WHERE rfam_acc=%s AND uuid=%s")
 
     # get lsf ids from file
-    for line in fp:
+    for line in jobs_file_fp:
         line = line.strip()
         line = string.split(line, '\t')
         job_ids.append((line[2], line[0], line[1]))
+
+    jobs_file_fp.close()
 
     # connect to db
     cnx = RfamDB.connect()
@@ -460,9 +462,9 @@ def set_num_sig_seqs():
     counts = []
     for acc in rfam_accs:
         c_cursor.execute(count_query % str(acc[0]))
-        count = c_cursor.fetchall()
+        count = c_cursor.fetchall()[0][0]
 
-        counts.append((count[0][0], str(acc[0])))
+        counts.append((count, str(acc[0])))
 
         count = 0
 
@@ -505,7 +507,8 @@ def update_family_ncbi():
     cursor.close()
 
     # family_ncbi query
-    get_ncbi_ids = ("select distinct rs.ncbi_id, f.rfam_id, f.rfam_acc from full_region fr, rfamseq rs, family f "
+    get_ncbi_ids = ("select distinct rs.ncbi_id, f.rfam_id, "
+                    "f.rfam_acc from full_region fr, rfamseq rs, family f "
                     "where fr.rfamseq_acc=rs.rfamseq_acc "
                     "and f.rfam_acc=fr.rfam_acc "
                     "and fr.rfam_acc=\'%s\' "
@@ -636,7 +639,7 @@ def fetch_clan_accessions():
     cnx = RfamDB.connect()
     clan_cursor = cnx.cursor(buffered=True)
 
-    clan_query = ("SELECT clan_acc FROM clan")
+    clan_query = "SELECT clan_acc FROM clan"
 
     # fetch clans
     clan_cursor.execute(clan_query)
@@ -754,7 +757,7 @@ def fetch_all_upids():
     cursor = cnx.cursor(buffered=True)
 
     # update is_significant field to 0
-    query = ("select upid from genome")
+    query = "select upid from genome"
 
     cursor.execute(query)
 
@@ -785,14 +788,15 @@ def set_genome_size(genome_sizes):
     cursor = cnx.cursor(buffered=True)
 
     # update is_significant field to 0
-    query = ("update genome set total_length=%s where upid=%s")
+    query = "update genome set total_length=%s where upid=%s"
 
     genome_size_list = []
     if os.path.isfile(genome_sizes):
         gen_size_file = open(genome_sizes, 'r')
         genome_size_dict = json.load(gen_size_file)
         gen_size_file.close()
-        genome_size_list = [(str(genome_size_dict[upid]), str(upid)) for upid in genome_size_dict.keys()]
+        genome_size_list = [(str(genome_size_dict[upid]),
+                             str(upid)) for upid in genome_size_dict.keys()]
 
     else:
         genome_size_list.append(genome_sizes)
@@ -830,7 +834,7 @@ def set_number_of_distinct_families_in_genome(upid):
     count = cursor.fetchone()[0]
 
     # update is_significant field to 0
-    update_query = ("update genome set num_families=%d where upid=\'%s\'")
+    update_query = "update genome set num_families=%d where upid=\'%s\'"
 
     # execute query
     cursor.execute(update_query % (count, upid))
@@ -868,7 +872,7 @@ def set_number_of_genomic_significant_hits(upid):
     count = cursor.fetchone()[0]
 
     # update is_significant field to 0
-    update_query = ("update genome set num_rfam_regions=%d where upid=\'%s\'")
+    update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
 
     # execute query
     cursor.execute(update_query % (count, upid))
@@ -882,4 +886,4 @@ def set_number_of_genomic_significant_hits(upid):
 
 if __name__ == '__main__':
 
-   pass
+    pass

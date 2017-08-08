@@ -33,8 +33,10 @@ TO DO: - modify reset_is_significant() to enable single clan reset
 
 # ---------------------------------IMPORTS---------------------------------
 
-import string
+import os
 import sys
+import string
+import json
 
 from utils import RfamDB
 
@@ -766,12 +768,12 @@ def fetch_all_upids():
 # ----------------------------------------------------------------------------
 
 
-def update_genome_length(genome_size_list):
+def set_genome_size(genome_sizes):
     """
     Updates total_length in genome table
 
-    genome_size: Is a list of tuples. The list will contain a single tuple if
-    we are only updating a single genome.
+    genome_sizes: This can be a json file for multiple updates or a tuple in
+    the form of (size, upid) for single genome, where size is in nucleotides
 
     return: A list of UP/RG ids as stored in genome
     """
@@ -783,9 +785,20 @@ def update_genome_length(genome_size_list):
     cursor = cnx.cursor(buffered=True)
 
     # update is_significant field to 0
-    query = ("update genome set total_length=%d where upid=\'%s\'")
+    query = ("update genome set total_length=%s where upid=%s")
+
+    genome_size_list = []
+    if os.path.isfile(genome_sizes):
+        gen_size_file = open(genome_sizes, 'r')
+        genome_size_dict = json.load(gen_size_file)
+        gen_size_file.close()
+        genome_size_list = [(str(genome_size_dict[upid]), str(upid)) for upid in genome_size_dict.keys()]
+
+    else:
+        genome_size_list.append(genome_sizes)
 
     cursor.executemany(query, genome_size_list)
+    cnx.commit()
 
     cursor.close()
     RfamDB.disconnect(cnx)
@@ -868,4 +881,5 @@ def set_number_of_genomic_significant_hits(upid):
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    pass
+
+   pass

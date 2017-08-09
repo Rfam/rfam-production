@@ -642,8 +642,26 @@ def extract_uniprot_genome_metadata(upid):
         upid = proteome.find(prefix % "upid")
         proteome_dict["upid"] = upid.text
         proteome_dict["ncbi_id"] = int(proteome.find(prefix % "taxonomy").text)
-        proteome_dict["description"] = proteome.find(prefix % "description").text
+        proteome_dict["description"] = ""
         proteome_dict["scientific_name"] = proteome.find(prefix % "name").text
+
+        # initialization to the default values
+        is_reference = proteome.find(prefix % "is_reference_proteome").text
+        proteome_dict["is_reference"] = 1
+
+        if is_reference == "false":
+            proteome_dict["is_reference"] = 0
+        else:
+            proteome_dict["is_reference"] = 1
+
+        # initialization to the default values
+        is_representative = is_reference = proteome.find(prefix % "is_representative_proteome").text
+        proteome_dict["is_representative"] = 0
+
+        if is_representative == "false":
+            proteome_dict["is_representative"] = 0
+        else:
+            proteome_dict["is_representative"] = 1
 
         # get sequence accessions
         acc_dict = {}
@@ -651,7 +669,6 @@ def extract_uniprot_genome_metadata(upid):
         accession_nodes = proteome.findall(prefix % "component")
 
         for node in accession_nodes:
-
             if node.get("name").find("WGS") != -1:
                 # look for all WGS accessions
                 gen_acc_nodes = node.findall(prefix % "genome_accession")
@@ -668,6 +685,10 @@ def extract_uniprot_genome_metadata(upid):
 
             elif node.get("name").find("Mitochondrion") != -1:
                 acc_dict["Mitochondrion"] = node.find(prefix % "genome_accession").text
+
+            elif node.get("name").find("Genome") != -1:
+                description =node.find(prefix % "description").text
+                proteome_dict["description"] = description
 
             else:
 
@@ -756,4 +777,5 @@ def dump_uniprot_genome_metadata(upid, kingdom):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
     pass

@@ -295,10 +295,12 @@ def genome_xml_builder(entries, gen_acc=None):
     ET.SubElement(dates, "date", value=created, type="created")
     ET.SubElement(dates, "date", value=updated, type="updated")
 
-    # clan cross references
-    genome_fams = fetch_value_list(gen_acc, rs.GENOME_FAMS)
-    cross_ref_dict["RFAM"] = genome_fams
-    build_cross_references(entry, cross_ref_dict)
+    # build genome cross references, if there are any
+    if genome_fields["num_families"] != 0:
+        genome_fams = fetch_value_list(gen_acc, rs.GENOME_FAMS)
+
+        cross_ref_dict["RFAM"] = genome_fams
+        build_cross_references(entry, cross_ref_dict)
 
     # clan additional fields
     build_genome_additional_fields(entry, genome_fields)

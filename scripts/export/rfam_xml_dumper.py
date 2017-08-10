@@ -44,7 +44,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     name_dict:  A dictionary with all ncbi names per tax id
     name_object: NCBI tax browser node dictionary
     entry_type: Single char signifying the type of the entry accession
-                ('M': Motif, 'F': Family, 'C': Clan)
+                ('M': Motif, 'F': Family, 'C': Clan, 'G': Genome)
     entry_acc:  An Rfam related accession (Clan, Motif, Family)
     outdir: Destination directory
     """
@@ -79,6 +79,9 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
     elif entry_type == rs.MOTIF:
         motif_xml_builder(entries, motif_acc=entry_acc)
+
+    elif entry_type == rs.GENOME:
+        genome_xml_builder(entries, gen_acc=entry_acc)
 
     # export xml tree - writes xml tree into a file
     fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
@@ -262,6 +265,48 @@ def motif_xml_builder(entries, motif_acc=None):
 # ----------------------------------------------------------------------------
 
 
+def genome_xml_builder(entries, gen_acc=None):
+    """
+    Expands the Xml4dbDump with a Motif entry
+
+    entries:    Entries node on xml tree
+    gen_acc:  An Rfam associated motif accession
+    """
+
+    entry_type = "Genome"
+
+    cross_ref_dict = {}
+
+    # fetch clan fields
+    genome_fields = fetch_entry_fields(gen_acc, rs.GENOME)
+
+    # add a new clan entry to the xml tree
+    entry = ET.SubElement(entries, "entry", id=gen_acc)
+
+    ET.SubElement(entry, "name").text = genome_fields["name"]
+    ET.SubElement(entry, "description").text = genome_fields["description"]
+
+    # entry dates - common to motifs and clans
+    dates = ET.SubElement(entry, "dates")
+
+    created = genome_fields["created"].date().strftime("%d %b %Y")
+    updated = genome_fields["updated"].date().strftime("%d %b %Y")
+
+    ET.SubElement(dates, "date", value=created, type="created")
+    ET.SubElement(dates, "date", value=updated, type="updated")
+
+    # clan cross references
+    genome_fams = fetch_value_list(gen_acc, rs.GENOME_FAMS)
+    cross_ref_dict["RFAM"] = genome_fams
+    build_cross_references(entry, cross_ref_dict)
+
+    # clan additional fields
+    build_genome_additional_fields(entry, genome_fields)
+
+
+# ----------------------------------------------------------------------------
+
+
 def build_cross_references(entry, cross_ref_dict):
     """
     Expands the entry xml tree by adding the entry's cross references.
@@ -412,6 +457,37 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 # ----------------------------------------------------------------------------
 
 
+def build_genome_additional_fields(entry, fields):
+    """
+    Builds additional field nodes for a Genome
+
+    entry:  This is the xml.etree.ElementTree at the point of entry
+    fields: A list of additional fields to expand the entry with
+
+    return: void
+    """
+
+    add_fields = ET.SubElement(entry, "additional_fields")
+
+    # adding entry type
+    ET.SubElement(add_fields, "field", name="entry_type").text = "Genome"
+
+    if fields["assembly_acc"] is None:
+        ET.SubElement(add_fields, "field", name="gca_accession").text = ''
+    else:
+        ET.SubElement(add_fields, "field", name="gca_accession").text = fields["assembly_acc"]
+
+    ET.SubElement(add_fields, "field", name="length").text = str(fields["total_length"])
+    ET.SubElement(add_fields, "field", name="taxonomy_lineage").text = fields["tax_string"]
+    ET.SubElement(add_fields, "field", name="ncbi_taxid").text = str(fields["ncbi_id"])
+    ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
+    ET.SubElement(add_fields, "field", name="num_rfam_families").text = str(fields["num_families"])
+
+    return add_fields
+
+# ----------------------------------------------------------------------------
+
+
 def get_value_list(val_str, delimiter=','):
     """
     Splits an input string using delimiter and returns a list of the
@@ -433,6 +509,7 @@ def get_value_list(val_str, delimiter=','):
 
 # ----------------------------------------------------------------------------
 
+
 def fetch_value_list(rfam_acc, query):
     """
     Retrieves and returns a list of all rfam_acc related values, returned
@@ -453,7 +530,11 @@ def fetch_value_list(rfam_acc, query):
     else:
         cursor.execute(query % rfam_acc)
 
-    values = cursor.fetchall()
+    values = None
+    if rfam_acc[0:2] == 'UP' or rfam_acc[0:2] == 'RG':
+        values = [str(x[0]) for x in cursor.fetchall()]
+    else:
+        values = cursor.fetchall()
 
     cursor.close()
     cnx.disconnect()
@@ -488,6 +569,9 @@ def fetch_entry_fields(entry_acc, entry_type):
 
         elif entry_type == rs.MOTIF:
             cursor.execute(rs.MOTIF_FIELDS % entry_acc)
+
+        elif entry_type == rs.GENOME:
+            cursor.execute(rs.GENOME_FIELDS % entry_acc)
 
         fields = cursor.fetchall()[0]
 
@@ -575,9 +659,13 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
                 rfam_accs = fetch_value_list(
                     None, rs.CLAN_ACC)
 
+            # Genome accessions
+            elif entry_type == rs.GENOME:
+                rfam_accs = fetch_value_list(
+                    None, rs.GENOME_ACC)
+
             # Family accessions
             elif entry_type == rs.FAMILY:
-
                 # load ncbi taxonomy browser here
                 name_dict, name_dict_reverse = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)
@@ -605,7 +693,7 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
         # export single entry
         else:
             # need to check the validity of an rfam_acc (rfam, motif, clan)
-            if entry_type == rs.MOTIF or entry_type == rs.CLAN:
+            if entry_type == rs.MOTIF or entry_type == rs.CLAN or entry_type == rs.GENOME:
                 xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir)
 
             # export single family entry
@@ -684,6 +772,7 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
 
 # ----------------------------------------------------------------------------
 
+
 def usage():
     """
     Parses arguments and displays usage information on screen
@@ -695,8 +784,8 @@ def usage():
     # group required arguments together
     req_args = parser.add_argument_group("required arguments")
 
-    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan)",
-                          type=str, choices=['F', 'M', 'C'], required=True)
+    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan, G: Genome)",
+                          type=str, choices=['F', 'M', 'C', 'G'], required=True)
 
     parser.add_argument(
         "--acc", help="a valid rfam entry accession (RF*|CL*|RM*)",
@@ -713,6 +802,7 @@ def usage():
 
 # ----------------------------------------------------------------------------
 
+
 if __name__ == '__main__':
 
     parser = usage()
@@ -722,7 +812,6 @@ if __name__ == '__main__':
     # Check if export type matches accession
     wrong_input = False
     if args.acc is not None:
-
         if args.type == 'F' and args.acc[0:2] != "RF":
             wrong_input = True
         elif args.type == 'M' and args.acc[0:2] != "RM":

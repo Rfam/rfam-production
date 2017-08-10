@@ -819,6 +819,8 @@ if __name__ == '__main__':
             wrong_input = True
         elif args.type == 'C' and args.acc[0:2] != "CL":
             wrong_input = True
+        elif args.type == 'G' and (args.acc[0:2] != "UP" or args.acc[0:2] != "RG"):
+            wrong_input = True
 
     if wrong_input is True:
         print "\nAccession does not match the export type.\n"

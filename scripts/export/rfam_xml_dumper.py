@@ -483,7 +483,7 @@ def build_genome_additional_fields(entry, fields):
     ET.SubElement(add_fields, "field", name="taxonomy_lineage").text = fields["tax_string"]
     ET.SubElement(add_fields, "field", name="ncbi_taxid").text = str(fields["ncbi_id"])
     ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
-    ET.SubElement(add_fields, "field", name="num_rfam_families").text = str(fields["num_families"])
+    ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
 
     return add_fields
 

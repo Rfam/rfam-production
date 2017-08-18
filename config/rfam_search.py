@@ -27,6 +27,7 @@ AUTH_DEL = ','
 MOTIF = 'M'
 CLAN = 'C'
 FAMILY = 'F'
+GENOME = 'G'
 
 
 # 9606 - human
@@ -45,18 +46,20 @@ POPULAR_SPECIES = (
 
 
 # RFAM SEARCH QUERIES
-REL_FIELDS = ("SELECT rfam_release, rfam_release_date FROM version")
+REL_FIELDS = "SELECT rfam_release, rfam_release_date FROM version"
 
 
 # -------------------------------RFAM ACCESSIONS--------------------------
 
 # FETCHING
 
-CLAN_ACC = ("SELECT clan_acc FROM clan")
+CLAN_ACC = "SELECT clan_acc FROM clan"
 
-MOTIF_ACC = ("SELECT motif_acc FROM motif")
+MOTIF_ACC = "SELECT motif_acc FROM motif"
 
-FAM_ACC = ("SELECT rfam_acc FROM family")
+FAM_ACC = "SELECT rfam_acc FROM family"
+
+GENOME_ACC = "SELECT upid from genome"
 
 
 # ---------------------------------RFAM FIELDS----------------------------
@@ -84,11 +87,18 @@ CLAN_FIELDS = ("SELECT c.clan_acc as id, c.id as name, c.description, c.created,
                "AND c.clan_acc=\'%s\'")
 
 # Fetching clan fields from the db
-
 MOTIF_FIELDS = ("SELECT m.motif_acc as id, m.motif_id as name, m.description,"
                 "m.created, m.updated, m.author\n"
                 "FROM motif m\n"
                 "WHERE m.motif_acc=\'%s\'")
+
+# Fetching genome fields from the db
+GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc, g.description, "
+                 "g.total_length, tx.tax_string, g.ncbi_id, g.num_rfam_regions,g.num_families, "
+                 "g.common_name, g.assembly_name, g.assembly_level, g.created, g.updated\n"
+                 "from genome g, taxonomy tx\n"
+                 "where g.ncbi_id=tx.ncbi_id\n"
+                 "and g.upid=\'%s\'")
 
 # -----------------------------CROSS REFERENCES---------------------------
 
@@ -117,6 +127,11 @@ CLAN_FAMS = ("SELECT rfam_acc from clan_membership\n"
 # MOTIFS
 MOTIF_FAMS = ("SELECT distinct rfam_acc from motif_matches\n"
               "where motif_acc=\'%s\'")
+
+# GENOMES
+GENOME_FAMS = ("select distinct rfam_acc from full_region fr, genseq gs\n"
+               "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+               "and gs.upid=\'%s\'")
 
 # -------------------------ADDITIONAL FIELDS------------------------------
 

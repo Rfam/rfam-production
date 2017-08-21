@@ -486,9 +486,15 @@ def build_genome_additional_fields(entry, fields):
     ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
     ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
     ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"]) # redundant
-    ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
-    ET.SubElement(add_fields, "field", name="assembly_level").text = str(fields["assembly_level"])
-    ET.SubElement(add_fields, "field", name="assembly_name").text = str(fields["assembly_name"])
+
+    if fields["common_name"] is not None:
+        ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
+
+    if fields["assembly_level"] is not None:
+        ET.SubElement(add_fields, "field", name="assembly_level").text = str(fields["assembly_level"])
+
+    if fields["assembly_name"] is not None:
+        ET.SubElement(add_fields, "field", name="assembly_name").text = str(fields["assembly_name"])
 
     return add_fields
 

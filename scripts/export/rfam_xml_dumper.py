@@ -532,7 +532,6 @@ def fetch_value_list(rfam_acc, query):
     cursor = cnx.cursor(raw=True)
 
     if rfam_acc is None:
-
         cursor.execute(query)
     else:
         cursor.execute(query % rfam_acc)
@@ -542,11 +541,13 @@ def fetch_value_list(rfam_acc, query):
     cursor.close()
     cnx.disconnect()
 
-    if isinstance(values[0],tuple):
-        return [str(x[0]) for x in values]
-    else:
-        return [str(x) for x in values]
+    if len(values) > 0:
+        if isinstance(values[0], tuple):
+            return [str(x[0]) for x in values]
+        else:
+            return [str(x) for x in values]
 
+    return []
 
 # ----------------------------------------------------------------------------
 

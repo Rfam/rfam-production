@@ -83,6 +83,11 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     elif entry_type == rs.GENOME:
         genome_xml_builder(entries, gen_acc=entry_acc)
 
+    """ TO BE IMPLEMENTED
+    elif entry_type == rs.MATCH:
+        full_region_xml_builder(entries)
+    """
+
     # export xml tree - writes xml tree into a file
     fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
 
@@ -122,6 +127,9 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs.PDB_IDs_QUERY)
 
+    # fetch family upids
+    upids = fetch_value_list(rfam_acc, rs.FAMILY_UPIDS)
+
     # get pubmed ids
     pmids = get_value_list(fam_fields["pmids"], ',')
 
@@ -141,6 +149,9 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     cross_refs["PUBMED"] = pmids
     cross_refs["GO"] = go_ids
     cross_refs["SO"] = so_ids
+
+    if len(upids) > 0:
+        cross_refs["UniProt"] = upids
 
     if clan is not None:
         cross_refs["RFAM"] = [clan]
@@ -267,7 +278,7 @@ def motif_xml_builder(entries, motif_acc=None):
 
 def genome_xml_builder(entries, gen_acc=None):
     """
-    Expands the Xml4dbDump with a Motif entry
+    Expands the Xml4dbDump with a Genome entry
 
     entries:    Entries node on xml tree
     gen_acc:  An Rfam associated motif accession
@@ -277,14 +288,21 @@ def genome_xml_builder(entries, gen_acc=None):
 
     cross_ref_dict = {}
 
-    # fetch clan fields
+    # fetch genome fields
     genome_fields = fetch_entry_fields(gen_acc, rs.GENOME)
 
-    # add a new clan entry to the xml tree
+    # add a new genome entry to the xml tree
     entry = ET.SubElement(entries, "entry", id=gen_acc)
 
-    ET.SubElement(entry, "name").text = genome_fields["name"]
-    ET.SubElement(entry, "description").text = genome_fields["description"]
+    if genome_fields["name"] is not None:
+        ET.SubElement(entry, "name").text = genome_fields["name"]
+    else:
+        ET.SubElement(entry, "name").text = ''
+
+    if genome_fields["description"] is not None:
+        ET.SubElement(entry, "description").text = genome_fields["description"]
+    else:
+        ET.SubElement(entry, "description").text = ''
 
     # entry dates - common to motifs and clans
     dates = ET.SubElement(entry, "dates")
@@ -303,9 +321,29 @@ def genome_xml_builder(entries, gen_acc=None):
         cross_ref_dict["ncbi_taxonomy_id"] = [genome_fields["ncbi_id"]]
         build_cross_references(entry, cross_ref_dict)
 
-    # clan additional fields
+    # genome additional fields
     build_genome_additional_fields(entry, genome_fields)
 
+
+# ----------------------------------------------------------------------------
+
+
+def full_region_xml_builder(entries):
+    """
+    Expands the Xml4dbDump with multiple full_region entries stored in a
+    single xml file
+
+    entries:    Entries node on xml tree
+    gen_acc:  An Rfam associated motif accession
+    """
+
+    entry_type = "Match"
+
+    full_region_fields = fetch_entry_fields(rs.FULL_REGION_FIELDS)
+
+    # TO BE IMPLEMENTED
+
+    print full_region_fields
 
 # ----------------------------------------------------------------------------
 
@@ -327,7 +365,6 @@ def build_cross_references(entry, cross_ref_dict):
     cross_refs = ET.SubElement(entry, "cross_references")
 
     for db_name in cross_ref_dict.keys():
-
         # get db_keys
         db_keys = cross_ref_dict[db_name]
         if len(db_keys) > 0:
@@ -481,7 +518,7 @@ def build_genome_additional_fields(entry, fields):
         ET.SubElement(add_fields, "field", name="gca_accession").text = fields["assembly_acc"]
 
     ET.SubElement(add_fields, "field", name="length").text = str(fields["total_length"])
-    ET.SubElement(add_fields, "field", name="taxonomy_lineage").text = fields["tax_string"]
+    ET.SubElement(add_fields, "field", name="tax_string").text = fields["tax_string"]
     ET.SubElement(add_fields, "field", name="ncbi_taxid").text = str(fields["ncbi_id"])
     ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
     ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
@@ -573,6 +610,8 @@ def fetch_entry_fields(entry_acc, entry_type):
 
     entry_type = entry_type[0].capitalize()
 
+    fields = None
+
     try:
         if entry_type == rs.FAMILY:
             cursor.execute(rs.FAM_FIELDS % entry_acc)
@@ -661,7 +700,6 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
         # export all entries
         if rfam_acc is None:
-
             # Motif accessions
             if entry_type == rs.MOTIF:
                 rfam_accs = fetch_value_list(
@@ -711,7 +749,6 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
             # export single family entry
             else:
-
                 # load ncbi taxonomy browser here
                 name_dict, name_dict_reverse = read_ncbi_names_dmp(
                     rfc.TAX_NAMES_DUMP)

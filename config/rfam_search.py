@@ -172,6 +172,8 @@ NUM_FAMS_CLAN = ("SELECT count(*) FROM clan_membership\n"
 NUM_FAMS_MOTIF = ("SELECT count(*) FROM motif_family_stats\n"
                   "WHERE motif_acc=\'%s\'")
 
+COUNT_FULL_REGION = "SELECT count(*) from full_region where is_significant=1"
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

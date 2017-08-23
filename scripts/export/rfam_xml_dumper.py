@@ -65,7 +65,11 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     ET.SubElement(db_xml, "release_date").text = rel_date
 
     # need to add a parameter for this...
-    ET.SubElement(db_xml, "entry_count").text = '1'
+    if entry_type == rs.MATCH:
+        entry_count = fetch_value(rs.COUNT_FULL_REGION, None)
+        ET.SubElement(db_xml, "entry_count").text = str(entry_count)
+    else:
+        ET.SubElement(db_xml, "entry_count").text = '1'
 
     entries = ET.SubElement(db_xml, "entries")
 
@@ -731,7 +735,11 @@ def fetch_value(query, accession):
 
     cursor = cnx.cursor(raw=True)
 
-    cursor.execute(query % accession)
+    if accession is not None:
+        cursor.execute(query % accession)
+
+    else:
+        cursor.execute(query)
 
     value = cursor.fetchall()
 

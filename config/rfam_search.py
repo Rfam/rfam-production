@@ -1,13 +1,21 @@
-'''
-Created on 13 May 2016
+"""
+Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
-@author: ikalvari
-
+"""
 Description: A library of scripts and constants to support rfam_xml_dumper
 
 TO DO: - Set release version and release date automatically
-
-'''
+"""
 
 import datetime
 
@@ -16,7 +24,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "12.3"  # release version
+DB_RELEASE = "13.0"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
@@ -28,6 +36,7 @@ MOTIF = 'M'
 CLAN = 'C'
 FAMILY = 'F'
 GENOME = 'G'
+MATCH = 'R'
 
 
 # 9606 - human
@@ -100,6 +109,19 @@ GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc
                  "where g.ncbi_id=tx.ncbi_id\n"
                  "and g.upid=\'%s\'")
 
+FULL_REGION_FIELDS = ("select concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end) as id, "
+                      "concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end) as name, fr.rfamseq_acc, "
+                      "fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score, "
+                      "fr.bit_score, fr.type as alignment_type, fr.truncated, g.common_name, g.scientific_name, "
+                      "g.ncbi_id, fr.rfam_acc, g.upid, "
+                      "concat(f.rfam_id,\' from \',concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end)) as description, "
+                      "NOW() as created, NOW() as updated "
+                      "from full_region fr, family f, rfamseq rs, genome g "
+                      "where fr.rfamseq_acc=rs.rfamseq_acc "
+                      "and rs.ncbi_id=g.ncbi_id "
+                      "and fr.rfam_acc=f.rfam_acc "
+                      "and fr.is_significant=1")
+
 # -----------------------------CROSS REFERENCES---------------------------
 
 # FAMILIES
@@ -114,6 +136,13 @@ NCBI_IDs_QUERY = ("SELECT distinct tx.ncbi_id\n"
                   "AND fr.rfamseq_acc=rs.rfamseq_acc\n"
                   "AND fr.is_significant=1\n"
                   "AND fr.rfam_acc=\'%s\'")
+
+# Fetch upids related to a family accession
+
+FAMILY_UPIDS = ("select distinct upid "
+                "from genseq gs, full_region fr "
+                "where gs.rfamseq_acc=fr.rfamseq_acc "
+                "and fr.rfam_acc=\'%s\'")
 
 # Fetch clan based on rfam_acc
 FAM_CLAN = ("SELECT clan_acc from clan_membership\n"

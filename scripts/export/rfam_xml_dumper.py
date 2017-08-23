@@ -83,10 +83,9 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     elif entry_type == rs.GENOME:
         genome_xml_builder(entries, gen_acc=entry_acc)
 
-    """ TO BE IMPLEMENTED
     elif entry_type == rs.MATCH:
+        entry_acc = 'full_region'
         full_region_xml_builder(entries)
-    """
 
     # export xml tree - writes xml tree into a file
     fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
@@ -339,11 +338,47 @@ def full_region_xml_builder(entries):
 
     entry_type = "Match"
 
-    full_region_fields = fetch_entry_fields(rs.FULL_REGION_FIELDS)
+    full_region_fields = fetch_entry_fields(rs.FULL_REGION_FIELDS, rs.MATCH)
 
     # TO BE IMPLEMENTED
+    for region in full_region_fields:
 
-    print full_region_fields
+        # add a new entry for every case in full_region_fields
+        # build default xml tags
+
+
+        # add a new family entry to the xml tree
+        entry = ET.SubElement(entries, "entry", id=region["id"])
+
+        # entry name
+        ET.SubElement(entry, "name").text = str(region["name"])
+
+        # entry description
+        ET.SubElement(entry, "description").text = str(region["description"])
+
+        # entry dates - common to motifs and clans
+        dates = ET.SubElement(entry, "dates")
+
+        created = region["created"].date().strftime("%d %b %Y")
+        updated = region["updated"].date().strftime("%d %b %Y")
+
+        ET.SubElement(dates, "date", value=created, type="created")
+        ET.SubElement(dates, "date", value=updated, type="updated")
+
+
+        # additional fields
+        build_full_region_additional_fields(entry, region)
+
+        # adding cross references
+        cross_refs = {}
+
+        # create cross references dictionary
+        cross_refs["ncbi_taxonomy_id"] = [str(region["ncbi_id"])]
+        cross_refs["RFAM"] = [region["rfam_acc"]]
+        cross_refs["ENA"] = [region["rfamseq_acc"]]
+        cross_refs["Uniprot"] = [region["upid"]]
+
+        build_cross_references(entry, cross_refs)
 
 # ----------------------------------------------------------------------------
 
@@ -507,6 +542,9 @@ def build_genome_additional_fields(entry, fields):
     return: void
     """
 
+    # TO DO - Generalize this one by executing a query to fetch additional
+    # fields here
+
     add_fields = ET.SubElement(entry, "additional_fields")
 
     # adding entry type
@@ -537,6 +575,42 @@ def build_genome_additional_fields(entry, fields):
 
 # ----------------------------------------------------------------------------
 
+def build_full_region_additional_fields(entry, fields):
+    """
+    Builds additional field nodes for a the full_region xml dump
+
+    entry:  This is the xml.etree.ElementTree at the point of entry
+    fields: A list of additional fields to expand the entry with
+
+    return: void
+    """
+
+    # TO DO - Generalize this one by executing a query to fetch additional
+    # fields here
+
+    add_fields = ET.SubElement(entry, "additional_fields")
+
+    # adding entry type
+    ET.SubElement(add_fields, "field", name="entry_type").text = "Match"
+    ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(fields["rfamseq_acc"])
+    ET.SubElement(add_fields, "field", name="seq_start").text = str(fields["seq_start"])
+    ET.SubElement(add_fields, "field", name="seq_end").text = str(fields["seq_end"])
+    ET.SubElement(add_fields, "field", name="cm_start").text = str(fields["cm_start"])
+    ET.SubElement(add_fields, "field", name="cm_end").text = str(fields["cm_end"])
+
+    ET.SubElement(add_fields, "field", name="evalue_score").text = str(fields["evalue_score"])
+    ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
+    ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
+    ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
+
+    if fields["common_name"] is not None:
+        ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
+
+    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"])
+
+    return add_fields
+
+# ----------------------------------------------------------------------------
 
 def get_value_list(val_str, delimiter=','):
     """
@@ -613,19 +687,23 @@ def fetch_entry_fields(entry_acc, entry_type):
     fields = None
 
     try:
-        if entry_type == rs.FAMILY:
-            cursor.execute(rs.FAM_FIELDS % entry_acc)
+        if entry_type == rs.MATCH:
+            cursor.execute(rs.FULL_REGION_FIELDS)
+            fields = cursor.fetchall()
+        else:
+            if entry_type == rs.FAMILY:
+                cursor.execute(rs.FAM_FIELDS % entry_acc)
 
-        elif entry_type == rs.CLAN:
-            cursor.execute(rs.CLAN_FIELDS % entry_acc)
+            elif entry_type == rs.CLAN:
+                cursor.execute(rs.CLAN_FIELDS % entry_acc)
 
-        elif entry_type == rs.MOTIF:
-            cursor.execute(rs.MOTIF_FIELDS % entry_acc)
+            elif entry_type == rs.MOTIF:
+                cursor.execute(rs.MOTIF_FIELDS % entry_acc)
 
-        elif entry_type == rs.GENOME:
-            cursor.execute(rs.GENOME_FIELDS % entry_acc)
+            elif entry_type == rs.GENOME:
+                cursor.execute(rs.GENOME_FIELDS % entry_acc)
 
-        fields = cursor.fetchall()[0]
+            fields = cursor.fetchall()[0]
 
     except:
         print "Failure retrieving values for entry %s." % entry_acc
@@ -692,9 +770,9 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
         # this will create the output directory if it doesn't exist
         if not os.path.exists(outdir):
-
             try:
                 os.mkdir(outdir)
+
             except:
                 print "Error creating output directory at: ", outdir
 
@@ -714,6 +792,11 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
             elif entry_type == rs.GENOME:
                 rfam_accs = fetch_value_list(
                     None, rs.GENOME_ACC)
+
+            elif entry_type == rs.MATCH:
+                xml4db_dumper(
+                    None, None, entry_type, None, False, outdir)
+                return
 
             # Family accessions
             elif entry_type == rs.FAMILY:
@@ -834,8 +917,8 @@ def usage():
     # group required arguments together
     req_args = parser.add_argument_group("required arguments")
 
-    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan, G: Genome)",
-                          type=str, choices=['F', 'M', 'C', 'G'], required=True)
+    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan, G: Genome, R: Regions)",
+                          type=str, choices=['F', 'M', 'C', 'G', 'R'], required=True)
 
     parser.add_argument(
         "--acc", help="a valid rfam entry accession (RF*|CL*|RM*)",

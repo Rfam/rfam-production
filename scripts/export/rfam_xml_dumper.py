@@ -24,6 +24,7 @@ TO DO:
 import datetime
 import logging
 import timeit
+import traceback
 import argparse
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -850,6 +851,7 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
                     name_dict, name_object, entry_type, rfam_acc, hfields, outdir)
 
     except:
+        traceback.print_exc()
         # need to correct this one
         if rfam_acc is None:
             gen_fams = Set([x.partition('.')[0] for x in os.listdir(outdir)])

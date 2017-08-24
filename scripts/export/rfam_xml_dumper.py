@@ -344,18 +344,21 @@ def full_region_xml_builder(entries):
 
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
 
+    for region in full_region_fields:
         # add a new entry for every case in full_region_fields
         # build default xml tags
 
+        name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+        description = '%s from %s' % (region["rfam_id"], region["rfamseq_acc"])
 
         # add a new family entry to the xml tree
-        entry = ET.SubElement(entries, "entry", id=region["id"])
+        entry = ET.SubElement(entries, "entry", id=name)
 
         # entry name
-        ET.SubElement(entry, "name").text = str(region["name"])
+        ET.SubElement(entry, "name").text = name
 
         # entry description
-        ET.SubElement(entry, "description").text = str(region["description"])
+        ET.SubElement(entry, "description").text = description
 
         # entry dates - common to motifs and clans
         dates = ET.SubElement(entry, "dates")

@@ -110,12 +110,10 @@ GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc
                  "and g.upid=\'%s\'")
 
 FULL_REGION_FIELDS = """
-    SELECT CONCAT(fr.rfamseq_acc,'/',fr.seq_start,':',fr.seq_end) as id,
-    CONCAT(fr.rfamseq_acc,'/',fr.seq_start,':',fr.seq_end) as name,
+    SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, g.common_name, g.scientific_name,
-    g.ncbi_id, fr.rfam_acc, g.upid,
-    CONCAT(f.rfam_id,' from ',concat(fr.rfamseq_acc,'/',fr.seq_start,':',fr.seq_end)) as description,
+    g.ncbi_id, fr.rfam_acc, g.upid, f.rfam_id
     FROM full_region fr, family f, rfamseq rs, genome g
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
     AND rs.ncbi_id=g.ncbi_id

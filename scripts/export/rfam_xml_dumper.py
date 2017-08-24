@@ -347,6 +347,7 @@ def full_region_xml_builder(entries):
 
     # TO BE IMPLEMENTED
     for region in full_region_fields:
+    timestamp = datetime.datetime.now().strftime("%d %b %Y")
 
         # add a new entry for every case in full_region_fields
         # build default xml tags
@@ -364,12 +365,8 @@ def full_region_xml_builder(entries):
         # entry dates - common to motifs and clans
         dates = ET.SubElement(entry, "dates")
 
-        created = region["created"].date().strftime("%d %b %Y")
-        updated = region["updated"].date().strftime("%d %b %Y")
-
-        ET.SubElement(dates, "date", value=created, type="created")
-        ET.SubElement(dates, "date", value=updated, type="updated")
-
+        ET.SubElement(dates, "date", value=timestamp, type="created")
+        ET.SubElement(dates, "date", value=timestamp, type="updated")
 
         # additional fields
         build_full_region_additional_fields(entry, region)

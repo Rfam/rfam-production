@@ -116,7 +116,6 @@ FULL_REGION_FIELDS = """
     fr.bit_score, fr.type as alignment_type, fr.truncated, g.common_name, g.scientific_name,
     g.ncbi_id, fr.rfam_acc, g.upid,
     CONCAT(f.rfam_id,' from ',concat(fr.rfamseq_acc,'/',fr.seq_start,':',fr.seq_end)) as description,
-    NOW() as created, NOW() as updated
     FROM full_region fr, family f, rfamseq rs, genome g
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
     AND rs.ncbi_id=g.ncbi_id

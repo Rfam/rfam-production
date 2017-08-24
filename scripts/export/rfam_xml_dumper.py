@@ -611,7 +611,7 @@ def build_full_region_additional_fields(entry, fields):
     if fields["common_name"] is not None:
         ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
 
-    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"])
+    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["scientific_name"])
 
     return add_fields
 

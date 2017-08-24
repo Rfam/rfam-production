@@ -112,14 +112,13 @@ GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc
 FULL_REGION_FIELDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
-    fr.bit_score, fr.type as alignment_type, fr.truncated, g.common_name, g.scientific_name,
-    g.ncbi_id, fr.rfam_acc, g.upid, f.rfam_id
+    fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc, f.rfam_id
     FROM full_region fr, family f, rfamseq rs, genome g
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
     AND rs.ncbi_id=g.ncbi_id
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
-    -- AND fr.rfamseq_acc = 'CM000664.2'
+    AND g.upid = '%s'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -172,7 +171,14 @@ NUM_FAMS_CLAN = ("SELECT count(*) FROM clan_membership\n"
 NUM_FAMS_MOTIF = ("SELECT count(*) FROM motif_family_stats\n"
                   "WHERE motif_acc=\'%s\'")
 
-COUNT_FULL_REGION = "SELECT count(*) from full_region where is_significant=1"
+COUNT_FULL_REGION = """
+    SELECT count(*)
+    FROM full_region fr, rfamseq rs, genome g
+    WHERE fr.rfamseq_acc = rs.rfamseq_acc
+    AND rs.ncbi_id = g.ncbi_id
+    AND fr.is_significant = 1
+    AND g.upid = '%s'
+"""
 
 # -----------------------------------------------------------------------------
 

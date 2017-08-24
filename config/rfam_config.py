@@ -19,6 +19,8 @@ RFAM12 = cfl.RFAM12
 
 RFAMLIVELOC = cfl.RFAMLIVELOC
 
+XFAMDEV = cfl.XFAMDEV
+
 # ----------------------------Django settings----------------------------------
 
 # DATABASES

@@ -340,13 +340,8 @@ def full_region_xml_builder(entries):
     entries:    Entries node on xml tree
     gen_acc:  An Rfam associated motif accession
     """
-
-    entry_type = "Match"
-
     full_region_fields = fetch_entry_fields(rs.FULL_REGION_FIELDS, rs.MATCH)
 
-    # TO BE IMPLEMENTED
-    for region in full_region_fields:
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
 
         # add a new entry for every case in full_region_fields

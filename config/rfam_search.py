@@ -119,6 +119,7 @@ FULL_REGION_FIELDS = """
     AND rs.ncbi_id=g.ncbi_id
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
+    -- AND fr.rfamseq_acc = 'CM000664.2'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------

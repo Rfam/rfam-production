@@ -816,18 +816,15 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
         if rfam_acc is None:
             # Motif accessions
             if entry_type == rs.MOTIF:
-                rfam_accs = fetch_value_list(
-                    None, rs.MOTIF_ACC)
+                rfam_accs = fetch_value_list(None, rs.MOTIF_ACC)
 
             # Clan accessions
             elif entry_type == rs.CLAN:
-                rfam_accs = fetch_value_list(
-                    None, rs.CLAN_ACC)
+                rfam_accs = fetch_value_list(None, rs.CLAN_ACC)
 
             # Genome accessions
             elif entry_type == rs.GENOME:
-                rfam_accs = fetch_value_list(
-                    None, rs.GENOME_ACC)
+                rfam_accs = fetch_value_list(None, rs.GENOME_ACC)
 
             # Genome accessions required for exporting full region
             elif entry_type == rs.MATCH:
@@ -842,8 +839,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                     name_object = read_ncbi_taxonomy_nodes(
                         name_dict, rfc.TAX_NODES_DUMP)
 
-                rfam_accs = fetch_value_list(
-                    None, rs.FAM_ACC)
+                rfam_accs = fetch_value_list(None, rs.FAM_ACC)
 
                 for entry in rfam_accs:
                     t0 = timeit.default_timer()

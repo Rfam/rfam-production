@@ -633,7 +633,7 @@ def build_full_region_additional_fields(entry, fields, genome):
     add_fields = ET.SubElement(entry, "additional_fields")
 
     # adding entry type
-    ET.SubElement(add_fields, "field", name="entry_type").text = "Match"
+    ET.SubElement(add_fields, "field", name="entry_type").text = "Sequence"
     ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(fields["rfamseq_acc"])
     ET.SubElement(add_fields, "field", name="seq_start").text = str(fields["seq_start"])
     ET.SubElement(add_fields, "field", name="seq_end").text = str(fields["seq_end"])

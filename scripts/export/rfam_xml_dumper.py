@@ -21,12 +21,13 @@ TO DO:
 
 # ----------------------------------------------------------------------------
 
+import argparse
 import datetime
 import logging
 import subprocess
 import timeit
 import traceback
-import argparse
+
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from sets import Set
@@ -35,9 +36,7 @@ from config import rfam_search as rs
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
-
 # ----------------------------------------------------------------------------
-
 
 def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
     """
@@ -106,8 +105,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     fp_out.close()
     xmllint(filename)
 
-    # ----------------------------------------------------------------------------
-
+# ----------------------------------------------------------------------------
 
 def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=True):
     """
@@ -195,9 +193,7 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
         if len(species_tax_trees.keys()) > 1:
             add_hierarchical_fields(add_fields, species_tax_trees, name_dict)
 
-
 # ----------------------------------------------------------------------------
-
 
 def clan_xml_builder(entries, clan_acc=None):
     """
@@ -238,9 +234,7 @@ def clan_xml_builder(entries, clan_acc=None):
     build_additional_fields(
         entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type)
 
-
 # ----------------------------------------------------------------------------
-
 
 def motif_xml_builder(entries, motif_acc=None):
     """
@@ -280,9 +274,7 @@ def motif_xml_builder(entries, motif_acc=None):
     build_additional_fields(
         entry, motif_fields, 0, None, entry_type=entry_type)
 
-
 # ----------------------------------------------------------------------------
-
 
 def genome_xml_builder(entries, gen_acc=None):
     """
@@ -331,7 +323,6 @@ def genome_xml_builder(entries, gen_acc=None):
 
     # genome additional fields
     build_genome_additional_fields(entry, genome_fields)
-
 
 # ----------------------------------------------------------------------------
 
@@ -424,7 +415,6 @@ def full_region_xml_builder(entries, upid):
 
 # ----------------------------------------------------------------------------
 
-
 def build_cross_references(entry, cross_ref_dict):
     """
     Expands the entry xml tree by adding the entry's cross references.
@@ -451,9 +441,7 @@ def build_cross_references(entry, cross_ref_dict):
 
     return cross_refs
 
-
 # ----------------------------------------------------------------------------
-
 
 def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
     """
@@ -488,9 +476,7 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
                     ET.SubElement(
                         hfields, "child", label=name_dict[tax_tree_node]).text = tax_tree_node
 
-
 # ----------------------------------------------------------------------------
-
 
 def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type):
     """
@@ -570,9 +556,7 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
     # returning node
     return add_fields
 
-
 # ----------------------------------------------------------------------------
-
 
 def build_genome_additional_fields(entry, fields):
     """
@@ -678,9 +662,7 @@ def get_value_list(val_str, delimiter=','):
 
     return value_list
 
-
 # ----------------------------------------------------------------------------
-
 
 def fetch_value_list(rfam_acc, query):
     """
@@ -715,7 +697,6 @@ def fetch_value_list(rfam_acc, query):
     return []
 
 # ----------------------------------------------------------------------------
-
 
 def fetch_entry_fields(entry_acc, entry_type):
     """
@@ -757,9 +738,7 @@ def fetch_entry_fields(entry_acc, entry_type):
 
     return fields
 
-
 # ----------------------------------------------------------------------------
-
 
 def fetch_value(query, accession):
     """
@@ -791,9 +770,7 @@ def fetch_value(query, accession):
 
     return None
 
-
 # ----------------------------------------------------------------------------
-
 
 def main(entry_type, rfam_acc, outdir, hfields=False):
     """
@@ -815,7 +792,6 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
     name_dict = {}
 
     try:
-
         # this will create the output directory if it doesn't exist
         if not os.path.exists(outdir):
             try:
@@ -858,9 +834,8 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
 
                 for entry in rfam_accs:
                     t0 = timeit.default_timer()
-                    xml4db_dumper(
-                        name_dict, name_object, entry_type, entry, hfields, outdir)
-                    print "Execution time for %s: %s" % (entry, str(timeit.default_timer() - t0))
+                    xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir)
+                    print "Execution time: %.1fs" % (timeit.default_timer() - t0)
 
                 return
 
@@ -908,9 +883,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
         else:
             print "Error exporting %s." % rfam_acc
 
-
 # ----------------------------------------------------------------------------
-
 
 def get_valid_family_tax_ids(name_object, family_tax_ids):
     """
@@ -928,9 +901,7 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
 
     return valid_family_tax_ids
 
-
 # ----------------------------------------------------------------------------
-
 
 def get_family_tax_tree(name_object, name_dict, family_tax_ids):
     """
@@ -950,7 +921,6 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
                 taxid].get_lineage(name_object)
 
     return species_tax_trees
-
 
 # ----------------------------------------------------------------------------
 
@@ -999,9 +969,7 @@ def usage():
 
     return parser
 
-
 # ----------------------------------------------------------------------------
-
 
 if __name__ == '__main__':
 

@@ -591,6 +591,11 @@ def build_genome_additional_fields(entry, fields):
     ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
     ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"]) # redundant
 
+    # add popular species if any
+    species = str(fields["ncbi_id"])
+    if species in rs.POPULAR_SPECIES:
+        ET.SubElement(add_fields, "field", name="popular_species").text = species
+
     if fields["common_name"] is not None:
         ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
 
@@ -631,6 +636,11 @@ def build_full_region_additional_fields(entry, fields, genome):
     ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
     ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
+
+    # add popular species if any
+    species = str(genome["ncbi_id"])
+    if species in rs.POPULAR_SPECIES:
+        ET.SubElement(add_fields, "field", name="popular_species").text = species
 
     # rna types
     rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)

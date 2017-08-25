@@ -795,7 +795,7 @@ def fetch_value(query, accession):
 # ----------------------------------------------------------------------------
 
 
-def main(entry_type, rfam_acc, outdir, hfields=True):
+def main(entry_type, rfam_acc, outdir, hfields=False):
     """
     This function puts everything together
 
@@ -846,11 +846,12 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
             # Family accessions
             elif entry_type == rs.FAMILY:
-                # load ncbi taxonomy browser here
-                name_dict, name_dict_reverse = read_ncbi_names_dmp(
-                    rfc.TAX_NAMES_DUMP)
-                name_object = read_ncbi_taxonomy_nodes(
-                    name_dict, rfc.TAX_NODES_DUMP)
+                if hfields:
+                    # load ncbi taxonomy browser here
+                    name_dict, name_dict_reverse = read_ncbi_names_dmp(
+                        rfc.TAX_NAMES_DUMP)
+                    name_object = read_ncbi_taxonomy_nodes(
+                        name_dict, rfc.TAX_NODES_DUMP)
 
                 rfam_accs = fetch_value_list(
                     None, rs.FAM_ACC)
@@ -878,11 +879,12 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
 
             # export single family entry
             else:
-                # load ncbi taxonomy browser here
-                name_dict, name_dict_reverse = read_ncbi_names_dmp(
-                    rfc.TAX_NAMES_DUMP)
-                name_object = read_ncbi_taxonomy_nodes(
-                    name_dict, rfc.TAX_NODES_DUMP)
+                if hfields:
+                    # load ncbi taxonomy browser here
+                    name_dict, name_dict_reverse = read_ncbi_names_dmp(
+                        rfc.TAX_NAMES_DUMP)
+                    name_object = read_ncbi_taxonomy_nodes(
+                        name_dict, rfc.TAX_NODES_DUMP)
 
                 xml4db_dumper(
                     name_dict, name_object, entry_type, rfam_acc, hfields, outdir)

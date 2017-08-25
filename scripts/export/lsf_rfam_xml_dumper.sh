@@ -40,7 +40,7 @@ mkdir -p $dir/families
 mkdir -p $dir/motifs
 mkdir -p $dir/clans
 mkdir -p $dir/genomes
-mkdir -p $dir/sequences
+mkdir -p $dir/full_region
 
 # launch jobs
 bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/
@@ -49,4 +49,4 @@ bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --
 bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type F --out $dir/families/
 
 # -F (file size) is required to allow creation of large files
-bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/sequences
+bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/full_region

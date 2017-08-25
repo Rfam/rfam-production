@@ -645,6 +645,12 @@ def build_full_region_additional_fields(entry, fields, genome):
     ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
 
+    # rna types
+    rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)
+
+    for rna_type in rna_types:
+        ET.SubElement(add_fields, "field", name="rna_type").text = rna_type
+
     if genome["common_name"]:
         ET.SubElement(add_fields, "field", name="common_name").text = str(genome["common_name"])
 

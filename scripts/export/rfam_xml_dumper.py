@@ -128,7 +128,10 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # fetch family specific ncbi_ids
     ncbi_ids = fetch_value_list(rfam_acc, rs.NCBI_IDs_QUERY)
-    valid_ncbi_ids = get_valid_family_tax_ids(name_object, ncbi_ids)
+    if hfields:
+        valid_ncbi_ids = get_valid_family_tax_ids(name_object, ncbi_ids)
+    else:
+        valid_ncbi_ids = ncbi_ids
 
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs.PDB_IDs_QUERY)

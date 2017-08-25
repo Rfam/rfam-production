@@ -11,7 +11,6 @@ keepalive==0.5
 lockfile==0.12.2
 luigi==2.2.0
 mysql-connector-python-rf==2.2.2
-MySQL-python==1.2.5
 pyparsing==2.1.5
 python-daemon==2.1.1
 rdflib==4.2.1

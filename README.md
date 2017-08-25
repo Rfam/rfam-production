@@ -15,6 +15,23 @@ and validation.
 * **Validation:** Data validation scripts
 * **Utils:** Support modules/utilities
 
+### Using with Docker
+
+* build container
+  ```
+  docker build -t rfam-production .
+  ```
+
+* open bash interactive shell
+  ```
+  docker run -v `pwd`:/rfam/rfam-production -it rfam-production bash
+  ```
+
+* run a command inside the container
+  ```
+  docker run -v `pwd`:/rfam/rfam-production -it rfam-production python scripts/export/rfam_xml_dumper.py --out /rfam --type R
+  ```
+
 ### Installation
 
 ```

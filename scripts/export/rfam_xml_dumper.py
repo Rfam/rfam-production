@@ -23,6 +23,7 @@ TO DO:
 
 import datetime
 import logging
+import subprocess
 import timeit
 import traceback
 import argparse
@@ -94,7 +95,8 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
         full_region_xml_builder(entries, entry_acc)
 
     # export xml tree - writes xml tree into a file
-    fp_out = open(os.path.join(outdir, entry_acc + ".xml"), 'w')
+    filename = os.path.join(outdir, entry_acc + ".xml")
+    fp_out = open(filename, 'w')
 
     db_str = ET.tostring(db_xml, "utf-8")
     db_str_reformated = minidom.parseString(db_str)
@@ -102,6 +104,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
 
     fp_out.close()
+    xmllint(filename)
 
     # ----------------------------------------------------------------------------
 
@@ -811,7 +814,6 @@ def main(entry_type, rfam_acc, outdir, hfields=True):
         if not os.path.exists(outdir):
             try:
                 os.mkdir(outdir)
-
             except:
                 print "Error creating output directory at: ", outdir
 
@@ -944,6 +946,24 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
 
 # ----------------------------------------------------------------------------
 
+def xmllint(filepath):
+    """
+    Validate xml files against EBI Search schema.
+    Run xmllint on the output file and print the resulting report.
+    """
+    schema_url = 'http://www.ebi.ac.uk/ebisearch/XML4dbDumps.xsd'
+    cmd = ('xmllint {filepath} --schema {schema_url} --noout --stream')\
+               .format(filepath=filepath, schema_url=schema_url)
+    try:
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print 'ERROR: xmllint validation failed'
+        print e.output
+        print e.cmd
+        print 'Return code {0}'.format(e.returncode)
+        sys.exit(1)
+
+# ----------------------------------------------------------------------------
 
 def usage():
     """

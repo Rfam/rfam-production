@@ -28,7 +28,7 @@ and validation.
 
 * run a command inside the container
   ```
-  docker run -v `pwd`:/rfam/rfam-production -it rfam-production python scripts/export/rfam_xml_dumper.py --out /rfam --type R
+  docker run -v `pwd`:/rfam/rfam-production -it rfam-production python scripts/export/rfam_xml_dumper.py --out /rfam --type C
   ```
 
 ### Installation

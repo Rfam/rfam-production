@@ -348,7 +348,7 @@ def format_full_region(entries, region, genome):
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
     name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
-    description = '%s from %s' % (region["rfam_id"], region["rfamseq_acc_description"])
+    description = '%s %s' % (genome["scientific_name"], region["rfam_id"])
 
     # add a new family entry to the xml tree
     entry = ET.SubElement(entries, "entry", id=name)

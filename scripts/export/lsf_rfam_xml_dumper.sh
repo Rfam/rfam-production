@@ -21,7 +21,7 @@
 
 set -e
 
-usage = "Usage: lsf_rfam_xml_dumper.sh /path/to/output"
+usage="Usage: lsf_rfam_xml_dumper.sh /path/to/output"
 
 if [ "$#" -ne 1 ]
 then
@@ -31,10 +31,6 @@ fi
 
 dir=$1
 
-# activate virtual environment
-source env/bin/activate
-export PYTHONPATH=`pwd`
-
 # check that output directories exist
 mkdir -p $dir/families
 mkdir -p $dir/motifs
@@ -42,11 +38,11 @@ mkdir -p $dir/clans
 mkdir -p $dir/genomes
 mkdir -p $dir/full_region
 
-# launch jobs
-echo "bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/"
-echo "bsub python scripts/export/rfam_xml_dumper.py --type C --out $dir/clans/"
-echo "bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type G --out $dir/genomes/"
-echo "bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type F --out $dir/families/"
-
+# prepare lsf commands
+prefix='source env/bin/activate && export PYTHONPATH=`pwd` &&'
+echo "$prefix bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/"
+echo "$prefix bsub python scripts/export/rfam_xml_dumper.py --type C --out $dir/clans/"
+echo "$prefix bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type G --out $dir/genomes/"
+echo "$prefix bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type F --out $dir/families/"
 # -F (file size) is required to allow creation of large files
-echo "bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/full_region"
+echo "$prefix bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/full_region"

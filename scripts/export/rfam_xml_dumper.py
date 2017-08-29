@@ -351,7 +351,8 @@ def format_full_region(entries, region, genome):
     description = '%s %s' % (genome["scientific_name"], region["rfam_id"])
 
     # add a new family entry to the xml tree
-    entry = ET.SubElement(entries, "entry", id=name)
+    entry_id='%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+    entry = ET.SubElement(entries, "entry", id=entry_id)
 
     ET.SubElement(entry, "name").text = name
     ET.SubElement(entry, "description").text = description
@@ -627,7 +628,7 @@ def build_full_region_additional_fields(entry, fields, genome):
     # adding entry type
     ET.SubElement(add_fields, "field", name="entry_type").text = "Sequence"
     ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(fields["rfamseq_acc"])
-    ET.SubElement(add_fields, "field", name="rfamseq_acc_description").text = str(fields["rfamseq_acc_description"])    
+    ET.SubElement(add_fields, "field", name="rfamseq_acc_description").text = str(fields["rfamseq_acc_description"])
     ET.SubElement(add_fields, "field", name="seq_start").text = str(fields["seq_start"])
     ET.SubElement(add_fields, "field", name="seq_end").text = str(fields["seq_end"])
     ET.SubElement(add_fields, "field", name="cm_start").text = str(fields["cm_start"])

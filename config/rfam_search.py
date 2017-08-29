@@ -68,7 +68,7 @@ MOTIF_ACC = "SELECT motif_acc FROM motif"
 
 FAM_ACC = "SELECT rfam_acc FROM family"
 
-GENOME_ACC = "SELECT upid from genome"
+GENOME_ACC = "SELECT upid FROM genome WHERE num_families > 0"
 
 
 # ---------------------------------RFAM FIELDS----------------------------

@@ -21,7 +21,7 @@
 
 set -e
 
-usage = "Usage: bsub_rfam_xml_dumper.sh /path/to/output"
+usage = "Usage: lsf_rfam_xml_dumper.sh /path/to/output"
 
 if [ "$#" -ne 1 ]
 then
@@ -43,10 +43,10 @@ mkdir -p $dir/genomes
 mkdir -p $dir/full_region
 
 # launch jobs
-bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/
-bsub python scripts/export/rfam_xml_dumper.py --type C --out $dir/clans/
-bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type G --out $dir/genomes/
-bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type F --out $dir/families/
+echo "bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/"
+echo "bsub python scripts/export/rfam_xml_dumper.py --type C --out $dir/clans/"
+echo "bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type G --out $dir/genomes/"
+echo "bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type F --out $dir/families/"
 
 # -F (file size) is required to allow creation of large files
-bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/full_region
+echo "bsub -M 16384 -R "rusage[mem=16384]" -F 1000000 python scripts/export/rfam_xml_dumper.py --type R --out $dir/full_region"

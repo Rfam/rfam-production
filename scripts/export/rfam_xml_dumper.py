@@ -36,6 +36,12 @@ from config import rfam_search as rs
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
+import django
+from django.conf import settings
+django.setup()
+from rfam_schemas.RfamLive.models import Genseq, Genome
+
+
 # ----------------------------------------------------------------------------
 
 def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
@@ -342,7 +348,7 @@ def ResultIter(cursor, arraysize=1000):
 
 # ----------------------------------------------------------------------------
 
-def format_full_region(entries, region, genome):
+def format_full_region(entries, region, genome, chromosome):
     """
     Format full regions for a genome. Genome metadata is retrieved only once.
     """
@@ -361,7 +367,7 @@ def format_full_region(entries, region, genome):
     ET.SubElement(dates, "date", value=timestamp, type="updated")
 
     # additional fields
-    build_full_region_additional_fields(entry, region, genome)
+    build_full_region_additional_fields(entry, region, genome, chromosome)
 
     # adding cross references
     cross_refs = {}
@@ -401,6 +407,17 @@ def get_genome_metadata(upid):
 
 # ----------------------------------------------------------------------------
 
+def get_chromosome_metadata():
+    """
+    Get chromosome metadata as a dictionary.
+    """
+    chromosomes = {}
+    for genseq in Genseq.objects.exclude(chromosome_name__isnull=True).values():
+        chromosomes[genseq['rfamseq_acc']] = genseq
+    return chromosomes
+
+# ----------------------------------------------------------------------------
+
 def full_region_xml_builder(entries, upid):
     """
     Export full region entries for a genome.
@@ -409,11 +426,12 @@ def full_region_xml_builder(entries, upid):
     upid:  Genome identifier.
     """
     genome = get_genome_metadata(upid)
+    chromosomes = get_chromosome_metadata()
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
     for row in ResultIter(cursor):
-        format_full_region(entries, row, genome)
+        format_full_region(entries, row, genome, chromosomes)
     cursor.close()
     cnx.disconnect()
 
@@ -610,7 +628,7 @@ def build_genome_additional_fields(entry, fields):
 
 # ----------------------------------------------------------------------------
 
-def build_full_region_additional_fields(entry, fields, genome):
+def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     """
     Builds additional field nodes for a the full_region xml dump
 
@@ -638,6 +656,10 @@ def build_full_region_additional_fields(entry, fields, genome):
     ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
     ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
+
+    if fields["rfamseq_acc"] in chromosomes:
+        ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]]["chromosome_name"]
+        ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[fields["rfamseq_acc"]]["chromosome_type"]
 
     # add popular species if any
     species = str(genome["ncbi_id"])

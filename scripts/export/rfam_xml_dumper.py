@@ -44,7 +44,7 @@ from rfam_schemas.RfamLive.models import Genseq, Genome
 
 # ----------------------------------------------------------------------------
 
-def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
+def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir, chromosomes=None):
     """
     Exports query results into EB-eye's XML4dbDUMP format
 
@@ -97,7 +97,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
         genome_xml_builder(entries, gen_acc=entry_acc)
 
     elif entry_type == rs.MATCH:
-        full_region_xml_builder(entries, entry_acc)
+        full_region_xml_builder(entries, entry_acc, chromosomes)
 
     # export xml tree - writes xml tree into a file
     filename = os.path.join(outdir, entry_acc + ".xml")
@@ -393,7 +393,7 @@ def get_chromosome_metadata():
 
 # ----------------------------------------------------------------------------
 
-def full_region_xml_builder(entries, upid):
+def full_region_xml_builder(entries, upid, chromosomes):
     """
     Export full region entries for a genome.
 
@@ -401,7 +401,6 @@ def full_region_xml_builder(entries, upid):
     upid:  Genome identifier.
     """
     genome = Genome.objects.get(upid=upid)
-    chromosomes = get_chromosome_metadata()
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
@@ -828,6 +827,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
             # Genome accessions required for exporting full region
             elif entry_type == rs.MATCH:
                 rfam_accs = fetch_value_list(None, rs.GENOME_ACC)
+                chromosomes = get_chromosome_metadata()
 
             # Family accessions
             elif entry_type == rs.FAMILY:
@@ -842,7 +842,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
 
                 for entry in rfam_accs:
                     t0 = timeit.default_timer()
-                    xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir)
+                    xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir, None)
                     print "Execution time: %.1fs" % (timeit.default_timer() - t0)
 
                 return
@@ -851,14 +851,14 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
             for entry in rfam_accs:
                 print entry
                 t0 = timeit.default_timer()
-                xml4db_dumper(None, None, entry_type, entry, False, outdir)
+                xml4db_dumper(None, None, entry_type, entry, False, outdir, chromosomes)
                 print "Execution time: %.1fs" % (timeit.default_timer() - t0)
 
         # export single entry
         else:
             # need to check the validity of an rfam_acc (rfam, motif, clan)
             if entry_type == rs.MOTIF or entry_type == rs.CLAN or entry_type == rs.GENOME:
-                xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir)
+                xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir, None)
 
             # export single family entry
             else:
@@ -870,7 +870,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                         name_dict, rfc.TAX_NODES_DUMP)
 
                 xml4db_dumper(
-                    name_dict, name_object, entry_type, rfam_acc, hfields, outdir)
+                    name_dict, name_object, entry_type, rfam_acc, hfields, outdir, None)
 
     except:
         traceback.print_exc()

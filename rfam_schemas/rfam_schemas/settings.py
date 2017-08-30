@@ -76,8 +76,7 @@ WSGI_APPLICATION = 'rfam_schemas.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-    'default': rfc.RFAMLOC,
-
+    'default': rfc.RFAMLIVE_DJANGO,
     'rfam_dev': rfc.RFAMDEV
 }
 

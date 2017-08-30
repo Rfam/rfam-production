@@ -41,6 +41,14 @@ RFAMLIVE = {
     'port': '',
 }
 
+RFAMLIVE_DJANGO = {
+    'USER': RFAMLIVE['user'],
+    'PASSWORD': RFAMLIVE['pwd'],
+    'HOST': RFAMLIVE['host'],
+    'NAME': RFAMLIVE['db'],
+    'PORT': RFAMLIVE['port'],
+    'ENGINE': 'django.db.backends.mysql',
+}
 
 RFAM12 = {
     'user': '',

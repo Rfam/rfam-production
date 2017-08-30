@@ -7,6 +7,7 @@ RUN yum install -y \
     httpd \
     httpd-devel \
     libaio \
+    mysql-devel \
     nc.x86_64 \
     openssl \
     openssl-devel \
@@ -55,6 +56,8 @@ RUN \
 
 # Define container environment variables
 ENV PYTHONPATH /rfam/rfam-production
+
+ENV DJANGO_SETTINGS_MODULE rfam_schemas.rfam_schemas.settings
 
 # Install Python requirements
 ADD requirements.txt $RFAM_PRODUCTION

@@ -64,6 +64,11 @@ REF_PROT_REST_URL = ("http://www.uniprot.org/proteomes/?fil=reference:yes&"
 # Retrieve the proteome rdf file
 PROTEOME_URL = "http://www.uniprot.org/proteomes/%s.rdf"
 
+# Proteome xml file
+PROTEOME_XML_URL = "http://www.uniprot.org/proteomes/%s.xml"
+
+NCBI_SEQ_URL = ''
+
 # Retrieve the genome's xml file
 ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
 

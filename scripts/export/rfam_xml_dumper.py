@@ -354,7 +354,7 @@ def format_full_region(entries, region, genome, chromosome):
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
     name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
-    description = '%s %s' % (genome["scientific_name"], region["rfam_id"])
+    description = '%s %s' % (genome.scientific_name, region["rfam_id"])
 
     # add a new family entry to the xml tree
     entry_id='%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
@@ -373,10 +373,10 @@ def format_full_region(entries, region, genome, chromosome):
     cross_refs = {}
 
     # create cross references dictionary
-    cross_refs["ncbi_taxonomy_id"] = [str(genome["ncbi_id"])]
+    cross_refs["ncbi_taxonomy_id"] = [genome.ncbi_id]
     cross_refs["RFAM"] = [region["rfam_acc"]]
     cross_refs["ENA"] = [region["rfamseq_acc"]]
-    cross_refs["Uniprot"] = [genome["upid"]]
+    cross_refs["Uniprot"] = [genome.upid]
 
     build_cross_references(entry, cross_refs)
 
@@ -425,7 +425,7 @@ def full_region_xml_builder(entries, upid):
     entries:    Entries node on xml tree
     upid:  Genome identifier.
     """
-    genome = get_genome_metadata(upid)
+    genome = Genome.objects.get(upid=upid)
     chromosomes = get_chromosome_metadata()
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
@@ -662,7 +662,7 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
         ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[fields["rfamseq_acc"]]["chromosome_type"]
 
     # add popular species if any
-    species = str(genome["ncbi_id"])
+    species = genome.ncbi_id
     if species in rs.POPULAR_SPECIES:
         ET.SubElement(add_fields, "field", name="popular_species").text = species
 
@@ -672,10 +672,10 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     for rna_type in rna_types:
         ET.SubElement(add_fields, "field", name="rna_type").text = rna_type
 
-    if genome["common_name"]:
-        ET.SubElement(add_fields, "field", name="common_name").text = str(genome["common_name"])
+    if genome.common_name:
+        ET.SubElement(add_fields, "field", name="common_name").text = genome.common_name
 
-    ET.SubElement(add_fields, "field", name="scientific_name").text = str(genome["scientific_name"])
+    ET.SubElement(add_fields, "field", name="scientific_name").text = genome.scientific_name
 
     return add_fields
 

@@ -382,31 +382,6 @@ def format_full_region(entries, region, genome, chromosome):
 
 # ----------------------------------------------------------------------------
 
-def get_genome_metadata(upid):
-    """
-    Retrieve genome data.
-    """
-    cnx = RfamDB.connect()
-    cursor = cnx.cursor(dictionary=True)
-    query = """
-    SELECT upid, ncbi_id, scientific_name, common_name
-    FROM genome
-    WHERE upid = '%s'
-    """
-    cursor.execute(query % upid)
-    cnx.disconnect()
-    row = cursor.fetchone()
-    cursor.close()
-    cnx.disconnect()
-    return {
-        'upid': row['upid'],
-        'ncbi_id': row['ncbi_id'],
-        'scientific_name': row['scientific_name'],
-        'common_name': row['common_name'],
-    }
-
-# ----------------------------------------------------------------------------
-
 def get_chromosome_metadata():
     """
     Get chromosome metadata as a dictionary.

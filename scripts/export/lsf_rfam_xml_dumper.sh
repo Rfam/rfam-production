@@ -39,7 +39,7 @@ mkdir -p $dir/genomes
 mkdir -p $dir/full_region
 
 # prepare lsf commands
-prefix='source env/bin/activate && export PYTHONPATH=`pwd` &&'
+prefix='source env/bin/activate && export PYTHONPATH=`pwd` && export DJANGO_SETTINGS_MODULE="rfam_schemas.rfam_schemas.settings" &&'
 echo "$prefix bsub python scripts/export/rfam_xml_dumper.py --type M --out $dir/motifs/"
 echo "$prefix bsub python scripts/export/rfam_xml_dumper.py --type C --out $dir/clans/"
 echo "$prefix bsub -M 16384 -R "rusage[mem=16384]" python scripts/export/rfam_xml_dumper.py --type G --out $dir/genomes/"

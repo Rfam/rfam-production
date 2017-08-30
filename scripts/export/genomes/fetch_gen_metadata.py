@@ -58,6 +58,16 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
 
         primary_id = assembly.find("IDENTIFIERS").find("PRIMARY_ID")
 
+        chromosomes = assembly.find("CHROMOSOMES")
+        fields['chromosomes'] = []
+        if chromosomes is not None:
+            for chromosome in chromosomes:
+                fields['chromosomes'].append({
+                    'accession': chromosome.attrib['accession'],
+                    'name': chromosome.find('NAME').text if chromosome.find('NAME') is not None else None,
+                    'type': chromosome.find('TYPE').text if chromosome.find('TYPE') is not None else None,
+                })
+
         if primary_id is not None:
             fields["gca_acc"] = primary_id.text
         else:
@@ -773,9 +783,35 @@ def dump_uniprot_genome_metadata(upid, kingdom):
     # return genome dictionary (in Django format)
     return genome_entry
 
+# -----------------------------------------------------------------------------
+
+def import_chromosome_names():
+    """
+    Parse GCA accession XML to import chromosome name and chromosome types
+    into genseq table.
+    """
+    import django
+    from django.conf import settings
+    django.setup()
+    from rfam_schemas.RfamLive.models import Genome, Genseq
+
+    for genome in Genome.objects.exclude(assembly_acc__isnull=True).all()[:10]:
+        print genome.assembly_acc
+        if 'GCF' in genome.assembly_acc:
+            continue
+        data = fetch_gca_data(genome.upid, genome.assembly_acc, 'kingdom')
+
+        if 'fields' in data and 'chromosomes' in data and data['fields']['chromosomes']:
+            for chromosome in data['fields']['chromosomes']:
+                genseq = Genseq.objects.filter(rfamseq_acc=chromosome['accession'], upid=genome.upid).first()
+                if genseq:
+                    genseq.chromosome_type = chromosome['type']
+                    genseq.chromosome_name = chromosome['name']
+                    genseq.save()
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
     pass
+    # import_chromosome_names()

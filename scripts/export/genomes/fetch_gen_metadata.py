@@ -795,7 +795,7 @@ def import_chromosome_names():
     django.setup()
     from rfam_schemas.RfamLive.models import Genome, Genseq
 
-    for genome in Genome.objects.exclude(assembly_acc__isnull=True).all()[:10]:
+    for genome in Genome.objects.exclude(assembly_acc__isnull=True).all():
         print genome.assembly_acc
         if 'GCF' in genome.assembly_acc:
             continue

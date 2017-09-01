@@ -113,6 +113,24 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
 # ----------------------------------------------------------------------------
 
+def get_taxonomy_info(rfam_acc):
+    """
+    Get distinct ncbi_ids and tax_strings associated with a family.
+    """
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True, buffered=True)
+    cursor.execute(rs.NCBI_IDs_QUERY % rfam_acc)
+    ncbi_ids = []
+    tax_strings = set() # distinct ncbi_ids can have identical tax_strings
+    for row in result_iterator(cursor):
+        ncbi_ids.append(row['ncbi_id'])
+        tax_strings.add(row['tax_string'])
+    cursor.close()
+    cnx.disconnect()
+    return ncbi_ids, tax_strings
+
+# ----------------------------------------------------------------------------
+
 def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=True):
     """
     Expands the Xml4dbDumper object by adding a new family entry
@@ -133,7 +151,8 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     fam_fields = fetch_entry_fields(rfam_acc, rs.FAMILY)
 
     # fetch family specific ncbi_ids
-    ncbi_ids = fetch_value_list(rfam_acc, rs.NCBI_IDs_QUERY)
+    ncbi_ids, tax_strings = get_taxonomy_info(rfam_acc)
+
     if hfields:
         valid_ncbi_ids = get_valid_family_tax_ids(name_object, ncbi_ids)
     else:
@@ -194,7 +213,7 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # expand xml tree with additional fields
     add_fields = build_additional_fields(
-        entry, fam_fields, len(pdb_ids), valid_ncbi_ids, entry_type=entry_type)
+        entry, fam_fields, len(pdb_ids), valid_ncbi_ids, entry_type=entry_type, tax_strings=tax_strings)
 
     if hfields is True:
         species_tax_trees = get_family_tax_tree(
@@ -335,7 +354,7 @@ def genome_xml_builder(entries, gen_acc=None):
 
 # ----------------------------------------------------------------------------
 
-def ResultIter(cursor, arraysize=1000):
+def result_iterator(cursor, arraysize=1000):
     """
     An iterator that uses fetchmany to keep memory usage down
     """
@@ -404,7 +423,7 @@ def full_region_xml_builder(entries, upid, chromosomes):
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
-    for row in ResultIter(cursor):
+    for row in result_iterator(cursor):
         format_full_region(entries, row, genome, chromosomes)
     cursor.close()
     cnx.disconnect()
@@ -474,7 +493,7 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
 
 # ----------------------------------------------------------------------------
 
-def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type):
+def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type, tax_strings=None):
     """
     This function expands the entry xml field with the additional fields
 
@@ -532,6 +551,9 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
             if species in fam_ncbi_ids:
                 ET.SubElement(
                     add_fields, "field", name="popular_species").text = str(species)
+
+        for tax_string in tax_strings:
+            ET.SubElement(add_fields, "field", name="tax_string").text = str(tax_string)
 
                 # build hierarchical_fields tree here...
 

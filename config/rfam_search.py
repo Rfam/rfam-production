@@ -130,12 +130,15 @@ PDB_IDs_QUERY = ("SELECT distinct pdb_id FROM pdb_full_region\n"
                  "WHERE rfam_acc=\'%s\' and is_significant=1")
 
 # Fetch ncbi ids related to a family accession
-NCBI_IDs_QUERY = ("SELECT distinct tx.ncbi_id\n"
-                  "FROM taxonomy tx, full_region fr, rfamseq rs\n"
-                  "WHERE tx.ncbi_id=rs.ncbi_id\n"
-                  "AND fr.rfamseq_acc=rs.rfamseq_acc\n"
-                  "AND fr.is_significant=1\n"
-                  "AND fr.rfam_acc=\'%s\'")
+NCBI_IDs_QUERY = """
+    SELECT tx.ncbi_id, tx.tax_string
+    FROM taxonomy tx, full_region fr, rfamseq rs
+    WHERE tx.ncbi_id=rs.ncbi_id
+    AND fr.rfamseq_acc=rs.rfamseq_acc
+    AND fr.is_significant=1
+    AND fr.rfam_acc='%s'
+    GROUP BY tx.ncbi_id
+"""
 
 # Fetch upids related to a family accession
 

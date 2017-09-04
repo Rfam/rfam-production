@@ -163,9 +163,13 @@ MOTIF_FAMS = ("SELECT distinct rfam_acc from motif_matches\n"
               "where motif_acc=\'%s\'")
 
 # GENOMES
-GENOME_FAMS = ("select distinct rfam_acc from full_region fr, genseq gs\n"
-               "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-               "and gs.upid=\'%s\'")
+GENOME_FAMS = ("""
+    SELECT distinct rfam_acc
+    FROM full_region fr, genseq gs
+    WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND fr.is_significant = 1
+    AND gs.upid='%s'
+"""
 
 # -------------------------ADDITIONAL FIELDS------------------------------
 

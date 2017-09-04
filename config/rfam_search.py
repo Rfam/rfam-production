@@ -163,7 +163,7 @@ MOTIF_FAMS = ("SELECT distinct rfam_acc from motif_matches\n"
               "where motif_acc=\'%s\'")
 
 # GENOMES
-GENOME_FAMS = ("""
+GENOME_FAMS = """
     SELECT distinct rfam_acc
     FROM full_region fr, genseq gs
     WHERE fr.rfamseq_acc=gs.rfamseq_acc

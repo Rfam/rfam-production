@@ -819,6 +819,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
     """
 
     rfam_accs = None
+    chromosomes = None
     entry = ""
 
     name_object = {}

@@ -141,11 +141,13 @@ NCBI_IDs_QUERY = """
 """
 
 # Fetch upids related to a family accession
-
-FAMILY_UPIDS = ("select distinct upid "
-                "from genseq gs, full_region fr "
-                "where gs.rfamseq_acc=fr.rfamseq_acc "
-                "and fr.rfam_acc=\'%s\'")
+FAMILY_UPIDS = """
+    SELECT distinct upid
+    FROM genseq gs, full_region fr
+    WHERE gs.rfamseq_acc=fr.rfamseq_acc
+    AND fr.rfam_acc='%s'
+    AND fr.is_significant = 1
+"""
 
 # Fetch clan based on rfam_acc
 FAM_CLAN = ("SELECT clan_acc from clan_membership\n"

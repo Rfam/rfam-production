@@ -419,7 +419,7 @@ def full_region_xml_builder(entries, upid):
     entries:    Entries node on xml tree
     upid:  Genome identifier.
     """
-    genome = Genome.objects.get(upid=upid)
+    genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
@@ -653,7 +653,7 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
     ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
-    ET.SubElement(add_fields, "field", name="tax_string").text = str(fields["tax_string"])
+    ET.SubElement(add_fields, "field", name="tax_string").text = genome.ncbi.tax_string
 
     if fields["rfamseq_acc"] in chromosomes:
         ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]]["chromosome_name"]

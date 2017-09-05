@@ -113,10 +113,12 @@ FULL_REGION_FIELDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
-    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, rfamseq rs, genome g
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description,
+    tx.tax_string
+    FROM full_region fr, family f, rfamseq rs, genome g, taxonomy tx
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
     AND rs.ncbi_id=g.ncbi_id
+    AND g.ncbi_id=tx.ncbi_id
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
     AND g.upid = '%s'

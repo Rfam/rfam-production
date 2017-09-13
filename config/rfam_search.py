@@ -114,12 +114,11 @@ FULL_REGION_FIELDS = """
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
     f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, rfamseq rs, genome g
-    WHERE fr.rfamseq_acc=rs.rfamseq_acc
-    AND rs.ncbi_id=g.ncbi_id
+    FROM full_region fr, family f, genseq gs
+    WHERE fr.rfamseq_acc=gs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
-    AND g.upid = '%s'
+    AND gs.upid = '%s'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -183,11 +182,10 @@ NUM_FAMS_MOTIF = ("SELECT count(*) FROM motif_family_stats\n"
 
 COUNT_FULL_REGION = """
     SELECT count(*)
-    FROM full_region fr, rfamseq rs, genome g
-    WHERE fr.rfamseq_acc = rs.rfamseq_acc
-    AND rs.ncbi_id = g.ncbi_id
+    FROM full_region fr, genseq gs
+    WHERE fr.rfamseq_acc = gs.rfamseq_acc
     AND fr.is_significant = 1
-    AND g.upid = '%s'
+    AND gs.upid = '%s'
 """
 
 # -----------------------------------------------------------------------------

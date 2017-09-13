@@ -109,7 +109,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
 
     fp_out.close()
-    xmllint(filename)
+    #xmllint(filename)
 
 # ----------------------------------------------------------------------------
 

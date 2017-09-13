@@ -114,8 +114,9 @@ FULL_REGION_FIELDS = """
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
     f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, genseq gs
+    FROM full_region fr, family f, genseq gs, rfamseq rs
     WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
     AND gs.upid = '%s'

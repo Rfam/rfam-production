@@ -23,11 +23,11 @@ from mysql.connector import errorcode
 from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
 from config.rfam_config import RFAMLIVE  # rfam_live on curation host
 from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
-from config.rfam_config import XFAMDEV
+#from config.rfam_config import XFAMDEV
 
 # -----------------------------------------------------------------------------
 # need to generalize this to enable DB setting upon implementation 
-db_conf = XFAMDEV
+db_conf = RFAMLIVE
 
 # -----------------------------------------------------------------------------
 
@@ -37,6 +37,7 @@ def connect():
     Connects to a specific database and returns a mysql connection object
     """
 
+    cnx=None
     try:
         cnx = mysql.connector.connect(user=db_conf["user"],
                                       password=db_conf["pwd"],

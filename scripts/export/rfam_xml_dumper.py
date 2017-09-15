@@ -367,7 +367,7 @@ def result_iterator(cursor, arraysize=1000):
 
 # ----------------------------------------------------------------------------
 
-def format_full_region(entries, region, genome, chromosome):
+def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     """
     Format full regions for a genome. Genome metadata is retrieved only once.
     """
@@ -396,6 +396,8 @@ def format_full_region(entries, region, genome, chromosome):
     cross_refs["RFAM"] = [region["rfam_acc"]]
     cross_refs["ENA"] = [region["rfamseq_acc"]]
     cross_refs["Uniprot"] = [genome.upid]
+    if name in rnacentral_ids:
+        cross_refs["RNACENTRAL"] = [rnacentral_ids[name]]
 
     build_cross_references(entry, cross_refs)
 
@@ -412,6 +414,36 @@ def get_chromosome_metadata():
 
 # ----------------------------------------------------------------------------
 
+def get_rnacentral_mapping(upid):
+    """
+    Get RNAcentral mappings for all sequences from a given genome.
+    """
+    query = """
+    SELECT rm.rfamseq_acc, rm.seq_start, rm.seq_end, rm.rnacentral_id
+    FROM genseq gs, full_region fr, rnacentral_matches rm
+    WHERE
+    gs.rfamseq_acc = fr.rfamseq_acc
+    AND fr.rfamseq_acc = rm.rfamseq_acc
+    AND fr.seq_start = rm.seq_start
+    AND fr.seq_end = rm.seq_end
+    AND fr.is_significant = 1
+    AND rm.rnacentral_id IS NOT NULL
+    AND gs.upid = '%s'
+    """
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True, buffered=True)
+    cursor.execute(query % upid)
+    rnacentral_ids = {}
+    for row in result_iterator(cursor):
+        rfamseq_acc = row["rfamseq_acc"]
+        name='%s/%s:%s' % (row["rfamseq_acc"], row["seq_start"], row["seq_end"])
+        rnacentral_ids[name] = str(row["rnacentral_id"])
+    cursor.close()
+    cnx.disconnect()
+    return rnacentral_ids
+
+# ----------------------------------------------------------------------------
+
 def full_region_xml_builder(entries, upid):
     """
     Export full region entries for a genome.
@@ -421,11 +453,12 @@ def full_region_xml_builder(entries, upid):
     """
     genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()
+    rnacentral_ids = get_rnacentral_mapping(upid=upid)
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
     for row in result_iterator(cursor):
-        format_full_region(entries, row, genome, chromosomes)
+        format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
     cursor.close()
     cnx.disconnect()
 

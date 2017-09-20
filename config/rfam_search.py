@@ -122,6 +122,20 @@ FULL_REGION_FIELDS = """
     AND gs.upid = '%s'
 """
 
+FULL_REGION_SEEDS = """
+    SELECT
+    fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
+    fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
+    FROM full_region fr, family f, genome g, rfamseq rs
+    WHERE fr.rfamseq_acc=rs.rfamseq_acc
+    AND g.ncbi_id=rs.ncbi_id
+    AND fr.rfam_acc=f.rfam_acc
+    AND fr.is_significant=1
+    AND fr.type='seed'
+    AND g.upid = '%s'
+"""
+
 # -----------------------------CROSS REFERENCES---------------------------
 
 # FAMILIES

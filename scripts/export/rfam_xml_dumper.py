@@ -456,9 +456,18 @@ def full_region_xml_builder(entries, upid):
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
+
+    # work on 'full' refions
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
     for row in result_iterator(cursor):
         format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+    
+    # work on 'seed' regions
+    cursor.execute(rs.FULL_REGION_SEEDS % upid)
+    for row in result_iterator(cursor):
+        format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+    
+
     cursor.close()
     cnx.disconnect()
 

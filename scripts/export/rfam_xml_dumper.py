@@ -451,6 +451,13 @@ def full_region_xml_builder(entries, upid):
     entries:    Entries node on xml tree
     upid:  Genome identifier.
     """
+    
+    tax_id_duplicates = {'562': 1, '1280': 1, '7209': 1, '10679': 1, '10717': 1,
+			'11021': 1, '11036': 1, '11072': 1, '11082': 1, '11228': 1,
+			'11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
+			'93838': 1, '186617': 1, '229533': 1, '351048': 1,
+			'456327': 1, '766192': 1, '1891747': 1}
+
     genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
@@ -462,11 +469,15 @@ def full_region_xml_builder(entries, upid):
     for row in result_iterator(cursor):
         format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
     
-    # work on 'seed' regions
-    cursor.execute(rs.FULL_REGION_SEEDS % upid)
-    for row in result_iterator(cursor):
-        format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
-    
+    # work on 'seed' regions if not already exported
+    if genome.ncbi_id in tax_id_duplicates:
+    	if tax_id_duplicates[genome.ncbi_id] == 1:    
+    		cursor.execute(rs.FULL_REGION_SEEDS % upid)
+    		for row in result_iterator(cursor):
+        		format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+    	
+		# set flag to 0 to disable export
+		tax_id_duplicates[genome.ncbi_id] = 0
 
     cursor.close()
     cnx.disconnect()

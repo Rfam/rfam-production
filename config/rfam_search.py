@@ -119,6 +119,7 @@ FULL_REGION_FIELDS = """
     AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
+    AND fr.type='full'
     AND gs.upid = '%s'
 """
 
@@ -200,6 +201,7 @@ COUNT_FULL_REGION = """
     FROM full_region fr, genseq gs
     WHERE fr.rfamseq_acc = gs.rfamseq_acc
     AND fr.is_significant = 1
+    AND fr.type='full'
     AND gs.upid = '%s'
 """
 

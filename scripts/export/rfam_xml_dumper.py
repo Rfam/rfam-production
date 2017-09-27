@@ -71,15 +71,6 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
     ET.SubElement(db_xml, "release_date").text = rel_date
 
-    if entry_type == rs.MATCH:
-        entry_count = fetch_value(rs.COUNT_FULL_REGION, entry_acc)
-        if entry_count == '0':
-            print "No full region entries found for %s" % entry_acc
-            return
-        ET.SubElement(db_xml, "entry_count").text = str(entry_count)
-    else:
-        ET.SubElement(db_xml, "entry_count").text = '1'
-
     entries = ET.SubElement(db_xml, "entries")
 
     # call family xml builder to add a new family to the xml tree
@@ -98,6 +89,19 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
     elif entry_type == rs.MATCH:
         full_region_xml_builder(entries, entry_acc)
+
+    # adding entry_count
+    if entry_type == rs.MATCH:
+	# count entry elements in xml tree
+	entry_count = len(entries.findall("entry"))
+        
+	if entry_count == '0':
+            print "No full region entries found for %s" % entry_acc
+            return
+        ET.SubElement(db_xml, "entry_count").text = str(entry_count)
+    else:
+        ET.SubElement(db_xml, "entry_count").text = '1'
+
 
     # export xml tree - writes xml tree into a file
     filename = os.path.join(outdir, entry_acc + ".xml")
@@ -470,14 +474,21 @@ def full_region_xml_builder(entries, upid):
         format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
     
     # work on 'seed' regions if not already exported
+    cursor.execute(rs.FULL_REGION_SEEDS % upid)
+
+    # if one of the cases of duplicates, work with the flags
     if genome.ncbi_id in tax_id_duplicates:
     	if tax_id_duplicates[genome.ncbi_id] == 1:    
-    		cursor.execute(rs.FULL_REGION_SEEDS % upid)
     		for row in result_iterator(cursor):
         		format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
-    	
 		# set flag to 0 to disable export
 		tax_id_duplicates[genome.ncbi_id] = 0
+    
+    # capture the rest of the cases
+    else:
+	cursor.execute(rs.FULL_REGION_SEEDS % upid)
+	for row in result_iterator(cursor):
+		format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
 
     cursor.close()
     cnx.disconnect()

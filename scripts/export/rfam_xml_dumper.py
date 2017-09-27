@@ -91,17 +91,13 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
         full_region_xml_builder(entries, entry_acc)
 
     # adding entry_count
-    if entry_type == rs.MATCH:
-	# count entry elements in xml tree
-	entry_count = len(entries.findall("entry"))
-        
-	if entry_count == '0':
-            print "No full region entries found for %s" % entry_acc
-            return
-        ET.SubElement(db_xml, "entry_count").text = str(entry_count)
-    else:
-        ET.SubElement(db_xml, "entry_count").text = '1'
+    entry_count = len(entries.findall("entry"))
+    
+    if entry_count == 0:
+ 	print "No full region entries found for %s" % entry_acc
+	return
 
+    ET.SubElement(db_xml, "entry_count").text = str(entry_count)
 
     # export xml tree - writes xml tree into a file
     filename = os.path.join(outdir, entry_acc + ".xml")

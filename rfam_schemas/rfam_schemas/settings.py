@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'rfam_schemas.wsgi.application'
 DATABASES = {
     'default': rfc.RFAMLOC,
 
-    'rfam_dev': rfc.RFAMDEV
+    'rfam_dev': rfc.RFAM13DEV
 }
 
 # Internationalization

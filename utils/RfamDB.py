@@ -1,5 +1,5 @@
 """
-Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Copyright [2009-2017] EMBL-European Bioinformatics Institute
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -30,12 +30,10 @@ from config.rfam_config import RFAMLIVE
 from config.rfam_config import RFAMLIVEPUB
 from config.rfam_config import RFAMREL
 # -----------------------------------------------------------------------------
-# need to generalize this to enable DB setting upon implementation
-#db_conf = RFAMLOCAL
-#db_conf = RFAMLIVEPUB
+
+# need to generalize this to enable DB setting upon implementation 
 db_conf = RFAMLIVE
-#db_conf = XFAMDEV
-#db_conf = RFAMREL
+
 # -----------------------------------------------------------------------------
 
 
@@ -44,6 +42,7 @@ def connect():
     Connects to a specific database and returns a mysql connection object
     """
 
+    cnx=None
     try:
         cnx = mysql.connector.connect(user=db_conf["user"],
                                       password=db_conf["pwd"],

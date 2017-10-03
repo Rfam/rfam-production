@@ -1,5 +1,5 @@
 """
-Copyright [2009-2016] EMBL-European Bioinformatics Institute
+Copyright [2009-2017] EMBL-European Bioinformatics Institute
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -68,7 +68,7 @@ MOTIF_ACC = "SELECT motif_acc FROM motif"
 
 FAM_ACC = "SELECT rfam_acc FROM family"
 
-GENOME_ACC = "SELECT upid from genome"
+GENOME_ACC = "SELECT upid FROM genome WHERE num_families > 0"
 
 
 # ---------------------------------RFAM FIELDS----------------------------
@@ -109,18 +109,33 @@ GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc
                  "where g.ncbi_id=tx.ncbi_id\n"
                  "and g.upid=\'%s\'")
 
-FULL_REGION_FIELDS = ("select concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end) as id, "
-                      "concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end) as name, fr.rfamseq_acc, "
-                      "fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score, "
-                      "fr.bit_score, fr.type as alignment_type, fr.truncated, g.common_name, g.scientific_name, "
-                      "g.ncbi_id, fr.rfam_acc, g.upid, "
-                      "concat(f.rfam_id,\' from \',concat(fr.rfamseq_acc,\'/\',fr.seq_start,\':\',fr.seq_end)) as description, "
-                      "NOW() as created, NOW() as updated "
-                      "from full_region fr, family f, rfamseq rs, genome g "
-                      "where fr.rfamseq_acc=rs.rfamseq_acc "
-                      "and rs.ncbi_id=g.ncbi_id "
-                      "and fr.rfam_acc=f.rfam_acc "
-                      "and fr.is_significant=1")
+FULL_REGION_FIELDS = """
+    SELECT
+    fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
+    fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
+    FROM full_region fr, family f, genseq gs, rfamseq rs
+    WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND gs.rfamseq_acc=rs.rfamseq_acc
+    AND fr.rfam_acc=f.rfam_acc
+    AND fr.is_significant=1
+    AND fr.type='full'
+    AND gs.upid = '%s'
+"""
+
+FULL_REGION_SEEDS = """
+    SELECT
+    fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
+    fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
+    FROM full_region fr, family f, genome g, rfamseq rs
+    WHERE fr.rfamseq_acc=rs.rfamseq_acc
+    AND g.ncbi_id=rs.ncbi_id
+    AND fr.rfam_acc=f.rfam_acc
+    AND fr.is_significant=1
+    AND fr.type='seed'
+    AND g.upid = '%s'
+"""
 
 # -----------------------------CROSS REFERENCES---------------------------
 
@@ -130,19 +145,24 @@ PDB_IDs_QUERY = ("SELECT distinct pdb_id FROM pdb_full_region\n"
                  "WHERE rfam_acc=\'%s\' and is_significant=1")
 
 # Fetch ncbi ids related to a family accession
-NCBI_IDs_QUERY = ("SELECT distinct tx.ncbi_id\n"
-                  "FROM taxonomy tx, full_region fr, rfamseq rs\n"
-                  "WHERE tx.ncbi_id=rs.ncbi_id\n"
-                  "AND fr.rfamseq_acc=rs.rfamseq_acc\n"
-                  "AND fr.is_significant=1\n"
-                  "AND fr.rfam_acc=\'%s\'")
+NCBI_IDs_QUERY = """
+    SELECT tx.ncbi_id, tx.tax_string
+    FROM taxonomy tx, full_region fr, rfamseq rs
+    WHERE tx.ncbi_id=rs.ncbi_id
+    AND fr.rfamseq_acc=rs.rfamseq_acc
+    AND fr.is_significant=1
+    AND fr.rfam_acc='%s'
+    GROUP BY tx.ncbi_id
+"""
 
 # Fetch upids related to a family accession
-
-FAMILY_UPIDS = ("select distinct upid "
-                "from genseq gs, full_region fr "
-                "where gs.rfamseq_acc=fr.rfamseq_acc "
-                "and fr.rfam_acc=\'%s\'")
+FAMILY_UPIDS = """
+    SELECT distinct upid
+    FROM genseq gs, full_region fr
+    WHERE gs.rfamseq_acc=fr.rfamseq_acc
+    AND fr.rfam_acc='%s'
+    AND fr.is_significant = 1
+"""
 
 # Fetch clan based on rfam_acc
 FAM_CLAN = ("SELECT clan_acc from clan_membership\n"
@@ -158,9 +178,13 @@ MOTIF_FAMS = ("SELECT distinct rfam_acc from motif_matches\n"
               "where motif_acc=\'%s\'")
 
 # GENOMES
-GENOME_FAMS = ("select distinct rfam_acc from full_region fr, genseq gs\n"
-               "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-               "and gs.upid=\'%s\'")
+GENOME_FAMS = """
+    SELECT distinct rfam_acc
+    FROM full_region fr, genseq gs
+    WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND fr.is_significant = 1
+    AND gs.upid='%s'
+"""
 
 # -------------------------ADDITIONAL FIELDS------------------------------
 
@@ -172,7 +196,14 @@ NUM_FAMS_CLAN = ("SELECT count(*) FROM clan_membership\n"
 NUM_FAMS_MOTIF = ("SELECT count(*) FROM motif_family_stats\n"
                   "WHERE motif_acc=\'%s\'")
 
-COUNT_FULL_REGION = "SELECT count(*) from full_region where is_significant=1"
+COUNT_FULL_REGION = """
+    SELECT count(*)
+    FROM full_region fr, genseq gs
+    WHERE fr.rfamseq_acc = gs.rfamseq_acc
+    AND fr.is_significant = 1
+    AND fr.type='full'
+    AND gs.upid = '%s'
+"""
 
 # -----------------------------------------------------------------------------
 

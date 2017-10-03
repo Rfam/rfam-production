@@ -412,12 +412,10 @@ class FullRegion(models.Model):
 
 class Genome(models.Model):
     upid = models.CharField(primary_key=True, max_length=20)
-    gca_acc = models.CharField(max_length=20, blank=True, null=True)
-    gca_version = models.IntegerField(blank=True, null=True)
+    assembly_acc = models.CharField(max_length=20)
+    assembly_version = models.IntegerField(blank=True, null=True)
     wgs_acc = models.CharField(max_length=20, blank=True, null=True)
     wgs_version = models.IntegerField(blank=True, null=True)
-    ensembl_id = models.CharField(max_length=100, blank=True, null=True)
-    ensembl_source = models.CharField(max_length=15, blank=True, null=True)
     assembly_name = models.CharField(max_length=100, blank=True, null=True)
     assembly_level = models.CharField(max_length=15, blank=True, null=True)
     study_ref = models.CharField(max_length=20, blank=True, null=True)
@@ -429,7 +427,6 @@ class Genome(models.Model):
     scientific_name = models.CharField(max_length=100, blank=True, null=True)
     common_name = models.CharField(max_length=200, blank=True, null=True)
     kingdom = models.CharField(max_length=50, blank=True, null=True)
-    num_gen_regions = models.IntegerField(blank=True, null=True)
     num_rfam_regions = models.IntegerField(blank=True, null=True)
     num_families = models.IntegerField(blank=True, null=True)
     created = models.DateTimeField()
@@ -441,21 +438,10 @@ class Genome(models.Model):
 
 
 class Genseq(models.Model):
-    genseq_acc = models.CharField(primary_key=True, max_length=20)
-    upid = models.ForeignKey(Genome, db_column='upid')
-    gen_acc = models.CharField(max_length=20)
-    seq_version = models.IntegerField()
-    seq_length = models.BigIntegerField(blank=True, null=True)
-    seq_role = models.CharField(max_length=20, blank=True, null=True)
-    ncbi = models.ForeignKey('Taxonomy')
-    mol_type = models.CharField(max_length=15)
-    seq_start = models.BigIntegerField()
-    seq_end = models.BigIntegerField()
-    description = models.CharField(max_length=250)
-    assembly_unit = models.CharField(max_length=50, blank=True, null=True)
-    file_size = models.BigIntegerField(blank=True, null=True)
-    created = models.DateTimeField()
-    updated = models.DateTimeField()
+    rfamseq_acc = models.CharField(primary_key=True, max_length=20)
+    upid = models.CharField(max_length=20)
+    chromosome_name = models.CharField(max_length=20)
+    chromosome_type = models.CharField(max_length=20)
 
     class Meta:
         managed = False

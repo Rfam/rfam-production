@@ -37,7 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'RfamLive',
+    'rfam_schemas.RfamLive',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -76,9 +76,10 @@ WSGI_APPLICATION = 'rfam_schemas.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-    'default': rfc.RFAMLOC,
 
-    'rfam_dev': rfc.RFAM13DEV
+    'default': rfc.RFAMLIVE_DJANGO,
+    'rfam_dev': rfc.RFAMDEV
+
 }
 
 # Internationalization

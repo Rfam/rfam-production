@@ -16,13 +16,14 @@ limitations under the License.
 
 # ---------------------------------IMPORTS-------------------------------------
 
-
 import httplib
 import json
 import os
+import sys
 import string
 import urllib
 import urllib2
+import shutil
 import xml.etree.ElementTree as ET
 
 import requests
@@ -1088,6 +1089,36 @@ def check_accession_availability(accession):
             return False
 
     return True
+
+# -----------------------------------------------------------------------------
+
+def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
+    """
+    Copy wgs set sequences from physical location on cluster
+
+    wsg_acc: A valid WGS set accession (e.g. AAVU01000000)
+    dest_dir: Destination directory where the sequences will be copied to
+
+    return: void
+    """
+
+    # build path
+    wgs_subdir = os.path.join(gc.ENA_FTP_WGS_PUB, wgs_acc[0:2].lower()) #AA
+    wgs_filename = wgs_acc[0:7] + ".fasta.gz"
+
+    # check if wgs sequences are in public dir and copy to destination
+    if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
+        shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
+                        os.path.join(dest_dir, wgs_filename))
+    # look for wgs set in suppressed sequences
+    else:
+        wgs_subdir = os.path.join(gc.ENA_FTP_WGS_SUP, wgs_acc[0:2].lower())
+        if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
+            shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
+                            os.path.join(dest_dir, wgs_filename))
+
+        else:
+            sys.exit("WGS set %s requested does not exist.")
 
 # -----------------------------------------------------------------------------
 

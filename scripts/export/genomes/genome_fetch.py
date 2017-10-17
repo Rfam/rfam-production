@@ -1122,5 +1122,67 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
 
 # -----------------------------------------------------------------------------
 
+def fetch_assembly_accs_from_proteome_xml(upid):
+    """
+    Parses proteome xml file and looks for GCA and WGS set accessions
+
+    upid: A valit Uniprot proteome upid
+
+    returns: A dictionary in the form of {'GCA': gca_acc, 'WGS': wgs_acc}.
+    Returns gca_acc and wgs_acc are set to -1 by default.
+    """
+    genome_accs = {'GCA': -1, 'WGS': -1}
+
+
+    # TO IMPLEMENT
+    pass
+
+# -----------------------------------------------------------------------------
+
+def proteome_xml_accessions_to_dict(upid):
+    """
+    Parses a valid proteome xml file and returns all accessions in the form of
+    a dictionary. Component names from proteome xml are used as dictionary keys
+
+    upid: A valid Uniprot proteome upid
+
+    returns: A dictionary with all proteome associated accessions.
+    """
+
+    proteome_accs = {'GCA': -1}
+
+    # namespace prefix # or register a namespace in the ET
+    prefix = "{http://uniprot.org/uniprot}%s"
+
+    response = requests.get(gc.PROTEOME_XML_URL % upid)
+
+    if response.status_code == 200:
+        # convert from string to xml format
+        prot_tree_root = ET.fromstring(response.content)
+
+        # get proteome node
+        proteome = prot_tree_root.find(prefix % "proteome")
+
+        # get proteome's component nodes/genome accession nodes
+        gca_acc = None
+        gca_acc = proteome.find(prefix % "genomeAssembly").find(prefix % "genomeAssembly").text
+        if gca_acc is not None:
+            proteome_accs['GCA'] = gca_acc
+
+        component_nodes = proteome.findall(prefix % "component")
+
+        # loop over all component nodes and extract genome accessions
+        for node in component_nodes:
+            name = node.get("name")
+
+            # check weird cases with unplaced
+            if name.find("Unplaced") == -1:
+                accession = node.find(prefix % "genome_accession").text
+                proteome_accs[name] = accession
+
+    return proteome_accs
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
     pass

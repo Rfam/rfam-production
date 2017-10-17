@@ -1165,9 +1165,9 @@ def proteome_xml_accessions_to_dict(upid):
 
         # get proteome's component nodes/genome accession nodes
         gca_acc = None
-        gca_acc = proteome.find(prefix % "genomeAssembly").find(prefix % "genomeAssembly").text
+        gca_acc = proteome.find(prefix % "genomeAssembly").find(prefix % "genomeAssembly")
         if gca_acc is not None:
-            proteome_accs['GCA'] = gca_acc
+            proteome_accs['GCA'] = gca_acc.text
 
         component_nodes = proteome.findall(prefix % "component")
 

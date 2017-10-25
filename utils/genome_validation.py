@@ -3,6 +3,7 @@ import sys
 import subprocess
 
 from config import gen_config as gc
+from scripts.export.genomes import genome_fetch as gf
 
 """
 A collection of functions to validate files with a new genome download
@@ -91,6 +92,37 @@ def check_genome_download_status(lsf_out_file):
 
     return status
 
+# -----------------------------------------------------------------------------
+
+
+def check_all_files_downloaded(gca_report_file, genome_dir):
+    """
+    Parse genome GCA file and check that all files have been downloaded and
+    report any missing files
+
+    gca_report_file: A genome assembly report file provided by ENA
+    genome_dir: The path to a specific genome directory
+
+    return: True if all files were downloaded, alternatively a list of
+    the accessions of the missing files
+    """
+
+    missing_files = []
+    gca_accessions = gf.assembly_report_parser(gca_report_file)
+
+    downloaded_files = [x for x in os.listdir(genome_dir) if x.endswith(".fa")]
+
+    for accession in gca_accessions:
+        file_path = os.path.join(genome_dir, accession + ".fa")
+
+        if not os.path.exists(file_path):
+            missing_files.append(accession)
+
+    if len(missing_files) > 0:
+        return missing_files
+
+    return True
+        
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

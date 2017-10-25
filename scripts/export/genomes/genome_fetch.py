@@ -335,7 +335,7 @@ def extract_assembly_accs(accession):
                 "ASSEMBLY_LINK").find("URL_LINK").find("URL").text
 
             # need to check for GCA_REP_LABEL
-            accessions = assembly_report_parser(url_link)
+            accessions = assembly_report_parser(url_link, url=True)
 
         else:
             # no assembly link provided - look for WGS element
@@ -487,7 +487,7 @@ def rdf_accession_search(ref_prot_acc, sub_str):
 
 # -----------------------------------------------------------------------------
 
-def assembly_report_parser(report_url):
+def assembly_report_parser(assembly_report, url=True):
     """
     Parses an assembly report file and returns a list of all available
     accessions (scaffolds, contigs etc)
@@ -500,15 +500,19 @@ def assembly_report_parser(report_url):
     accessions = []
 
     # switch from ftp to http to fetch assembly accessions on the go
+    report_url = None
+    ass_rep_file = None
 
-    report_url = report_url.replace("ftp://", "http://")
+    if url is True:
+        report_url = assembly_report.replace("ftp://", "http://")
+        # fetch assembly report file contents and store in a list, omitting header
+        ass_rep_file = requests.get(report_url).content.split('\n')[1:]
 
-    # fetch assembly report file contents and store in a list, omitting header
-    ass_rep_file = requests.get(report_url).content.split('\n')[1:]
-
-    # if empty line, remove it
-    if ass_rep_file[len(ass_rep_file) - 1] == '':
-        ass_rep_file.pop(len(ass_rep_file) - 1)
+        # if empty line, remove it
+        if ass_rep_file[len(ass_rep_file) - 1] == '':
+            ass_rep_file.pop(len(ass_rep_file) - 1)
+    else:
+        ass_rep_file = open(assembly_report, 'r')
 
     # parse list and export assembly accessions
     for line in ass_rep_file:
@@ -517,7 +521,6 @@ def assembly_report_parser(report_url):
             accessions.append(line[0])
 
     return accessions
-
 
 # -----------------------------------------------------------------------------
 

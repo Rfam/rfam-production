@@ -1193,7 +1193,7 @@ def proteome_xml_accessions_to_dict(upid):
 # -----------------------------------------------------------------------------
 
 
-def fetch_gca_report_file_from_ftp(gca_accession, dest_dir):
+def copy_gca_report_file_from_ftp(gca_accession, dest_dir):
     """
     Copies the corresponding GCA report file from the ftp
 
@@ -1240,7 +1240,32 @@ def get_genome_unique_accessions(upid):
     return: A list with all unique genome accessions
     """
 
+    complete_genome_accs = {"GCA": -1, "WSG": -1, "OTHER": []}
+    proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
 
+    if proteome_acc_dict["GCA"] != -1:
+        # create a temporary copy of the assembly report file
+        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], "/tmp")
+        gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
+
+        gca_accs = assembly_report_parser(os.path.join("/tmp",gca_report_filename),
+                                          url=False)
+
+        proteome_set = set(proteome_acc_dict["OTHER"])
+        gca_set = set(gca_accs)
+
+        unique_accs = proteome_set.symmetric_difference(gca_set)
+
+        # update dictionary
+        complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
+        complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
+        complete_genome_accs["OTHER"] = unique_accs
+
+        os.remove(gca_report_filename)
+
+    return complete_genome_accs
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 

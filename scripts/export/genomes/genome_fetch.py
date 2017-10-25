@@ -985,7 +985,6 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
 
     return acc_dict
 
-
 # -----------------------------------------------------------------------------
 
 def split_and_download(wgs_range, dest_dir):
@@ -1186,7 +1185,41 @@ def proteome_xml_accessions_to_dict(upid):
 
 # -----------------------------------------------------------------------------
 
+
+def fetch_gca_report_file_from_ftp(gca_accession, dest_dir):
+    """
+    Copies the corresponding GCA report file from the ftp
+
+    gca_accession: A valid GCA accession
+
+    return: True if the file was found, False otherwise
+    """
+
+    seq_report_file = gca_accession + "_sequence_report.txt"
+    genomic_regions_file = gca_accession + "_regions.txt"
+
+    # 1st layer subdir GCA_XXX
+    gca_dir = os.path.join(gc.ENA_GCA_SEQ_REPORT, gca_accession[0:7])
+
+    # 2nd layer subdir GCA_XXXXXX
+    gca_dir = os.path.join(gca_dir, gca_accession[0:10])
+
+    report_file_path = os.path.join(gca_dir, seq_report_file)
+    region_file_path = os.path.join(gca_dir, genomic_regions_file)
+
+    # sanity check if the file actually exists
+    if os.path.exists(report_file_path):
+        shutil.copyfile(report_file_path, os.path.join(dest_dir,
+                                                       seq_report_file))
+        if os.path.exists(region_file_path):
+            shutil.copyfile(region_file_path, os.path.join(dest_dir,
+                                                       genomic_regions_file))
+        return True
+
+    return False
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    pass
+
+  pass

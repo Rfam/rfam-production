@@ -1150,7 +1150,8 @@ def proteome_xml_accessions_to_dict(upid):
     returns: A dictionary with all proteome associated accessions.
     """
 
-    proteome_accs = {'GCA': -1}
+    proteome_accs = {"GCA": -1, "WGS": -1}
+    other = {}
 
     # namespace prefix # or register a namespace in the ET
     prefix = "{http://uniprot.org/uniprot}%s"
@@ -1168,7 +1169,7 @@ def proteome_xml_accessions_to_dict(upid):
         gca_acc = None
         gca_acc = proteome.find(prefix % "genomeAssembly").find(prefix % "genomeAssembly")
         if gca_acc is not None:
-            proteome_accs['GCA'] = gca_acc.text
+            proteome_accs["GCA"] = gca_acc.text
 
         component_nodes = proteome.findall(prefix % "component")
 
@@ -1176,10 +1177,16 @@ def proteome_xml_accessions_to_dict(upid):
         for node in component_nodes:
             name = node.get("name")
 
-            # check weird cases with unplaced
-            if name.find("Unplaced") == -1:
+            if name.find("WGS") != -1:
                 accession = node.find(prefix % "genome_accession").text
-                proteome_accs[name] = accession
+                proteome_accs["WGS"] = accession
+
+            else:
+                accession = node.find(prefix % "genome_accession").text
+                other[name] = accession
+
+        proteome_accs["OTHER"] = other
+
 
     return proteome_accs
 
@@ -1219,6 +1226,21 @@ def fetch_gca_report_file_from_ftp(gca_accession, dest_dir):
     return False
 
 # -----------------------------------------------------------------------------
+
+
+def get_genome_unique_accessions(upid):
+    """
+    This function will extract all available accessions from the relevant
+    proteome xml file and return a list of unique accessions that represent a
+    complete genome. This will be a combination of assembly accessions provided
+    by ENA and any additional accessions found in the proteome xml file
+
+    upid: A valid Uniprot Proteome id
+
+    return: A list with all unique genome accessions
+    """
+
+
 
 if __name__ == '__main__':
 

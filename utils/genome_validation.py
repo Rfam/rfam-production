@@ -118,11 +118,8 @@ def check_all_files_downloaded(gca_report_file, genome_dir):
         if not os.path.exists(file_path):
             missing_files.append(accession)
 
-    if len(missing_files) > 0:
-        return missing_files
+    return missing_files
 
-    return True
-        
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

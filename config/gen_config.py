@@ -32,6 +32,7 @@ USER_EMAIL = cfl.USER_EMAIL
 LSF_GROUPS_CMD = cfl.LSF_GROUPS_CMD
 LSF_GEN_GROUP = cfl.LSF_GEN_GROUP
 JOB_LIMIT = 5
+LSF_RFAM_BIN = cfl.BIN_LOC
 
 # ENA GCA report file label
 GCA_REP_LBL = "Sequence_Report"  # GCA ASSEMPLY REPORT FILE XML LABEL
@@ -80,6 +81,15 @@ ENA_TAX_URL = "http://www.ebi.ac.uk/ena/data/warehouse/search?query=\"tax_eq(%s)
 
 # path to genome downloader executable
 GEN_DWLD_EXEC = cfl.GEN_DWLD_EXEC
+
+# path to public WGS sets
+ENA_FTP_WGS_PUB = cfl.ENA_FTP_WGS_PUB
+
+# path to supressed WGS sets
+ENA_FTP_WGS_SUP = cfl.ENA_FTP_WGS_SUP
+
+# path to ena assembly sequence report files
+ENA_GCA_SEQ_REPORT = cfl.ENA_GCA_SEQ_REPORT
 
 # -----------------------------------MODELS------------------------------------
 

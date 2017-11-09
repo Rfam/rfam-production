@@ -132,10 +132,15 @@ class DownloadGenome(luigi.Task):
 
     def setup_proteome_dir(self):
         """
-        Setup project directory.
+        Setup proteome directory.
         """
+
+        # get project subdir index where the genome will be downloaded
+        sub_dir_index = self.upid[8:]
+
         self.upid_dir = os.path.join(
-            os.path.join(self.project_dir, self.domain), self.upid)
+            os.path.join(self.project_dir, sub_dir_index), self.upid)
+
         if not os.path.exists(self.upid_dir):
             os.mkdir(self.upid_dir)
             os.chmod(self.upid_dir, 0777)
@@ -193,13 +198,6 @@ class GenomesDownloadEngine(luigi.Task):
             os.mkdir(self.proj_dir)
             os.chmod(self.proj_dir, 0777)
 
-        # create domain subdirs
-        for domain in gc.DOMAINS:
-            dom_dir = os.path.join(self.proj_dir, domain)
-            if not os.path.exists(dom_dir):
-                os.mkdir(dom_dir)
-                os.chmod(dom_dir, 0777)
-
     def requires(self):
         """
         Initialize project directory and call UPAccessionLoader task to load
@@ -233,6 +231,13 @@ class GenomesDownloadEngine(luigi.Task):
         cmd = ''
 
         for upid in upid_gca_pairs.keys():
+
+            sub_dir_index = upid[8:]
+            sub_dir_loc = os.path.join(self.proj_dir, sub_dir_index)
+
+            if not os.path.exists(sub_dir_loc):
+                os.mkdir(sub_dir_loc)
+                os.chmod(sub_dir_loc, 777)
 
             # generate an lsf command
             if self.lsf == "True":

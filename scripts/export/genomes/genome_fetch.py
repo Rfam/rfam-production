@@ -1248,7 +1248,11 @@ def get_genome_unique_accessions(upid, output_dir=None):
     """
 
     complete_genome_accs = {"GCA": -1, "WSG": -1, "OTHER": []}
+
     proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
+
+    complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
+    complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
 
     if proteome_acc_dict["GCA"] != -1:
         # create a temporary copy of the assembly report file
@@ -1267,12 +1271,11 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
         unique_accs = proteome_set.symmetric_difference(gca_set)
 
-        # update dictionary
-        complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
-        complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
-        complete_genome_accs["OTHER"] = unique_accs
+        # add unique accessions in dictionary
+        complete_genome_accs["OTHER"].extend(unique_accs)
 
-        os.remove(gca_report_filename)
+    else:
+        complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"])
 
     return complete_genome_accs
 

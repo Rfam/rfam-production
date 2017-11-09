@@ -1259,7 +1259,7 @@ def get_genome_unique_accessions(upid, output_dir=None):
         copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], output_dir)
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
 
-        gca_accs = assembly_report_parser(os.path.join("/tmp",gca_report_filename),
+        gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
                                           url=False)
 
         proteome_set = set(proteome_acc_dict["OTHER"])

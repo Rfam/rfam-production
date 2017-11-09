@@ -138,9 +138,11 @@ class DownloadGenome(luigi.Task):
         # get project subdir index where the genome will be downloaded
         sub_dir_index = self.upid[8:]
 
+        # construct the path for the new proteome directory
         self.upid_dir = os.path.join(
             os.path.join(self.project_dir, sub_dir_index), self.upid)
 
+        # finally, create the directory if it does not exist
         if not os.path.exists(self.upid_dir):
             os.mkdir(self.upid_dir)
             os.chmod(self.upid_dir, 0777)

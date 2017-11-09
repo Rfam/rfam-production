@@ -99,6 +99,7 @@ class DownloadFile(luigi.Task):
     Download a file for a specific accession.
     """
     ena_acc = luigi.Parameter()
+
     prot_dir = luigi.Parameter()
 
     def run(self):
@@ -114,6 +115,32 @@ class DownloadFile(luigi.Task):
         """
         return luigi.LocalTarget(os.path.join(self.prot_dir,
                                               self.ena_acc + ".fa.gz"))
+
+# -----------------------------------------------------------------------------
+
+
+class CopyWGSSet(luigi.Task):
+    """
+    Download a file for a specific accession.
+    """
+    wgs_acc = luigi.Parameter()
+    prot_dir = luigi.Parameter()
+
+    def run(self):
+        """
+        Download ENA file.
+        """
+        # need to parametrise file format
+        gflib.copy_wgs_set_from_ftp(self.wgs_acc, self.prot_dir)
+
+    def output(self):
+        """
+        Check if file exists.
+        """
+        wgs_set_file = self.wgs_acc[0:7] + ".fasta.gz"
+
+        return luigi.LocalTarget(os.path.join(self.prot_dir,
+                                              wgs_set_file))
 
 # -----------------------------------------------------------------------------
 
@@ -164,6 +191,8 @@ class DownloadGenome(luigi.Task):
             self.acc_data.append(test)
 
         self.db_entries[self.upid] = self.acc_data
+
+        # merge and validate need to check final UPXXXXXXXXX.fa exists
 
 # -----------------------------------------------------------------------------
 

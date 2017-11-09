@@ -131,7 +131,7 @@ class CopyFileFromFTP(luigi.Task):
         Download ENA file.
         """
         # need to parametrise file format
-        if self.genome_acc[0:3] == 'GCA':
+        if self.genome_acc[0:3] == "GCA":
             gflib.copy_gca_report_file_from_ftp(self.genome_acc, self.prot_dir)
         else:
             gflib.copy_wgs_set_from_ftp(self.wgs_acc, self.prot_dir)
@@ -142,9 +142,8 @@ class CopyFileFromFTP(luigi.Task):
         """
 
         filename = ''
-
-        if self.genome_acc[0:3] == 'GCA':
-            filename = self.genome_acc+"_sequence_report.txt"
+        if self.genome_acc[0:3] == "GCA":
+            filename = self.genome_acc + "_sequence_report.txt"
         else:
             filename = self.wgs_acc[0:7] + ".fasta.gz"
 
@@ -217,12 +216,12 @@ class GenomesDownloadEngine(luigi.Task):
     Initialize project environment parse Uniprot's the UPID_GCA file
     and call DownloadGenome task for each available reference proteome.
     """
-    project_name = luigi.Parameter(default='genome-download',
-        description='Files will be stored in LOC_PATH/project_name folder')
+    project_name = luigi.Parameter(default="genome-download",
+        description="Files will be stored in LOC_PATH/project_name folder")
     upid_file = luigi.Parameter(default=None,
-        description='UniProt upid_gca file. Use UniProt REST API by default')
+        description="UniProt upid_gca file. Use UniProt REST API by default")
     lsf = luigi.BoolParameter(default=False,
-        description='If specified then run on lsf, otherwise run locally')
+        description="If specified then run on lsf, otherwise run locally")
     proj_dir = ''
 
     def initialize_project(self):

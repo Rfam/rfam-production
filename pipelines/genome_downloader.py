@@ -119,11 +119,11 @@ class DownloadFile(luigi.Task):
 # -----------------------------------------------------------------------------
 
 
-class CopyWGSSet(luigi.Task):
+class CopyFileFromFTP(luigi.Task):
     """
     Download a file for a specific accession.
     """
-    wgs_acc = luigi.Parameter()
+    genome_acc = luigi.Parameter()
     prot_dir = luigi.Parameter()
 
     def run(self):
@@ -131,16 +131,25 @@ class CopyWGSSet(luigi.Task):
         Download ENA file.
         """
         # need to parametrise file format
-        gflib.copy_wgs_set_from_ftp(self.wgs_acc, self.prot_dir)
+        if self.genome_acc[0:3] == 'GCA':
+            gflib.copy_gca_report_file_from_ftp(self.genome_acc, self.prot_dir)
+        else:
+            gflib.copy_wgs_set_from_ftp(self.wgs_acc, self.prot_dir)
 
     def output(self):
         """
         Check if file exists.
         """
-        wgs_set_file = self.wgs_acc[0:7] + ".fasta.gz"
+
+        filename = ''
+
+        if self.genome_acc[0:3] == 'GCA':
+            filename = self.genome_acc+"_sequence_report.txt"
+        else:
+            filename = self.wgs_acc[0:7] + ".fasta.gz"
 
         return luigi.LocalTarget(os.path.join(self.prot_dir,
-                                              wgs_set_file))
+                                              filename))
 
 # -----------------------------------------------------------------------------
 

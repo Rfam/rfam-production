@@ -987,6 +987,7 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
 
 # -----------------------------------------------------------------------------
 
+
 def split_and_download(wgs_range, dest_dir):
     """
     Function to split and download smaller segments of large genome assemblies
@@ -1031,6 +1032,7 @@ def split_and_download(wgs_range, dest_dir):
 
 # -----------------------------------------------------------------------------
 
+
 def fetch_accessions_from_proteome_xml(proteome):
     """
     Parses Uniprot's proteome xml and extracts all available ENA accessions
@@ -1068,6 +1070,7 @@ def fetch_accessions_from_proteome_xml(proteome):
 
 # -----------------------------------------------------------------------------
 
+
 def check_accession_availability(accession):
     """
     Check whether a specific accession is available from ENA
@@ -1092,6 +1095,7 @@ def check_accession_availability(accession):
     return True
 
 # -----------------------------------------------------------------------------
+
 
 def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
     """
@@ -1123,6 +1127,7 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
 
 # -----------------------------------------------------------------------------
 
+
 def fetch_assembly_accs_from_proteome_xml(upid):
     """
     Parses proteome xml file and looks for GCA and WGS set accessions
@@ -1139,6 +1144,7 @@ def fetch_assembly_accs_from_proteome_xml(upid):
     pass
 
 # -----------------------------------------------------------------------------
+
 
 def proteome_xml_accessions_to_dict(upid):
     """
@@ -1228,7 +1234,7 @@ def copy_gca_report_file_from_ftp(gca_accession, dest_dir):
 # -----------------------------------------------------------------------------
 
 
-def get_genome_unique_accessions(upid):
+def get_genome_unique_accessions(upid, output_dir=None):
     """
     This function will extract all available accessions from the relevant
     proteome xml file and return a list of unique accessions that represent a
@@ -1236,6 +1242,7 @@ def get_genome_unique_accessions(upid):
     by ENA and any additional accessions found in the proteome xml file
 
     upid: A valid Uniprot Proteome id
+    output_dir: The path to the output dir
 
     return: A list with all unique genome accessions
     """
@@ -1245,7 +1252,11 @@ def get_genome_unique_accessions(upid):
 
     if proteome_acc_dict["GCA"] != -1:
         # create a temporary copy of the assembly report file
-        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], "/tmp")
+
+        if output_dir is None:
+            output_dir = "/tmp"
+
+        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], output_dir)
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
 
         gca_accs = assembly_report_parser(os.path.join("/tmp",gca_report_filename),
@@ -1266,6 +1277,18 @@ def get_genome_unique_accessions(upid):
     return complete_genome_accs
 
 # -----------------------------------------------------------------------------
+
+def gather_genome_accessions(upid, gca_acc):
+    """
+    This function will construct a list of genome associated accessions from
+    both Uniprot and ENA to devise a complete genome
+
+    upid: A valid Uniprot proteome accession e.g. UPXXXXXXXXX
+    gca_acc: A valid assembly accession
+    :return:
+    """
+
+
 
 if __name__ == '__main__':
 

@@ -190,10 +190,16 @@ class DownloadGenome(luigi.Task):
         # generate directory for this proteome
         self.setup_proteome_dir()
 
-        # fetch accessions
-        accessions = gflib.fetch_genome_accessions(
-            self.upid, str(self.gca_acc))
+        # fetch proteome accessions, this will also copy GCA file if available
+        genome_accessions = gflib.get_genome_unique_accessions(self.upid, self.upid_dir)
 
+        # if GCA not available and we only have WGS
+        if genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
+            # First copy WGS set in upid dir
+            yield CopyFileFromFTP(luigi.Task)
+
+        # this should be done in all cases
+        accessions = genome_accessions["OTHER"]
         # download genome accessions in proteome directory
         for acc in accessions:
             test = yield DownloadFile(ena_acc=acc, prot_dir=self.upid_dir)

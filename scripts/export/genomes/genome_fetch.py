@@ -1278,18 +1278,6 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
 # -----------------------------------------------------------------------------
 
-def gather_genome_accessions(upid, gca_acc):
-    """
-    This function will construct a list of genome associated accessions from
-    both Uniprot and ENA to devise a complete genome
-
-    upid: A valid Uniprot proteome accession e.g. UPXXXXXXXXX
-    gca_acc: A valid assembly accession
-    :return:
-    """
-
-
-
 if __name__ == '__main__':
 
   pass

@@ -231,8 +231,8 @@ class GenomesDownloadEngine(luigi.Task):
         """
         location = ""
 
-        if self.lsf == "True":
-            location = gc.RFAM_GPFS_LOC
+        if self.lsf is True:
+            location = gc.RFAM_HPS_LOC
         else:
             location = gc.LOC_PATH
 
@@ -261,8 +261,8 @@ class GenomesDownloadEngine(luigi.Task):
         """
         location = ""
 
-        if self.lsf == "True":
-            location = gc.RFAM_GPFS_LOC
+        if self.lsf is True:
+            location = gc.RFAM_HPS_LOC
         else:
             location = gc.LOC_PATH
 
@@ -285,7 +285,7 @@ class GenomesDownloadEngine(luigi.Task):
                 os.chmod(sub_dir_loc, 777)
 
             # generate an lsf command
-            if self.lsf == "True":
+            if self.lsf is True:
                 cmd = gflib.lsf_cmd_generator(upid, upid_gca_pairs[upid]["GCA"],
                                               upid_gca_pairs[upid]["DOM"],
                                               os.path.realpath(__file__),

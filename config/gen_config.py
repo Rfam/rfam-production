@@ -20,7 +20,7 @@ FORMATS = {"xml": ".xml", "fasta": ".fa"}
 DOMAINS = ['eukaryota', 'archaea', 'viruses', 'bacteria']
 
 # Rfam's LSF GPFS location
-RFAM_GPFS_LOC = cfl.RFAM_GPFS_LOC
+RFAM_HPS_LOC = cfl.RFAM_HPS_LOC
 LOC_PATH = cfl.LOC_PATH
 
 # LSF JOB constraints & params

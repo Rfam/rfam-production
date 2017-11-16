@@ -1267,8 +1267,10 @@ def get_genome_unique_accessions(upid, output_dir=None):
         gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
                                           url=False)
 
+        accs_no_version = [x.partition('.')[0] for x in gca_accs]
+
         proteome_set = set(proteome_acc_dict["OTHER"].values())
-        gca_set = set(gca_accs)
+        gca_set = set(accs_no_version)
 
         unique_accs = proteome_set.symmetric_difference(gca_set)
 

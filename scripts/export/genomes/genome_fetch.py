@@ -1248,7 +1248,7 @@ def get_genome_unique_accessions(upid, output_dir=None):
     return: A list with all unique genome accessions
     """
 
-    complete_genome_accs = {"GCA": -1, "WSG": -1, "OTHER": []}
+    complete_genome_accs = {"GCA": -1, "WGS": -1, "OTHER": []}
 
     proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
 

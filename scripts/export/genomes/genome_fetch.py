@@ -588,7 +588,8 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
     proj_dir: The path to the project directory
     """
 
-    prot_dir = os.path.join(os.path.join(proj_dir, domain), upid)
+    subdir_idx = upid[8:]
+    prot_dir = os.path.join(os.path.join(proj_dir, subdir_idx), upid)
 
     cmd = ("bsub -M %s "
            "-R \"rusage[mem=%s,tmp=%s]\" "
@@ -608,8 +609,8 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
 
     return cmd
 
-
 # -----------------------------------------------------------------------------
+
 
 def genome_script_generator(upid, domain, gen_size, out_dir):
     """

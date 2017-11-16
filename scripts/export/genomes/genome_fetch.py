@@ -1110,7 +1110,7 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
 
     # build path
     wgs_subdir = os.path.join(gc.ENA_FTP_WGS_PUB, wgs_acc[0:2].lower()) #AA
-    wgs_filename = wgs_acc[0:7] + ".fasta.gz"
+    wgs_filename = wgs_acc[0:6] + ".fasta.gz"
 
     # check if wgs sequences are in public dir and copy to destination
     if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):

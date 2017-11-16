@@ -1278,7 +1278,7 @@ def get_genome_unique_accessions(upid, output_dir=None):
         complete_genome_accs["OTHER"].extend(unique_accs)
 
     else:
-        complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"])
+        complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
 
     return complete_genome_accs
 

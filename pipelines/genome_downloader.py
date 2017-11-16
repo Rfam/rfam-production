@@ -33,7 +33,7 @@ Running the Central scheduler on the cluster:
 
 4. Run the pipeline
 python genome_downloader.py GenomesDownloadEngine --project-name <project name>
---upid-file <upid_gca file path> --lsf True
+--upid-file <upid_gca file path> --lsf
 
 luigi.cfg - See Luigi's Configuration
 (http://luigi.readthedocs.io/en/stable/configuration.html)
@@ -220,7 +220,7 @@ class GenomesDownloadEngine(luigi.Task):
         description="Files will be stored in LOC_PATH/project_name folder")
     upid_file = luigi.Parameter(default=None,
         description="UniProt upid_gca file. Use UniProt REST API by default")
-    lsf = luigi.BoolParameter(default=False,
+    lsf = luigi.BoolParameter(default=True,
         description="If specified then run on lsf, otherwise run locally")
     proj_dir = ''
 
@@ -282,7 +282,7 @@ class GenomesDownloadEngine(luigi.Task):
 
             if not os.path.exists(sub_dir_loc):
                 os.mkdir(sub_dir_loc)
-                os.chmod(sub_dir_loc, 777)
+                os.chmod(sub_dir_loc, 0777)
 
             # generate an lsf command
             if self.lsf is True:

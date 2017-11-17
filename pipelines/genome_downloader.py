@@ -123,7 +123,7 @@ class CopyFileFromFTP(luigi.Task):
     """
     Download a file for a specific accession.
     """
-    genome_acc = luigi.Parameter()
+    accession = luigi.Parameter()
     prot_dir = luigi.Parameter()
 
     def run(self):
@@ -131,10 +131,10 @@ class CopyFileFromFTP(luigi.Task):
         Download ENA file.
         """
         # need to parametrise file format
-        if self.genome_acc[0:3] == "GCA":
-            gflib.copy_gca_report_file_from_ftp(self.genome_acc, self.prot_dir)
+        if self.accession[0:3] == "GCA":
+            gflib.copy_gca_report_file_from_ftp(self.accession, self.prot_dir)
         else:
-            gflib.copy_wgs_set_from_ftp(self.wgs_acc, self.prot_dir)
+            gflib.copy_wgs_set_from_ftp(self.accession, self.prot_dir)
 
     def output(self):
         """
@@ -143,9 +143,9 @@ class CopyFileFromFTP(luigi.Task):
 
         filename = ''
         if self.genome_acc[0:3] == "GCA":
-            filename = self.genome_acc + "_sequence_report.txt"
+            filename = self.accession + "_sequence_report.txt"
         else:
-            filename = self.wgs_acc[0:7] + ".fasta.gz"
+            filename = self.accession[0:6] + ".fasta.gz"
 
         return luigi.LocalTarget(os.path.join(self.prot_dir,
                                               filename))
@@ -192,19 +192,30 @@ class DownloadGenome(luigi.Task):
         # fetch proteome accessions, this will also copy GCA file if available
         genome_accessions = gflib.get_genome_unique_accessions(self.upid, self.upid_dir)
 
-        # if GCA not available and we only have WGS
-        if genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
+        other_accessions = None
+        wgs_set = None
+
+        if genome_accessions["GCA"] != -1:
+            # 1. check for assembly report file
+            # This list is going to be empty
+            other_accessions = genome_accessions["OTHER"]
+
+            # fetch wgs set from ENA
+            if len(other_accessions) == 0:
+                wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
+
+        elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1 or wgs_set is not None:
             # First copy WGS set in upid dir
-            yield CopyFileFromFTP(luigi.Task)
+            yield CopyFileFromFTP(wgs_set, self.upid_dir)
 
         # this should be done in all cases
-        accessions = genome_accessions["OTHER"]
         # download genome accessions in proteome directory
-        for acc in accessions:
-            test = yield DownloadFile(ena_acc=acc, prot_dir=self.upid_dir)
-            self.acc_data.append(test)
+        if len(other_accessions) > 0:
+            for acc in other_accessions:
+                test = yield DownloadFile(ena_acc=acc, prot_dir=self.upid_dir)
+                self.acc_data.append(test)
 
-        self.db_entries[self.upid] = self.acc_data
+            self.db_entries[self.upid] = self.acc_data
 
         # merge and validate need to check final UPXXXXXXXXX.fa exists
 
@@ -222,6 +233,7 @@ class GenomesDownloadEngine(luigi.Task):
         description="UniProt upid_gca file. Use UniProt REST API by default")
     lsf = luigi.BoolParameter(default=True,
         description="If specified then run on lsf, otherwise run locally")
+
     proj_dir = ''
 
     def initialize_project(self):

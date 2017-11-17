@@ -145,6 +145,7 @@ class CopyFileFromFTP(luigi.Task):
         if self.genome_acc[0:3] == "GCA":
             filename = self.accession + "_sequence_report.txt"
         else:
+            # only use the 5 first characters of the WGS string
             filename = self.accession[0:6] + ".fasta.gz"
 
         return luigi.LocalTarget(os.path.join(self.prot_dir,

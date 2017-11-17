@@ -1287,6 +1287,40 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
 # -----------------------------------------------------------------------------
 
+
+def extract_wgs_acc_from_gca_xml(gca_accession):
+    """
+    Parses ENA's GCA xml file and extracts the WGS set accession if available
+
+    gca_accession:  A valid GCA accession
+
+    return: A WGS set accesison, None if not found
+    """
+
+    xml_root = None
+    wgs_acc = None
+    assembly_xml = requests.get(ENA_XML_URL % gca_accession).content
+
+    if os.path.isfile(assembly_xml):
+        # parse xml tree and return root node
+        xml_root = ET.parse(assembly_xml).getroot()
+    else:
+        # fromstring returns the xml root directly
+        xml_root = ET.fromstring(assembly_xml)
+
+    assembly = xml_root.find("ASSEMBLY")
+
+    if assembly is not None:
+        # no assembly link provided - look for WGS element
+        wgs_node = assembly.find("WGS_SET")
+        # get wgs accession
+        wgs_acc = get_wgs_set_accession(
+            wgs_node.find("PREFIX").text, wgs_node.find("VERSION").text)
+
+    return wgs_acc
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
   pass

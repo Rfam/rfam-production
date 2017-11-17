@@ -1194,7 +1194,6 @@ def proteome_xml_accessions_to_dict(upid):
 
         proteome_accs["OTHER"] = other
 
-
     return proteome_accs
 
 # -----------------------------------------------------------------------------
@@ -1261,24 +1260,36 @@ def get_genome_unique_accessions(upid, output_dir=None):
         if output_dir is None:
             output_dir = "/tmp"
 
-        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], output_dir)
+        check_exists = copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], output_dir)
+
+        # try downloading the files from the URL if unsuccessful
+        if check_exists is False:
+            download_gca_report_file_from_url(proteome_acc_dict["GCA"], output_dir)
+
+        # get assembly report file path
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
 
-        gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
-                                          url=False)
+        if os.path.exists(gca_report_filename):
 
-        accs_no_version = [x.partition('.')[0] for x in gca_accs]
+            gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
+                                              url=False)
 
-        proteome_set = set(proteome_acc_dict["OTHER"].values())
-        gca_set = set(accs_no_version)
+            accs_no_version = [x.partition('.')[0] for x in gca_accs]
 
-        unique_accs = proteome_set.symmetric_difference(gca_set)
+            proteome_set = set(proteome_acc_dict["OTHER"].values())
+            gca_set = set(accs_no_version)
 
-        # if all accessions are common to the two resources
-        if len(unique_accs) == 0:
-            unique_accs.extend(accs_no_version)
-        # add unique accessions in dictionary
-        complete_genome_accs["OTHER"].extend(unique_accs)
+            unique_accs = proteome_set.symmetric_difference(gca_set)
+
+            # if all accessions are common to the two resources
+            if len(unique_accs) == 0:
+                unique_accs.extend(accs_no_version)
+                
+            # add unique accessions in dictionary
+            complete_genome_accs["OTHER"].extend(unique_accs)
+
+        else:
+            print "Genome Assembly report file for %s is unavailable", upid
 
     else:
         complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
@@ -1321,6 +1332,51 @@ def extract_wgs_acc_from_gca_xml(gca_accession):
 
 # -----------------------------------------------------------------------------
 
+
+def download_gca_report_file_from_url(gca_accession, dest_dir):
+    """
+    Loads an xml tree from a file or a string (usually an http response),
+    and returns a list with the genome assembly's chromosomes
+
+    accession: A valid ENA GCA accession (without the assembly version)
+    """
+
+    accessions = []
+    root = None
+    assembly_link = None
+    assembly = None
+    url_links = []
+
+    assembly_xml = requests.get(ENA_XML_URL % gca_accession).content
+
+    if os.path.isfile(assembly_xml):
+        # parse xml tree and return root node
+        root = ET.parse(assembly_xml).getroot()
+    else:
+        # fromstring returns the xml root directly
+        root = ET.fromstring(assembly_xml)
+
+    assembly = root.find("ASSEMBLY")
+
+    if assembly is not None:
+        # either parse the assembly report file or get the WGS range
+        assembly_links = assembly.find("ASSEMBLY_LINKS")
+
+        if assembly_links is not None:
+            # export url link and fetch all relevant assembly accessions
+            assembly_link_nodes = assembly_links.findall(
+                "ASSEMBLY_LINK")
+
+            for node in assembly_link_nodes:
+                assembly_link = node.find("URL_LINK").find("URL").text
+                url_links.append(assembly_link.replace("ftp:", "http:"))
+
+    for url in url_links:
+        filename = url.split('/')[-1]
+        urllib.urlretrieve(url, os.path.join(dest_dir, filename))
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-  pass
+    pass

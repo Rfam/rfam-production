@@ -884,6 +884,38 @@ def set_number_of_genomic_significant_hits(upid):
 
 # ----------------------------------------------------------------------------
 
+
+def fetch_author_orcid(author_name):
+    """
+    Searches for author by name and
+    :param author_name:
+    :return:
+    """
+
+    orcid = None
+    cnx = RfamDB.connect()
+
+    # Get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    query = """
+            Select orcid from author
+            where name like '%s%s%s' or synonyms like '%s%s%s'
+            """
+
+    cursor.execute(query % (chr(37), author_name, chr(37),
+                            chr(37), author_name, chr(37)))
+
+    result = cursor.fetchone()
+    if result is not None:
+        orcid = result[0]
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    # This will return none if there's no ORCiD available
+    return orcid
+# ----------------------------------------------------------------------------
 if __name__ == '__main__':
 
     pass

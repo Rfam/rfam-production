@@ -17,11 +17,7 @@ RFAMLIVE = cfl.RFAMLIVE
 
 RFAMLIVE_DJANGO = cfl.RFAMLIVE_DJANGO
 
-RFAM12 = cfl.RFAM12
-
 RFAMLIVELOC = cfl.RFAMLIVELOC
-
-#XFAMDEV = cfl.XFAMDEV
 
 # ----------------------------Django settings----------------------------------
 

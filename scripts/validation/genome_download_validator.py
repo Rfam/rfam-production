@@ -16,11 +16,11 @@ limitations under the License.
 import json
 import os
 import subprocess
+import sys
 
 from config import gen_config as gc
 from config import rfam_config as rc
 from scripts.export.genomes import genome_fetch as gf
-
 
 # -----------------------------------------------------------------------------
 
@@ -32,8 +32,8 @@ def domain_download_validator(domain_dir, filename=None):
     is provided then the Upids will be listed in filename.list
 
     domain_dir: Destination directory, could be one of the four domains
-    filename: The filename for the UPID list/ validation report
-    returns: None if filename is provided otherwise it will return a list
+    filename: A filename for the UPID list/ validation report
+    returns: None if filename is provided, otherwise it will return a list
     of upids
     """
 
@@ -216,7 +216,7 @@ def check_all_genome_files_exist(project_dir, upid_gca_file=None):
             # assuming that all files are decompressed and should be to avoid problems
             for accession in accessions:
                 if accession is not None:
-                    if check_file_status(os.path.join(upid_dir, accession + ".fa")) is False:
+                    if check_file_format(os.path.join(upid_dir, accession + ".fa")) is False:
                         gen_missing_accs.append(accession)
                 else:
                     print upid
@@ -238,7 +238,7 @@ def check_all_genome_files_exist(project_dir, upid_gca_file=None):
 # -----------------------------------------------------------------------------
 
 
-def check_file_status(seq_file):
+def check_file_format(seq_file):
     """
     Performs some sanity checks on the sequence file. Checks if file is
     compressed and if not validates the format using esl-seqstat. It will also
@@ -266,7 +266,7 @@ def check_file_status(seq_file):
 
         # check content
         else:
-            cmd_args = [rc.ESL_SEQSTAT, '--informat', "fasta", seq_file]
+            cmd_args = [rc.ESL_SEQSTAT, '--informat', "fasta", "--dna", seq_file]
             channel = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
 
             # fetch esl-seqstat result
@@ -276,7 +276,7 @@ def check_file_status(seq_file):
             esl_seqstat_out = proc_output[0].split('\n')
             # check only first line of response
             if esl_seqstat_out[0].find("Parse failed") != -1 \
-                or esl_seqstat_out[0].find("Format") != -1:
+                or esl_seqstat_out[0].find("Format") == -1:
                 return False
 
     # check the size of the file
@@ -294,7 +294,7 @@ def check_compressed_file(filename):
     Checks if the provided file is in one of the compressed formats
 
     filename: The path to input file
-    returns: True if the file is compressed, False otherwise
+    returns: Boolean - True if the file is compressed, False otherwise
     """
 
     magic_dict = {
@@ -319,6 +319,53 @@ def check_compressed_file(filename):
 
 # -----------------------------------------------------------------------------
 
+
+def validate_domain_dir(domain_dir, out_file=True):
+    """
+    Validate sequence files downloaded in domain directory
+
+    domain_dir: The path to a domain directory
+    out_file: If True this one will generate an json file with all erroneous
+    files per upid that we need to download again.
+
+    return: A dict with all erroneous accessions in the format {upid: [acc1,...]}
+    """
+
+    domain_err_accs = {}
+
+    upids = [x for x in os.listdir(domain_dir)
+             if os.path.isdir(os.path.join(domain_dir, x))]
+
+    for upid in upids:
+        upid_err_accs = []
+        upid_dir = os.path.join(domain_dir, upid)
+        seq_files = [x for x in os.listdir(upid_dir) if x.endswith(".fa")]
+        for seq_file in seq_files:
+            seq_file_loc = os.path.join(upid_dir, seq_file)
+
+            if check_file_format(seq_file_loc) is False:
+                upid_err_accs.append(seq_file)
+
+        if len(upid_err_accs) > 0:
+            domain_err_accs[upid] = upid_err_accs
+
+    if out_file is True:
+        fp_out = open(os.path.join(domain_dir, "erroneous_accessions.json"), 'w')
+        json.dump(domain_err_accs, fp_out)
+        fp_out.close()
+
+    return domain_err_accs
+
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-    pass
+    project_dir = sys.argv[1]
+
+    if len(sys.argv) == 2:
+        upid_gca_file = sys.argv[2]
+    else:
+        upid_gca_file = None
+
+    check_all_genome_files_exist(project_dir, upid_gca_file=upid_gca_file)

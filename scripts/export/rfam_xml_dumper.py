@@ -27,17 +27,17 @@ import logging
 import subprocess
 import timeit
 import traceback
-
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
 from sets import Set
+from xml.dom import minidom
+
+import django
+
 from config import rfam_config as rfc
 from config import rfam_search as rs
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
-import django
-from django.conf import settings
 django.setup()
 from rfam_schemas.RfamLive.models import Genseq, Genome
 
@@ -92,10 +92,10 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
     # adding entry_count
     entry_count = len(entries.findall("entry"))
-    
+
     if entry_count == 0:
- 	print "No full region entries found for %s" % entry_acc
-	return
+        print "No full region entries found for %s" % entry_acc
+        return
 
     ET.SubElement(db_xml, "entry_count").text = str(entry_count)
 
@@ -109,7 +109,8 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
 
     fp_out.close()
-    #xmllint(filename)
+    # xmllint(filename)
+
 
 # ----------------------------------------------------------------------------
 
@@ -121,13 +122,14 @@ def get_taxonomy_info(rfam_acc):
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.NCBI_IDs_QUERY % rfam_acc)
     ncbi_ids = []
-    tax_strings = set() # distinct ncbi_ids can have identical tax_strings
+    tax_strings = set()  # distinct ncbi_ids can have identical tax_strings
     for row in result_iterator(cursor):
         ncbi_ids.append(row['ncbi_id'])
         tax_strings.add(row['tax_string'])
     cursor.close()
     cnx.disconnect()
     return ncbi_ids, tax_strings
+
 
 # ----------------------------------------------------------------------------
 
@@ -160,6 +162,11 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # fetch family specific ncbi_ids
     pdb_ids = fetch_value_list(rfam_acc, rs.PDB_IDs_QUERY)
+
+    # fetch all author orcids associated with a family accession
+    orcids = fetch_value_list(rfam_acc, rs.AU_ORCIDS)
+    # pass orcid list in fam_fields
+    fam_fields["orcids"] = orcids
 
     # fetch family upids
     upids = fetch_value_list(rfam_acc, rs.FAMILY_UPIDS)
@@ -221,6 +228,7 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
         if len(species_tax_trees.keys()) > 1:
             add_hierarchical_fields(add_fields, species_tax_trees, name_dict)
 
+
 # ----------------------------------------------------------------------------
 
 def clan_xml_builder(entries, clan_acc=None):
@@ -262,6 +270,7 @@ def clan_xml_builder(entries, clan_acc=None):
     build_additional_fields(
         entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type)
 
+
 # ----------------------------------------------------------------------------
 
 def motif_xml_builder(entries, motif_acc=None):
@@ -301,6 +310,7 @@ def motif_xml_builder(entries, motif_acc=None):
 
     build_additional_fields(
         entry, motif_fields, 0, None, entry_type=entry_type)
+
 
 # ----------------------------------------------------------------------------
 
@@ -352,6 +362,7 @@ def genome_xml_builder(entries, gen_acc=None):
     # genome additional fields
     build_genome_additional_fields(entry, genome_fields)
 
+
 # ----------------------------------------------------------------------------
 
 def result_iterator(cursor, arraysize=1000):
@@ -365,6 +376,7 @@ def result_iterator(cursor, arraysize=1000):
         for result in results:
             yield result
 
+
 # ----------------------------------------------------------------------------
 
 def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
@@ -376,7 +388,7 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     description = '%s %s' % (genome.scientific_name, region["rfam_id"])
 
     # add a new family entry to the xml tree
-    entry_id='%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+    entry_id = '%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
     entry = ET.SubElement(entries, "entry", id=entry_id)
 
     ET.SubElement(entry, "name").text = name
@@ -401,6 +413,7 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
 
     build_cross_references(entry, cross_refs)
 
+
 # ----------------------------------------------------------------------------
 
 def get_chromosome_metadata():
@@ -411,6 +424,7 @@ def get_chromosome_metadata():
     for genseq in Genseq.objects.exclude(chromosome_name__isnull=True).values():
         chromosomes[genseq['rfamseq_acc']] = genseq
     return chromosomes
+
 
 # ----------------------------------------------------------------------------
 
@@ -436,11 +450,12 @@ def get_rnacentral_mapping(upid):
     rnacentral_ids = {}
     for row in result_iterator(cursor):
         rfamseq_acc = row["rfamseq_acc"]
-        name='%s/%s:%s' % (row["rfamseq_acc"], row["seq_start"], row["seq_end"])
+        name = '%s/%s:%s' % (row["rfamseq_acc"], row["seq_start"], row["seq_end"])
         rnacentral_ids[name] = str(row["rnacentral_id"])
     cursor.close()
     cnx.disconnect()
     return rnacentral_ids
+
 
 # ----------------------------------------------------------------------------
 
@@ -451,12 +466,12 @@ def full_region_xml_builder(entries, upid):
     entries:    Entries node on xml tree
     upid:  Genome identifier.
     """
-    
+
     tax_id_duplicates = {'562': 1, '1280': 1, '7209': 1, '10679': 1, '10717': 1,
-			'11021': 1, '11036': 1, '11072': 1, '11082': 1, '11228': 1,
-			'11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
-			'93838': 1, '186617': 1, '229533': 1, '351048': 1,
-			'456327': 1, '766192': 1, '1891747': 1}
+                         '11021': 1, '11036': 1, '11072': 1, '11082': 1, '11228': 1,
+                         '11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
+                         '93838': 1, '186617': 1, '229533': 1, '351048': 1,
+                         '456327': 1, '766192': 1, '1891747': 1}
 
     genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()
@@ -468,26 +483,27 @@ def full_region_xml_builder(entries, upid):
     cursor.execute(rs.FULL_REGION_FIELDS % upid)
     for row in result_iterator(cursor):
         format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
-    
+
     # work on 'seed' regions if not already exported
     cursor.execute(rs.FULL_REGION_SEEDS % upid)
 
     # if one of the cases of duplicates, work with the flags
     if genome.ncbi_id in tax_id_duplicates:
-    	if tax_id_duplicates[genome.ncbi_id] == 1:    
-    		for row in result_iterator(cursor):
-        		format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
-		# set flag to 0 to disable export
-		tax_id_duplicates[genome.ncbi_id] = 0
-    
+        if tax_id_duplicates[genome.ncbi_id] == 1:
+            for row in result_iterator(cursor):
+                format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+            # set flag to 0 to disable export
+            tax_id_duplicates[genome.ncbi_id] = 0
+
     # capture the rest of the cases
     else:
-	cursor.execute(rs.FULL_REGION_SEEDS % upid)
-	for row in result_iterator(cursor):
-		format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+        cursor.execute(rs.FULL_REGION_SEEDS % upid)
+        for row in result_iterator(cursor):
+            format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
 
     cursor.close()
     cnx.disconnect()
+
 
 # ----------------------------------------------------------------------------
 
@@ -516,6 +532,7 @@ def build_cross_references(entry, cross_ref_dict):
                     cross_refs, "ref", dbkey=str(value), dbname=db_name)
 
     return cross_refs
+
 
 # ----------------------------------------------------------------------------
 
@@ -552,6 +569,7 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
                     ET.SubElement(
                         hfields, "child", label=name_dict[tax_tree_node]).text = tax_tree_node
 
+
 # ----------------------------------------------------------------------------
 
 def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type, tax_strings=None):
@@ -580,6 +598,11 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
     for author in author_list:
         ET.SubElement(add_fields, "field", name="author").text = author
+
+    orcids = fields["orcids"]
+
+    for orcid in orcids:
+        ET.SubElement(add_fields, "field", name="orcid").text = orcid
 
     if entry_type == "Family":
 
@@ -616,7 +639,7 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
         for tax_string in tax_strings:
             ET.SubElement(add_fields, "field", name="tax_string").text = str(tax_string)
 
-                # build hierarchical_fields tree here...
+            # build hierarchical_fields tree here...
 
     # perhaps move this to clan and motif xml builder
     else:
@@ -634,6 +657,7 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
     # returning node
     return add_fields
+
 
 # ----------------------------------------------------------------------------
 
@@ -665,7 +689,7 @@ def build_genome_additional_fields(entry, fields):
     ET.SubElement(add_fields, "field", name="ncbi_taxid").text = str(fields["ncbi_id"])
     ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
     ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
-    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"]) # redundant
+    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"])  # redundant
 
     # add popular species if any
     species = str(fields["ncbi_id"])
@@ -682,6 +706,7 @@ def build_genome_additional_fields(entry, fields):
         ET.SubElement(add_fields, "field", name="assembly_name").text = str(fields["assembly_name"])
 
     return add_fields
+
 
 # ----------------------------------------------------------------------------
 
@@ -716,8 +741,10 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     ET.SubElement(add_fields, "field", name="tax_string").text = genome.ncbi.tax_string
 
     if fields["rfamseq_acc"] in chromosomes:
-        ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]]["chromosome_name"]
-        ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[fields["rfamseq_acc"]]["chromosome_type"]
+        ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]][
+            "chromosome_name"]
+        ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[fields["rfamseq_acc"]][
+            "chromosome_type"]
 
     # add popular species if any
     species = genome.ncbi_id
@@ -736,6 +763,7 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     ET.SubElement(add_fields, "field", name="scientific_name").text = genome.scientific_name
 
     return add_fields
+
 
 # ----------------------------------------------------------------------------
 
@@ -756,6 +784,7 @@ def get_value_list(val_str, delimiter=','):
     value_list = [x.strip() for x in values if x != '']
 
     return value_list
+
 
 # ----------------------------------------------------------------------------
 
@@ -790,6 +819,7 @@ def fetch_value_list(rfam_acc, query):
             return [str(x) for x in values]
 
     return []
+
 
 # ----------------------------------------------------------------------------
 
@@ -833,6 +863,7 @@ def fetch_entry_fields(entry_acc, entry_type):
 
     return fields
 
+
 # ----------------------------------------------------------------------------
 
 def fetch_value(query, accession):
@@ -864,6 +895,7 @@ def fetch_value(query, accession):
         return value[0][0]
 
     return None
+
 
 # ----------------------------------------------------------------------------
 
@@ -974,6 +1006,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
         else:
             print "Error exporting %s." % rfam_acc
 
+
 # ----------------------------------------------------------------------------
 
 def get_valid_family_tax_ids(name_object, family_tax_ids):
@@ -991,6 +1024,7 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
             valid_family_tax_ids.append(taxid)
 
     return valid_family_tax_ids
+
 
 # ----------------------------------------------------------------------------
 
@@ -1013,6 +1047,7 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
 
     return species_tax_trees
 
+
 # ----------------------------------------------------------------------------
 
 def xmllint(filepath):
@@ -1021,8 +1056,8 @@ def xmllint(filepath):
     Run xmllint on the output file and print the resulting report.
     """
     schema_url = 'http://www.ebi.ac.uk/ebisearch/XML4dbDumps.xsd'
-    cmd = ('xmllint {filepath} --schema {schema_url} --noout --stream')\
-               .format(filepath=filepath, schema_url=schema_url)
+    cmd = ('xmllint {filepath} --schema {schema_url} --noout --stream') \
+        .format(filepath=filepath, schema_url=schema_url)
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
@@ -1031,6 +1066,7 @@ def xmllint(filepath):
         print e.cmd
         print 'Return code {0}'.format(e.returncode)
         sys.exit(1)
+
 
 # ----------------------------------------------------------------------------
 
@@ -1059,6 +1095,7 @@ def usage():
         "--out", help="path to output directory", type=str, required=True)
 
     return parser
+
 
 # ----------------------------------------------------------------------------
 

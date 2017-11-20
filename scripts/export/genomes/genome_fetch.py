@@ -1291,9 +1291,9 @@ def get_genome_unique_accessions(upid, output_dir=None):
         else:
             print "Genome Assembly report file for %s is unavailable", upid
             complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
-            if proteome_acc_dict["WGS"] == -1:
-                # changing the status to 0 to signify that we need to download the WGS set
-                complete_genome_accs["WGS"] = 0
+
+            if complete_genome_accs["WGS"] != -1:
+                complete_genome_accs["GCA"] = 0
 
     else:
         complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())

@@ -205,6 +205,14 @@ COUNT_FULL_REGION = """
     AND gs.upid = '%s'
 """
 
+AU_ORCIDS = """
+            select orcid
+            from author au, family_author fa
+            where au.author_id=fa.author_id
+            and rfam_acc='%s'
+            and orcid <> ''
+            """
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

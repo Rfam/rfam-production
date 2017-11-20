@@ -20,15 +20,9 @@ TO DO: Need to generalize this to make the scripts independent and enable
 import mysql.connector
 from mysql.connector import errorcode
 
-from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
-#from config.rfam_config import RFAMLIVE  # rfam_live on curation host
-from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
-
-from config.rfam_config import XFAMDEV
-from config.rfam_config import RFAMLOCAL
+# RfamLive
 from config.rfam_config import RFAMLIVE
-from config.rfam_config import RFAMLIVEPUB
-from config.rfam_config import RFAMREL
+
 # -----------------------------------------------------------------------------
 
 # need to generalize this to enable DB setting upon implementation 

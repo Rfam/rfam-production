@@ -1279,11 +1279,8 @@ def get_genome_unique_accessions(upid, output_dir=None):
             proteome_set = set(proteome_acc_dict["OTHER"].values())
             gca_set = set(accs_no_version)
 
-            unique_accs = proteome_set.symmetric_difference(gca_set)
-
-            # if all accessions are common to the two resources
-            if len(unique_accs) == 0:
-                unique_accs.extend(accs_no_version)
+            # construct a new set with unique accessions from both sets
+            unique_accs = proteome_set.union(gca_set)
                 
             # add unique accessions in dictionary
             complete_genome_accs["OTHER"].extend(unique_accs)

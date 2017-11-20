@@ -1264,7 +1264,7 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
         # try downloading the files from the URL if unsuccessful
         if check_exists is False:
-            download_gca_report_file_from_url(proteome_acc_dict["GCA"], output_dir)
+            url_check = download_gca_report_file_from_url(proteome_acc_dict["GCA"], output_dir)
 
         # get assembly report file path
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
@@ -1290,6 +1290,10 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
         else:
             print "Genome Assembly report file for %s is unavailable", upid
+            complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
+            if proteome_acc_dict["WGS"] == -1:
+                # changing the status to 0 to signify that we need to download the WGS set
+                complete_genome_accs["WGS"] = 0
 
     else:
         complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
@@ -1371,9 +1375,13 @@ def download_gca_report_file_from_url(gca_accession, dest_dir):
                 assembly_link = node.find("URL_LINK").find("URL").text
                 url_links.append(assembly_link.replace("ftp:", "http:"))
 
-    for url in url_links:
-        filename = url.split('/')[-1]
-        urllib.urlretrieve(url, os.path.join(dest_dir, filename))
+            for url in url_links:
+                filename = url.split('/')[-1]
+                urllib.urlretrieve(url, os.path.join(dest_dir, filename))
+
+            return True
+
+    return False
 
 # -----------------------------------------------------------------------------
 

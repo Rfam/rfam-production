@@ -15,6 +15,7 @@ import os
 import shutil
 
 from scripts.export.genomes import genome_fetch as gf
+from config.rfam_local import TEST_DIR
 
 
 # --------------------------------------------------------------------------------------------------
@@ -208,6 +209,70 @@ def test_download_genomes():
 
 # --------------------------------------------------------------------------------------------------
 
+def test_pipeline_genome_download_logic():
+
+    other_accessions = None
+    wgs_set = None
+
+    dest_dir = os.path.join(TEST_DIR, "genome_pipeline_test")
+
+    if not os.path.exists(dest_dir):
+        os.mkdir(dest_dir)
+
+    upids = ["UP000011602", "UP000051297", "UP000033913", "UP000053620",
+             "UP000054516", "UP000014934", "UP000154645"]
+
+    for upid in upids:
+
+        print "\nupid: ", upid
+
+        if not os.path.exists(os.path.join(dest_dir, upid)):
+            os.mkdir(os.path.join(dest_dir, upid))
+        # fetch proteome accessions, this will also copy GCA file if available
+
+        genome_accessions = gf.get_genome_unique_accessions(upid, os.path.join(dest_dir, upid))
+
+        print "Genome unique accessions: ", genome_accessions
+
+        if genome_accessions["GCA"] != -1:
+            # 1. check for assembly report file
+            # This list is going to be empty
+            other_accessions = genome_accessions["OTHER"]
+
+            print "Other accessions: ", len(other_accessions)
+
+            # fetch wgs set from ENA
+            if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
+                wgs_set = gf.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
+                print "No other accessions, extracting WGS set from xml..."
+
+            if wgs_set is not None or genome_accessions["GCA_NA"] == 1:
+
+                if genome_accessions["GCA_NA"] == 1:
+                    wgs_set = genome_accessions["WGS"]
+                    print "GCA report file unavailable, fetching WGS set"
+
+                print "Copying file from ftp - GCA section"
+
+        elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
+            # First copy WGS set in upid dir
+            print "Copying file from ftp - WGS section"
+
+        # this should be done in all cases
+        # download genome accessions in proteome directory
+        if len(other_accessions) > 0:
+            print "Other accessions to download ", len(other_accessions)
+
+# --------------------------------------------------------------------------------------------------
+
+
+def test_download_gca_report_file_from_url():
+
+    gca_acc = "GCA_000700745.1"
+    download_status = gf.download_gca_report_file_from_url(gca_acc, TEST_DIR)
+
+# --------------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     # test_find_proteomes_without_accessions()
     # test_fetch_ref_proteomes()
@@ -222,5 +287,6 @@ if __name__ == '__main__':
     # test_get_wgs_set_accession()
     # test_assembly_report_parser()
     # test_download_genomes()
-    test_fetch_genome()
-    pass
+    # test_fetch_genome()
+    test_pipeline_genome_download_logic()
+    # test_download_gca_report_file_from_url()

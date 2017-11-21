@@ -1269,7 +1269,7 @@ def get_genome_unique_accessions(upid, output_dir=None):
         # get assembly report file path
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
 
-        if os.path.exists(gca_report_filename):
+        if os.path.exists(os.path.join(output_dir, gca_report_filename)):
 
             gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
                                               url=False)

@@ -1247,7 +1247,8 @@ def get_genome_unique_accessions(upid, to_file=False, output_dir=None):
     return: A list with all unique genome accessions
     """
 
-    complete_genome_accs = {"GCA": -1, "WGS": -1, "OTHER": []}
+    # GCA NA - Set to 1 when GCA accession is available, but GCA report file is not available from ENA
+    complete_genome_accs = {"GCA": -1, "WGS": -1, "OTHER": [], "GCA_NA": 0}
 
     proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
 
@@ -1290,7 +1291,7 @@ def get_genome_unique_accessions(upid, to_file=False, output_dir=None):
             complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
 
             if complete_genome_accs["WGS"] != -1:
-                complete_genome_accs["GCA"] = 0
+                complete_genome_accs["GCA_NA"] = 1
 
     else:
         complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())

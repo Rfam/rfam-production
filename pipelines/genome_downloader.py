@@ -205,9 +205,9 @@ class DownloadGenome(luigi.Task):
             if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
                 wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
 
-            if wgs_set is not None or genome_accessions["GCA"] == 0:
+            if wgs_set is not None or genome_accessions["GCA_NA"] == 1:
 
-                if genome_accessions["GCA"] == 0:
+                if genome_accessions["GCA_NA"] == 1:
                     wgs_set = genome_accessions["WGS"]
 
                 yield CopyFileFromFTP(wgs_set, self.upid_dir)

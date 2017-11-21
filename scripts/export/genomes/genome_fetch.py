@@ -1234,7 +1234,7 @@ def copy_gca_report_file_from_ftp(gca_accession, dest_dir):
 # -----------------------------------------------------------------------------
 
 
-def get_genome_unique_accessions(upid, output_dir=None):
+def get_genome_unique_accessions(upid, to_file=False, output_dir=None):
     """
     This function will extract all available accessions from the relevant
     proteome xml file and return a list of unique accessions that represent a
@@ -1294,6 +1294,13 @@ def get_genome_unique_accessions(upid, output_dir=None):
 
     else:
         complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
+
+    # write proteome accessions to json file
+    if to_file is True:
+        fp_out = open(os.path.join(output_dir, upid+"_accessions.json"), 'w')
+        json.dump(proteome_acc_dict, fp_out)
+        fp_out.close()
+
 
     return complete_genome_accs
 

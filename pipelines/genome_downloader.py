@@ -191,7 +191,8 @@ class DownloadGenome(luigi.Task):
         self.setup_proteome_dir()
 
         # fetch proteome accessions, this will also copy GCA file if available
-        genome_accessions = gflib.get_genome_unique_accessions(self.upid, self.upid_dir)
+        genome_accessions = gflib.get_genome_unique_accessions(self.upid, to_file=True,
+                                                               output_dir=self.upid_dir)
 
         other_accessions = None
         wgs_set = None

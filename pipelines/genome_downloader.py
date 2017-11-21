@@ -202,10 +202,11 @@ class DownloadGenome(luigi.Task):
             other_accessions = genome_accessions["OTHER"]
 
             # fetch wgs set from ENA
-            if len(other_accessions) == 0:
+            if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
                 wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
 
             if wgs_set is not None or genome_accessions["GCA"] == 0:
+
                 if genome_accessions["GCA"] == 0:
                     wgs_set = genome_accessions["WGS"]
 

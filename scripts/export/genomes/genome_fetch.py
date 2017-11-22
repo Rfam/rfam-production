@@ -16,13 +16,14 @@ limitations under the License.
 
 # ---------------------------------IMPORTS-------------------------------------
 
-
 import httplib
 import json
 import os
+import sys
 import string
 import urllib
 import urllib2
+import shutil
 import xml.etree.ElementTree as ET
 
 import requests
@@ -189,7 +190,6 @@ def proteome_xml_scanner(proteome):
     prefix = "{http://uniprot.org/uniprot}%s"
 
     accessions = {"GCA": -1, "WGS": -1}
-    wgs_flag = False
 
     if requests.get(prot_xml).status_code == httplib.OK:
         xml_root = ET.fromstring(requests.get(prot_xml).content)
@@ -335,7 +335,7 @@ def extract_assembly_accs(accession):
                 "ASSEMBLY_LINK").find("URL_LINK").find("URL").text
 
             # need to check for GCA_REP_LABEL
-            accessions = assembly_report_parser(url_link)
+            accessions = assembly_report_parser(url_link, url=True)
 
         else:
             # no assembly link provided - look for WGS element
@@ -487,7 +487,7 @@ def rdf_accession_search(ref_prot_acc, sub_str):
 
 # -----------------------------------------------------------------------------
 
-def assembly_report_parser(report_url):
+def assembly_report_parser(assembly_report, url=True):
     """
     Parses an assembly report file and returns a list of all available
     accessions (scaffolds, contigs etc)
@@ -500,15 +500,19 @@ def assembly_report_parser(report_url):
     accessions = []
 
     # switch from ftp to http to fetch assembly accessions on the go
+    report_url = None
+    ass_rep_file = None
 
-    report_url = report_url.replace("ftp://", "http://")
+    if url is True:
+        report_url = assembly_report.replace("ftp://", "http://")
+        # fetch assembly report file contents and store in a list, omitting header
+        ass_rep_file = requests.get(report_url).content.split('\n')[1:]
 
-    # fetch assembly report file contents and store in a list, omitting header
-    ass_rep_file = requests.get(report_url).content.split('\n')[1:]
-
-    # if empty line, remove it
-    if ass_rep_file[len(ass_rep_file) - 1] == '':
-        ass_rep_file.pop(len(ass_rep_file) - 1)
+        # if empty line, remove it
+        if ass_rep_file[len(ass_rep_file) - 1] == '':
+            ass_rep_file.pop(len(ass_rep_file) - 1)
+    else:
+        ass_rep_file = open(assembly_report, 'r')
 
     # parse list and export assembly accessions
     for line in ass_rep_file:
@@ -517,7 +521,6 @@ def assembly_report_parser(report_url):
             accessions.append(line[0])
 
     return accessions
-
 
 # -----------------------------------------------------------------------------
 
@@ -595,13 +598,13 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
            "-Ep \"rm -rf luigi\" "
            "-g %s/%s "
            "python %s DownloadGenome --upid %s --gca-acc %s --project-dir %s --domain %s") % (
-              gc.MEM, gc.MEM, gc.TMP_MEM,
-              os.path.join(prot_dir, "download.out"),
-              os.path.join(prot_dir, "download.err"),
-              gc.USER_EMAIL, gc.LSF_GEN_GROUP,
-              domain, exec_path,
-              upid, gca_acc,
-              proj_dir, domain)
+               gc.MEM, gc.MEM, gc.TMP_MEM,
+               os.path.join(prot_dir, "download.out"),
+               os.path.join(prot_dir, "download.err"),
+               gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+               domain, exec_path,
+               upid, gca_acc,
+               proj_dir, domain)
 
     return cmd
 
@@ -982,7 +985,6 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
 
     return acc_dict
 
-
 # -----------------------------------------------------------------------------
 
 def split_and_download(wgs_range, dest_dir):
@@ -1091,5 +1093,180 @@ def check_accession_availability(accession):
 
 # -----------------------------------------------------------------------------
 
-if __name__ == '__main__':
+def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
+    """
+    Copy wgs set sequences from physical location on cluster
+
+    wsg_acc: A valid WGS set accession (e.g. AAVU01000000)
+    dest_dir: Destination directory where the sequences will be copied to
+
+    return: void
+    """
+
+    # build path
+    wgs_subdir = os.path.join(gc.ENA_FTP_WGS_PUB, wgs_acc[0:2].lower()) #AA
+    wgs_filename = wgs_acc[0:7] + ".fasta.gz"
+
+    # check if wgs sequences are in public dir and copy to destination
+    if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
+        shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
+                        os.path.join(dest_dir, wgs_filename))
+    # look for wgs set in suppressed sequences
+    else:
+        wgs_subdir = os.path.join(gc.ENA_FTP_WGS_SUP, wgs_acc[0:2].lower())
+        if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
+            shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
+                            os.path.join(dest_dir, wgs_filename))
+
+        else:
+            sys.exit("WGS set %s requested does not exist.")
+
+# -----------------------------------------------------------------------------
+
+def fetch_assembly_accs_from_proteome_xml(upid):
+    """
+    Parses proteome xml file and looks for GCA and WGS set accessions
+
+    upid: A valit Uniprot proteome upid
+
+    returns: A dictionary in the form of {'GCA': gca_acc, 'WGS': wgs_acc}.
+    Returns gca_acc and wgs_acc are set to -1 by default.
+    """
+    genome_accs = {'GCA': -1, 'WGS': -1}
+
+
+    # TO IMPLEMENT
     pass
+
+# -----------------------------------------------------------------------------
+
+def proteome_xml_accessions_to_dict(upid):
+    """
+    Parses a valid proteome xml file and returns all accessions in the form of
+    a dictionary. Component names from proteome xml are used as dictionary keys
+
+    upid: A valid Uniprot proteome upid
+
+    returns: A dictionary with all proteome associated accessions.
+    """
+
+    proteome_accs = {"GCA": -1, "WGS": -1}
+    other = {}
+
+    # namespace prefix # or register a namespace in the ET
+    prefix = "{http://uniprot.org/uniprot}%s"
+
+    response = requests.get(gc.PROTEOME_XML_URL % upid)
+
+    if response.status_code == 200:
+        # convert from string to xml format
+        prot_tree_root = ET.fromstring(response.content)
+
+        # get proteome node
+        proteome = prot_tree_root.find(prefix % "proteome")
+
+        # get proteome's component nodes/genome accession nodes
+        gca_acc = None
+        gca_acc = proteome.find(prefix % "genomeAssembly").find(prefix % "genomeAssembly")
+        if gca_acc is not None:
+            proteome_accs["GCA"] = gca_acc.text
+
+        component_nodes = proteome.findall(prefix % "component")
+
+        # loop over all component nodes and extract genome accessions
+        for node in component_nodes:
+            name = node.get("name")
+
+            if name.find("WGS") != -1:
+                accession = node.find(prefix % "genome_accession").text
+                proteome_accs["WGS"] = accession
+
+            else:
+                accession = node.find(prefix % "genome_accession").text
+                other[name] = accession
+
+        proteome_accs["OTHER"] = other
+
+
+    return proteome_accs
+
+# -----------------------------------------------------------------------------
+
+
+def copy_gca_report_file_from_ftp(gca_accession, dest_dir):
+    """
+    Copies the corresponding GCA report file from the ftp
+
+    gca_accession: A valid GCA accession
+
+    return: True if the file was found, False otherwise
+    """
+
+    seq_report_file = gca_accession + "_sequence_report.txt"
+    genomic_regions_file = gca_accession + "_regions.txt"
+
+    # 1st layer subdir GCA_XXX
+    gca_dir = os.path.join(gc.ENA_GCA_SEQ_REPORT, gca_accession[0:7])
+
+    # 2nd layer subdir GCA_XXXXXX
+    gca_dir = os.path.join(gca_dir, gca_accession[0:10])
+
+    report_file_path = os.path.join(gca_dir, seq_report_file)
+    region_file_path = os.path.join(gca_dir, genomic_regions_file)
+
+    # sanity check if the file actually exists
+    if os.path.exists(report_file_path):
+        shutil.copyfile(report_file_path, os.path.join(dest_dir,
+                                                       seq_report_file))
+        if os.path.exists(region_file_path):
+            shutil.copyfile(region_file_path, os.path.join(dest_dir,
+                                                       genomic_regions_file))
+        return True
+
+    return False
+
+# -----------------------------------------------------------------------------
+
+
+def get_genome_unique_accessions(upid):
+    """
+    This function will extract all available accessions from the relevant
+    proteome xml file and return a list of unique accessions that represent a
+    complete genome. This will be a combination of assembly accessions provided
+    by ENA and any additional accessions found in the proteome xml file
+
+    upid: A valid Uniprot Proteome id
+
+    return: A list with all unique genome accessions
+    """
+
+    complete_genome_accs = {"GCA": -1, "WSG": -1, "OTHER": []}
+    proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
+
+    if proteome_acc_dict["GCA"] != -1:
+        # create a temporary copy of the assembly report file
+        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], "/tmp")
+        gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
+
+        gca_accs = assembly_report_parser(os.path.join("/tmp",gca_report_filename),
+                                          url=False)
+
+        proteome_set = set(proteome_acc_dict["OTHER"])
+        gca_set = set(gca_accs)
+
+        unique_accs = proteome_set.symmetric_difference(gca_set)
+
+        # update dictionary
+        complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
+        complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
+        complete_genome_accs["OTHER"] = unique_accs
+
+        os.remove(gca_report_filename)
+
+    return complete_genome_accs
+
+# -----------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+  pass

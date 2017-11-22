@@ -166,7 +166,6 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     # fetch all author orcids associated with a family accession
     orcids = fetch_value_list(rfam_acc, rs.AU_ORCIDS)
     # pass orcid list in fam_fields
-    fam_fields["orcids"] = orcids
 
     # fetch family upids
     upids = fetch_value_list(rfam_acc, rs.FAMILY_UPIDS)
@@ -190,6 +189,7 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     cross_refs["PUBMED"] = pmids
     cross_refs["GO"] = go_ids
     cross_refs["SO"] = so_ids
+    cross_refs["ORCID"] = orcids
 
     if len(upids) > 0:
         cross_refs["UniProt"] = upids
@@ -598,11 +598,6 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
     for author in author_list:
         ET.SubElement(add_fields, "field", name="author").text = author
-
-    orcids = fields["orcids"]
-
-    for orcid in orcids:
-        ET.SubElement(add_fields, "field", name="orcid").text = orcid
 
     if entry_type == "Family":
 

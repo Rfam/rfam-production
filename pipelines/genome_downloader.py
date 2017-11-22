@@ -141,7 +141,7 @@ class CopyFileFromFTP(luigi.Task):
         """
 
         filename = ''
-        if self.genome_acc[0:3] == "GCA":
+        if self.accession[0:3] == "GCA":
             filename = self.accession + "_sequence_report.txt"
         else:
             # only use the 5 first characters of the WGS string

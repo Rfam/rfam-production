@@ -1130,24 +1130,6 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
 # -----------------------------------------------------------------------------
 
 
-def fetch_assembly_accs_from_proteome_xml(upid):
-    """
-    Parses proteome xml file and looks for GCA and WGS set accessions
-
-    upid: A valit Uniprot proteome upid
-
-    returns: A dictionary in the form of {'GCA': gca_acc, 'WGS': wgs_acc}.
-    Returns gca_acc and wgs_acc are set to -1 by default.
-    """
-    genome_accs = {'GCA': -1, 'WGS': -1}
-
-
-    # TO IMPLEMENT
-    pass
-
-# -----------------------------------------------------------------------------
-
-
 def proteome_xml_accessions_to_dict(upid):
     """
     Parses a valid proteome xml file and returns all accessions in the form of

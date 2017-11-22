@@ -99,7 +99,6 @@ class DownloadFile(luigi.Task):
     Download a file for a specific accession.
     """
     ena_acc = luigi.Parameter()
-
     prot_dir = luigi.Parameter()
 
     def run(self):
@@ -215,7 +214,7 @@ class DownloadGenome(luigi.Task):
 
         elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
             # First copy WGS set in upid dir
-            yield CopyFileFromFTP(wgs_set, self.upid_dir)
+            yield CopyFileFromFTP(genome_accessions["WGS"], self.upid_dir)
 
         # this should be done in all cases
         # download genome accessions in proteome directory

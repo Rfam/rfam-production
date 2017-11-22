@@ -1116,6 +1116,7 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
     if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
         shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
                         os.path.join(dest_dir, wgs_filename))
+
     # look for wgs set in suppressed sequences
     else:
         wgs_subdir = os.path.join(gc.ENA_FTP_WGS_SUP, wgs_acc[0:2].lower())
@@ -1124,7 +1125,7 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
                             os.path.join(dest_dir, wgs_filename))
 
         else:
-            sys.exit("WGS set %s requested does not exist.")
+            sys.exit("WGS set %s requested does not exist." % wgs_acc)
 
 # -----------------------------------------------------------------------------
 

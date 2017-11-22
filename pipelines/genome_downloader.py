@@ -192,15 +192,12 @@ class DownloadGenome(luigi.Task):
         # fetch proteome accessions, this will also copy GCA file if available
         genome_accessions = gflib.get_genome_unique_accessions(self.upid, to_file=True,
                                                                output_dir=self.upid_dir)
-
-        other_accessions = None
+        # fetch all other accessions other than WGS and GCA
         wgs_set = None
+        other_accessions = genome_accessions["OTHER"]
 
+        # 1. check for assembly report file
         if genome_accessions["GCA"] != -1:
-            # 1. check for assembly report file
-            # This list is going to be empty
-            other_accessions = genome_accessions["OTHER"]
-
             # fetch wgs set from ENA
             if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
                 wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])

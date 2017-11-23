@@ -162,6 +162,7 @@ class DownloadGenome(luigi.Task):
     project_dir = luigi.Parameter()
     domain = luigi.Parameter()
     upid_dir = None
+    sequence_dir = None
     acc_data = []
     db_entries = {}
 
@@ -181,6 +182,14 @@ class DownloadGenome(luigi.Task):
         if not os.path.exists(self.upid_dir):
             os.mkdir(self.upid_dir)
             os.chmod(self.upid_dir, 0777)
+
+        # create a sequence directory where all fasta files will be downloaded
+        self.sequence_dir = os.path.join(self.upid_dir, "sequences")
+
+        if not os.path.exists(self.sequence_dir):
+            os.mkdir(self.sequence_dir)
+            os.chmod(self.sequence_dir, 0777)
+
 
     def run(self):
         """
@@ -217,7 +226,7 @@ class DownloadGenome(luigi.Task):
         # download genome accessions in proteome directory
         if len(other_accessions) > 0:
             for acc in other_accessions:
-                test = yield DownloadFile(ena_acc=acc, prot_dir=self.upid_dir)
+                test = yield DownloadFile(ena_acc=acc, prot_dir=self.sequence_dir)
                 self.acc_data.append(test)
 
             self.db_entries[self.upid] = self.acc_data

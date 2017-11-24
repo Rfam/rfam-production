@@ -1171,8 +1171,11 @@ def proteome_xml_accessions_to_dict(upid):
                 proteome_accs["WGS"] = accession
 
             else:
-                accession = node.find(prefix % "genome_accession").text
-                other[name] = accession
+                accession = node.find(prefix % "genome_accession")
+                # if there is an accession available 
+                if accession is not None:
+                    accession = accession.text
+                    other[name] = accession
 
         proteome_accs["OTHER"] = other
 

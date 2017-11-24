@@ -11,6 +11,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+"""
+Usage:
+
+python automate_rfsearch.py -i /path/to/emerge_file -d /path/to/output
+
+Analysing result:
+
+# check that all LSF jobs completed successfully
+ls | wc -l
+find . -type f -name lsf_output.txt | xargs grep 'Success' | wc -l
+
+# count the number of lines above the best reversed hit
+find . -type f -name outlist -exec sh -c 'sed -n "0,/REVERSED/p" {} | wc -l' \; -print
+"""
+
+
 import argparse
 import csv
 import os

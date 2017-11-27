@@ -240,14 +240,15 @@ class DownloadGenome(luigi.Task):
 
                 # generate subdirs
                 for subdir_index in subdir_ranges:
-                    os.mkdir(os.path.join(self.sequence_dir, str(subdir_index)))
+                    if not os.path.exists(os.path.join(self.sequence_dir, str(subdir_index))):
+                        os.mkdir(os.path.join(self.sequence_dir, str(subdir_index)))
 
                 for accession in other_accessions:
                     idx = 0
                     acc_index = accession[-3:]
                     i = 0
 
-                        # find directory index
+                    # find directory index
                     while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
                         i += 1
 
@@ -258,7 +259,7 @@ class DownloadGenome(luigi.Task):
 
                     subdir = os.path.join(self.sequence_dir, str(idx))
 
-                    yield DownloadFile(ena_acc=accession, prot_dir=self.sequence_dir)
+                    yield DownloadFile(ena_acc=accession, prot_dir=subdir)
 
         # merge and validate need to check final UPXXXXXXXXX.fa exists
 

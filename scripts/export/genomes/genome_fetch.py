@@ -1172,7 +1172,7 @@ def proteome_xml_accessions_to_dict(upid):
 
             else:
                 accession = node.find(prefix % "genome_accession")
-                # if there is an accession available 
+                # if there is an accession available
                 if accession is not None:
                     accession = accession.text
                     other[name] = accession
@@ -1372,6 +1372,49 @@ def download_gca_report_file_from_url(gca_accession, dest_dir):
             return True
 
     return False
+
+# -----------------------------------------------------------------------------
+
+
+def get_genome_subdirectory_ranges(genome_acc_list):
+    """
+    This function generates a list of subdir ranges that can be used to
+    organize genome files into multiple subdirs in a way that the location
+    of a specific fasta file is easily detectable for the last 3 digits of the
+    accession (e.g. JJRO01080032, KK558359). It takes into account LSF cluster
+    limitations
+
+    genome_acc_list: A list with all accessions in a particular assembly
+
+    return: A list of indexes that will be used as subdirectory names
+    """
+
+    max_index = 999 # largest 3 digit number
+
+    subdir_ranges = []
+    file_indexes = []
+    # construct a list with all the last 3 digits from the assembly accessions
+    for acc in genome_acc_list:
+        file_indexes.append(acc[-3:])
+
+    # sort the list to devise the ranges
+    file_idx_sorted = sorted(file_indexes)
+
+    no_files = len(file_idx_sorted)
+
+    index = gc.MAX_ALLOWED_FILES
+
+    while index < no_files:
+        subdir_ranges.append(file_idx_sorted.pop(index))
+        index = index + gc.MAX_ALLOWED_FILES # increase by max allowed files
+
+    # append the right most index
+    if file_idx_sorted[-1] < max_index:
+        subdir_ranges.append(file_idx_sorted[-1])
+    else:
+        subdir_ranges.append(max_index)
+
+    return subdir_ranges
 
 # -----------------------------------------------------------------------------
 

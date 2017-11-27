@@ -197,6 +197,7 @@ class DownloadGenome(luigi.Task):
         """
         # generate directory for this proteome
         self.setup_proteome_dir()
+        max_combinations = 999
 
         # fetch proteome accessions, this will also copy GCA file if available
         genome_accessions = gflib.get_genome_unique_accessions(self.upid, to_file=True,
@@ -225,12 +226,40 @@ class DownloadGenome(luigi.Task):
         # this should be done in all cases
         # download genome accessions in proteome directory
         if len(other_accessions) > 0:
-            for acc in other_accessions:
-                test = yield DownloadFile(ena_acc=acc, prot_dir=self.sequence_dir)
-                self.acc_data.append(test)
+            if len(other_accessions) < gc.MAX_ALLOWED_FILES:
+                for acc in other_accessions:
+                    test = yield DownloadFile(ena_acc=acc, prot_dir=self.sequence_dir)
+                    self.acc_data.append(test)
 
-            self.db_entries[self.upid] = self.acc_data
+                self.db_entries[self.upid] = self.acc_data
+            # split fasta files in multiple directories
+            else:
 
+                # get ranges for
+                subdir_ranges = gflib.get_genome_subdirectory_ranges(other_accessions)
+
+                # generate subdirs
+                for subdir_index in subdir_ranges:
+                    os.mkdir(os.path.join(self.sequence_dir, str(subdir_index)))
+
+                for accession in other_accessions:
+                    idx = 0
+                    acc_index = accession[-3:]
+                    i = 0
+
+                    # find directory index
+                while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
+                    i += 1
+
+                if i < len(subdir_ranges):
+                    idx = subdir_ranges[i]
+                else:
+                    idx = max_combinations
+
+                subdir = os.path.join(self.sequence_dir, str(idx))
+
+                yield DownloadFile(ena_acc=accession, prot_dir=self.sequence_dir)
+                
         # merge and validate need to check final UPXXXXXXXXX.fa exists
 
 # -----------------------------------------------------------------------------

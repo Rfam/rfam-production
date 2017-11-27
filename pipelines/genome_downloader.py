@@ -247,19 +247,19 @@ class DownloadGenome(luigi.Task):
                     acc_index = accession[-3:]
                     i = 0
 
-                    # find directory index
-                while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
-                    i += 1
+                        # find directory index
+                    while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
+                        i += 1
 
-                if i < len(subdir_ranges):
-                    idx = subdir_ranges[i]
-                else:
-                    idx = max_combinations
+                    if i < len(subdir_ranges):
+                        idx = subdir_ranges[i]
+                    else:
+                        idx = max_combinations
 
-                subdir = os.path.join(self.sequence_dir, str(idx))
+                    subdir = os.path.join(self.sequence_dir, str(idx))
 
-                yield DownloadFile(ena_acc=accession, prot_dir=self.sequence_dir)
-                
+                    yield DownloadFile(ena_acc=accession, prot_dir=self.sequence_dir)
+
         # merge and validate need to check final UPXXXXXXXXX.fa exists
 
 # -----------------------------------------------------------------------------

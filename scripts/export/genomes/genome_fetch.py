@@ -46,6 +46,7 @@ ENA_XML_URL = gc.ENA_XML_URL
 
 # ENA url for file download
 ENA_DATA_URL = gc.ENA_DATA_URL
+ENA_DATA_URL_GZIP = gc.ENA_DATA_URL_GZIP
 
 # ENA url for assembly data retrieval via taxon id
 ENA_TAX_URL = gc.ENA_TAX_URL
@@ -268,7 +269,7 @@ def fetch_genome_acc(prot):
 
 # -----------------------------------------------------------------------------
 
-def fetch_ena_file(acc, file_format, dest_dir):
+def fetch_ena_file(acc, file_format,dest_dir, compressed=True):
     """
     Retrieves a file given a valid ENA accession and stores it in the
     indicated destination in the selected format
@@ -287,8 +288,12 @@ def fetch_ena_file(acc, file_format, dest_dir):
 
     # fetching compressed file
     else:
-        seq_url = ENA_DATA_URL % (acc, file_format)
-        file_path = os.path.join(dest_dir, acc + FORMATS[file_format] + ".gz")
+        if compressed is True:
+            seq_url = ENA_DATA_URL_GZIP % (acc, file_format)
+            file_path = os.path.join(dest_dir, acc + FORMATS[file_format] + ".gz")
+        else:
+            seq_url = ENA_DATA_URL % (acc, file_format)
+            file_path = os.path.join(dest_dir, acc + FORMATS[file_format])
 
     urllib.urlretrieve(seq_url, file_path)
 

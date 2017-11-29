@@ -100,20 +100,25 @@ class DownloadFile(luigi.Task):
     """
     ena_acc = luigi.Parameter()
     prot_dir = luigi.Parameter()
+    compressed = False
 
     def run(self):
         """
         Download ENA file.
         """
         # need to parametrise file format
-        gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir)
+        gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir, compressed=compressed)
 
     def output(self):
         """
         Check if file exists.
         """
-        return luigi.LocalTarget(os.path.join(self.prot_dir,
+        if self.compressed is True:
+            return luigi.LocalTarget(os.path.join(self.prot_dir,
                                               self.ena_acc + ".fa.gz"))
+        else:
+            return luigi.LocalTarget(os.path.join(self.prot_dir,
+                                                  self.ena_acc + ".fa"))
 
 # -----------------------------------------------------------------------------
 

@@ -75,8 +75,8 @@ NCBI_SEQ_URL = ''
 ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"
 
 # ENA url for file download
-ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s&download=gzip"
-
+ENA_DATA_URL_GZIP = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s&download=gzip"
+ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s"
 # ENA url for assembly data retrieval via taxon id
 ENA_TAX_URL = "http://www.ebi.ac.uk/ena/data/warehouse/search?query=\"tax_eq(%s)\"&result=assembly&display=xml"
 

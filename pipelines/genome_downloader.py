@@ -217,11 +217,11 @@ class DownloadGenome(luigi.Task):
                 if genome_accessions["GCA_NA"] == 1:
                     wgs_set = genome_accessions["WGS"]
 
-                yield CopyFileFromFTP(wgs_set, self.upid_dir)
+                yield CopyFileFromFTP(wgs_set, self.sequence_dir)
 
         elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
             # First copy WGS set in upid dir
-            yield CopyFileFromFTP(genome_accessions["WGS"], self.upid_dir)
+            yield CopyFileFromFTP(genome_accessions["WGS"], self.sequence_dir)
 
         # this should be done in all cases
         # download genome accessions in proteome directory

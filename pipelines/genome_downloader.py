@@ -107,7 +107,7 @@ class DownloadFile(luigi.Task):
         Download ENA file.
         """
         # need to parametrise file format
-        gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir, compressed=compressed)
+        gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir, compressed=self.compressed)
 
     def output(self):
         """

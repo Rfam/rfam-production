@@ -3,6 +3,7 @@ import luigi
 import json
 import subprocess
 
+from config import gen_config as gc
 from support import merge_fasta as mf
 
 # add parent directory to path
@@ -67,15 +68,24 @@ class GenomeMergeEngine(luigi.Task):
             if os.path.exists(updir):
 
                 if self.lsf is True:
-                    # TODO launch an lsf job to merge the genome fasta files
-                    pass
+
+                    cmd = """
+                          bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s
+                          -Ep \"rm -rf luigi\"
+                          -g %s
+                          python %s MergeGenome --updir %s
+                          """ % (gc.MEM, gc.MEM, gc.TMP_MEM,
+                              os.path.join(updir, "merge.out"),
+                              os.path.join(updir, "merge.err"),
+                              gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+                              os.path.realpath(__file__), updir)
 
                 else:
                     cmd = "python \"{this_file}\" MergeGenome --updir {upid}".format(
                         this_file=os.path.realpath(__file__),
                         updir=updir)
 
-                    subprocess.call(cmd, shell=True)
+                subprocess.call(cmd, shell=True)
 
             cmd = ''
 

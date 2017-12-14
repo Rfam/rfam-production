@@ -601,6 +601,7 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
            "-o \"%s\" "
            "-e \"%s\" "
            "-u \"%s\" "
+           "-n 4 "
            "-Ep \"rm -rf luigi\" "
            "-g %s "
            "python %s DownloadGenome --upid %s --gca-acc %s --project-dir %s --domain %s") % (

@@ -23,8 +23,10 @@ python genome_downloader.py GenomesDownloadEngine --help
 
 Running the Central scheduler on the cluster:
 
-1. Get an interactive node using bsub
-    bsub -Is $SHELL
+1. Get an interactive node using bsub and reserve resources
+   32GB mem and 16 cpus for the central scheduler
+
+   bsub -M 32000 -R "rusage[mem=32000]" -n 16 -Is $SHELL
 
 2. Start the central scheduler
     luigid
@@ -45,7 +47,6 @@ import os
 import luigi
 import json
 import subprocess
-
 
 from config import gen_config as gc
 from scripts.export.genomes import genome_fetch as gflib
@@ -194,7 +195,6 @@ class DownloadGenome(luigi.Task):
         if not os.path.exists(self.sequence_dir):
             os.mkdir(self.sequence_dir)
             os.chmod(self.sequence_dir, 0777)
-
 
     def run(self):
         """
@@ -370,5 +370,5 @@ class GenomesDownloadEngine(luigi.Task):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    # defining main pipeline's main task
+    # defining pipeline's main task
     luigi.run()

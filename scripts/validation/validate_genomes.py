@@ -169,7 +169,6 @@ def validate_genome_download(project_dir):
         else:
             # create a genome err file to report any issues
             upid_err_fp = open(os.path.join(updir_loc, upid + '.err'), 'w')
-
             # check download status was successful
             if check_genome_download_status(os.path.join(updir_loc, "download.out")):
                 # check the sequence dir
@@ -228,19 +227,30 @@ def validate_genome_download(project_dir):
                         upid_other_accs = set(proteome_accs["OTHER"].values())
                         genome_unique_accs = upid_other_accs.union(cleaned_gca_accs)
 
+                        upid_restore_fp = open(os.path.join(updir_loc, upid+".restore"), 'w')
+
                         # check fasta files
                         # case A - sequence directory only contains fasta files
                         if os.path.isfile(os.path.join(seq_dir_loc, seq_items[0])):
+
                             for accession in genome_unique_accs:
                                 seq_file = os.path.join(seq_dir_loc, accession + ".fa")
                                 # check if fasta file exists
                                 err_messages = check_seq_file(upid, seq_file)
 
                                 if len(err_messages) > 0:
+                                    restore = False
+
                                     for err_message in err_messages:
+                                        if err_message.find("format") != -1:
+                                            restore = True
                                         upid_err_fp.write(err_message+'\n')
 
+                                    if restore is True:
+                                        upid_restore_fp.write(accession+'\n')
+
                             upid_err_fp.close()
+                            upid_restore_fp.close()
 
                         # case B - multiple subdirectories
                         else:
@@ -259,8 +269,15 @@ def validate_genome_download(project_dir):
                                     err_messages = check_seq_file(upid, seq_file)
 
                                     if len(err_messages) != 0:
+                                        restore = False
+
                                         for err_message in err_messages:
+                                            if err_message.find("format") != -1:
+                                                restore = True
                                             upid_err_fp.write(err_message + '\n')
+
+                                        if restore is True:
+                                            upid_restore_fp.write(accession + '\n')
 
                                     # delete accession from list
                                     acc = seq_file.partition('.')[0]
@@ -272,8 +289,10 @@ def validate_genome_download(project_dir):
                                     for acc in temp_accession_list:
                                         print "%s\t%s\tMissing file" % (upid, acc)
                                         upid_err_fp.write("%s\t%s\tMissing file\n" % (upid, acc))
+                                        upid_restore_fp.write(acc + '\n')
 
                             upid_err_fp.close()
+                            upid_restore_fp.close()
                     # no gca report file found, but check if there is a WGS set available
                     # and if the corresponding fasta file has been copied
                     else:

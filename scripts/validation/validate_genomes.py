@@ -8,25 +8,21 @@ import genome_download_validator as gdv
 # -----------------------------------------------------------------------------------------------------------
 
 
-def check_seq_file(upid, seq_file, err_file_fp=None):
+def check_seq_file(upid, seq_file):
 
+    err_messages = []
     # check if fasta file exists
-    acc = os.path.basename(seq_file).partition('.')[0]
+    accession = os.path.basename(seq_file).partition('.')[0]
+
     if os.path.exists(seq_file):
         # we may want to delete the incorrect files to clean up the sequence directory
         if not gdv.check_file_format(seq_file):
-            print "%s\t%s\tIncorrect file format or empty file" % (upid, acc)
-            if err_file_fp is not None:
-                err_file_fp.write("%s\t%s\tIncorrect file format or empty file\n" % (upid, acc))
-            return False
-
+            err_messages.append("%s\t%s\tIncorrect file format or empty file" % (upid,
+                                                                                 accession))
     else:
-        if err_file_fp is not None:
-            err_file_fp.write("%s\t%s\tMissing file\n" % (upid, acc))
-        print "%s\t%s\tMissing file" % (upid, acc)
-        return False
+        err_messages.append("%s\t%s\tMissing file" % (upid, accession))
 
-    return True
+    return err_messages
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -58,90 +54,139 @@ def validate_genome_download(project_dir):
         subdir_loc = os.path.join(project_dir, upid_idx)
         updir_loc = os.path.join(subdir_loc, upid)
 
+        # check if genome directory does not exist, print message and move to the next one
         if not os.path.exists(updir_loc):
             print "%s\tOutput directory is missing" % upid
+            continue
 
         else:
-            # create genome specific err file
+            # create a genome err file to report any issues
             upid_err_fp = open(os.path.join(updir_loc, upid + '.err'), 'w')
-            # look for gca report file and count downloaded files
+
             # check download status was successful
             if gdv.check_genome_download_status(os.path.join(updir_loc, "download.out")):
-
+                # check the sequence dir
                 seq_dir_loc = os.path.join(updir_loc, "sequences")
-                uniprot_acc_file = os.path.join(updir_loc, upid + '_accessions.json')
 
-                proteome_accs = {}
+                # check if the sequence directory has been created
+                if not os.path.exists(seq_dir_loc):
+                    print "%s\tSequences directory is missing" % upid
+                    upid_err_fp.write("%s\tSequences directory is missing\n" % upid)
+                    # close err file and move to next genome
+                    upid_err_fp.close()
+                    continue
+
+                # if it passes the previous step, check if sequence directory has contents
+                seq_items = os.listdir(seq_dir_loc)  # dir or file
+                # check if dir is not empty
+                if len(seq_items) == 0:
+                    print "%s\tEmpty sequence directory" % upid
+                    upid_err_fp.write("%s\tEmpty sequence directory\n" % upid)
+                    upid_err_fp.close()
+                    continue
+
+                # went over all structure issues, work with accessions
+                # check if there's a json file with all proteome accessions - generated for all
+                uniprot_acc_file = os.path.join(updir_loc, upid + '_accessions.json')
 
                 if not os.path.exists(uniprot_acc_file):
                     print "%s\tMissing proteome_accessions file" % upid
                     upid_err_fp.write("%s\tMissing proteome_accessions file\n" % upid)
+                    upid_err_fp.close()
+                    continue
 
-                    fp = open(uniprot_acc_file, 'r')
-                    proteome_accs = json.load(fp)
-                    fp.close()
+                # load genome accessions retrieved from Uniprot to check for any missing sequence files
+                proteome_accs = {}
+                fp = open(uniprot_acc_file, 'r')
+                proteome_accs = json.load(fp)
+                fp.close()
 
+                # now look if there is a gca accession
                 if upid_gca_dict[upid]["GCA"] != -1:
+                    # get GCA report file path
                     gca_report_file = os.path.join(updir_loc,
                                                    upid_gca_dict[upid]["GCA"] + "_sequence_report.txt")
 
-                    # 2. Check if gca file and load accessions
+                    # check if gca file exists and load accessions
                     if os.path.exists(gca_report_file):
-                        # get unique accessions
+                        # load accessions from gca report file - without versions
                         fp = open(gca_report_file, 'r')
-                        accs = [x.strip().split('\t')[0].partition('.')[0] for x in fp]
+                        ena_accs = [x.strip().split('\t')[0].partition('.')[0] for x in fp]
                         fp.close()
 
-                        complete_accs = []
-                        accs.pop(0)  # remove header
+                        # generate a list of unique genome accessions from Uniprot and ENA
+                        genome_unique_accs = []
+                        ena_accs.pop(0)  # remove header
+                        cleaned_gca_accs = set(ena_accs)
+                        upid_other_accs = set(proteome_accs["OTHER"].values())
+                        genome_unique_accs = upid_other_accs.union(cleaned_gca_accs)
 
-                        if proteome_accs != {}:
-                            cleaned_gca_accs = set(accs)
-                            upid_other_accs = set(proteome_accs["OTHER"].values())
-                            complete_accs = upid_other_accs.union(cleaned_gca_accs)
+                        # check fasta files
+                        # case A - sequence directory only contains fasta files
+                        if os.path.isfile(os.path.join(seq_dir_loc, seq_items[0])):
+                            for accession in genome_unique_accs:
+                                seq_file = os.path.join(seq_dir_loc, accession + ".fa")
+                                # check if fasta file exists
+                                err_messages = check_seq_file(upid, seq_file)
 
+                                if len(err_messages) > 0:
+                                    for err_message in err_messages:
+                                        upid_err_fp.write(err_message+'\n')
+
+                            upid_err_fp.close()
+
+                        # case B - multiple subdirectories
                         else:
-                            complete_accs = copy.deepcopy(accs)
+                            # to speed up the process we will work with subdirs instead
+                            # and remove the accession from the list if everything is ok
+                            # with the file. Any missing sequence files will be reported at the end
+                            temp_accession_list = copy.deepcopy(genome_unique_accs)
 
-                        seq_items = os.listdir(seq_dir_loc)  # dir or file
-                        # check if multiple directories, else erroneous download
-                        if len(seq_items) == 0:
-                            print "%s\tEmpty sequence directory" % upid
-                            upid_err_fp.write("%s\tEmpty sequence directory\n" % upid)
+                            for subdir in seq_items:
+                                subdir_loc = os.path.join(seq_dir_loc, subdir)
+                                seq_files = os.listdir(subdir_loc)
 
-                        else:
-                            # A - sequence directory only contains fasta files
-                            if os.path.isfile(os.path.join(seq_dir_loc, seq_items[0])):
-                                for acc in complete_accs:
-                                    seq_file = os.path.join(seq_dir_loc, acc + ".fa")
-                                    # check if fasta file exists
-                                    check_seq_file(upid, seq_file, upid_err_fp)
+                                for seq_file in seq_files:
+                                    sec_file_loc = os.path.join(subdir_loc, seq_file)
 
-                            # B - multiple subdirectories
-                            else:
-                                copy_of_accessions = copy.deepcopy(complete_accs)
-                                # to speed up the process we will work with subdirs instead
-                                # and remove the acc from the list if everything is ok with the file
-                                for subdir in seq_items:
-                                    subdir_loc = os.path.join(seq_dir_loc, subdir)
-                                    seq_files = os.listdir(subdir_loc)
+                                    err_messages = check_seq_file(upid, seq_file)
 
-                                    for seq_file in seq_files:
-                                        sec_file_loc = os.path.join(subdir_loc, seq_file)
+                                    if len(err_messages) != 0:
+                                        for err_message in err_messages:
+                                            upid_err_fp.write(err_message + '\n')
 
-                                        if check_seq_file(upid, seq_file, upid_err_fp):
-                                            acc = seq_file.partition('.')[0]
-                                            # delete accession from list to be used for qc later
-                                            copy_of_accessions.remove(acc)
+                                    # delete accession from list
+                                    acc = seq_file.partition('.')[0]
+                                    temp_accession_list.remove(acc)
 
-                                if len(copy_of_accessions) > 0:
-                                    for acc in copy_of_accessions:
+                                # Done with all file checks, report any remaining files not found
+                                # in the sequence sub directories
+                                if len(temp_accession_list) > 0:
+                                    for acc in temp_accession_list:
                                         print "%s\t%s\tMissing file" % (upid, acc)
                                         upid_err_fp.write("%s\t%s\tMissing file\n" % (upid, acc))
 
-                # check WGS set has been copied
+                            upid_err_fp.close()
+                    # no gca report file found, but check if there is a WGS set available
+                    # and if the corresponding fasta file has been copied
+                    else:
+                        if proteome_accs["WGS"] != -1:
+                            wgs_prefix = proteome_accs["WGS"][0:6]
+                            wgs_file_loc = os.path.join(seq_dir_loc,
+                                                        wgs_prefix + ".fasta.gz")
+
+                            if not os.path.exists(wgs_file_loc):
+                                print "%s\t%s\tWGS file has not been copied" % (upid,
+                                                                                wgs_prefix + ".fasta.gz")
+                                upid_err_fp.write("%s\t%s\tWGS file has not been copied\n" % (upid,
+                                                                                              wgs_prefix + ".fasta.gz"))
+                                upid_err_fp.close()
+                                continue
+
+                # check if WGS set has been copied
                 else:
-                    if proteome_accs != {}:
+                    if proteome_accs["WGS"] != -1:
+                        # get wgs prefix and the file location
                         wgs_prefix = proteome_accs["WGS"][0:6]
                         wgs_file_loc = os.path.join(seq_dir_loc,
                                                     wgs_prefix + ".fasta.gz")
@@ -151,13 +196,19 @@ def validate_genome_download(project_dir):
                                                                             wgs_prefix + ".fasta.gz")
                             upid_err_fp.write("%s\t%s\tWGS file has not been copied\n" % (upid,
                                                                                           wgs_prefix + ".fasta.gz"))
+
+                    # look for the extention of the WGS file anyway
                     else:
                         wgs_file = [x for x in os.listdir(seq_dir_loc) if x.endswith(".fasta.gz")]
 
                         if len(wgs_file) == 0:
-                            print "%s\tWGS file has not been copied" % (upid)
-                            upid_err_fp.write("%s\tWGS file has not been copied\n" % upid)
+                            print "%s\tNo WGS sequence file available" % (upid)
+                            upid_err_fp.write("%s\tNo WGS sequence file available\n" % upid)
+
+                    upid_err_fp.close()
             else:
+                # everything ok with lsf, and files but run some luigi checks here??
+                # run some luigi checks here
                 print "%s\tUnsuccessful download" % upid
 
 # -----------------------------------------------------------------------------------------------------------

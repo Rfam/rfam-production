@@ -122,8 +122,10 @@ def check_seq_file(upid, seq_file):
     if os.path.exists(seq_file):
         # we may want to delete the incorrect files to clean up the sequence directory
         if not check_file_format(seq_file):
-            err_messages.append("%s\t%s\tIncorrect file format or empty file" % (upid,
-                                                                                 accession))
+            err_messages.append("%s\t%s\tIncorrect file format" % (upid, accession))
+
+        if os.path.getsize(seq_file) == 0:
+            err_messages.append("%s\t%s\tEmpty file" % (upid, accession))
     else:
         err_messages.append("%s\t%s\tMissing file" % (upid, accession))
 

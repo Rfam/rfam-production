@@ -77,18 +77,12 @@ class GenomeMergeEngine(luigi.Task):
 
             if os.path.exists(updir):
                 if self.lsf is True:
-
-                    cmd = """
-                          bsub -M %s -R "rusage[mem=%s,tmp=%s]" -o %s -e %s -u %s
-                          -Ep "rm -rf luigi"
-                          -g %s
-                          python %s MergeGenome --updir %s
-                          """ % (gc.MEM, gc.MEM, gc.TMP_MEM,
-                              os.path.join(updir, "merge.out"),
-                              os.path.join(updir, "merge.err"),
-                              gc.USER_EMAIL, gc.LSF_GEN_GROUP,
-                              os.path.realpath(__file__), updir)
-
+                    cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
+                          "-g %s python %s MergeGenome --updir %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
+                                                                      os.path.join(updir, "merge.out"),
+                                                                      os.path.join(updir, "merge.err"),
+                                                                      gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+                                                                      os.path.realpath(__file__), updir)
                 else:
                     cmd = "python \"{this_file}\" MergeGenome --updir {upid}".format(
                         this_file=os.path.realpath(__file__),

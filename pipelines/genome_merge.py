@@ -18,7 +18,7 @@ class MergeGenome(luigi.Task):
     """
     Task to merge genome fasta files
     """
-    updir = luigi.parameter()
+    updir = luigi.Parameter()
 
     def run(self):
         """

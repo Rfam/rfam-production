@@ -73,10 +73,9 @@ class GenomeMergeEngine(luigi.Task):
         for upid in upids:
 
             subdir = os.path.join(self.project_dir, upid[-3:])
-            updir = os.path.join(subdir, updir)
+            updir = os.path.join(subdir, upid)
 
             if os.path.exists(updir):
-
                 if self.lsf is True:
 
                     cmd = """

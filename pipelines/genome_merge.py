@@ -42,7 +42,9 @@ class GenomeMergeEngine(luigi.Task):
     """
     Task to load accessions from file
     """
-    project_dir = luigi.Parameter()
+    project_dir = luigi.Parameter(description="Genome download project directory")
+    genome_list = luigi.Parameter(default=None,
+                                  description="A list of upids for which to merge the sequence files")
     lsf = luigi.BoolParameter(default=True,
                               description="If used then run on lsf, otherwise run locally")
 
@@ -52,12 +54,20 @@ class GenomeMergeEngine(luigi.Task):
         json format.
         """
         id_pairs = None
-        upid_gca_file_loc = os.path.join(self.project_dir, "upid_gca_dict.json")
-        upid_gca_fp = open(upid_gca_file_loc, 'r')
-        accessions = json.load(upid_gca_fp)
-        upid_gca_fp.close()
 
-        upids = accessions.keys()
+        upids = []
+        if self.genome_list is None:
+            upid_gca_file_loc = os.path.join(self.project_dir, "upid_gca_dict.json")
+            upid_gca_fp = open(upid_gca_file_loc, 'r')
+            accessions = json.load(upid_gca_fp)
+            upid_gca_fp.close()
+
+            upids = accessions.keys()
+
+        else:
+            upid_list_fp = open(self.genome_list, 'r')
+            upids = [x.strip() for x in upid_list_fp]
+            upid_list_fp.close()
 
         cmd = ''
         for upid in upids:
@@ -70,8 +80,8 @@ class GenomeMergeEngine(luigi.Task):
                 if self.lsf is True:
 
                     cmd = """
-                          bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s
-                          -Ep \"rm -rf luigi\"
+                          bsub -M %s -R "rusage[mem=%s,tmp=%s]" -o %s -e %s -u %s
+                          -Ep "rm -rf luigi"
                           -g %s
                           python %s MergeGenome --updir %s
                           """ % (gc.MEM, gc.MEM, gc.TMP_MEM,

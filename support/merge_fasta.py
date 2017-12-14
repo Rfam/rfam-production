@@ -1,5 +1,6 @@
 import os
 import sys
+import gzip
 import subprocess
 
 # -----------------------------------------------------------------------------------------------------------
@@ -32,11 +33,13 @@ def merge_genome_files(upid_dir):
     if os.path.isfile(os.path.join(sequence_dir_loc, seq_dir_contents[0])):
         for seq_file in seq_dir_contents:
             seq_file_loc = os.path.join(sequence_dir_loc, seq_file)
+
+            seq_file_fp = None
             # decompress file
             if seq_file.endswith(".gz"):
-                subprocess.call(GUNZIP_CMD % seq_file_loc, shell=True)
-
-            seq_file_fp = open(seq_file_loc, 'r')
+                seq_file_fp = gzip.open(seq_file_loc, 'rb')
+            else:
+                seq_file_fp = open(seq_file_loc, 'r')
 
             for line in seq_file_fp:
                 genome_fasta.write(line)
@@ -53,8 +56,11 @@ def merge_genome_files(upid_dir):
                 seq_file_loc = os.path.join(subdir_loc, seq_file)
 
                 # decompress file
+                seq_file_fp = None
                 if seq_file.endswith(".gz"):
-                    subprocess.call(GUNZIP_CMD % seq_file_loc, shell=True)
+                    seq_file_fp = gzip.open(seq_file_loc, 'rb')
+                else:
+                    seq_file_fp = open(seq_file_loc, 'r')
 
                 seq_file_fp = open(seq_file_loc, 'r')
 

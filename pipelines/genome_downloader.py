@@ -47,6 +47,7 @@ import os
 import luigi
 import json
 import subprocess
+import copy
 
 from config import gen_config as gc
 from scripts.export.genomes import genome_fetch as gflib
@@ -100,7 +101,7 @@ class DownloadFile(luigi.Task):
     Download a file for a specific accession.
     """
     ena_acc = luigi.Parameter()
-    prot_dir = luigi.Parameter()
+    dest_dir = luigi.Parameter()
     compressed = False
 
     def run(self):
@@ -108,17 +109,17 @@ class DownloadFile(luigi.Task):
         Download ENA file.
         """
         # need to parametrise file format
-        gflib.fetch_ena_file(self.ena_acc, "fasta", self.prot_dir, compressed=self.compressed)
+        gflib.fetch_ena_file(self.ena_acc, "fasta", self.dest_dir, compressed=self.compressed)
 
     def output(self):
         """
         Check if file exists.
         """
         if self.compressed is True:
-            return luigi.LocalTarget(os.path.join(self.prot_dir,
+            return luigi.LocalTarget(os.path.join(self.dest_dir,
                                               self.ena_acc + ".fa.gz"))
         else:
-            return luigi.LocalTarget(os.path.join(self.prot_dir,
+            return luigi.LocalTarget(os.path.join(self.dest_dir,
                                                   self.ena_acc + ".fa"))
 
 # -----------------------------------------------------------------------------
@@ -167,6 +168,7 @@ class DownloadGenome(luigi.Task):
     gca_acc = luigi.Parameter()  # proteome corresponding GCA accession
     project_dir = luigi.Parameter()
     domain = luigi.Parameter()
+    restore = luigi.BoolParameter(default=False)
     upid_dir = None
     sequence_dir = None
     acc_data = []
@@ -201,72 +203,119 @@ class DownloadGenome(luigi.Task):
         Fetch genome accessions and call DownloadFile Task.
         """
         # generate directory for this proteome
-        self.setup_proteome_dir()
+
         max_combinations = 999
 
-        # fetch proteome accessions, this will also copy GCA file if available
-        genome_accessions = gflib.get_genome_unique_accessions(self.upid, to_file=True,
-                                                               output_dir=self.upid_dir)
-        # fetch all other accessions other than WGS and GCA
-        wgs_set = None
-        other_accessions = genome_accessions["OTHER"]
+        if self.restore is False:
+            self.setup_proteome_dir()
 
-        # 1. check for assembly report file
-        if genome_accessions["GCA"] != -1:
-            # fetch wgs set from ENA
-            if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
-                wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
+            # fetch proteome accessions, this will also copy GCA file if available
+            genome_accessions = gflib.get_genome_unique_accessions(self.upid, to_file=True,
+                                                                   output_dir=self.upid_dir)
+            # fetch all other accessions other than WGS and GCA
+            wgs_set = None
+            other_accessions = genome_accessions["OTHER"]
 
-            if wgs_set is not None or genome_accessions["GCA_NA"] == 1:
+            # 1. check for assembly report file
+            if genome_accessions["GCA"] != -1:
+                # fetch wgs set from ENA
+                if len(other_accessions) == 0 and genome_accessions["WGS"] == -1:
+                    wgs_set = gflib.extract_wgs_acc_from_gca_xml(genome_accessions["GCA"])
 
-                if genome_accessions["GCA_NA"] == 1:
-                    wgs_set = genome_accessions["WGS"]
+                if wgs_set is not None or genome_accessions["GCA_NA"] == 1:
 
+                    if genome_accessions["GCA_NA"] == 1:
+                        wgs_set = genome_accessions["WGS"]
+
+                    yield CopyFileFromFTP(wgs_set, self.sequence_dir)
+
+            elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
+                # First copy WGS set in upid dir
+                yield CopyFileFromFTP(genome_accessions["WGS"], self.sequence_dir)
+
+            # this should be done in all cases
+            # download genome accessions in proteome directory
+            if len(other_accessions) > 0:
+                if len(other_accessions) < gc.MAX_ALLOWED_FILES:
+                    for acc in other_accessions:
+                        test = yield DownloadFile(ena_acc=acc, dest_dir=self.sequence_dir)
+                        self.acc_data.append(test)
+
+                    self.db_entries[self.upid] = self.acc_data
+                # split fasta files in multiple directories
+                else:
+                    # get ranges for
+                    subdir_ranges = gflib.get_genome_subdirectory_ranges(other_accessions)
+
+                    # generate subdirs
+                    for subdir_index in subdir_ranges:
+                        if not os.path.exists(os.path.join(self.sequence_dir, str(subdir_index))):
+                            os.mkdir(os.path.join(self.sequence_dir, str(subdir_index)))
+
+                    for accession in other_accessions:
+                        idx = 0
+                        acc_index = accession[-3:]
+                        i = 0
+
+                        # find directory index
+                        while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
+                            i += 1
+
+                        if i < len(subdir_ranges):
+                            idx = subdir_ranges[i]
+                        else:
+                            idx = max_combinations
+
+                        subdir = os.path.join(self.sequence_dir, str(idx))
+
+                        yield DownloadFile(ena_acc=accession, dest_dir=subdir)
+
+        # restore download by downloading missing fasta files
+        else:
+            restore_file_loc = os.path.join(self.upid_dir, "restore.json")
+            restore_fp = open(restore_file_loc, 'r')
+            files_to_restore = json.load(restore_fp)
+            restore_fp.close()
+
+            # first check for wgs and download if != -1
+            if files_to_restore['WGS'] != -1:
+
+                wgs_set = files_to_restore['WGS']
                 yield CopyFileFromFTP(wgs_set, self.sequence_dir)
 
-        elif genome_accessions["WGS"] != -1 and genome_accessions["GCA"] == -1:
-            # First copy WGS set in upid dir
-            yield CopyFileFromFTP(genome_accessions["WGS"], self.sequence_dir)
-
-        # this should be done in all cases
-        # download genome accessions in proteome directory
-        if len(other_accessions) > 0:
-            if len(other_accessions) < gc.MAX_ALLOWED_FILES:
-                for acc in other_accessions:
-                    test = yield DownloadFile(ena_acc=acc, prot_dir=self.sequence_dir)
-                    self.acc_data.append(test)
-
-                self.db_entries[self.upid] = self.acc_data
-            # split fasta files in multiple directories
             else:
+                # there is a number of other fasta files to restore
+                if len(files_to_restore['OTHER']) > 0:
+                    accessions = copy.deepcopy(files_to_restore['OTHER'])
+                    # multiple directories
+                    if files_to_restore['MULTI'] is True:
+                        # load accessions from GCA report file and uniprot
+                        subdir_ranges = os.listdir(self.sequence_dir)
 
-                # get ranges for
-                subdir_ranges = gflib.get_genome_subdirectory_ranges(other_accessions)
+                        for accession in accessions:
+                            idx = 0
+                            acc_index = accession[-3:]
+                            i = 0
 
-                # generate subdirs
-                for subdir_index in subdir_ranges:
-                    if not os.path.exists(os.path.join(self.sequence_dir, str(subdir_index))):
-                        os.mkdir(os.path.join(self.sequence_dir, str(subdir_index)))
+                            # find directory index
+                            while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
+                                i += 1
 
-                for accession in other_accessions:
-                    idx = 0
-                    acc_index = accession[-3:]
-                    i = 0
+                            if i < len(subdir_ranges):
+                                idx = subdir_ranges[i]
+                            else:
+                                idx = max_combinations
 
-                    # find directory index
-                    while i < len(subdir_ranges) and subdir_ranges[i] < acc_index:
-                        i += 1
+                            subdir = os.path.join(self.sequence_dir, str(idx))
 
-                    if i < len(subdir_ranges):
-                        idx = subdir_ranges[i]
+                            yield DownloadFile(ena_acc=accession, dest_dir=subdir)
+
                     else:
-                        idx = max_combinations
+                        for accession in accessions:
+                            test = yield DownloadFile(ena_acc=accession, dest_dir=self.sequence_dir)
+                            self.acc_data.append(test)
 
-                    subdir = os.path.join(self.sequence_dir, str(idx))
-
-                    yield DownloadFile(ena_acc=accession, prot_dir=subdir)
-
-        # merge and validate need to check final UPXXXXXXXXX.fa exists
+                        self.db_entries[self.upid] = self.acc_data
 
 # -----------------------------------------------------------------------------
 
@@ -282,6 +331,8 @@ class GenomesDownloadEngine(luigi.Task):
         description="UniProt upid_gca file. Use UniProt REST API by default")
     lsf = luigi.BoolParameter(default=True,
         description="If specified then run on lsf, otherwise run locally")
+    restore = luigi.BoolParameter(default=False,
+        description="If specified, restore any missing fasta files")
 
     proj_dir = ''
 
@@ -356,12 +407,13 @@ class GenomesDownloadEngine(luigi.Task):
             else:
                 cmd = "python \"{this_file}\" DownloadGenome --upid {upid} " \
                       "--gca-acc {gca_acc} --project-dir {proj_dir} " \
-                      "--domain {domain}".format(
+                      "--domain {domain} --restore {restore}".format(
                           this_file=os.path.realpath(__file__),
                           upid=upid,
                           gca_acc=upid_gca_pairs[upid]["GCA"],
                           proj_dir=self.proj_dir,
-                          domain=upid_gca_pairs[upid]["DOM"])
+                          domain=upid_gca_pairs[upid]["DOM"],
+                          restore=self.restore)
 
             subprocess.call(cmd, shell=True)
 

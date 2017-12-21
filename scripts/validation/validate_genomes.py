@@ -73,6 +73,26 @@ def check_compressed_file(filename):
 
     return False
 
+# -----------------------------------------------------------------------------------------------------------
+
+def check_wgs_file_exists(wgs_accession, dest_dir):
+    """
+    Check if a WGS sequence file was copied in the correct location
+
+    param wgs_accession: A valid Whole Genome Shotgun accession
+
+    return: True if the file exists, False otherwise. Defaults to True
+    """
+
+    wgs_prefix = wgs_accession[0:6]
+
+    wgs_file_loc = os.path.join(dest_dir,
+                                wgs_prefix + ".fasta.gz")
+
+    if not os.path.exists(wgs_file_loc):
+        return False
+
+    return True
 
 # -----------------------------------------------------------------------------------------------------------
 
@@ -269,6 +289,7 @@ def validate_genome_download_project(project_dir):
 
                             upid_err_fp.close()
                             json.dump(proteome_accs, upid_restore_fp)
+                            upid_restore_fp.close()
 
                         # case B - multiple subdirectories
                         else:
@@ -311,6 +332,7 @@ def validate_genome_download_project(project_dir):
 
                             upid_err_fp.close()
                             json.dump(proteome_accs, upid_restore_fp)
+                            upid_restore_fp.close()
 
                             if restore is True:
                                 print "%s\tRestore download"
@@ -318,32 +340,40 @@ def validate_genome_download_project(project_dir):
                     # no gca report file found, but check if there is a WGS set available
                     # and if the corresponding fasta file has been copied
                     else:
-                        if proteome_accs["WGS"] != -1:
-                            wgs_prefix = proteome_accs["WGS"][0:6]
-                            wgs_file_loc = os.path.join(seq_dir_loc,
-                                                        wgs_prefix + ".fasta.gz")
+                        # first check if any accessions from Uniprot were downloaded
+                        # no need to check for multidirs in this case
+                        if len(proteome_accs["OTHER"].values()) == 1 and proteome_accs["OTHER"].keys()[0] == "Genome":
+                                seq_file = os.path.join(seq_dir_loc, proteome_accs["OTHER"].values()[0]+'.fa')
+                                # if the file was downloaded
+                                err_messages = check_seq_file(upid, seq_file)
 
-                            if not os.path.exists(wgs_file_loc):
+                                # report errors found and add accession to restoration list
+                                if len(err_messages) != 0:
+                                    for err_message in err_messages:
+                                        upid_err_fp.write(err_message + '\n')
+
+                                    accessions_to_restore["OTHER"].append(accession)
+
+                                json.dump(proteome_accs, upid_restore_fp)
+                                upid_restore_fp.close()
+
+                        elif proteome_accs["WGS"] != -1 and len(accessions_to_restore["OTHER"]) == 0:
+                            if not check_wgs_file_exists(proteome_accs["WGS"], seq_dir_loc):
                                 print "%s\t%s\tWGS file has not been copied" % (upid,
-                                                                                wgs_prefix + ".fasta.gz")
+                                                                                proteome_accs["WGS"][0:6] + ".fasta.gz")
                                 upid_err_fp.write("%s\t%s\tWGS file has not been copied\n" % (upid,
-                                                                                              wgs_prefix + ".fasta.gz"))
+                                                                                              proteome_accs["WGS"][0:6] + ".fasta.gz"))
                                 upid_err_fp.close()
                                 continue
 
                 # check if WGS set has been copied
                 else:
                     if proteome_accs["WGS"] != -1:
-                        # get wgs prefix and the file location
-                        wgs_prefix = proteome_accs["WGS"][0:6]
-                        wgs_file_loc = os.path.join(seq_dir_loc,
-                                                    wgs_prefix + ".fasta.gz")
-
-                        if not os.path.exists(wgs_file_loc):
+                        if not check_wgs_file_exists(proteome_accs["WGS"], seq_dir_loc):
                             print "%s\t%s\tWGS file has not been copied" % (upid,
-                                                                            wgs_prefix + ".fasta.gz")
+                                                                            proteome_accs["WGS"][0:6] + ".fasta.gz")
                             upid_err_fp.write("%s\t%s\tWGS file has not been copied\n" % (upid,
-                                                                                          wgs_prefix + ".fasta.gz"))
+                                                                                          proteome_accs["WGS"][0:6] + ".fasta.gz"))
 
                     # check if uniprot accessions match all the accessions in sequence dir
                     else:

@@ -286,10 +286,10 @@ def validate_genome_download_project(project_dir):
                                         upid_err_fp.write(err_message+'\n')
 
                                     if restore is True:
-                                        proteome_accs["OTHER"].append(accession)
+                                        accessions_to_restore["OTHER"].append(accession)
 
                             upid_err_fp.close()
-                            json.dump(proteome_accs, upid_restore_fp)
+                            json.dump(accessions_to_restore, upid_restore_fp)
                             upid_restore_fp.close()
 
                         # case B - multiple subdirectories
@@ -332,11 +332,11 @@ def validate_genome_download_project(project_dir):
                                         accessions_to_restore["OTHER"].append(accession)
 
                             upid_err_fp.close()
-                            json.dump(proteome_accs, upid_restore_fp)
+                            json.dump(accessions_to_restore, upid_restore_fp)
                             upid_restore_fp.close()
 
                             if restore is True:
-                                print "%s\tRestore download"
+                                print "%s\tRestore download" % upid
 
                     # no gca report file found, but check if there is a WGS set available
                     # and if the corresponding fasta file has been copied
@@ -355,7 +355,7 @@ def validate_genome_download_project(project_dir):
 
                                     accessions_to_restore["OTHER"].append(accession)
 
-                                json.dump(proteome_accs, upid_restore_fp)
+                                json.dump(accessions_to_restore, upid_restore_fp)
                                 upid_restore_fp.close()
 
                         elif proteome_accs["WGS"] != -1 and len(accessions_to_restore["OTHER"]) == 0:

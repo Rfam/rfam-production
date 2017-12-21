@@ -245,6 +245,10 @@ def validate_genome_download_project(project_dir):
 
                 # now look if there is a gca accession
                 if upid_gca_dict[upid]["GCA"] != -1:
+
+                    # default values for restoration procedure
+                    accessions_to_restore = {"WGS": proteome_accs["WGS"], "OTHER": [], "MULTI": 0}
+
                     # get GCA report file path
                     gca_report_file = os.path.join(updir_loc,
                                                    upid_gca_dict[upid]["GCA"] + "_sequence_report.txt")
@@ -264,9 +268,6 @@ def validate_genome_download_project(project_dir):
                         genome_unique_accs = upid_other_accs.union(cleaned_gca_accs)
 
                         upid_restore_fp = open(os.path.join(updir_loc, "restore.json"), 'w')
-
-                        # default values for restoration procedure
-                        accessions_to_restore = {"WGS": proteome_accs["WGS"], "OTHER": [], "MULTI": 0}
 
                         # check fasta files
                         # case A - sequence directory only contains fasta files

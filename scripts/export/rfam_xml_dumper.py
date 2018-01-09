@@ -408,8 +408,9 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     cross_refs["RFAM"] = [region["rfam_acc"]]
     cross_refs["ENA"] = [region["rfamseq_acc"]]
     cross_refs["Uniprot"] = [genome.upid]
+
     if name in rnacentral_ids:
-        cross_refs["RNACENTRAL"] = [rnacentral_ids[name]]
+        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + genome.ncbi_id]
 
     build_cross_references(entry, cross_refs)
 

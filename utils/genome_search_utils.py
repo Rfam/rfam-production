@@ -51,14 +51,23 @@ def split_seq_file(seq_file, size, dest_dir=None):
     seq_file_size = os.path.getsize(seq_file)
 
     # calculate number of files to split seq_file to
-    chunks = math.ceil(seq_file_size / size)
-
-    if dest_dir is not None:
-        os.chdir(dest_dir)
+    chunks_no = math.ceil(seq_file_size / size)
 
     # execute command
     try:
-        cmd = ESL_SSPLIT + " -n -r " + seq_file + " %s" % (str(chunks))
+        cmd = ''
+        filename = os.path.basename(seq_file).partition('.')[0]
+
+        if dest_dir is None:
+            cmd = "%s -n -r %s %s" % (ESL_SSPLIT,
+                                      seq_file,
+                                      str(chunks_no))
+        else:
+            cmd = "%s -n -r -oroot %s -odir %s %s %s" % (ESL_SSPLIT,
+                                                          filename,
+                                                          dest_dir,
+                                                          seq_file,
+                                                          str(chunks_no))
         subprocess.call(cmd, shell=True)
 
     except:

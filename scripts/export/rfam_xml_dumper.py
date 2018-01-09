@@ -406,7 +406,14 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     # create cross references dictionary
     cross_refs["ncbi_taxonomy_id"] = [genome.ncbi_id]
     cross_refs["RFAM"] = [region["rfam_acc"]]
-    cross_refs["ENA"] = [region["rfamseq_acc"]]
+
+    ena_accession = ''
+    if region["rfamseq_acc"].find('.') != -1:
+        ena_accession = region["rfamseq_acc"].partition('.')[0]
+    else:
+        ena_accession = region["rfamseq_acc"]
+
+    cross_refs["ENA"] = [ena_accession]
     cross_refs["Uniprot"] = [genome.upid]
 
     if name in rnacentral_ids:

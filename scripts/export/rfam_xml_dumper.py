@@ -417,7 +417,7 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     cross_refs["Uniprot"] = [genome.upid]
 
     if name in rnacentral_ids:
-        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + genome.ncbi_id]
+        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(genome.ncbi_id)]
 
     build_cross_references(entry, cross_refs)
 

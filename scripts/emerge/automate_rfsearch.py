@@ -73,13 +73,16 @@ def run(args):
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
                      'rfsearch.pl -nodesc -t 30 -cnompi -relax"').format(folder_name)
         print cmd
-        os.system(cmd)
+        if not args.test:
+            os.system(cmd)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--destination', default=os.getcwd(), help='Specify folder where the output will be created')
     parser.add_argument('-i', '--inputfile', default='example.tsv', help='Specify input file with E-Merge data')
+    parser.add_argument('-t', '--test', action='store_true', help='Test mode: print commands and exit')
+    parser.set_defaults(test=False)
     args = parser.parse_args()
 
     if not args.inputfile:

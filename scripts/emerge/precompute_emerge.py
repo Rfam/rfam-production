@@ -46,7 +46,7 @@ def parse_input_file(filename):
                 continue
             yield {
                 'sequence': sequence,
-                'name': row['ncRNA name'].replace(' ', '_').replace("'", ''),
+                'name': row['ncRNA name'].replace(' ', '_').replace("'", '').replace('/', '-'),
                 'row_id': row['No.'],
             }
 
@@ -58,20 +58,24 @@ def run(args):
     * launch rfsearch
     """
     for rna in parse_input_file(args.inputfile):
-        folder_name = os.path.join(args.destination, '%s_%s' % (rna['row_id'], rna['name']))
-        if not os.path.exists(folder_name):
-            os.mkdir(folder_name)
+        folder = '%s_%s' % (rna['row_id'], rna['name'])
+        rna_dir = os.path.join(args.destination, folder)
+        if not os.path.exists(rna_dir):
+            os.mkdir(rna_dir)
         else:
-            outlist = os.path.join(folder_name, 'outlist')
-            if os.path.exists(outlist):
+            overlap = os.path.join(rna_dir, 'overlap')
+            if os.path.exists(overlap):
                 continue
-        os.chdir(folder_name)
+        os.chdir(rna_dir)
         with open('input.fasta', 'w') as fasta:
             fasta.write('>%s\n%s\n' % (rna['name'], rna['sequence']))
         cmd = ('bsub -o {0}/lsf_output.txt -e {0}/lsf_error.txt -g /emerge '
                      '"cd {0} && '
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
-                     'rfsearch.pl -nodesc -t 30 -cnompi -relax"').format(folder_name)
+                     'rfsearch.pl -nodesc -t 30 -cnompi -relax && '
+                     'rfmake.pl -t 50 -a && '
+                     'cd .. && '
+                     'rqc-overlap.pl {1}"').format(rna_dir, folder)
         print cmd
         if not args.test:
             os.system(cmd)

@@ -27,6 +27,7 @@ import gzip
 import shutil
 
 from config import rfam_local as rfl
+
 # ---------------------------------GLOBALS-------------------------------------
 
 ESL_SEQSTAT = rfl.ESL_SEQSTAT
@@ -36,6 +37,7 @@ ESL_SSPLIT = rfl.ESL_SSPLIT
 MB = 1000000
 
 # -----------------------------------------------------------------------------
+
 
 def split_seq_file(seq_file, size, dest_dir=None):
     """
@@ -75,6 +77,7 @@ def split_seq_file(seq_file, size, dest_dir=None):
 
 
 # -----------------------------------------------------------------------------
+
 
 def extract_job_stats(lsf_output_file):
     """
@@ -126,6 +129,7 @@ def extract_job_stats(lsf_output_file):
 
 # -----------------------------------------------------------------------------
 
+
 def get_max_required_memory(lsf_output_dir):
     """
 
@@ -142,6 +146,7 @@ def get_max_required_memory(lsf_output_dir):
 
 
 # -----------------------------------------------------------------------------
+
 
 def extract_project_stats(lsf_output_dir):
     """
@@ -188,6 +193,8 @@ def index_sequence_file(seq_file):
     subprocess.call(cmd, shell=True)
 
 # -----------------------------------------------------------------------------
+
+
 def calculate_genome_size(genome):
     """
     Uses Infernal's esl-seqstat to calculate the size of a genome
@@ -214,17 +221,18 @@ def count_nucleotides_in_fasta(fasta_file):
 
     # some sanity checks
     if os.path.exists(fasta_file):
-
+        fasta_file_dir = os.path.split(fasta_file)[0]
         # decompress fasta file first
         if fasta_file.endswith(".gz"):
             filename = fasta_file.partition('.')[0]
-            with gzip.open(fasta_file, 'r') as fasta_in, open(filename+'.fa', 'w') as fasta_out:
+            with gzip.open(fasta_file, 'r') as fasta_in, open(os.path.join(fasta_file_dir,
+                                                                           filename+'.fa'), 'w') as fasta_out:
                 shutil.copyfileobj(fasta_in, fasta_out)
             fasta_in.close()
             fasta_out.close()
             # delete compressed version
             os.remove(fasta_file)
-            fasta_file = filename+'.fa'
+            fasta_file = os.path.join(fasta_file_dir, filename+'.fa')
 
         # create a process channel and execute the command in cmd_args
         cmd_args = [ESL_SEQSTAT, '--dna', "-c", fasta_file]

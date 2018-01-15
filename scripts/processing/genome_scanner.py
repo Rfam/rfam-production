@@ -33,7 +33,7 @@ CM_NO = 2588  # number of cms in Rfam.cm file
 CPU_NO = 5
 SGROUP_IDX = 65  # subgroup index - Ascii for A
 LSF_GROUP = "/rfam_srch_mpi/%s"
-RFAM_GEN_GROUP = "/rfam_gen"
+RFAM_GEN_GROUP = "/rfam_genomes"
 SUB_DIRS = 26  # max 26 subdirs as the number of the alphabet
 
 # filtered - add this as a command line option
@@ -211,7 +211,7 @@ def genome_scan_from_download_directory(project_dir, upid_file, tool="cmsearch")
     # load upids from file
     upid_fp = open(upid_file, 'r')
     upids = [x.strip() for x in upid_fp]
-    upid_fp. close()
+    upid_fp.close()
 
     for upid in upids:
         # get updir location
@@ -237,7 +237,11 @@ def genome_scan_from_download_directory(project_dir, upid_file, tool="cmsearch")
 
             # For all inputs to be consistent, if the sequence file is small, copy it in the search_chunks directory
             else:
+                # copy file
                 shutil.copyfile(upid_fasta, os.path.join(seq_chunks_dir, upid + '.fa'))
+                # index file
+                cmd = "%s --index %s" % (conf.ESL_SFETCH, os.path.join(seq_chunks_dir, upid + '.fa'))
+                subprocess.call(cmd, shell=True)
 
         # Create a search directory
         search_output_dir = os.path.join(updir, "search_output")
@@ -247,10 +251,10 @@ def genome_scan_from_download_directory(project_dir, upid_file, tool="cmsearch")
             os.chmod(search_output_dir, 0777)
 
         # List all smaller files. Using list comprehension to filter out other contents
-        genome_chunks = os.listdir(seq_chunks_dir)
+        genome_chunks = [x for x in os.listdir(seq_chunks_dir) if not x.endswith('.ssi')]
 
-        # group_idx = 0
         for seq_file in genome_chunks:
+            cmd = ''
             # index all sequence files
             seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
             gsu.index_sequence_file(seq_file_loc)

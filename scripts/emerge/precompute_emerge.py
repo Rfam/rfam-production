@@ -48,7 +48,7 @@ def parse_input_file(filename):
         reader = csv.DictReader(tsv, delimiter='\t')
         for row in reader:
             sequence = row['Sequence (RNA or DNA)'].replace('-', '').upper()
-            sequence = re.sub('\w', '', sequence)
+            sequence = re.sub(r'\s', '', sequence)
             if len(sequence) < 50:
                 continue
             yield {

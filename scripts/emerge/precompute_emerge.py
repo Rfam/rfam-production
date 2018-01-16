@@ -14,7 +14,9 @@ limitations under the License.
 """
 Usage:
 
-python automate_rfsearch.py -i /path/to/emerge_file -d /path/to/output
+1. Make sure that rfsearch, rfmake and other commands are in PATH.
+
+2. python automate_rfsearch.py -i /path/to/emerge_file -d /path/to/output
 
 Analysing result:
 
@@ -24,6 +26,9 @@ find . -type f -name lsf_output.txt | xargs grep 'Success' | wc -l
 
 # count the number of lines above the best reversed hit
 find . -type f -name outlist -exec sh -c 'sed -n "0,/REVERSED/p" {} | wc -l' \; -print
+
+# get overlapping Rfam families
+find . -type f -name overlap | xargs grep -o -P "RF\d{5}" | sort | uniq
 """
 
 

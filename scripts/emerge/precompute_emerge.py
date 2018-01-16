@@ -35,6 +35,7 @@ find . -type f -name overlap | xargs grep -o -P "RF\d{5}" | sort | uniq
 import argparse
 import csv
 import os
+import re
 import sys
 
 
@@ -47,6 +48,7 @@ def parse_input_file(filename):
         reader = csv.DictReader(tsv, delimiter='\t')
         for row in reader:
             sequence = row['Sequence (RNA or DNA)'].replace('-', '').upper()
+            sequence = re.sub('\w', '', sequence)
             if len(sequence) < 50:
                 continue
             yield {

@@ -69,7 +69,8 @@ def run(args):
         os.chdir(rna_dir)
         with open('input.fasta', 'w') as fasta:
             fasta.write('>%s\n%s\n' % (rna['name'], rna['sequence']))
-        cmd = ('bsub -o {0}/lsf_output.txt -e {0}/lsf_error.txt -g /emerge '
+        cmd = ('module load mpi/openmpi-x86_64 && '
+               'bsub -o {0}/lsf_output.txt -e {0}/lsf_error.txt -g /emerge '
                      '"cd {0} && '
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
                      'rfsearch.pl -nodesc -t 30 -cnompi -relax && '

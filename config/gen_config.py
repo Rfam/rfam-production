@@ -72,7 +72,7 @@ PROTEOME_URL = "http://www.uniprot.org/proteomes/%s.rdf"
 # Proteome xml file
 PROTEOME_XML_URL = "http://www.uniprot.org/proteomes/%s.xml"
 
-NCBI_SEQ_URL = ''
+NCBI_SEQ_URL = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=%s&rettype=fasta&retmode=text"'
 
 # Retrieve the genome's xml file
 ENA_XML_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=xml"

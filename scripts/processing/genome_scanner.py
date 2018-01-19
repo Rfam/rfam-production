@@ -33,7 +33,7 @@ CM_NO = 2588  # number of cms in Rfam.cm file
 CPU_NO = 5
 SGROUP_IDX = 65  # subgroup index - Ascii for A
 LSF_GROUP = "/rfam_srch_mpi/%s"
-RFAM_GEN_GROUP = "/rfam_genomes"
+RFAM_SRCH_GROUP = "/rfam_search"
 SUB_DIRS = 26  # max 26 subdirs as the number of the alphabet
 
 # filtered - add this as a command line option
@@ -41,6 +41,8 @@ SUB_DIRS = 26  # max 26 subdirs as the number of the alphabet
 CMD_TEMPLATE_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
                     "-a openmpi mpiexec -mca btl ^openib -np %s "
                     "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
+
+SRCH_CMD = "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s"
 
 """
 # unfiltered
@@ -269,13 +271,13 @@ def genome_scan_from_download_directory(project_dir, upid_file, tool="cmsearch")
 
             if tool == 'cmsearch':
                 cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                          CPU_NO, RFAM_GEN_GROUP,
+                                          CPU_NO, RFAM_SRCH_GROUP,
                                           CPU_NO, conf.CMSEARCH, inf_out_file,
                                           inf_tbl_file, RFAMSEQ_SIZE,
                                           conf.CMFILE, seq_file_loc)
             else:
                 cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                          CPU_NO, RFAM_GEN_GROUP,
+                                          CPU_NO, RFAM_SRCH_GROUP,
                                           CPU_NO, conf.CMSCAN, inf_out_file,
                                           inf_tbl_file, RFAMSEQ_SIZE,
                                           conf.CMFILE, seq_file_loc)
@@ -350,13 +352,13 @@ def single_genome_scan_from_download_directory(project_dir, upid, tool="cmsearch
 
         if tool == 'cmsearch':
             cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                      CPU_NO, RFAM_GEN_GROUP,
+                                      CPU_NO, RFAM_SRCH_GROUP,
                                       CPU_NO, conf.CMSEARCH, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
                                       conf.CMFILE, seq_file_loc)
         else:
             cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                      CPU_NO, RFAM_GEN_GROUP,
+                                      CPU_NO, RFAM_SRCH_GROUP,
                                       CPU_NO, conf.CMSCAN, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
                                       conf.CMFILE, seq_file_loc)
@@ -479,6 +481,11 @@ if __name__ == '__main__':
 
     else:
         project_dir = sys.argv[1]
-        upid_list = sys.argv[2]
+        upid_input = sys.argv[2]
 
-        genome_scan_from_download_directory(project_dir, upid_list, tool="cmsearch")
+        # call this one if it is a file
+        if os.path.isfile(upid_input):
+            genome_scan_from_download_directory(project_dir, upid_input, tool="cmsearch")
+
+        else:
+            single_genome_scan_from_download_directory(project_dir, upid_input, tool="cmsearch")

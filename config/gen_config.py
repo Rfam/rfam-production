@@ -42,6 +42,15 @@ LSF_RFAM_BIN = cfl.BIN_LOC
 GCA_REP_LBL = "Sequence_Report"  # GCA ASSEMPLY REPORT FILE XML LABEL
 GCA_REG_LBL = "Regions"  # GCA ASSEMPLY REGIONS FILE XML LABEL
 
+# Genome Search variables
+SPLIT_SIZE = 5427083
+SRCH_MEM = 36000
+SCAN_MEM = 36000
+RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
+CM_NO = 2588  # number of cms in Rfam.cm file
+CPU_NO = 5
+SRCH_GROUP = "/rfam_search"
+
 # -----------------------------------URLs--------------------------------------
 
 # This returns the list of reference proteomes from Uniprot

@@ -104,7 +104,7 @@ class GenomeSearchUtilsEngine(luigi.Task):
     genome_list = luigi.Parameter(default=None,
                                   description="A list of upids to process")
 
-    utility = luigi.Parameter(default=None,
+    tool = luigi.Parameter(default=None,
                              description="Utility to use to a genome (e.g famerge)")
 
     lsf = luigi.BoolParameter(default=True,
@@ -138,7 +138,7 @@ class GenomeSearchUtilsEngine(luigi.Task):
 
             if os.path.exists(updir):
                 # Merge Genomes
-                if self.method.lower() == 'famerge':
+                if self.tool.lower() == 'faMerge':
                     if self.lsf is True:
                         cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
                               "-g %s python %s MergeGenomeFasta --updir %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
@@ -151,7 +151,7 @@ class GenomeSearchUtilsEngine(luigi.Task):
                             this_file=os.path.realpath(__file__),
                             updir=updir)
 
-                elif self.method.lower() == 'fasplit':
+                elif self.tool.lower() == 'faSplit':
                     if self.lsf is True:
                         cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
                               "-g %s python %s SplitGenomeFasta --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,

@@ -52,7 +52,7 @@ class SplitGenomeFasta(luigi.Task):
             os.chmod(seq_chunks_dir, 0777)
 
             # check if we need to split the seq_file
-            if gsu.count_nucleotides_in_fasta(upid_fasta) >= gs.SPLIT_SIZE:
+            if gsu.count_nucleotides_in_fasta(upid_fasta) >= gc.SPLIT_SIZE:
                 # split sequence file into smalled chunks
                 gsu.split_seq_file(upid_fasta, gc.SPLIT_SIZE, dest_dir=seq_chunks_dir)
 

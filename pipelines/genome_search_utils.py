@@ -144,7 +144,7 @@ class GenomeSearchUtilsEngine(luigi.Task):
                               "-g %s python %s MergeGenomeFasta --updir %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
                                                                           os.path.join(updir, "merge.out"),
                                                                           os.path.join(updir, "merge.err"),
-                                                                          gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+                                                                          gc.USER_EMAIL, gs.SRCH_GROUP,
                                                                           os.path.realpath(__file__), updir)
                     else:
                         cmd = "python \"{this_file}\" MergeGenomeFasta --updir {upid}".format(
@@ -157,7 +157,7 @@ class GenomeSearchUtilsEngine(luigi.Task):
                               "-g %s python %s SplitGenomeFasta --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
                                                                       os.path.join(updir, "split.out"),
                                                                       os.path.join(updir, "split.err"),
-                                                                      gc.USER_EMAIL, gc.LSF_GEN_GROUP,
+                                                                      gc.USER_EMAIL, gc.SRCH_GROUP,
                                                                       os.path.realpath(__file__), updir, upid)
 
                     else:

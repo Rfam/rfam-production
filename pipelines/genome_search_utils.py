@@ -155,8 +155,8 @@ class GenomeSearchUtilsEngine(luigi.Task):
                     if self.lsf is True:
                         cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
                               "-g %s python %s SplitGenomeFasta --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
-                                                                      os.path.join(updir, "merge.out"),
-                                                                      os.path.join(updir, "merge.err"),
+                                                                      os.path.join(updir, "split.out"),
+                                                                      os.path.join(updir, "split.err"),
                                                                       gc.USER_EMAIL, gc.LSF_GEN_GROUP,
                                                                       os.path.realpath(__file__), updir, upid)
 

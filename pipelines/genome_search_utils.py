@@ -56,6 +56,13 @@ class SplitGenomeFasta(luigi.Task):
                 # split sequence file into smalled chunks
                 gsu.split_seq_file(upid_fasta, gc.SPLIT_SIZE, dest_dir=seq_chunks_dir)
 
+                # now index the fasta files
+                seq_files = os.listdir(seq_chunks_dir)
+                for seq_file in seq_files:
+                    seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
+                    cmd = "%s --index %s" % (conf.ESL_SFETCH, seq_file_loc)
+                    subprocess.call(cmd, shell=True)
+                    
             # for input consistency if the sequence file is small, copy it in the
             # search_chunks directory
             else:

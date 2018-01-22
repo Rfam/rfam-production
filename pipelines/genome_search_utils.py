@@ -138,20 +138,20 @@ class GenomeSearchUtilsEngine(luigi.Task):
 
             if os.path.exists(updir):
                 # Merge Genomes
-                if self.tool.lower() == 'faMerge':
+                if self.tool.lower() == 'famerge':
                     if self.lsf is True:
                         cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
                               "-g %s python %s MergeGenomeFasta --updir %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
                                                                           os.path.join(updir, "merge.out"),
                                                                           os.path.join(updir, "merge.err"),
-                                                                          gc.USER_EMAIL, gs.SRCH_GROUP,
+                                                                          gc.USER_EMAIL, gc.SRCH_GROUP,
                                                                           os.path.realpath(__file__), updir)
                     else:
                         cmd = "python \"{this_file}\" MergeGenomeFasta --updir {upid}".format(
                             this_file=os.path.realpath(__file__),
                             updir=updir)
 
-                elif self.tool.lower() == 'faSplit':
+                elif self.tool.lower() == 'fasplit':
                     if self.lsf is True:
                         cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
                               "-g %s python %s SplitGenomeFasta --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,

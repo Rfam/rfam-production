@@ -35,14 +35,20 @@ SGROUP_IDX = 65  # subgroup index - Ascii for A
 LSF_GROUP = "/rfam_srch_mpi/%s"
 RFAM_SRCH_GROUP = "/rfam_search"
 SUB_DIRS = 26  # max 26 subdirs as the number of the alphabet
+MAX_JOBS = 50
 
 # filtered - add this as a command line option
 
-CMD_TEMPLATE_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
-                    "-a openmpi mpiexec -mca btl ^openib -np %s "
-                    "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
+CREATE_SUBGROUP = "bgadd -L %s %s"
 
-SRCH_CMD = "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s"
+SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+              "-a openmpi mpiexec -mca btl ^openib -np %s "
+              "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
+
+GROUP_AND_SRCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+                      "-Ep bgdel %s "
+                      "-a openmpi mpiexec -mca btl ^openib -np %s "
+                      "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 
 """
 # unfiltered
@@ -64,27 +70,8 @@ def calculate_required_memory():
 
     return memory
 
-
 # -------------------------------------------------------------------------
 
-def gather_genome_search_results(input_dir, dest_dir=None):
-    """
-    Gather and merge results from input_dir perhaps a recursive function to
-    loop over all subdirs eg copytree etc look into available python
-    libraries
-    input_dir:
-    dest_dir:
-    return:
-    """
-
-    memory = 0
-
-    # to be implemented
-
-    return memory
-
-
-# -------------------------------------------------------------------------
 
 def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch"):
     """
@@ -160,13 +147,13 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch"):
                 inf_out_file = os.path.join(gen_output_dir, chunk_name + ".inf")
 
                 if tool == 'cmsearch':
-                    cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+                    cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                               CPU_NO, LSF_GROUP % (chr(SGROUP_IDX + group_idx)),
                                               CPU_NO, conf.CMSEARCH, inf_out_file,
                                               inf_tbl_file, RFAMSEQ_SIZE,
                                               conf.CMFILE, chunk_loc)
                 else:
-                    cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+                    cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                               CPU_NO, LSF_GROUP % (chr(SGROUP_IDX + group_idx)),
                                               CPU_NO, conf.CMSCAN, inf_out_file,
                                               inf_tbl_file, RFAMSEQ_SIZE,
@@ -183,7 +170,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch"):
             inf_tbl_file = os.path.join(gen_output_dir, filename + ".tbl")
             inf_out_file = os.path.join(gen_output_dir, filename + ".inf")
 
-            cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+            cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                       CPU_NO, LSF_GROUP % (chr(SGROUP_IDX + out_idx)),
                                       CPU_NO, conf.CMSEARCH, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
@@ -270,13 +257,13 @@ def genome_scan_from_download_directory(project_dir, upid_file, tool="cmsearch")
             inf_out_file = os.path.join(search_output_dir, chunk_name + ".inf")
 
             if tool == 'cmsearch':
-                cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+                cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                           CPU_NO, RFAM_SRCH_GROUP,
                                           CPU_NO, conf.CMSEARCH, inf_out_file,
                                           inf_tbl_file, RFAMSEQ_SIZE,
                                           conf.CMFILE, seq_file_loc)
             else:
-                cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+                cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                           CPU_NO, RFAM_SRCH_GROUP,
                                           CPU_NO, conf.CMSCAN, inf_out_file,
                                           inf_tbl_file, RFAMSEQ_SIZE,
@@ -319,6 +306,13 @@ def single_genome_scan_from_download_directory(project_dir, upid, tool="cmsearch
             # split sequence file into smalled chunks and store under destination directory
             gsu.split_seq_file(upid_fasta, SPLIT_SIZE, dest_dir=seq_chunks_dir)
 
+            # now index the fasta files
+            seq_files = os.listdir(seq_chunks_dir)
+            for seq_file in seq_files:
+                seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
+                cmd = "%s --index %s" % (conf.ESL_SFETCH, seq_file_loc)
+                subprocess.call(cmd, shell=True)
+
         # For all inputs to be consistent, if the sequence file is small,
         # copy it in the search_chunks directory
         else:
@@ -338,32 +332,61 @@ def single_genome_scan_from_download_directory(project_dir, upid, tool="cmsearch
     # List all smaller files. Using list comprehension to filter out other contents
     genome_chunks = [x for x in os.listdir(seq_chunks_dir) if not x.endswith('.ssi')]
 
-    for seq_file in genome_chunks:
-        cmd = ''
-        # index all sequence files
-        seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
-        gsu.index_sequence_file(seq_file_loc)
+    # check and set search method selected
 
-        chunk_name = seq_file
-        lsf_out_file = os.path.join(search_output_dir, chunk_name + ".out")
-        lsf_err_file = os.path.join(search_output_dir, chunk_name + ".err")
-        inf_tbl_file = os.path.join(search_output_dir, chunk_name + ".tbl")
-        inf_out_file = os.path.join(search_output_dir, chunk_name + ".inf")
+    search_method = None
+    if tool == 'cmsearch':
+        search_method = conf.CMSEARCH
+    else:
+        search_method = conf.CMSCAN
 
-        if tool == 'cmsearch':
-            cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                      CPU_NO, RFAM_SRCH_GROUP,
-                                      CPU_NO, conf.CMSEARCH, inf_out_file,
+    # if the number of files is large, create a subgroup
+    if len(genome_chunks) > MAX_JOBS:
+        subgroup_cmd = CREATE_SUBGROUP % RFAM_SRCH_GROUP + "/"
+        subprocess.call(subgroup_cmd, shell=True)
+
+        for seq_file in genome_chunks:
+            cmd = ''
+            # index all sequence files
+            seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
+            gsu.index_sequence_file(seq_file_loc)
+
+            chunk_name = seq_file
+            lsf_out_file = os.path.join(search_output_dir, chunk_name + ".out")
+            lsf_err_file = os.path.join(search_output_dir, chunk_name + ".err")
+            inf_tbl_file = os.path.join(search_output_dir, chunk_name + ".tbl")
+            inf_out_file = os.path.join(search_output_dir, chunk_name + ".inf")
+
+            cmd = GROUP_AND_SRCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+                                      CPU_NO, RFAM_SRCH_GROUP, MAX_JOBS, RFAM_SRCH_GROUP + '/' + upid,
+                                      CPU_NO, search_method, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
                                       conf.CMFILE, seq_file_loc)
-        else:
-            cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
+
+            subprocess.call(cmd, shell=True)
+
+    else:
+
+        for seq_file in genome_chunks:
+            cmd = ''
+            # index all sequence files
+            seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
+            gsu.index_sequence_file(seq_file_loc)
+
+            chunk_name = seq_file
+            lsf_out_file = os.path.join(search_output_dir, chunk_name + ".out")
+            lsf_err_file = os.path.join(search_output_dir, chunk_name + ".err")
+            inf_tbl_file = os.path.join(search_output_dir, chunk_name + ".tbl")
+            inf_out_file = os.path.join(search_output_dir, chunk_name + ".inf")
+
+            cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
                                       CPU_NO, RFAM_SRCH_GROUP,
-                                      CPU_NO, conf.CMSCAN, inf_out_file,
+                                      CPU_NO, search_method, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
                                       conf.CMFILE, seq_file_loc)
 
-        subprocess.call(cmd, shell=True)
+
+            subprocess.call(cmd, shell=True)
 
 # ------------------------------------------------------------------------------------------------
 
@@ -445,7 +468,7 @@ def restore_jobs_with_multi_cms(cm_dir, input_dir, output_dir):
 
         lsf_subgroup = out_file.split('/')[-3]
 
-        cmd = CMD_TEMPLATE_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file,
+        cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file,
                                   lsf_err_file, CPU_NO,
                                   LSF_GROUP % lsf_subgroup,
                                   CPU_NO, conf.CMSEARCH,

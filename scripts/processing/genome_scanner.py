@@ -511,12 +511,12 @@ if __name__ == '__main__':
             upid_fp.close()
 
             for upid in upids:
-                suffix = upid[-3]
+                suffix = upid[-3:]
                 updir = os.path.join(os.path.join(project_dir, suffix), upid)
                 single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
         # single upid
         else:
             upid = upid_input
-            suffix = upid_input[-3]
+            suffix = upid_input[-3:]
             updir = os.path.join(os.path.join(project_dir, suffix), upid)
             single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")

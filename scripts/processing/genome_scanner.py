@@ -503,9 +503,20 @@ if __name__ == '__main__':
         project_dir = sys.argv[1]
         upid_input = sys.argv[2]
 
-        # call this one if it is a file
+        # a file that contains a list of upids
         if os.path.isfile(upid_input):
-            genome_scan_from_download_directory(project_dir, upid_input, tool="cmsearch")
 
+            upid_fp = open(upid_input, 'r')
+            upids = [x.strip() for x in upid_fp]
+            upid_fp.close()
+
+            for upid in upids:
+                suffix = upid[-3]
+                updir = os.path.join(os.path.join(project_dir, suffix), upid)
+                single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
+        # single upid
         else:
-            single_genome_scan_from_download_directory(project_dir, upid_input, tool="cmsearch")
+            upid = upid_input
+            suffix = upid_input[-3]
+            updir = os.path.join(os.path.join(project_dir, suffix), upid)
+            single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")

@@ -344,9 +344,7 @@ def single_genome_scan_from_download_directory(updir, upid, tool="cmsearch"):
 
         for seq_file in genome_chunks:
             cmd = ''
-            # index all sequence files
             seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
-            gsu.index_sequence_file(seq_file_loc)
 
             chunk_name = seq_file
             lsf_out_file = os.path.join(search_output_dir, chunk_name + ".out")
@@ -368,7 +366,6 @@ def single_genome_scan_from_download_directory(updir, upid, tool="cmsearch"):
             cmd = ''
             # index all sequence files
             seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
-            gsu.index_sequence_file(seq_file_loc)
 
             chunk_name = seq_file
             lsf_out_file = os.path.join(search_output_dir, chunk_name + ".out")

@@ -25,6 +25,7 @@ import subprocess
 import logging
 import gzip
 import shutil
+import re
 
 from config import rfam_local as rfl
 
@@ -342,6 +343,48 @@ def calculate_seqdb_size(project_dir, mb=True):
 
 # -----------------------------------------------------------------------------
 
+
+def cleanup_illegal_lines_from_fasta(fasta_file, dest_dir=None):
+    """
+    The purpose of this function is to cleanup any illegal lines
+    from merged genome fasta files. Looks for any illegal characters
+    in a sequence line and skips those while re-writting the fasta file.
+    Prints any illegal lines found
+
+    fasta_file: The path to a fasta file
+    dest_dir: The path to a directory where the new fasta will
+    be created
+
+    return: Void
+    """
+    regex = re.compile("[^ATKMBVCNSWD-GUYRHatkbbvcnswdguyrh]")
+
+    filename = os.path.basename(fasta_file).partition('.')[0]
+
+    if dest_dir is None:
+        dest_dir = os.path.split(fasta_file)[0]
+
+    if not os.path.exists(dest_dir):
+        os.mkdir(dest_dir)
+
+    old_fasta = open(fasta_file, 'r')
+    new_fasta = open(os.path.join(dest_dir, filename+'_cleaned.fa'), 'w')
+
+    for line in old_fasta:
+        line = line.strip()
+        if len(line) > 0:
+            if line[0] != '>':
+                # if illegal chars in sequence, continue with next line
+                if regex.search(line):
+                    print line
+                    continue
+
+            new_fasta.write(line + '\n')
+
+    new_fasta.close()
+    old_fasta.close()
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 

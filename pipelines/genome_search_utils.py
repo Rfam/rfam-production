@@ -62,7 +62,7 @@ class SplitGenomeFasta(luigi.Task):
                     seq_file_loc = os.path.join(seq_chunks_dir, seq_file)
                     cmd = "%s --index %s" % (conf.ESL_SFETCH, seq_file_loc)
                     subprocess.call(cmd, shell=True)
-                    
+
             # for input consistency if the sequence file is small, copy it in the
             # search_chunks directory
             else:
@@ -98,6 +98,31 @@ class MergeGenomeFasta(luigi.Task):
 
         return luigi.LocalTarget(genome_fasta)
 
+# -----------------------------------------------------------------------------
+
+
+class RewriteCleanFasta(luigi.Task):
+    """
+    Task to merge genome fasta files
+    """
+    updir = luigi.Parameter()
+    upid = luigi.Parameter()
+
+    def run(self):
+        """
+        Merge all fasta files in updir
+        """
+        up_fasta = os.path.join(self.updir, self.upid)
+        gsu.cleanup_illegal_lines_from_fasta(up_fasta, dest_dir=self.updir)
+
+    def output(self):
+        """
+        Check that a clean fasta file has been generated
+        """
+        upid = os.path.split(self.updir)[1]
+        clean_fasta = os.path.join(self.updir, upid + '_cleaned.fa')
+
+        return luigi.LocalTarget(clean_fasta)
 
 # -----------------------------------------------------------------------------
 
@@ -173,6 +198,24 @@ class GenomeSearchUtilsEngine(luigi.Task):
                             updir=updir,
                             upid=upid)
 
+                elif self.tool.lower() == 'faclean':
+                    if self.lsf is True:
+                        cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
+                              "-g %s python %s RewriteCleanFasta --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
+                                                                                         os.path.join(updir,
+                                                                                                      "clean.out"),
+                                                                                         os.path.join(updir,
+                                                                                                      "clean.err"),
+                                                                                         gc.USER_EMAIL, gc.SRCH_GROUP,
+                                                                                         os.path.realpath(__file__),
+                                                                                         updir, upid)
+
+                    else:
+                        cmd = "python \"{this_file}\" RewriteCleanFasta --updir {upid} --upid {upid}".format(
+                            this_file=os.path.realpath(__file__),
+                            updir=updir,
+                            upid=upid)
+                        
             subprocess.call(cmd, shell=True)
 
             cmd = ''

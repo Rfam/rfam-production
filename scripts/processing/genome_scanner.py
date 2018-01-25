@@ -28,8 +28,9 @@ from utils import genome_search_utils as gsu
 SPLIT_SIZE = 5427083
 SRCH_MEM = 36000
 SCAN_MEM = 36000
-RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
-CM_NO = 2588  # number of cms in Rfam.cm file
+#RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
+RFAMSEQ_SIZE = 192861.501048 # this doesn't look ok..
+CM_NO = 2750  # number of cms in Rfam.cm file
 CPU_NO = 5
 SGROUP_IDX = 65  # subgroup index - Ascii for A
 LSF_GROUP = "/rfam_srch_mpi/%s"

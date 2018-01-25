@@ -44,18 +44,29 @@ def parse_input_file(filename):
     Read input data and standardise sequences and names.
     Example input is provided in `example.tsv`.
     """
+    skipped = {
+        'length': 0,
+        'in_rfam': 0,
+    }
+    MIN_LENGTH = 50
     with open(filename, 'r') as tsv:
         reader = csv.DictReader(tsv, delimiter='\t')
         for row in reader:
             sequence = row['Sequence (RNA or DNA)'].replace('-', '').upper()
             sequence = re.sub(r'\s', '', sequence)
-            if len(sequence) < 50:
+            if len(sequence) < MIN_LENGTH:
+                skipped['length'] += 1
+                continue
+            if row['In Rfam? http://rfam.xfam.org/search'].startswith('RF0'):
+                skipped['in_rfam'] += 1
                 continue
             yield {
                 'sequence': sequence,
                 'name': row['ncRNA name'].replace(' ', '_').replace("'", '').replace('/', '-'),
                 'row_id': row['No.'],
             }
+        print 'Skipped %i sequences shorter than %i nucleotides' % (skipped['length'], MIN_LENGTH)
+        print 'Skipped %i sequences already in Rfam' % (skipped['in_rfam'])
 
 def run(args):
     """

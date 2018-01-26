@@ -24,6 +24,7 @@ import string
 import urllib
 import urllib2
 import shutil
+import copy
 import xml.etree.ElementTree as ET
 
 import requests
@@ -269,7 +270,7 @@ def fetch_genome_acc(prot):
 
 # -----------------------------------------------------------------------------
 
-def fetch_ena_file(acc, file_format,dest_dir, compressed=True):
+def fetch_ena_file(acc, file_format, dest_dir, compressed=True):
     """
     Retrieves a file given a valid ENA accession and stores it in the
     indicated destination in the selected format
@@ -295,7 +296,10 @@ def fetch_ena_file(acc, file_format,dest_dir, compressed=True):
             seq_url = ENA_DATA_URL % (acc, file_format)
             file_path = os.path.join(dest_dir, acc + FORMATS[file_format])
 
-    urllib.urlretrieve(seq_url, file_path)
+    # check url is available
+    response = requests.get(seq_url)
+    if response.status_code == 200:
+        urllib.urlretrieve(seq_url, file_path)
 
     if os.path.exists(file_path):
         return True
@@ -1183,7 +1187,7 @@ def proteome_xml_accessions_to_dict(upid):
                     accession = accession.text
                     other[name] = accession
 
-        proteome_accs["OTHER"] = other
+        proteome_accs["OTHER"] = copy.deepcopy(other)
 
     return proteome_accs
 
@@ -1292,7 +1296,6 @@ def get_genome_unique_accessions(upid, to_file=False, output_dir=None):
         fp_out = open(os.path.join(output_dir, upid+"_accessions.json"), 'w')
         json.dump(proteome_acc_dict, fp_out)
         fp_out.close()
-
 
     return complete_genome_accs
 

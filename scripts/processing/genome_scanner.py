@@ -340,7 +340,8 @@ def single_genome_scan_from_download_directory(updir, upid, tool="cmsearch"):
 
     # if the number of files is large, create a subgroup
     if len(genome_chunks) > MAX_JOBS:
-        subgroup_cmd = CREATE_SUBGROUP % RFAM_SRCH_GROUP + "/"
+        genome_group = RFAM_SRCH_GROUP + '/' + upid
+        subgroup_cmd = CREATE_SUBGROUP % (str(MAX_JOBS), genome_group)
         subprocess.call(subgroup_cmd, shell=True)
 
         for seq_file in genome_chunks:
@@ -354,7 +355,7 @@ def single_genome_scan_from_download_directory(updir, upid, tool="cmsearch"):
             inf_out_file = os.path.join(search_output_dir, chunk_name + ".inf")
 
             cmd = GROUP_AND_SRCH_MPI % (SRCH_MEM, SRCH_MEM, lsf_out_file, lsf_err_file,
-                                      CPU_NO, RFAM_SRCH_GROUP, MAX_JOBS, RFAM_SRCH_GROUP + '/' + upid,
+                                      CPU_NO, genome_group, genome_group,
                                       CPU_NO, search_method, inf_out_file,
                                       inf_tbl_file, RFAMSEQ_SIZE,
                                       conf.CMFILE, seq_file_loc)

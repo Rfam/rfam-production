@@ -28,7 +28,7 @@ def calculate_genome_size(genome_source):
     number of nucleotides in the file, or if genome_fasta is a directory, return a dictionary
     of genome_ids: size pairs
 
-    genome_fasta: A valid sequence file in fasta format or a directory of fasta files
+    genome_source: A valid sequence file in fasta format or a directory of fasta files
 
     return: A dictionary or the an integer number which is the total number of nucleotides
     found in the sequence file that is provided as input

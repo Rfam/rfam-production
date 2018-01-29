@@ -62,7 +62,7 @@ def parse_input_file(filename):
                 continue
             yield {
                 'sequence': sequence,
-                'name': row['ncRNA name'].replace(' ', '_').replace("'", '').replace('/', '-'),
+                'name': row['ncRNA name'].replace(' ', '_').replace("'", '').replace('/', '-').replace('(', '-').replace(')', '-'),
                 'row_id': row['No.'],
             }
         print 'Skipped %i sequences shorter than %i nucleotides' % (skipped['length'], MIN_LENGTH)

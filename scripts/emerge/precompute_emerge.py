@@ -24,6 +24,9 @@ Analysing result:
 ls | wc -l
 find . -type f -name lsf_output.txt | xargs grep 'Success' | wc -l
 
+# find all directories without the outlist file
+find . -maxdepth 1 -mindepth 1 -type d | while read dir; do [[ ! -f $dir/outlist ]] && echo "$dir has no outlist"; done
+
 # count the number of lines above the best reversed hit
 find . -type f -name outlist -exec sh -c 'sed -n "0,/REVERSED/p" {} | wc -l' \; -print
 

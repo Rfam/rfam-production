@@ -90,6 +90,7 @@ def run(args):
         cmd = ('module load mpi/openmpi-x86_64 && '
                'bsub -o {0}/lsf_output.txt -e {0}/lsf_error.txt -g /emerge '
                      '"cd {0} && '
+                     'rm -f DESC && '
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
                      'rfsearch.pl -nodesc -t 30 -cnompi -relax && '
                      'rfmake.pl -t 50 -a -forcethr && '

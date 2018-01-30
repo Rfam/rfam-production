@@ -43,10 +43,10 @@ MAX_JOBS = 50
 CREATE_SUBGROUP = "bgadd -L %s %s"
 
 SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
-              "-f %s < %s "
-              "-f %s < %s "
-              "-f %s < %s "
-              "-f %s < %s "
+              "\"-f %s < %s\" "
+              "\"-f %s < %s\" "
+              "\"-f %s < %s\" "
+              "\"-f %s < %s\" "
               "-a openmpi mpiexec -mca btl ^openib -np %s "
               "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 

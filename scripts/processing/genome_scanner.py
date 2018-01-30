@@ -43,10 +43,11 @@ MAX_JOBS = 50
 CREATE_SUBGROUP = "bgadd -L %s %s"
 
 SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
-              "\"-f %s < %s\" "
-              "\"-f %s < %s\" "
-              "\"-f %s < %s\" "
-              "\"-f %s < %s\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-Ep \"rm /tmp/%s.*\" "
               "-a openmpi mpiexec -mca btl ^openib -np %s "
               "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 
@@ -366,7 +367,7 @@ def single_genome_scan_from_download_directory(updir, upid, tool="cmsearch"):
                             lsf_out_file, tmp_out_file,
                             lsf_err_file, tmp_err_file,
                             inf_tbl_file, tmp_tbl_file,
-                            inf_out_file, tmp_inf_file,
+                            inf_out_file, tmp_inf_file, chunk_name,
                             CPU_NO, search_method, tmp_inf_file,
                             tmp_tbl_file, RFAMSEQ_SIZE,
                             conf.CMFILE, seq_file_loc)
@@ -502,6 +503,7 @@ if __name__ == '__main__':
                 suffix = upid[-3:]
                 updir = os.path.join(os.path.join(project_dir, suffix), upid)
                 single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
+
         # single upid
         else:
             upid = upid_input

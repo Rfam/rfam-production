@@ -108,7 +108,7 @@ def main(project_dir, upid_list, upid_gca_tax_file):
                     else:
                         source = "UNIPROT; ENA"
             else:
-                print "%s not in the current Uniprot release"%upid
+                print "%s not found in the dictionary" % upid
                 continue
 
             generate_rfamseq_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],

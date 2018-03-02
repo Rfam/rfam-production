@@ -97,6 +97,7 @@ def run(args):
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
                      'rfsearch.pl -nodesc -t 30 -cnompi -relax && '
                      'rfmake.pl -t 50 -a -forcethr && '
+                     'mkdir rscape && R-scape --outdir rscape --cyk align && '
                      'cd .. && '
                      'rqc-overlap.pl {1}"').format(rna_dir, folder)
         print cmd

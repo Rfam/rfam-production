@@ -24,6 +24,9 @@ Analysing result:
 ls | wc -l
 find . -type f -name lsf_output.txt | xargs grep 'Success' | wc -l
 
+# find jobs that didn't finish successfully
+find . -type f -name lsf_output.txt | xargs grep -L 'Success'
+
 # find all directories without the outlist file
 find . -maxdepth 1 -mindepth 1 -type d | while read dir; do [[ ! -f $dir/outlist ]] && echo "$dir has no outlist"; done
 
@@ -55,7 +58,7 @@ def parse_input_file(filename):
     with open(filename, 'r') as tsv:
         reader = csv.DictReader(tsv, delimiter='\t')
         for row in reader:
-            sequence = row['Sequence (RNA or DNA)'].replace('-', '').upper()
+            sequence = row['Sequence (RNA or DNA)'].replace('-', '').replace('.','').upper()
             sequence = re.sub(r'\s', '', sequence)
             if len(sequence) < MIN_LENGTH:
                 skipped['length'] += 1

@@ -486,7 +486,8 @@ def coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=None,
     """
 
     # list all covariance models and sequence files
-    cms = os.listdir(cm_dir)
+    cms = [x for x in os.listdir(cm_dir)
+           if x.endswith('.CM') or x.endswith('.cm')]
     seq_files = os.listdir(sequence_dir)
 
     # create the destination directory if necessary

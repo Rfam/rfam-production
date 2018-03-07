@@ -563,6 +563,14 @@ if __name__ == '__main__':
 
         restore_jobs_with_multi_cms(cm_dir, input_dir, dest_dir)
 
+    elif '--multi':
+        cm_dir = sys.argv[1]
+        sequence_dir = sys.argv[2]
+        dest_dir = sys.argv[3]
+
+        coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch",
+                             seqdb_size=None, dest_dir=dest_dir)
+
     else:
         project_dir = sys.argv[1]
         upid_input = sys.argv[2]

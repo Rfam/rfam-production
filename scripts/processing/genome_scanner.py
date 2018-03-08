@@ -563,7 +563,7 @@ if __name__ == '__main__':
 
         restore_jobs_with_multi_cms(cm_dir, input_dir, dest_dir)
 
-    elif '--multi':
+    elif '--multi' in sys.argv:
         cm_dir = sys.argv[1]
         sequence_dir = sys.argv[2]
         dest_dir = sys.argv[3]
@@ -571,7 +571,7 @@ if __name__ == '__main__':
         multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch",
                              seqdb_size=None, dest_dir=dest_dir)
 
-    else:
+    elif '--project' in sys.argv:
         project_dir = sys.argv[1]
         upid_input = sys.argv[2]
 
@@ -593,3 +593,9 @@ if __name__ == '__main__':
             suffix = upid_input[-3:]
             updir = os.path.join(os.path.join(project_dir, suffix), upid)
             single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
+
+    else:
+        print "Wring Input"
+        # need to implement the a help function
+
+

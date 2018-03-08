@@ -488,7 +488,8 @@ def multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=Non
     # list all covariance models and sequence files
     cms = [x for x in os.listdir(cm_dir)
            if x.endswith('.CM') or x.endswith('.cm')]
-    seq_files = os.listdir(sequence_dir)
+    seq_files = [x for x in os.listdir(sequence_dir)
+                 if not x.endswith('.ssi')]
 
     # create the destination directory if necessary
     if dest_dir is not None:
@@ -595,6 +596,6 @@ if __name__ == '__main__':
             single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
 
     else:
-        print "Wring Input"
+        print "Wrong Input"
         # need to implement the a help function
 

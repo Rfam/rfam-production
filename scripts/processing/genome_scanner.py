@@ -469,8 +469,83 @@ def restore_jobs_with_multi_cms(cm_dir, input_dir, output_dir):
         inf_tbl_file = ''
         inf_out_file = ''
 
+
 # -------------------------------------------------------------------------
 
+
+def coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=None, dest_dir=None):
+    """
+    This function treats each covariance model individually and launches
+    a job for each sequence file found in sequence_dir.
+
+    cm_dir: A directory with all CM models to scan
+    sequence_dir: A directory with fasta sequence files to scan
+    dest_dir: The path to the destination directory
+
+    return: void
+    """
+
+    # list all covariance models and sequence files
+    cms = [x for x in os.listdir(cm_dir)
+           if x.endswith('.CM') or x.endswith('.cm')]
+    seq_files = os.listdir(sequence_dir)
+
+    # create the destination directory if necessary
+    if dest_dir is not None:
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
+
+    # sequence db size is None set to Rfamseq size
+    if seqdb_size is None:
+        seqdb_size = RFAMSEQ_SIZE
+
+    search_method = ''
+    if tool == 'cmsearch':
+        search_method = conf.CMSEARCH
+    else:
+        search_method = conf.CMSCAN
+
+    # now launch the searches
+    for cm in cms:
+        # create an individual result directory per model
+        rfam_acc = cm.partition('.')[0]
+        family_dir = os.path.join(dest_dir, rfam_acc)
+
+        cm_path = os.path.join(cm_dir, cm)
+
+        if not os.path.exists(family_dir):
+            os.mkdir(family_dir)
+
+        for seq_file in seq_files:
+            seq_file_path = os.path.join(sequence_dir, seq_file)
+
+            filename = ''
+            if seq_file.find(".") != -1:
+                filename = seq_file.partition('.')[0]
+
+            lsf_out_file = os.path.join(family_dir, filename + ".out")
+            lsf_err_file = os.path.join(family_dir, filename + ".err")
+            inf_tbl_file = os.path.join(family_dir, filename + ".tbl")
+            inf_out_file = os.path.join(family_dir, filename + ".inf")
+
+            tmp_out_file = os.path.join("/tmp", filename + ".out")
+            tmp_err_file = os.path.join("/tmp", filename + ".err")
+            tmp_tbl_file = os.path.join("/tmp", filename + ".tbl")
+            tmp_inf_file = os.path.join("/tmp", filename + ".inf")
+
+            cmd = SEARCH_MPI % (SRCH_MEM, SRCH_MEM, tmp_out_file, tmp_err_file,
+                                CPU_NO, RFAM_SRCH_GROUP,
+                                lsf_out_file, tmp_out_file,
+                                lsf_err_file, tmp_err_file,
+                                inf_tbl_file, tmp_tbl_file,
+                                inf_out_file, tmp_inf_file, filename,
+                                CPU_NO, search_method, tmp_inf_file,
+                                tmp_tbl_file, seqdb_size,
+                                cm_path, seq_file_path)
+
+            subprocess.call(cmd, shell=True)
+
+# -------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
@@ -487,6 +562,14 @@ if __name__ == '__main__':
         dest_dir = sys.argv[3]
 
         restore_jobs_with_multi_cms(cm_dir, input_dir, dest_dir)
+
+    elif '--multi':
+        cm_dir = sys.argv[1]
+        sequence_dir = sys.argv[2]
+        dest_dir = sys.argv[3]
+
+        coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch",
+                             seqdb_size=None, dest_dir=dest_dir)
 
     else:
         project_dir = sys.argv[1]

@@ -771,6 +771,9 @@ def dump_uniprot_genome_metadata(upid, kingdom):
         fields["num_rfam_regions"] = None
         fields["num_families"] = None
 
+        fields["is_reference"] = proteome_dict["is_reference"]
+        fields["is_representative"] = proteome_dict["is_representative"]
+
         # this takes the date of the entry is created
         entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         fields["created"] = entry_date

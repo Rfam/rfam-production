@@ -473,7 +473,7 @@ def restore_jobs_with_multi_cms(cm_dir, input_dir, output_dir):
 # -------------------------------------------------------------------------
 
 
-def coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=None, dest_dir=None):
+def multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=None, dest_dir=None):
     """
     This function treats each covariance model individually and launches
     a job for each sequence file found in sequence_dir.
@@ -568,7 +568,7 @@ if __name__ == '__main__':
         sequence_dir = sys.argv[2]
         dest_dir = sys.argv[3]
 
-        coarse_sequence_scan(cm_dir, sequence_dir, tool="cmsearch",
+        multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch",
                              seqdb_size=None, dest_dir=dest_dir)
 
     else:

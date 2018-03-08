@@ -26,8 +26,8 @@ from utils import genome_search_utils as gsu
 # -----------------------------------------------------------------------------
 
 SPLIT_SIZE = 5427083
-SRCH_MEM = 36000
-SCAN_MEM = 36000
+SRCH_MEM = 50000
+SCAN_MEM = 50000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
 RFAMSEQ_SIZE = 192861.501048 # this doesn't look ok..
 CM_NO = 2750  # number of cms in Rfam.cm file

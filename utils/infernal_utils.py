@@ -14,6 +14,7 @@ limitations under the License.
 # --------------------------------------------------------------------------------------------------
 
 import os
+import sys
 import re
 
 START = 9
@@ -32,7 +33,7 @@ def generate_bed_detail_file_with_ss(inf_output_file, dest_dir, ss_notation="wus
     with the last column containing the secondary structure string in the specified
     notation.
 
-    inf_output_file: Infernal's output file (-o)
+    inf_output_file: Infernal's output file (-o option)
     dest_dir: The path to the output directory
     ss_notation: A string indicating the the notation in which to output the
     secondary structure string (wuss or dbn)
@@ -40,7 +41,7 @@ def generate_bed_detail_file_with_ss(inf_output_file, dest_dir, ss_notation="wus
     return: Void
     """
 
-    scores = infernal_output_parser(inf_output_file, dest_dir, ss_notation=ss_notation)
+    scores = infernal_output_parser(inf_output_file, ss_notation=ss_notation)
 
     filename = os.path.basename(inf_output_file).partition('.')[0]
     fp_out = open(os.path.join(dest_dir, filename + '.bed'), 'w')
@@ -62,7 +63,7 @@ def generate_bed_detail_file_with_ss(inf_output_file, dest_dir, ss_notation="wus
 # --------------------------------------------------------------------------------------------------
 
 
-def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
+def infernal_output_parser(inf_output_file, ss_notation="wuss"):
     """
     Parses Infernal's detailed output file (-o) and returns a list of dictionaries
     for each hit found in the file
@@ -81,13 +82,6 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
     scores = []
 
     fp_in = open(inf_output_file, 'r')
-
-    out_file_name = os.path.basename(inf_output_file)
-
-    if out_file_name.find('.') != -1:
-        out_file_name = out_file_name.partition('.')[0]
-
-    fp_out = open(os.path.join(dest_dir, out_file_name + ".bed"), 'w')
 
     line = fp_in.readline()
     rfam_acc = ''
@@ -116,7 +110,18 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             strand = score_line[11]
             e_value = score_line[2]
             bit_score = score_line[3]
+            cm_start = score_line[6]
+            cm_end = score_line[7]
+            raw_trunc = score_line[14]
+            truncated = ''
+
+            if raw_trunc == 'no':
+                truncated = '0'
+            else:
+                truncated = raw_trunc
+
             rfamseq_acc = seq_id.split(' ')[0].split('|')[-1]
+
             # get secondary structure
             line = fp_in.readline()
 
@@ -141,7 +146,9 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
 
             score_dict = {"rfam_acc": rfam_acc, "rfamseq_acc": rfamseq_acc, "start": start,
                           "end": end, "bit_score": bit_score, "e_value": e_value,
-                          "strand": strand, "sec_struct": sec_struct, "rna_type": rna_type}
+                          "strand": strand, "sec_struct": sec_struct, "rna_type": rna_type,
+                          "truncated": truncated, "cm_start": cm_start, "cm_end": cm_end,
+                          }
 
             scores.append(score_dict)
 
@@ -300,6 +307,43 @@ def tblout_to_full_region(tblout_file, dest_dir=None):
     tblout_fp.close()
     full_region_fp.close()
 
+
+# --------------------------------------------------------------------------------------------------
+
+
+def infernal_to_full_region(inf_output_file, dest_dir, filename=None):
+    """
+    Parses Inferna's detailed output (-o option) and generates a file in tabular format, which is
+    compatible with the full_region table
+
+    inf_output_file: Infernal's output file (-o option)
+    dest_dir: The path to the output directory
+    filename: A filename for the output
+
+    returns: Void
+    """
+
+    scores = infernal_output_parser(inf_output_file, ss_notation="wuss")
+
+    if filename is None:
+        filename = os.path.basename(inf_output_file).partition('.')[0]
+
+    fp_out = open(os.path.join(dest_dir, filename + '.txt'), 'w')
+
+    for score in scores:
+        fp_out.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (score["rfam_acc"],
+                                                                       score["rfamseq_acc"],
+                                                                       score["start"],
+                                                                       score["end"],
+                                                                       score["bit_score"],
+                                                                       score["e_value"],
+                                                                       score["cm_start"],
+                                                                       score["cm_end"],
+                                                                       score["truncated"],
+                                                                       "full", '1'))
+    fp_out.close()
+
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -319,5 +363,7 @@ def convert_short_wuss_to_dbn(ss_string):
 # --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     pass
+
+
+

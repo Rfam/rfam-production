@@ -23,18 +23,62 @@ EVAL = 2
 BSCORE = 3
 DBN_REGEX = {r"\(|\[|<|\{": '(', r"\)|\]|>|\}": ')', r"_|-|\.|,|~|:": '.'}
 
+# --------------------------------------------------------------------------------------------------
+
+
+def generate_bed_detail_file_with_ss(inf_output_file, dest_dir, ss_notation="wuss"):
+    """
+    Parses Infernal's detailed output and generates a bed file in detailed format
+    with the last column containing the secondary structure string in the specified
+    notation.
+
+    inf_output_file: Infernal's output file (-o)
+    dest_dir: The path to the output directory
+    ss_notation: A string indicating the the notation in which to output the
+    secondary structure string (wuss or dbn)
+
+    return: Void
+    """
+
+    scores = infernal_output_parser(inf_output_file, dest_dir, ss_notation=ss_notation)
+
+    filename = os.path.basename(inf_output_file).partition('.')[0]
+    fp_out = open(os.path.join(dest_dir, filename + '.bed'), 'w')
+
+    for score in scores:
+        # write output to file
+        if score["strand"] == '+':
+            fp_out.write(
+                "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (score["rfamseq_acc"], score["start"], score["end"],
+                                                      score["rna_type"], score["bit_score"], score["strand"],
+                                                      score["e_value"], score["sec_struct"]))
+        else:
+            fp_out.write(
+                "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (score["rfamseq_acc"], score["end"], score["start"],
+                                                      score["rna_type"], score["bit_score"], score["strand"],
+                                                      score["e_value"], score["sec_struct"]))
+    fp_out.close()
 
 # --------------------------------------------------------------------------------------------------
 
+
 def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
     """
-    Exports secondary structure from infernal's output file.
+    Parses Infernal's detailed output file (-o) and returns a list of dictionaries
+    for each hit found in the file
 
-    inf_output_file: Infernal's output file
+    inf_output_file: Infernal's output file (-o)
+    dest_dir: The path to the output directory
+    ss_notation: A string indicating the the notation in which to output the
+    secondary structure string (wuss or dbn)
+
+    return: A list of dictionaries
     """
 
     rna_type = ''
     ss_str_list = []
+
+    scores = []
 
     fp_in = open(inf_output_file, 'r')
 
@@ -46,8 +90,13 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
     fp_out = open(os.path.join(dest_dir, out_file_name + ".bed"), 'w')
 
     line = fp_in.readline()
-
+    rfam_acc = ''
     while line != '':
+
+        # look for a new hit section and fetch rfam_acc
+        if line.find("Accession:") != -1:
+            rfam_acc = [x for x in line.strip().split(' ') if x != ''][1]
+
         # new hit
         if line[0:2] == ">>":
             line = line.strip()
@@ -61,14 +110,13 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
                 index += 1
 
             # bed file fields
-            score_line = filter(lambda x: x != '', line.strip().split(' '))
-
+            score_line = [x for x in line.strip().split(' ') if x != '']
             start = score_line[START]
             end = score_line[END]
             strand = score_line[11]
             e_value = score_line[2]
             bit_score = score_line[3]
-
+            rfamseq_acc = seq_id.split(' ')[0].split('|')[-1]
             # get secondary structure
             line = fp_in.readline()
 
@@ -91,15 +139,11 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             if ss_notation.lower() == "dbn":
                 sec_struct = convert_short_wuss_to_dbn(sec_struct)
 
-            # write output to file
-            if strand == '+':
-                fp_out.write(
-                    "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (seq_id, start, end, rna_type,
-                                                          bit_score, strand, e_value, sec_struct))
-            else:
-                fp_out.write(
-                    "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (seq_id, end, start, rna_type,
-                                                          bit_score, strand, e_value, sec_struct))
+            score_dict = {"rfam_acc": rfam_acc, "rfamseq_acc": rfamseq_acc, "start": start,
+                          "end": end, "bit_score": bit_score, "e_value": e_value,
+                          "strand": strand, "sec_struct": sec_struct, "rna_type": rna_type}
+
+            scores.append(score_dict)
 
             ss_str_list = []
             rna_type = ''
@@ -108,10 +152,11 @@ def infernal_output_parser(inf_output_file, dest_dir, ss_notation="wuss"):
             line = fp_in.readline()
 
     fp_in.close()
-    fp_out.close()
 
+    return scores
 
 # --------------------------------------------------------------------------------------------------
+
 
 def infernal_to_rfam(inf_tblout_file, dest_dir, file_format='tsv'):
     """
@@ -178,6 +223,86 @@ def infernal_to_rfam(inf_tblout_file, dest_dir, file_format='tsv'):
 
 # --------------------------------------------------------------------------------------------------
 
+
+def tblout_to_full_region(tblout_file, dest_dir=None):
+    """
+    Parses Infernal's tblout file and generates a .txt file that is compatible with full_region
+    table.
+
+    tblout_file: A valid Infernal's output file in .tblout format
+    dest_dir: The path to the output directory
+
+    return: True if successful, False otherwise
+    """
+
+    tblout_fp = open(tblout_file, 'r')
+    filename = os.path.split(tblout_file)[1].partition('.')[0]
+
+    if dest_dir is None:
+        dest_dir = os.path.split(tblout_file)[0]
+        #filename = os.path.split(tblout_file)[1].partition('.')[0]
+
+    full_region_fp = open(os.path.join(dest_dir, filename+'.txt'), 'w')
+
+    # set to 1 on update and correct with clan competition
+    is_significant = 1
+
+    # set all to full until we update seed sequences
+    seq_type = "full"
+
+    line = tblout_fp.readline().strip()
+
+    while line != '':
+        # skip comment lines
+        if str(line[0]) != '#':
+            line = line.split(' ')
+            line_cont = [x for x in line if x != '']
+            if len(line_cont) > 1:
+                seq_acc = ''
+                if line[0].find('|') != -1:
+                        seq_acc = line_cont[0].split('|')  # could also be position 0 for cmsearch
+                        seq_acc = seq_acc[-1]  # get last field
+                else:
+                        seq_acc = line[0].strip()
+
+                rfam_acc = line_cont[3]  # 1 or 3 for cmscan
+                cm_start = line_cont[5]
+                cm_end = line_cont[6]
+                seq_start = line_cont[7]
+                seq_end = line_cont[8]
+
+                trunc = line_cont[10].replace('\'', '')
+                if trunc == "no" or trunc == '-':
+                        trunc = str(0)
+
+                elif trunc.find('&') != -1:
+                        trunc = trunc.replace('&', '')
+
+                bit_score = line_cont[14]
+                evalue = line_cont[15]
+
+                full_region_fp.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (rfam_acc,
+                                                                                   seq_acc,
+                                                                                   seq_start,
+                                                                                   seq_end,
+                                                                                   bit_score,
+                                                                                   evalue,
+                                                                                   cm_start,
+                                                                                   cm_end,
+                                                                                   trunc,
+                                                                                   seq_type,
+                                                                                   str(is_significant)))
+            line = tblout_fp.readline().strip()
+
+        else:
+            line = tblout_fp.readline().strip()
+
+    tblout_fp.close()
+    full_region_fp.close()
+
+# --------------------------------------------------------------------------------------------------
+
+
 def convert_short_wuss_to_dbn(ss_string):
     """
     Converts RNA structure string from shorthand WUSS notation to dot-bracket notation
@@ -196,4 +321,3 @@ def convert_short_wuss_to_dbn(ss_string):
 if __name__ == '__main__':
 
     pass
-

@@ -115,10 +115,12 @@ def infernal_output_parser(inf_output_file, ss_notation="wuss"):
             raw_trunc = score_line[14]
             truncated = ''
 
-            if raw_trunc == 'no':
+            if raw_trunc == 'no' or raw_trunc == '-':
                 truncated = '0'
+            elif raw_trunc.find('&') != -1:
+                truncated = raw_trunc.replace('&', '')
             else:
-                truncated = raw_trunc
+                truncated = raw_trunc.replace('\'', '')
 
             rfamseq_acc = seq_id.split(' ')[0].split('|')[-1]
 
@@ -363,6 +365,7 @@ def convert_short_wuss_to_dbn(ss_string):
 # --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
     pass
 
 

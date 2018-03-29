@@ -118,7 +118,7 @@ def infernal_output_parser(inf_output_file, ss_notation="wuss"):
             if raw_trunc == 'no' or raw_trunc == '-':
                 truncated = '0'
             elif raw_trunc.find('&') != -1:
-                truncated = raw_trunc.replace('&', '')
+                truncated = raw_trunc.replace('&', '').replace('\'', '')
             else:
                 truncated = raw_trunc.replace('\'', '')
 

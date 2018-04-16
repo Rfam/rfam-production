@@ -101,6 +101,44 @@ class MergeGenomeFasta(luigi.Task):
 # -----------------------------------------------------------------------------
 
 
+class MergeGenomeTBLOUT(luigi.Task):
+    """
+    Task to merge genome fasta files
+    """
+    updir = luigi.Parameter()
+    upid = luigi.Parameter()
+
+    def run(self):
+        """
+        Merge all tbl files in updir
+        """
+
+        upid = os.path.basename(self.updir)
+        results_dir = os.path.join(self.updir, "search_output")
+        res_files = [x for x in os.listdir(results_dir) if x.endswith('.tbl')]
+
+        up_tbl = open(os.path.join(self.updir, self.upid +'.tbl'), 'w')
+
+        for res_file in res_files:
+            fp_in = open(os.path.join(results_dir, res_file), 'r')
+            for line in fp_in:
+                up_tbl.write(line)
+
+            fp_in.close()
+
+        up_tbl.close()
+
+    def output(self):
+        """
+        Check genome tbl file has been generated
+        """
+        genome_tbl = os.path.join(self.updir, self.upid + '.tbl')
+
+        return luigi.LocalTarget(genome_tbl)
+
+# -----------------------------------------------------------------------------
+
+
 class RewriteCleanFasta(luigi.Task):
     """
     Task to merge genome fasta files
@@ -215,7 +253,22 @@ class GenomeSearchUtilsEngine(luigi.Task):
                             this_file=os.path.realpath(__file__),
                             updir=updir,
                             upid=upid)
-                        
+
+                elif self.tool.lower() == 'tblmerge':
+                    if self.lsf is True:
+                        cmd = "bsub -M %s -R \"rusage[mem=%s,tmp=%s]\" -o %s -e %s -u %s -Ep \"rm -rf luigi\" " \
+                              "-g %s python %s MergeGenomeTBLOUT --updir %s --upid %s" % (gc.MEM, gc.MEM, gc.TMP_MEM,
+                                                                               os.path.join(updir, "tbl_merge.out"),
+                                                                               os.path.join(updir, "tbl_merge.err"),
+                                                                               gc.USER_EMAIL, gc.SRCH_GROUP,
+                                                                               os.path.realpath(__file__),
+                                                                                          updir, upid)
+                    else:
+                        cmd = "python \"{this_file}\" MergeGenomeTBLOUT --updir {upid} --upid {upid}".format(
+                            this_file=os.path.realpath(__file__),
+                            updir=updir,
+                            upid=upid)
+
             subprocess.call(cmd, shell=True)
 
             cmd = ''

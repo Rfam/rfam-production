@@ -26,10 +26,10 @@ from utils import genome_search_utils as gsu
 # -----------------------------------------------------------------------------
 
 SPLIT_SIZE = 5427083
-SRCH_MEM = 50000
-SCAN_MEM = 50000
+SRCH_MEM = 40000
+SCAN_MEM = 40000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
-RFAMSEQ_SIZE = 192861.501048 # this doesn't look ok..
+RFAMSEQ_SIZE = 742855.34296 #
 CM_NO = 2750  # number of cms in Rfam.cm file
 CPU_NO = 5
 SGROUP_IDX = 65  # subgroup index - Ascii for A
@@ -546,7 +546,9 @@ def multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=Non
 
             subprocess.call(cmd, shell=True)
 
+
 # -------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 

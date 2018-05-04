@@ -39,6 +39,7 @@ import string
 import json
 
 from utils import RfamDB
+from scripts.export.genomes import fetch_gen_metadata as fgm
 
 # -------------------------------------------------------------------------
 
@@ -884,6 +885,52 @@ def set_number_of_genomic_significant_hits(upid):
 
 # ----------------------------------------------------------------------------
 
+
+def update_chromosome_info_in_genseq():
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True, dictionary=True)
+
+    genome_query = "Select upid, assembly_acc from genome where assembly_acc is not NULL"
+    update_query = "update genseq set chromosome_type=%s, chromosome_name=%s where upid=\'%s\' and rfamseq_acc=%s and version=14.0"
+
+    cursor.execute(genome_query)
+    accessions = cursor.fetchall()
+    cursor.close()
+
+    upid_gca_dict = {}
+
+    cursor = cnx.cursor(buffered=True)
+
+    for pair in accessions:
+        upid_gca_dict[pair["upid"]] = pair["assembly_acc"]
+
+    print upid_gca_dict
+
+    for upid in upid_gca_dict:
+        # print assembly_acc
+        print upid_gca_dict[upid]
+
+        if 'GCF' or '' in upid_gca_dict[upid]:
+            continue
+
+        data = fgm.fetch_gca_data(upid, upid_gca_dict[upid], 'kingdom')
+
+        if 'fields' in data and 'chromosomes' in data and data['fields']['chromosomes']:
+            for chromosome in data['fields']['chromosomes']:
+                cursor.execute(update_query % (chromosome['type'], chromosome['name'], upid, chromosome['accession']))
+                cnx.commit()
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
-    pass
+    # Populates family_ncbi table
+    # update_family_ncbi()
+    update_chromosome_info_in_genseq()

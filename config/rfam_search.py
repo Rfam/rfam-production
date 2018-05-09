@@ -127,6 +127,7 @@ FULL_REGION_FIELDS = """
     AND fr.is_significant=1
     AND fr.type='full'
     AND gs.upid = '%s'
+    AND gs.version = '14.0'
 """
 
 FULL_REGION_SEEDS = """
@@ -141,6 +142,7 @@ FULL_REGION_SEEDS = """
     AND fr.is_significant=1
     AND fr.type='seed'
     AND g.upid = '%s'
+    and gs.version = '14.0'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -172,6 +174,7 @@ FAMILY_UPIDS = """
                WHERE gs.rfamseq_acc=fr.rfamseq_acc
                AND fr.rfam_acc='%s'
                AND fr.is_significant = 1
+               AND gs.version='14.0'
                """
 
 # Fetch clan based on rfam_acc
@@ -203,6 +206,7 @@ GENOME_FAMS = """
               WHERE fr.rfamseq_acc=gs.rfamseq_acc
               AND fr.is_significant = 1
               AND gs.upid='%s'
+              AND gs.version='14.0'
               """
 
 # -------------------------ADDITIONAL FIELDS------------------------------
@@ -226,6 +230,7 @@ COUNT_FULL_REGION = """
                     AND fr.is_significant = 1
                     AND fr.type='full'
                     AND gs.upid = '%s'
+                    AND gs.version='14.0'
                     """
 
 AU_ORCIDS = """

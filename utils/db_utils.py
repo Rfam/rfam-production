@@ -821,24 +821,45 @@ def set_number_of_distinct_families_in_genome(upid):
     return: void
     """
 
+    upids = []
     # connect to db
     cnx = RfamDB.connect()
 
     # get a new buffered cursor
     cursor = cnx.cursor(buffered=True)
 
-    select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
-                    "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                    "and gs.upid=\'%s\'")
 
-    cursor.execute(select_query % upid)
-    count = cursor.fetchone()[0]
+    if upid is None:
 
-    # update is_significant field to 0
-    update_query = "update genome set num_families=%d where upid=\'%s\'"
+        upids = fetch_all_upids()
+        for upid in upids:
+            select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
+                            "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                            "and gs.upid=\'%s\'")
 
-    # execute query
-    cursor.execute(update_query % (count, upid))
+            cursor.execute(select_query % upid)
+            count = cursor.fetchone()[0]
+
+            # update is_significant field to 0
+            update_query = "update genome set num_families=%d where upid=\'%s\'"
+
+            # execute query
+            cursor.execute(update_query % (count, upid))
+
+
+    else:
+        select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
+                        "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                        "and gs.upid=\'%s\'")
+
+        cursor.execute(select_query % upid)
+        count = cursor.fetchone()[0]
+
+        # update is_significant field to 0
+        update_query = "update genome set num_families=%d where upid=\'%s\'"
+
+        # execute query
+        cursor.execute(update_query % (count, upid))
 
     # commit changes and disconnect
     cnx.commit()
@@ -872,6 +893,7 @@ def set_number_of_genomic_significant_hits(upid):
     cursor.execute(count_query % upid)
     count = cursor.fetchone()[0]
 
+
     # update is_significant field to 0
     update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
 
@@ -894,7 +916,11 @@ def update_chromosome_info_in_genseq():
     cursor = cnx.cursor(buffered=True, dictionary=True)
 
     genome_query = "select upid, assembly_acc from genome where assembly_acc is not NULL"
-    update_query = "update genseq set chromosome_type=\'%s\', chromosome_name=\'%s\' where upid=\'%s\' and rfamseq_acc=\'%s\' and version=14.0"
+
+    update_query = """
+                   update genseq set chromosome_type=\'%s\', chromosome_name=\'%s\'
+                   where upid=\'%s\' and rfamseq_acc=\'%s\' and version=14.0
+                   """
 
     cursor.execute(genome_query)
     accessions = cursor.fetchall()
@@ -922,7 +948,8 @@ def update_chromosome_info_in_genseq():
             fields = data["fields"]
             if "chromosomes" in fields:
                 for chromosome in fields["chromosomes"]:
-                    cursor.execute(update_query % (str(chromosome["type"]), str(chromosome["name"]), str(upid), str(chromosome["accession"])))
+                    cursor.execute(update_query % (str(chromosome["type"]), str(chromosome["name"]),
+                                                   str(upid), str(chromosome["accession"])))
 
     cnx.commit()
     cursor.close()
@@ -933,6 +960,21 @@ def update_chromosome_info_in_genseq():
 
 if __name__ == "__main__":
 
+
+    """
+    TO DO: Develop a script to call all of these scripts after running the view
+    processes
+    """
+
     # Populates family_ncbi table
     # update_family_ncbi()
-    update_chromosome_info_in_genseq()
+    #update_chromosome_info_in_genseq()
+
+    upids = fetch_all_upids()
+
+    for upid in upids:
+        set_number_of_distinct_families_in_genome(upid)
+        set_number_of_genomic_significant_hits(upid)
+
+    #set_num_sig_seqs()
+    #set_number_of_species()

@@ -15,7 +15,8 @@ limitations under the License.
 #          - Split fetch_gca_data
 
 # ---------------------------------IMPORTS-------------------------------------
-
+import os
+import sys
 import datetime
 import httplib
 import copy
@@ -794,14 +795,21 @@ def import_chromosome_names():
     into genseq table.
     """
     import django
-    from django.conf import settings
+
+    import django
+    sys.path.append("/Users/ikalvari/RfamWorkspace/Rfam_resource/rfam_schemas")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rfam_schemas.rfam_schemas.settings")
     django.setup()
+
     from rfam_schemas.RfamLive.models import Genome, Genseq
 
     for genome in Genome.objects.exclude(assembly_acc__isnull=True).all():
         print genome.assembly_acc
         if 'GCF' in genome.assembly_acc:
             continue
+        if genome.assembly_acc == '':
+            continue
+
         data = fetch_gca_data(genome.upid, genome.assembly_acc, 'kingdom')
 
         if 'fields' in data and 'chromosomes' in data and data['fields']['chromosomes']:
@@ -810,11 +818,11 @@ def import_chromosome_names():
                 if genseq:
                     genseq.chromosome_type = chromosome['type']
                     genseq.chromosome_name = chromosome['name']
-                    genseq.save()
+                    genseq.save(commit=True)
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    pass
-    # import_chromosome_names()
+    #pass
+    import_chromosome_names()

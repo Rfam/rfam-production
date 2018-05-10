@@ -142,7 +142,6 @@ FULL_REGION_SEEDS = """
     AND fr.is_significant=1
     AND fr.type='seed'
     AND g.upid = '%s'
-    and gs.version = '14.0'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -230,7 +229,7 @@ COUNT_FULL_REGION = """
                     AND fr.is_significant = 1
                     AND fr.type='full'
                     AND gs.upid = '%s'
-                    AND gs.version='14.0'
+                    AND gs.version=14.0
                     """
 
 AU_ORCIDS = """

@@ -451,6 +451,7 @@ def get_rnacentral_mapping(upid):
     AND fr.is_significant = 1
     AND rm.rnacentral_id IS NOT NULL
     AND gs.upid = '%s'
+    AND gs.version='14.0'
     """
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
@@ -480,6 +481,7 @@ def full_region_xml_builder(entries, upid):
                          '11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
                          '93838': 1, '186617': 1, '229533': 1, '351048': 1,
                          '456327': 1, '766192': 1, '1891747': 1}
+
 
     genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()

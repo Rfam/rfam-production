@@ -58,3 +58,9 @@ NCBI_RANKS = cfl.NCBI_RANKS
 # rfamprod privileges required
 FA_EXPORT_GROUP = cfl.FA_EXPORT_GROUP
 RFAM_VIEW_GROUP = cfl.RFAM_VIEW_GROUP
+
+# --------------------------------Rfam info------------------------------------
+
+RFAM_EMAIL = cfl.RFAM_EMAIL
+RFAM_FTP = cfl.RFAM_FTP
+BROWSER_HUB_DESC_URL = cfl.BROWSER_HUB_DESC_URL

@@ -48,6 +48,7 @@ def generate_genome_text_file_from_file(names_list, release_version, dest_dir):
 
 # --------------------------------------------------------------------------------------------
 
+
 def generate_genome_text_file_from_dict(accession_dict, release_version, dest_dir):
     """
     Generates the genome.txt file for the genome_browser_hup given a list
@@ -74,6 +75,7 @@ def generate_genome_text_file_from_dict(accession_dict, release_version, dest_di
     fp_out.close()
 
 # --------------------------------------------------------------------------------------------
+
 
 def generate_hub_txt_file(release_version, dest_dir):
     """
@@ -150,6 +152,7 @@ def generate_hub_description_html_file(release_version, dest_dir):
 
 # --------------------------------------------------------------------------------------------
 
+
 def genome_browser_hub_id_list_parser(genome_id_list):
     """
     Parses the input file of genome browser hub and returns
@@ -183,10 +186,33 @@ def genome_browser_hub_id_list_parser(genome_id_list):
 # --------------------------------------------------------------------------------------------
 
 
-def generate_trackDB_file(dest_dir):
-    # TODO
-    pass
+def generate_trackdb_file(species, release_version, dest_dir):
+    """
+    Creates a new species trackDb.txt file for a given Rfam release version
 
+    species: The name of the species directory
+    release_version: The version of the Rfam release
+    dest_dir: The path to the species directory where the trackDb file will
+    be generated
+
+    return: void
+    """
+
+    trackDb_fp = open(os.path.join(dest_dir, "trackDb.txt"), 'w')
+
+    trackDb_fp.write("track Rfam\n")
+    trackDb_fp.write("bigDataUrl ftp://ftp.ebi.ac.uk/pub/databases/Rfam/%s/genome_browser_hub/%s/bigbed\n" %
+                     (release_version, species))
+    trackDb_fp.write("shortLabel Rfam ncRNA\n"
+                     "longLabel Rfam ncRNA annotations\n"
+                     "type bigBed 4\n"
+                     "url http://rfam.org/family/$$\n"
+                     "visibility 3\n"
+                     "color 102,0,0\n")
+    trackDb_fp.write("html ftp://ftp.ebi.ac.uk/pub/databases/Rfam/%s/genome_browser_hub/hub_description.html\n" %
+                     release_version)
+
+    trackDb_fp.close()
 
 # --------------------------------------------------------------------------------------------
 
@@ -244,8 +270,7 @@ def generate_new_genome_browser_hub_directories(genome_id_list, release_version,
         subprocess.call(cmd % tbl_file_path, shell=True)
         shutil.copyfile(os.path.join(bed_files_dir, genome+'.bigBed'), os.path.join(genome_dir, "bigBed"))
 
-        # TODO
-        generate_trackDB_file()
+        generate_trackdb_file(genome_name, release_version, genome_dir)
 
     print "Done!"
 # --------------------------------------------------------------------------------------------

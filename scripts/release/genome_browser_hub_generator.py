@@ -110,7 +110,7 @@ def generate_hub_description_html_file(release_version, dest_dir):
     return: void
     """
 
-    fp_out = open(os.path.join(dest_dir, "hub_description.html"), 'r')
+    fp_out = open(os.path.join(dest_dir, "hub_description.html"), 'w')
 
     # description section
     fp_out.write("<P><B>Description</B></P>\n\n")
@@ -273,9 +273,15 @@ def generate_new_genome_browser_hub_directories(genome_id_list, release_version,
         generate_trackdb_file(genome_name, release_version, genome_dir)
 
     print "Done!"
+
 # --------------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
 
-    pass
+    genome_id_list = sys.argv[1]
+    release_version = sys.argv[2]
+    genome_project_dir = sys.argv[3]
+    dest_dir = sys.argv[4]
+
+    generate_new_genome_browser_hub_directories(genome_id_list, release_version, dest_dir, genome_project_dir)

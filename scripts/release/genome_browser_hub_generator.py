@@ -312,6 +312,8 @@ def generate_new_genome_browser_hub_directories(genome_id_file, release_version,
         # to be used as the genome directory name. If very long replace with common name
         genome_name = accession_mapings[genome]["species_name"].replace(' ', '_')
         genome_dir = os.path.join(new_gbh_dir, genome_name)
+        os.mkdir(genome_dir)
+
         tbl_file_path = os.path.join(os.path.join(os.path.join(genome_project_dir,
                                                                genome[-3:]), genome),
                                      genome+'.tbl')

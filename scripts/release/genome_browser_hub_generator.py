@@ -115,9 +115,9 @@ def generate_genome_text_file_from_dict(accession_dict, release_version, dest_di
     fp_out = open(os.path.join(dest_dir, "genomes.txt"), 'w')
 
     for genome in accession_dict.keys():
-        fp_out.write("genome %s\n" % accession_dict[genome]["assembly_name"])
+        fp_out.write("genome %s\n" % accession_dict[genome]["species_name"])
         fp_out.write(trackdb_url % (str(release_version),
-                                             accession_dict[genome]["assembly_name"]) + "\n\n")
+                                             accession_dict[genome]["species_name"]) + "\n\n")
 
     fp_out.close()
 
@@ -252,7 +252,7 @@ def generate_trackdb_file(species, release_version, dest_dir):
     trackDb_fp = open(os.path.join(dest_dir, "trackDb.txt"), 'w')
 
     trackDb_fp.write("track Rfam\n")
-    trackDb_fp.write("bigDataUrl ftp://ftp.ebi.ac.uk/pub/databases/Rfam/%s/genome_browser_hub/%s/bigbed\n" %
+    trackDb_fp.write("bigDataUrl ftp://ftp.ebi.ac.uk/pub/databases/Rfam/%s/genome_browser_hub/%s/bigBed\n" %
                      (release_version, species))
     trackDb_fp.write("shortLabel Rfam ncRNA\n"
                      "longLabel Rfam ncRNA annotations\n"

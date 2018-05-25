@@ -2,8 +2,55 @@ import os
 import sys
 import shutil
 import subprocess
+import json
 
 from config import rfam_config as rc
+
+# --------------------------------------------------------------------------------------------
+
+def map_rfam_ensembl_accession_mapping(rfam_acc_file, ensembl_acc_file, dest_dir):
+    """
+
+    :param rfam_acc_file:
+    :param ensembl_acc_file:
+    :param dest_dir:
+    :return:
+    """
+
+    gbh_dict = {}
+    ensembl_accs = {}
+    rfam_accs = {}
+
+    # initialization
+    if not os.path.exists(dest_dir):
+        os.mkdir(dest_dir)
+
+    # load ensembl accessions
+    fp_ensembl = open(ensembl_acc_file, 'r')
+
+    for line in fp_ensembl:
+        line = line.strip().split('\t')
+        ensembl_accs[line[0].partition('.')[0]] = {"assembly_name": line[1],
+                                                   "tax_id": line[2], "species_name": line[3]}
+
+    fp_ensembl.close()
+
+    # load rfam accessions
+    fp = open(rfam_acc_file, 'r')
+
+    for line in fp:
+        line = line.strip().split('\t')
+        rfam_accs[line[1].partition('.')[0]] = line[0]
+    fp.close()
+
+    for gca_acc in ensembl_accs.keys():
+        if gca_acc in rfam_accs:
+            gbh_dict[rfam_accs[gca_acc]] = {}
+            gbh_dict[rfam_accs[gca_acc]]["assembly_name"] = ensembl_accs[gca_acc]["assembly_name"]
+            gbh_dict[rfam_accs[gca_acc]]["species_name"] = ensembl_accs[gca_acc]["species_name"]
+
+    fp_out = open(os.path.join(dest_dir, "rfam_gbh_ids.json"), 'w')
+    json.dump(gbh_dict, fp_out)
 
 # --------------------------------------------------------------------------------------------
 
@@ -68,9 +115,9 @@ def generate_genome_text_file_from_dict(accession_dict, release_version, dest_di
     fp_out = open(os.path.join(dest_dir, "genomes.txt"), 'w')
 
     for genome in accession_dict.keys():
-        fp_out.write("genome %s\n" % genome["assembly_acc"])
-        fp_out.write(trackdb_url + "\n\n" % (str(release_version),
-                                             genome["assembly_acc"]))
+        fp_out.write("genome %s\n" % accession_dict[genome]["assembly_name"])
+        fp_out.write(trackdb_url % (str(release_version),
+                                             accession_dict[genome]["assembly_name"]) + "\n\n")
 
     fp_out.close()
 
@@ -95,7 +142,7 @@ def generate_hub_txt_file(release_version, dest_dir):
     fp_out.write("longLabel Rfam %s non-coding RNA annotation\n" % release_version)
     fp_out.write("genomesFile genomes.txt\n")
     fp_out.write("email %s\n" % rc.RFAM_EMAIL)
-    fp_out.write("descriptionUrl " + rc.BROWSER_HUM_DESC_URL % str(release_version) + '\n')
+    fp_out.write("descriptionUrl " + rc.BROWSER_HUB_DESC_URL % str(release_version) + '\n')
     fp_out.write("hub_description.html\n")
     fp_out.close()
 
@@ -168,16 +215,20 @@ def genome_browser_hub_id_list_parser(genome_id_list):
 
     accession_mapings = {}
 
-    fp_in = (genome_id_list, 'r')
+    fp_in = open(genome_id_list, 'r')
 
-    # parse file and generate the dictionary
-    for line in fp_in:
-        line = line.strip().split('\t')
+    if genome_id_list.endswith(".json"):
+        accession_mapings = json.load(fp_in)
 
-        if line[0] not in accession_mapings:
-            accession_mapings[line[0]] = {}
-            accession_mapings[line[0]]["assembly_name"] = line[1]
-            accession_mapings[line[0]]["species"] = line[2]
+    else:
+        # parse file and generate the dictionary
+        for line in fp_in:
+            line = line.strip().split('\t')
+
+            if line[0] not in accession_mapings:
+                accession_mapings[line[0]] = {}
+                accession_mapings[line[0]]["assembly_name"] = line[1]
+                accession_mapings[line[0]]["species_name"] = line[2]
 
     # close input file and return dictionary
     fp_in.close()
@@ -217,11 +268,11 @@ def generate_trackdb_file(species, release_version, dest_dir):
 # --------------------------------------------------------------------------------------------
 
 
-def generate_new_genome_browser_hub_directories(genome_id_list, release_version, dest_dir, genome_project_dir):
+def generate_new_genome_browser_hub_directories(genome_id_file, release_version, dest_dir, genome_project_dir):
     """
     Generates a new genome_browser_hub directory for an upcoming Rfam release
 
-    genome_id_list: A tab delimited file containing the genome upids, assembly names and
+    genome_id_file: A tab delimited file containing the genome upids, assembly names and
     scientific names for each genome
     release_version: The Rfam version the genome browser hub derives from
     dest_dir: A valid path where to generate the directories. Preferably a new Rfam release
@@ -230,7 +281,7 @@ def generate_new_genome_browser_hub_directories(genome_id_list, release_version,
     return: void
     """
 
-    accession_mapings = genome_browser_hub_id_list_parser(genome_id_list)
+    accession_mapings = genome_browser_hub_id_list_parser(genome_id_file)
 
     # creating basic directory
     if not os.path.exists(dest_dir):
@@ -259,7 +310,7 @@ def generate_new_genome_browser_hub_directories(genome_id_list, release_version,
     for genome in accession_mapings.keys():
         # replace spaces in species name with underscores
         # to be used as the genome directory name. If very long replace with common name
-        genome_name = genome["species"].replace(' ', '_')
+        genome_name = accession_mapings[genome]["species_name"].replace(' ', '_')
         genome_dir = os.path.join(new_gbh_dir, genome_name)
         tbl_file_path = os.path.join(os.path.join(os.path.join(genome_project_dir,
                                                                genome[-3:]), genome),

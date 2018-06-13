@@ -328,7 +328,7 @@ def generate_new_genome_browser_hub_directories(genome_id_file, release_version,
         cmd = "/path/to/tblout2bigBedGenomes.pl %s %s"
 
         subprocess.call(cmd % (tbl_copy, release_version), shell=True)
-        shutil.copyfile(os.path.join(bed_files_dir, genome+'.bigBed'), os.path.join(genome_dir, "bigBed"))
+        shutil.copyfile(os.path.join(genome_bed_dir, genome+'.bigBed'), os.path.join(genome_dir, "bigBed"))
 
         generate_trackdb_file(genome_name, release_version, genome_dir)
 

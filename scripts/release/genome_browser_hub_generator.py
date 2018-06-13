@@ -317,7 +317,11 @@ def generate_new_genome_browser_hub_directories(genome_id_file, release_version,
         tbl_file_path = os.path.join(os.path.join(os.path.join(genome_project_dir,
                                                                genome[-3:]), genome),
                                      genome+'.tbl')
-        tbl_copy = os.path.join(bed_files_dir, genome+'.tbl')
+
+        genome_bed_dir = os.path.join(bed_files_dir, genome)
+        os.mkdir(genome_bed_dir)
+
+        tbl_copy = os.path.join(genome_bed_dir, genome+'.tbl')
         shutil.copyfile(tbl_file_path, tbl_copy)
 
         # call perl script to generate the bedfiles need upid.tbl file here

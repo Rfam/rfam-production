@@ -317,10 +317,13 @@ def generate_new_genome_browser_hub_directories(genome_id_file, release_version,
         tbl_file_path = os.path.join(os.path.join(os.path.join(genome_project_dir,
                                                                genome[-3:]), genome),
                                      genome+'.tbl')
-        # call perl script to generate the bedfiles need upid.tbl file here
-        cmd = "/path/to/tblout2bigBedGenomes.pl %s"
+        tbl_copy = os.path.join(bed_files_dir, genome+'.tbl')
+        shutil.copyfile(tbl_file_path, tbl_copy)
 
-        subprocess.call(cmd % tbl_file_path, shell=True)
+        # call perl script to generate the bedfiles need upid.tbl file here
+        cmd = "/path/to/tblout2bigBedGenomes.pl %s %s"
+
+        subprocess.call(cmd % (tbl_copy, release_version), shell=True)
         shutil.copyfile(os.path.join(bed_files_dir, genome+'.bigBed'), os.path.join(genome_dir, "bigBed"))
 
         generate_trackdb_file(genome_name, release_version, genome_dir)

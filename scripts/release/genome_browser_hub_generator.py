@@ -88,7 +88,7 @@ def generate_genome_text_file_from_file(names_list, release_version, dest_dir):
 
     for assembly_acc in name_mappings.keys():
         fp_out.write("genome %s\n" % assembly_acc)
-        fp_out.write(trackdb_url + "\n\n" % (str(release_version),
+        fp_out.write("trackDb " + trackdb_url + "\n\n" % (str(release_version),
                                              name_mappings[assembly_acc]))
 
     fp_out.close()
@@ -116,7 +116,7 @@ def generate_genome_text_file_from_dict(accession_dict, release_version, dest_di
 
     for genome in accession_dict.keys():
         fp_out.write("genome %s\n" % accession_dict[genome]["species_name"])
-        fp_out.write(trackdb_url % (str(release_version),
+        fp_out.write("trackDb " + trackdb_url % (str(release_version),
                                              accession_dict[genome]["species_name"]) + "\n\n")
 
     fp_out.close()

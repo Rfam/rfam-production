@@ -103,8 +103,9 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
             fields["wgs_acc"] = None
             fields["wgs_version"] = None
 
-        fields["study_ref"] = assembly.find("STUDY_REF").find(
-            "IDENTIFIERS").find("PRIMARY_ID").text
+        fields["study_ref"] = None
+        if assembly.find("STUDY_REF") is not None:
+            fields["study_ref"] = assembly.find("STUDY_REF").find("IDENTIFIERS").find("PRIMARY_ID").text
 
         # description can be very long, using title instead as short description
         fields["description"] = assembly.find("TITLE").text
@@ -115,15 +116,18 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
         fields["total_length"] = int(attributes["total-length"])
         fields["ungapped_length"] = int(attributes["ungapped-length"])
 
-        genome_desc = assembly.find("DESCRIPTION").text
+        genome_desc = assembly.find("DESCRIPTION")
 
         if genome_desc is not None:
-            if genome_desc.find("circular") != -1:
-                fields["circular"] = 1
-            else:
-                fields["circular"] = 0
+            # try to fetch description text
+            genome_desc = genome_desc.text
+            if genome_desc is not None:
+                if genome_desc.find("circular") != -1:
+                    fields["circular"] = 1
+                else:
+                    fields["circular"] = 0
         else:
-            fields["circular"] = None
+            fields["circular"] = 0
 
         taxid = assembly.find("TAXON")
         fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)

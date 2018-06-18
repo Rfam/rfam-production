@@ -107,7 +107,7 @@ GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc
                  "from genome g, taxonomy tx, genseq gs\n"
                  "where g.ncbi_id=tx.ncbi_id\n"
                  "and g.upid=gs.upid\n"
-                 "and gs.version='14.0'\n"
+                 "and gs.version=\'14.0\'\n"
                  "and g.upid=\'%s\'")
 
 FULL_REGION_FIELDS = """

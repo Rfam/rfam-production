@@ -104,10 +104,8 @@ MOTIF_FIELDS = ("SELECT m.motif_acc as id, m.motif_id as name, m.description,"
 GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc, g.description, "
                  "g.total_length, tx.tax_string, g.ncbi_id, g.num_rfam_regions,g.num_families, "
                  "g.common_name, g.assembly_name, g.assembly_level, g.created, g.updated\n"
-                 "from genome g, taxonomy tx, genseq gs\n"
+                 "from genome g, taxonomy tx\n"
                  "where g.ncbi_id=tx.ncbi_id\n"
-                 "and g.upid=gs.upid\n"
-                 "and gs.version=\'14.0\'\n"
                  "and g.upid=\'%s\'")
 
 FULL_REGION_FIELDS = """

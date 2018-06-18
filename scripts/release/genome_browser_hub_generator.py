@@ -162,21 +162,21 @@ def generate_hub_description_html_file(release_version, dest_dir):
     # description section
     fp_out.write("<P><B>Description</B></P>\n\n")
     fp_out.write("<P class=\"indent1\">\n")
-    fp_out.write("These tracks show non-coding RNAs from the")
-    fp_out.write("<a href=\"http://rfam.org/\">Rfam database</a>.")
-    fp_out.write("These tracks were created from the Rfam %s" % str(release_version))
-    fp_out.write("covariance models (CMs), using the cmsearch program from the"
+    fp_out.write("These tracks show non-coding RNAs from the ")
+    fp_out.write("<a href=\"http://rfam.org/\">Rfam database</a>. ")
+    fp_out.write("These tracks were created from the Rfam %s " % str(release_version))
+    fp_out.write("covariance models (CMs), using the cmsearch program from the "
                  "<a href=\"http://infernal.janelia.org/\">Infernal</a> package."
-                 "Further information about the methods used to build Rfam families"
-                 "can be found <a href=\"http://rfam.xfam.org/help\">on our web page</a>.\n"
+                 "Further information about the methods used to build Rfam families "
+                 "can be found <a href=\"http://rfam.org/help\">on our web page</a>.\n"
                  "</P>\n\n")
 
     # write methods
     fp_out.write("<P><B>Methods</B></P>\n\n")
     fp_out.write("<P class=\"indent1\">\n")
-    fp_out.write("The cmsearch program was used with the --rfam, --cut_ga and --nohmmonly"
-                 "command line options to calculate the positions of non-coding RNAs on each"
-                 "genome assembly. This reproduces the method used by Rfam curators when creating"
+    fp_out.write("The cmsearch program was used with the --rfam, --cut_ga and --nohmmonly "
+                 "command line options to calculate the positions of non-coding RNAs on each "
+                 "genome assembly. This reproduces the method used by Rfam curators when creating "
                  "each family, including the use of expertly curated thresholds for each family.\n")
     fp_out.write("</P>\n\n")
 

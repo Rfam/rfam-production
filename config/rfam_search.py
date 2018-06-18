@@ -57,7 +57,6 @@ POPULAR_SPECIES = (
 # RFAM SEARCH QUERIES
 REL_FIELDS = "SELECT rfam_release, rfam_release_date FROM version"
 
-
 # -------------------------------RFAM ACCESSIONS--------------------------
 
 # FETCHING
@@ -105,8 +104,10 @@ MOTIF_FIELDS = ("SELECT m.motif_acc as id, m.motif_id as name, m.description,"
 GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc, g.description, "
                  "g.total_length, tx.tax_string, g.ncbi_id, g.num_rfam_regions,g.num_families, "
                  "g.common_name, g.assembly_name, g.assembly_level, g.created, g.updated\n"
-                 "from genome g, taxonomy tx\n"
+                 "from genome g, taxonomy tx, genseq gs\n"
                  "where g.ncbi_id=tx.ncbi_id\n"
+                 "and g.upid=gs.upid\n"
+                 "and gs.version='14.0'\n"
                  "and g.upid=\'%s\'")
 
 FULL_REGION_FIELDS = """
@@ -121,6 +122,7 @@ FULL_REGION_FIELDS = """
     AND fr.is_significant=1
     AND fr.type='full'
     AND gs.upid = '%s'
+    AND gs.version='14.0'
 """
 
 FULL_REGION_SEEDS = """
@@ -162,6 +164,7 @@ FAMILY_UPIDS = """
     WHERE gs.rfamseq_acc=fr.rfamseq_acc
     AND fr.rfam_acc='%s'
     AND fr.is_significant = 1
+    AND gs.version='14.0'
 """
 
 # Fetch clan based on rfam_acc
@@ -184,6 +187,7 @@ GENOME_FAMS = """
     WHERE fr.rfamseq_acc=gs.rfamseq_acc
     AND fr.is_significant = 1
     AND gs.upid='%s'
+    AND gs.version='14.0'
 """
 
 # -------------------------ADDITIONAL FIELDS------------------------------
@@ -203,6 +207,7 @@ COUNT_FULL_REGION = """
     AND fr.is_significant = 1
     AND fr.type='full'
     AND gs.upid = '%s'
+    AND gs.version='14.0'
 """
 
 # -----------------------------------------------------------------------------

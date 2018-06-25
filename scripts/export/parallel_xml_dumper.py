@@ -1,3 +1,10 @@
+"""
+The purpose of this script is to parallelize the launching process of xml_dumps 
+in order to speed up Rfam exports. It uses rfam_xml_dumper and submits an individual 
+lsf job for each entry provided in the input file  
+"""
+
+
 import os
 import sys
 import subprocess

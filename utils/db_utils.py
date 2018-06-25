@@ -435,7 +435,7 @@ def set_number_of_species():
 # ----------------------------------------------------------------------------
 
 
-def set_num_sig_seqs():
+def set_num_full_sig_seqs():
     """
     Updates num_full in family table to hold the number of significant
     sequences rather than the number of sequences in the full alignment
@@ -457,6 +457,7 @@ def set_num_sig_seqs():
     count_query = ("select count(*)\n"
                    "from full_region f\n"
                    "where is_significant=1\n"
+                   "and type=\'full\'\n"
                    "and rfam_acc=\'%s\'")
 
     # counts list
@@ -796,8 +797,7 @@ def set_genome_size(genome_sizes):
         gen_size_file = open(genome_sizes, 'r')
         genome_size_dict = json.load(gen_size_file)
         gen_size_file.close()
-        genome_size_list = [(str(genome_size_dict[upid]),
-                             str(upid)) for upid in genome_size_dict.keys()]
+        genome_size_list = [(str(genome_size_dict[upid]), str(upid)) for upid in genome_size_dict.keys()]
 
     else:
         genome_size_list.append(genome_sizes)
@@ -893,7 +893,6 @@ def set_number_of_genomic_significant_hits(upid):
     cursor.execute(count_query % upid)
     count = cursor.fetchone()[0]
 
-
     # update is_significant field to 0
     update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
 
@@ -958,23 +957,50 @@ def update_chromosome_info_in_genseq():
 # ----------------------------------------------------------------------------
 
 
+def update_assembly_names(upid_gca_file):
+    """
+    Loads the upid_gca json files and parses the corresponding assembly xml files
+    from ENA to fetch the assembly names and update the fields in genome table
+
+    param upid_gca_file: A json file with upid: {"GCA" : GCAxxx, "DOM": domain }
+
+    return: void
+    """
+
+    fp = open(upid_gca_file, 'r')
+    acc_pairs = json.load(fp)
+    fp.close()
+
+    # a list of tuples to
+    assembly_names = []
+
+    for upid in acc_pairs.keys():
+        data = fgm.fetch_gca_data(upid, acc_pairs[upid]["GCA"], acc_pairs[upid]["DOM"])
+
+        if "fields" in data:
+            if data["fields"]["assembly_name"] is not None:
+                assembly_names.append((data["fields"]["assembly_name"], upid))
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True, dictionary=True)
+
+    query = "update genome set assembly_name=%s where upid=%s"
+
+    cursor.executemany(query, assembly_names)
+    cnx.commit()
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
 
-
     """
-    TO DO: Develop a script to call all of these scripts after running the view
+    TO DO: Develop a script to call all of these functions after running the view
     processes
     """
-
-    # Populates family_ncbi table
-    # update_family_ncbi()
-    #update_chromosome_info_in_genseq()
-
-    upids = fetch_all_upids()
-
-    for upid in upids:
-        set_number_of_distinct_families_in_genome(upid)
-        set_number_of_genomic_significant_hits(upid)
-
-    #set_num_sig_seqs()
-    #set_number_of_species()

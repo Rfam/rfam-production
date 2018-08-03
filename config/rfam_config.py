@@ -22,6 +22,8 @@ RFAMLIVE_DJANGO = cfl.RFAMLIVE_DJANGO
 RFAMLIVELOC = cfl.RFAMLIVELOC
 
 #XFAMDEV = cfl.XFAMDEV
+RFAMLOCAL = cfl.RFAMLOCAL
+RFAMREL = cfl.RFAMREL
 
 # ----------------------------Django settings----------------------------------
 

@@ -32,7 +32,7 @@ SECRET_KEY = cfl.SECRET_KEY
 # ---------------------------------PATHS---------------------------------------
 
 FA_GEN = cfl.FA_GEN
-ESL_PATH = cfl.ESL_PATH
+ESL_PATH = cfl.ESL_SFETCH
 RFAMSEQ_PATH = cfl.RFAMSEQ_PATH
 FAM_VIEW_PL = cfl.FAM_VIEW_PL
 

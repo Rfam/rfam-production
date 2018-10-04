@@ -15,7 +15,8 @@ limitations under the License.
 #          - Split fetch_gca_data
 
 # ---------------------------------IMPORTS-------------------------------------
-
+import os
+import sys
 import datetime
 import httplib
 import copy
@@ -102,8 +103,9 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
             fields["wgs_acc"] = None
             fields["wgs_version"] = None
 
-        fields["study_ref"] = assembly.find("STUDY_REF").find(
-            "IDENTIFIERS").find("PRIMARY_ID").text
+        fields["study_ref"] = None
+        if assembly.find("STUDY_REF") is not None:
+            fields["study_ref"] = assembly.find("STUDY_REF").find("IDENTIFIERS").find("PRIMARY_ID").text
 
         # description can be very long, using title instead as short description
         fields["description"] = assembly.find("TITLE").text
@@ -114,15 +116,18 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
         fields["total_length"] = int(attributes["total-length"])
         fields["ungapped_length"] = int(attributes["ungapped-length"])
 
-        genome_desc = assembly.find("DESCRIPTION").text
+        genome_desc = assembly.find("DESCRIPTION")
 
         if genome_desc is not None:
-            if genome_desc.find("circular") != -1:
-                fields["circular"] = 1
-            else:
-                fields["circular"] = 0
+            # try to fetch description text
+            genome_desc = genome_desc.text
+            if genome_desc is not None:
+                if genome_desc.find("circular") != -1:
+                    fields["circular"] = 1
+                else:
+                    fields["circular"] = 0
         else:
-            fields["circular"] = None
+            fields["circular"] = 0
 
         taxid = assembly.find("TAXON")
         fields["ncbi_id"] = int(taxid.find("TAXON_ID").text)
@@ -771,6 +776,9 @@ def dump_uniprot_genome_metadata(upid, kingdom):
         fields["num_rfam_regions"] = None
         fields["num_families"] = None
 
+        fields["is_reference"] = proteome_dict["is_reference"]
+        fields["is_representative"] = proteome_dict["is_representative"]
+
         # this takes the date of the entry is created
         entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         fields["created"] = entry_date
@@ -791,14 +799,21 @@ def import_chromosome_names():
     into genseq table.
     """
     import django
-    from django.conf import settings
+
+    import django
+    sys.path.append("/Users/ikalvari/RfamWorkspace/Rfam_resource/rfam_schemas")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rfam_schemas.rfam_schemas.settings")
     django.setup()
+
     from rfam_schemas.RfamLive.models import Genome, Genseq
 
     for genome in Genome.objects.exclude(assembly_acc__isnull=True).all():
         print genome.assembly_acc
         if 'GCF' in genome.assembly_acc:
             continue
+        if genome.assembly_acc == '':
+            continue
+
         data = fetch_gca_data(genome.upid, genome.assembly_acc, 'kingdom')
 
         if 'fields' in data and 'chromosomes' in data and data['fields']['chromosomes']:
@@ -807,11 +822,11 @@ def import_chromosome_names():
                 if genseq:
                     genseq.chromosome_type = chromosome['type']
                     genseq.chromosome_name = chromosome['name']
-                    genseq.save()
+                    genseq.save(commit=True)
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    pass
-    # import_chromosome_names()
+    #pass
+    import_chromosome_names()

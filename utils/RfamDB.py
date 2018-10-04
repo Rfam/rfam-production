@@ -11,14 +11,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-'''
-TO DO: Need to generalize this to make the scripts independent and enable
-       connecting to multiple databases simultaneously. Convert this to a class
-'''
+
+ #Todo Need to generalize this to make the scripts independent and enable
+    # connecting to multiple databases simultaneously. Convert this to a class
 
 # ---------------------------------IMPORTS-------------------------------------
+
 import mysql.connector
 from mysql.connector import errorcode
+
+# Todo - NEED TO CLEAN THIS UP
+# NEED TO CLEAN THIS UP AND PROFIDE A WAY
+#from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
+#from config.rfam_config import RFAMLIVE  # rfam_live on curation host
+from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
+
+#from config.rfam_config import XFAMDEV
+#from config.rfam_config import RFAMLOCAL
+from config.rfam_config import RFAMLIVE
+#from config.rfam_config import RFAMLIVEPUB
+#from config.rfam_config import RFAMREL
 
 # RfamLive
 from config.rfam_config import RFAMLIVE

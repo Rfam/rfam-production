@@ -24,6 +24,7 @@ import string
 import urllib
 import urllib2
 import shutil
+import copy
 import xml.etree.ElementTree as ET
 
 import requests
@@ -46,6 +47,7 @@ ENA_XML_URL = gc.ENA_XML_URL
 
 # ENA url for file download
 ENA_DATA_URL = gc.ENA_DATA_URL
+ENA_DATA_URL_GZIP = gc.ENA_DATA_URL_GZIP
 
 # ENA url for assembly data retrieval via taxon id
 ENA_TAX_URL = gc.ENA_TAX_URL
@@ -268,7 +270,7 @@ def fetch_genome_acc(prot):
 
 # -----------------------------------------------------------------------------
 
-def fetch_ena_file(acc, file_format, dest_dir):
+def fetch_ena_file(acc, file_format, dest_dir, compressed=True):
     """
     Retrieves a file given a valid ENA accession and stores it in the
     indicated destination in the selected format
@@ -287,10 +289,17 @@ def fetch_ena_file(acc, file_format, dest_dir):
 
     # fetching compressed file
     else:
-        seq_url = ENA_DATA_URL % (acc, file_format)
-        file_path = os.path.join(dest_dir, acc + FORMATS[file_format] + ".gz")
+        if compressed is True:
+            seq_url = ENA_DATA_URL_GZIP % (acc, file_format)
+            file_path = os.path.join(dest_dir, acc + FORMATS[file_format] + ".gz")
+        else:
+            seq_url = ENA_DATA_URL % (acc, file_format)
+            file_path = os.path.join(dest_dir, acc + FORMATS[file_format])
 
-    urllib.urlretrieve(seq_url, file_path)
+    # check url is available
+    response = requests.get(seq_url)
+    if response.status_code == 200:
+        urllib.urlretrieve(seq_url, file_path)
 
     if os.path.exists(file_path):
         return True
@@ -588,28 +597,29 @@ def lsf_cmd_generator(upid, gca_acc, domain, exec_path, proj_dir):
     proj_dir: The path to the project directory
     """
 
-    prot_dir = os.path.join(os.path.join(proj_dir, domain), upid)
+    subdir_idx = upid[8:]
+    prot_dir = os.path.join(os.path.join(proj_dir, subdir_idx), upid)
 
     cmd = ("bsub -M %s "
            "-R \"rusage[mem=%s,tmp=%s]\" "
            "-o \"%s\" "
            "-e \"%s\" "
            "-u \"%s\" "
+           "-n 4 "
            "-Ep \"rm -rf luigi\" "
-           "-g %s/%s "
+           "-g %s "
            "python %s DownloadGenome --upid %s --gca-acc %s --project-dir %s --domain %s") % (
                gc.MEM, gc.MEM, gc.TMP_MEM,
                os.path.join(prot_dir, "download.out"),
                os.path.join(prot_dir, "download.err"),
                gc.USER_EMAIL, gc.LSF_GEN_GROUP,
-               domain, exec_path,
-               upid, gca_acc,
+               exec_path, upid, gca_acc,
                proj_dir, domain)
 
     return cmd
 
-
 # -----------------------------------------------------------------------------
+
 
 def genome_script_generator(upid, domain, gen_size, out_dir):
     """
@@ -987,6 +997,7 @@ def sequence_report_to_json(seq_report_file, dest_dir=None):
 
 # -----------------------------------------------------------------------------
 
+
 def split_and_download(wgs_range, dest_dir):
     """
     Function to split and download smaller segments of large genome assemblies
@@ -1031,6 +1042,7 @@ def split_and_download(wgs_range, dest_dir):
 
 # -----------------------------------------------------------------------------
 
+
 def fetch_accessions_from_proteome_xml(proteome):
     """
     Parses Uniprot's proteome xml and extracts all available ENA accessions
@@ -1068,6 +1080,7 @@ def fetch_accessions_from_proteome_xml(proteome):
 
 # -----------------------------------------------------------------------------
 
+
 def check_accession_availability(accession):
     """
     Check whether a specific accession is available from ENA
@@ -1093,6 +1106,7 @@ def check_accession_availability(accession):
 
 # -----------------------------------------------------------------------------
 
+
 def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
     """
     Copy wgs set sequences from physical location on cluster
@@ -1105,12 +1119,13 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
 
     # build path
     wgs_subdir = os.path.join(gc.ENA_FTP_WGS_PUB, wgs_acc[0:2].lower()) #AA
-    wgs_filename = wgs_acc[0:7] + ".fasta.gz"
+    wgs_filename = wgs_acc[0:6] + ".fasta.gz"
 
     # check if wgs sequences are in public dir and copy to destination
     if os.path.exists(os.path.join(wgs_subdir, wgs_filename)):
         shutil.copyfile(os.path.join(wgs_subdir, wgs_filename),
                         os.path.join(dest_dir, wgs_filename))
+
     # look for wgs set in suppressed sequences
     else:
         wgs_subdir = os.path.join(gc.ENA_FTP_WGS_SUP, wgs_acc[0:2].lower())
@@ -1119,26 +1134,10 @@ def copy_wgs_set_from_ftp(wgs_acc, dest_dir):
                             os.path.join(dest_dir, wgs_filename))
 
         else:
-            sys.exit("WGS set %s requested does not exist.")
+            sys.exit("WGS set %s requested does not exist." % wgs_acc)
 
 # -----------------------------------------------------------------------------
 
-def fetch_assembly_accs_from_proteome_xml(upid):
-    """
-    Parses proteome xml file and looks for GCA and WGS set accessions
-
-    upid: A valit Uniprot proteome upid
-
-    returns: A dictionary in the form of {'GCA': gca_acc, 'WGS': wgs_acc}.
-    Returns gca_acc and wgs_acc are set to -1 by default.
-    """
-    genome_accs = {'GCA': -1, 'WGS': -1}
-
-
-    # TO IMPLEMENT
-    pass
-
-# -----------------------------------------------------------------------------
 
 def proteome_xml_accessions_to_dict(upid):
     """
@@ -1182,11 +1181,13 @@ def proteome_xml_accessions_to_dict(upid):
                 proteome_accs["WGS"] = accession
 
             else:
-                accession = node.find(prefix % "genome_accession").text
-                other[name] = accession
+                accession = node.find(prefix % "genome_accession")
+                # if there is an accession available
+                if accession is not None:
+                    accession = accession.text
+                    other[name] = accession
 
-        proteome_accs["OTHER"] = other
-
+        proteome_accs["OTHER"] = copy.deepcopy(other)
 
     return proteome_accs
 
@@ -1228,7 +1229,7 @@ def copy_gca_report_file_from_ftp(gca_accession, dest_dir):
 # -----------------------------------------------------------------------------
 
 
-def get_genome_unique_accessions(upid):
+def get_genome_unique_accessions(upid, to_file=False, output_dir=None):
     """
     This function will extract all available accessions from the relevant
     proteome xml file and return a list of unique accessions that represent a
@@ -1236,37 +1237,196 @@ def get_genome_unique_accessions(upid):
     by ENA and any additional accessions found in the proteome xml file
 
     upid: A valid Uniprot Proteome id
+    output_dir: The path to the output dir
 
     return: A list with all unique genome accessions
     """
 
-    complete_genome_accs = {"GCA": -1, "WSG": -1, "OTHER": []}
+    # GCA NA - Set to 1 when GCA accession is available, but GCA report file is not available from ENA
+    complete_genome_accs = {"GCA": -1, "WGS": -1, "OTHER": [], "GCA_NA": 0}
+
     proteome_acc_dict = proteome_xml_accessions_to_dict(upid)
+
+    complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
+    complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
 
     if proteome_acc_dict["GCA"] != -1:
         # create a temporary copy of the assembly report file
-        copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], "/tmp")
+
+        if output_dir is None:
+            output_dir = "/tmp"
+
+        check_exists = copy_gca_report_file_from_ftp(proteome_acc_dict["GCA"], output_dir)
+
+        # try downloading the files from the URL if unsuccessful
+        if check_exists is False:
+            url_check = download_gca_report_file_from_url(proteome_acc_dict["GCA"], output_dir)
+
+        # get assembly report file path
         gca_report_filename = proteome_acc_dict["GCA"] + "_sequence_report.txt"
 
-        gca_accs = assembly_report_parser(os.path.join("/tmp",gca_report_filename),
-                                          url=False)
+        if os.path.exists(os.path.join(output_dir, gca_report_filename)):
 
-        proteome_set = set(proteome_acc_dict["OTHER"])
-        gca_set = set(gca_accs)
+            gca_accs = assembly_report_parser(os.path.join(output_dir, gca_report_filename),
+                                              url=False)
 
-        unique_accs = proteome_set.symmetric_difference(gca_set)
+            accs_no_version = [x.partition('.')[0] for x in gca_accs]
 
-        # update dictionary
-        complete_genome_accs["GCA"] = proteome_acc_dict["GCA"]
-        complete_genome_accs["WGS"] = proteome_acc_dict["WGS"]
-        complete_genome_accs["OTHER"] = unique_accs
+            proteome_set = set(proteome_acc_dict["OTHER"].values())
+            gca_set = set(accs_no_version)
 
-        os.remove(gca_report_filename)
+            # construct a new set with unique accessions from both sets
+            unique_accs = proteome_set.union(gca_set)
+                
+            # add unique accessions in dictionary
+            complete_genome_accs["OTHER"].extend(unique_accs)
+
+        else:
+            print "Genome Assembly report file for %s is unavailable" % upid
+            complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
+
+            if complete_genome_accs["WGS"] != -1:
+                complete_genome_accs["GCA_NA"] = 1
+
+    else:
+        complete_genome_accs["OTHER"].extend(proteome_acc_dict["OTHER"].values())
+
+    # write proteome accessions to json file
+    if to_file is True:
+        fp_out = open(os.path.join(output_dir, upid+"_accessions.json"), 'w')
+        json.dump(proteome_acc_dict, fp_out)
+        fp_out.close()
 
     return complete_genome_accs
 
 # -----------------------------------------------------------------------------
 
+
+def extract_wgs_acc_from_gca_xml(gca_accession):
+    """
+    Parses ENA's GCA xml file and extracts the WGS set accession if available
+
+    gca_accession:  A valid GCA accession
+
+    return: A WGS set accesison, None if not found
+    """
+
+    xml_root = None
+    wgs_acc = None
+    assembly_xml = requests.get(ENA_XML_URL % gca_accession).content
+
+    if os.path.isfile(assembly_xml):
+        # parse xml tree and return root node
+        xml_root = ET.parse(assembly_xml).getroot()
+    else:
+        # fromstring returns the xml root directly
+        xml_root = ET.fromstring(assembly_xml)
+
+    assembly = xml_root.find("ASSEMBLY")
+
+    if assembly is not None:
+        # no assembly link provided - look for WGS element
+        wgs_node = assembly.find("WGS_SET")
+        # get wgs accession
+        wgs_acc = get_wgs_set_accession(
+            wgs_node.find("PREFIX").text, wgs_node.find("VERSION").text)
+
+    return wgs_acc
+
+# -----------------------------------------------------------------------------
+
+
+def download_gca_report_file_from_url(gca_accession, dest_dir):
+    """
+    Loads an xml tree from a file or a string (usually an http response),
+    and returns a list with the genome assembly's chromosomes
+
+    accession: A valid ENA GCA accession (without the assembly version)
+    """
+
+    accessions = []
+    root = None
+    assembly_link = None
+    assembly = None
+    url_links = []
+
+    assembly_xml = requests.get(ENA_XML_URL % gca_accession).content
+
+    if os.path.isfile(assembly_xml):
+        # parse xml tree and return root node
+        root = ET.parse(assembly_xml).getroot()
+    else:
+        # fromstring returns the xml root directly
+        root = ET.fromstring(assembly_xml)
+
+    assembly = root.find("ASSEMBLY")
+
+    if assembly is not None:
+        # either parse the assembly report file or get the WGS range
+        assembly_links = assembly.find("ASSEMBLY_LINKS")
+
+        if assembly_links is not None:
+            # export url link and fetch all relevant assembly accessions
+            assembly_link_nodes = assembly_links.findall(
+                "ASSEMBLY_LINK")
+
+            for node in assembly_link_nodes:
+                assembly_link = node.find("URL_LINK").find("URL").text
+                url_links.append(assembly_link.replace("ftp:", "http:"))
+
+            for url in url_links:
+                filename = url.split('/')[-1]
+                urllib.urlretrieve(url, os.path.join(dest_dir, filename))
+
+            return True
+
+    return False
+
+# -----------------------------------------------------------------------------
+
+
+def get_genome_subdirectory_ranges(genome_acc_list):
+    """
+    This function generates a list of subdir ranges that can be used to
+    organize genome files into multiple subdirs in a way that the location
+    of a specific fasta file is easily detectable for the last 3 digits of the
+    accession (e.g. JJRO01080032, KK558359). It takes into account LSF cluster
+    limitations
+
+    genome_acc_list: A list with all accessions in a particular assembly
+
+    return: A list of indexes that will be used as subdirectory names
+    """
+
+    max_index = 999 # largest 3 digit number
+
+    subdir_ranges = []
+    file_indexes = []
+    # construct a list with all the last 3 digits from the assembly accessions
+    for acc in genome_acc_list:
+        file_indexes.append(acc[-3:])
+
+    # sort the list to devise the ranges
+    file_idx_sorted = sorted(file_indexes)
+
+    no_files = len(file_idx_sorted)
+
+    index = gc.MAX_ALLOWED_FILES
+
+    while index < no_files:
+        subdir_ranges.append(file_idx_sorted.pop(index))
+        index = index + gc.MAX_ALLOWED_FILES # increase by max allowed files
+
+    # append the right most index
+    if file_idx_sorted[-1] < max_index:
+        subdir_ranges.append(file_idx_sorted[-1])
+    else:
+        subdir_ranges.append(max_index)
+
+    return subdir_ranges
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-  pass
+    pass

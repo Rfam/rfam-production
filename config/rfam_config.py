@@ -17,7 +17,13 @@ RFAMLIVE = cfl.RFAMLIVE
 
 RFAMLIVE_DJANGO = cfl.RFAMLIVE_DJANGO
 
+#RFAM12 = cfl.RFAM12
+
 RFAMLIVELOC = cfl.RFAMLIVELOC
+
+#XFAMDEV = cfl.XFAMDEV
+RFAMLOCAL = cfl.RFAMLOCAL
+RFAMREL = cfl.RFAMREL
 
 # ----------------------------Django settings----------------------------------
 
@@ -32,7 +38,7 @@ SECRET_KEY = cfl.SECRET_KEY
 # ---------------------------------PATHS---------------------------------------
 
 FA_GEN = cfl.FA_GEN
-ESL_PATH = cfl.ESL_PATH
+ESL_PATH = cfl.ESL_SFETCH
 RFAMSEQ_PATH = cfl.RFAMSEQ_PATH
 FAM_VIEW_PL = cfl.FAM_VIEW_PL
 
@@ -54,3 +60,9 @@ NCBI_RANKS = cfl.NCBI_RANKS
 # rfamprod privileges required
 FA_EXPORT_GROUP = cfl.FA_EXPORT_GROUP
 RFAM_VIEW_GROUP = cfl.RFAM_VIEW_GROUP
+
+# --------------------------------Rfam info------------------------------------
+
+RFAM_EMAIL = cfl.RFAM_EMAIL
+# RFAM_FTP = cfl.RFAM_FTP
+BROWSER_HUB_DESC_URL = cfl.BROWSER_HUB_DESC_URL

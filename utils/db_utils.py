@@ -19,7 +19,7 @@ Created on 27 Jan 2016
 Description: A set of database functions to ease processing and data
              retrieval from rfam_live
 
-TO DO: - modify reset_is_significant() to enable single clan reset
+ Todo  - modify reset_is_significant() to enable single clan reset
        - set_num_sig_seqs() we need a new field in the family table to hold the
          number of significant sequences per family. This can be performed after
          clan competition
@@ -39,6 +39,7 @@ import string
 import json
 
 from utils import RfamDB
+from scripts.export.genomes import fetch_gen_metadata as fgm
 
 # -------------------------------------------------------------------------
 
@@ -434,7 +435,7 @@ def set_number_of_species():
 # ----------------------------------------------------------------------------
 
 
-def set_num_sig_seqs():
+def set_num_full_sig_seqs():
     """
     Updates num_full in family table to hold the number of significant
     sequences rather than the number of sequences in the full alignment
@@ -456,6 +457,7 @@ def set_num_sig_seqs():
     count_query = ("select count(*)\n"
                    "from full_region f\n"
                    "where is_significant=1\n"
+                   "and type=\'full\'\n"
                    "and rfam_acc=\'%s\'")
 
     # counts list
@@ -795,8 +797,7 @@ def set_genome_size(genome_sizes):
         gen_size_file = open(genome_sizes, 'r')
         genome_size_dict = json.load(gen_size_file)
         gen_size_file.close()
-        genome_size_list = [(str(genome_size_dict[upid]),
-                             str(upid)) for upid in genome_size_dict.keys()]
+        genome_size_list = [(str(genome_size_dict[upid]), str(upid)) for upid in genome_size_dict.keys()]
 
     else:
         genome_size_list.append(genome_sizes)
@@ -820,24 +821,45 @@ def set_number_of_distinct_families_in_genome(upid):
     return: void
     """
 
+    upids = []
     # connect to db
     cnx = RfamDB.connect()
 
     # get a new buffered cursor
     cursor = cnx.cursor(buffered=True)
 
-    select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
-                    "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                    "and gs.upid=\'%s\'")
 
-    cursor.execute(select_query % upid)
-    count = cursor.fetchone()[0]
+    if upid is None:
 
-    # update is_significant field to 0
-    update_query = "update genome set num_families=%d where upid=\'%s\'"
+        upids = fetch_all_upids()
+        for upid in upids:
+            select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
+                            "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                            "and gs.upid=\'%s\'")
 
-    # execute query
-    cursor.execute(update_query % (count, upid))
+            cursor.execute(select_query % upid)
+            count = cursor.fetchone()[0]
+
+            # update is_significant field to 0
+            update_query = "update genome set num_families=%d where upid=\'%s\'"
+
+            # execute query
+            cursor.execute(update_query % (count, upid))
+
+
+    else:
+        select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
+                        "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                        "and gs.upid=\'%s\'")
+
+        cursor.execute(select_query % upid)
+        count = cursor.fetchone()[0]
+
+        # update is_significant field to 0
+        update_query = "update genome set num_families=%d where upid=\'%s\'"
+
+        # execute query
+        cursor.execute(update_query % (count, upid))
 
     # commit changes and disconnect
     cnx.commit()
@@ -884,7 +906,6 @@ def set_number_of_genomic_significant_hits(upid):
 
 # ----------------------------------------------------------------------------
 
-
 def fetch_author_orcid(author_name):
     """
     Searches for author by name and
@@ -916,6 +937,100 @@ def fetch_author_orcid(author_name):
     # This will return none if there's no ORCiD available
     return orcid
 # ----------------------------------------------------------------------------
-if __name__ == '__main__':
 
-    pass
+def update_chromosome_info_in_genseq():
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True, dictionary=True)
+
+    genome_query = "select upid, assembly_acc from genome where assembly_acc is not NULL"
+
+    update_query = """
+                   update genseq set chromosome_type=\'%s\', chromosome_name=\'%s\'
+                   where upid=\'%s\' and rfamseq_acc=\'%s\' and version=14.0
+                   """
+
+    cursor.execute(genome_query)
+    accessions = cursor.fetchall()
+    cursor.close()
+
+    upid_gca_dict = {}
+
+    cursor = cnx.cursor(buffered=True)
+
+    for pair in accessions:
+        upid_gca_dict[pair["upid"]] = pair["assembly_acc"]
+
+    for upid in upid_gca_dict.keys():
+        # print assembly_acc
+        #print upid_gca_dict[upid]
+
+        upid_gca_dict[upid]
+
+        if upid_gca_dict[upid][0:3] == 'GCF' or upid_gca_dict[upid] == '':
+            continue
+
+        data = fgm.fetch_gca_data(upid, upid_gca_dict[upid], 'kingdom')
+
+        if "fields" in data:
+            fields = data["fields"]
+            if "chromosomes" in fields:
+                for chromosome in fields["chromosomes"]:
+                    cursor.execute(update_query % (str(chromosome["type"]), str(chromosome["name"]),
+                                                   str(upid), str(chromosome["accession"])))
+
+    cnx.commit()
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+def update_assembly_names(upid_gca_file):
+    """
+    Loads the upid_gca json files and parses the corresponding assembly xml files
+    from ENA to fetch the assembly names and update the fields in genome table
+
+    param upid_gca_file: A json file with upid: {"GCA" : GCAxxx, "DOM": domain }
+
+    return: void
+    """
+
+    fp = open(upid_gca_file, 'r')
+    acc_pairs = json.load(fp)
+    fp.close()
+
+    # a list of tuples to
+    assembly_names = []
+
+    for upid in acc_pairs.keys():
+        data = fgm.fetch_gca_data(upid, acc_pairs[upid]["GCA"], acc_pairs[upid]["DOM"])
+
+        if "fields" in data:
+            if data["fields"]["assembly_name"] is not None:
+                assembly_names.append((data["fields"]["assembly_name"], upid))
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True, dictionary=True)
+
+    query = "update genome set assembly_name=%s where upid=%s"
+
+    cursor.executemany(query, assembly_names)
+    cnx.commit()
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+
+if __name__ == "__main__":
+
+    """
+    TO DO: Develop a script to call all of these functions after running the view
+    processes
+    """

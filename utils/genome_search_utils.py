@@ -25,8 +25,10 @@ import subprocess
 import logging
 import gzip
 import shutil
+import re
 
 from config import rfam_local as rfl
+
 # ---------------------------------GLOBALS-------------------------------------
 
 ESL_SEQSTAT = rfl.ESL_SEQSTAT
@@ -36,6 +38,7 @@ ESL_SSPLIT = rfl.ESL_SSPLIT
 MB = 1000000
 
 # -----------------------------------------------------------------------------
+
 
 def split_seq_file(seq_file, size, dest_dir=None):
     """
@@ -51,14 +54,23 @@ def split_seq_file(seq_file, size, dest_dir=None):
     seq_file_size = os.path.getsize(seq_file)
 
     # calculate number of files to split seq_file to
-    chunks = math.ceil(seq_file_size / size)
-
-    if dest_dir is not None:
-        os.chdir(dest_dir)
+    chunks_no = math.ceil(seq_file_size / size)
 
     # execute command
     try:
-        cmd = ESL_SSPLIT + " -n -r " + seq_file + " %s" % (str(chunks))
+        cmd = ''
+        filename = os.path.basename(seq_file).partition('.')[0]
+
+        if dest_dir is None:
+            cmd = "%s -n -r %s %s" % (ESL_SSPLIT,
+                                      seq_file,
+                                      str(chunks_no))
+        else:
+            cmd = "%s -n -r -oroot %s -odir %s %s %s" % (ESL_SSPLIT,
+                                                          filename,
+                                                          dest_dir,
+                                                          seq_file,
+                                                          str(chunks_no))
         subprocess.call(cmd, shell=True)
 
     except:
@@ -66,6 +78,7 @@ def split_seq_file(seq_file, size, dest_dir=None):
 
 
 # -----------------------------------------------------------------------------
+
 
 def extract_job_stats(lsf_output_file):
     """
@@ -117,6 +130,7 @@ def extract_job_stats(lsf_output_file):
 
 # -----------------------------------------------------------------------------
 
+
 def get_max_required_memory(lsf_output_dir):
     """
 
@@ -133,6 +147,7 @@ def get_max_required_memory(lsf_output_dir):
 
 
 # -----------------------------------------------------------------------------
+
 
 def extract_project_stats(lsf_output_dir):
     """
@@ -179,6 +194,8 @@ def index_sequence_file(seq_file):
     subprocess.call(cmd, shell=True)
 
 # -----------------------------------------------------------------------------
+
+
 def calculate_genome_size(genome):
     """
     Uses Infernal's esl-seqstat to calculate the size of a genome
@@ -205,17 +222,18 @@ def count_nucleotides_in_fasta(fasta_file):
 
     # some sanity checks
     if os.path.exists(fasta_file):
-
+        fasta_file_dir = os.path.split(fasta_file)[0]
         # decompress fasta file first
         if fasta_file.endswith(".gz"):
             filename = fasta_file.partition('.')[0]
-            with gzip.open(fasta_file, 'r') as fasta_in, open(filename+'.fa', 'w') as fasta_out:
+            with gzip.open(fasta_file, 'r') as fasta_in, open(os.path.join(fasta_file_dir,
+                                                                           filename+'.fa'), 'w') as fasta_out:
                 shutil.copyfileobj(fasta_in, fasta_out)
             fasta_in.close()
             fasta_out.close()
             # delete compressed version
             os.remove(fasta_file)
-            fasta_file = filename+'.fa'
+            fasta_file = os.path.join(fasta_file_dir, filename+'.fa')
 
         # create a process channel and execute the command in cmd_args
         cmd_args = [ESL_SEQSTAT, '--dna', "-c", fasta_file]
@@ -325,6 +343,48 @@ def calculate_seqdb_size(project_dir, mb=True):
 
 # -----------------------------------------------------------------------------
 
+
+def cleanup_illegal_lines_from_fasta(fasta_file, dest_dir=None):
+    """
+    The purpose of this function is to cleanup any illegal lines
+    from merged genome fasta files. Looks for any illegal characters
+    in a sequence line and skips those while re-writting the fasta file.
+    Prints any illegal lines found
+
+    fasta_file: The path to a fasta file
+    dest_dir: The path to a directory where the new fasta will
+    be created
+
+    return: Void
+    """
+    regex = re.compile("[^ATKMBVCNSWD-GUYRHatkbbvcnswdguyrh]")
+
+    filename = os.path.basename(fasta_file).partition('.')[0]
+
+    if dest_dir is None:
+        dest_dir = os.path.split(fasta_file)[0]
+
+    if not os.path.exists(dest_dir):
+        os.mkdir(dest_dir)
+
+    old_fasta = open(fasta_file, 'r')
+    new_fasta = open(os.path.join(dest_dir, filename+'_cleaned.fa'), 'w')
+
+    for line in old_fasta:
+        line = line.strip()
+        if len(line) > 0:
+            if line[0] != '>':
+                # if illegal chars in sequence, continue with next line
+                if regex.search(line):
+                    print line
+                    continue
+
+            new_fasta.write(line + '\n')
+
+    new_fasta.close()
+    old_fasta.close()
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 

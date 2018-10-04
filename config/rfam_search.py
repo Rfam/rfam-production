@@ -57,7 +57,6 @@ POPULAR_SPECIES = (
 # RFAM SEARCH QUERIES
 REL_FIELDS = "SELECT rfam_release, rfam_release_date FROM version"
 
-
 # -------------------------------RFAM ACCESSIONS--------------------------
 
 # FETCHING
@@ -125,7 +124,7 @@ FULL_REGION_FIELDS = """
     AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
-    AND fr.type='full'
+    AND fr.type = 'full'
     AND gs.upid = '%s'
     AND gs.version = '14.0'
 """
@@ -157,14 +156,14 @@ PDB_IDs_QUERY = """
 
 # Fetch ncbi ids related to a family accession
 NCBI_IDs_QUERY = """
-    SELECT tx.ncbi_id, tx.tax_string
-    FROM taxonomy tx, full_region fr, rfamseq rs
-    WHERE tx.ncbi_id=rs.ncbi_id
-    AND fr.rfamseq_acc=rs.rfamseq_acc
-    AND fr.is_significant=1
-    AND fr.rfam_acc='%s'
-    GROUP BY tx.ncbi_id
-"""
+                 SELECT tx.ncbi_id, tx.tax_string
+                 FROM taxonomy tx, full_region fr, rfamseq rs
+                 WHERE tx.ncbi_id=rs.ncbi_id
+                 AND fr.rfamseq_acc=rs.rfamseq_acc
+                 AND fr.is_significant=1
+                 AND fr.rfam_acc='%s'
+                 GROUP BY tx.ncbi_id
+                 """
 
 # Fetch upids related to a family accession
 FAMILY_UPIDS = """
@@ -175,6 +174,7 @@ FAMILY_UPIDS = """
                AND fr.is_significant = 1
                AND gs.version='14.0'
                """
+
 
 # Fetch clan based on rfam_acc
 FAM_CLAN = """
@@ -208,6 +208,7 @@ GENOME_FAMS = """
               AND gs.version='14.0'
               """
 
+
 # -------------------------ADDITIONAL FIELDS------------------------------
 
 # count # families associated with clan
@@ -229,7 +230,7 @@ COUNT_FULL_REGION = """
                     AND fr.is_significant = 1
                     AND fr.type='full'
                     AND gs.upid = '%s'
-                    AND gs.version=14.0
+                    AND gs.version='14.0'
                     """
 
 AU_ORCIDS = """

@@ -88,25 +88,31 @@ FAM_FIELDS = ("SELECT f.rfam_acc as id, f.rfam_id as name, f.description,"
               "f.number_3d_structures, f.num_seed, f.num_full, f.type, f.created, f.updated")
 
 # Fetching clan fields from the db
-CLAN_FIELDS = ("SELECT c.clan_acc as id, c.id as name, c.description, c.created,"
-               "c.updated, c.author, count(*) as num_families\n"
-               "FROM clan c, clan_membership cm\n"
-               "WHERE c.clan_acc=cm.clan_acc\n"
-               "AND c.clan_acc=\'%s\'")
+CLAN_FIELDS = """
+              SELECT c.clan_acc as id, c.id as name, c.description, c.created,
+              c.updated, c.author, count(*) as num_families
+              FROM clan c, clan_membership cm
+              WHERE c.clan_acc=cm.clan_acc
+              AND c.clan_acc='%s'
+              """
 
 # Fetching clan fields from the db
-MOTIF_FIELDS = ("SELECT m.motif_acc as id, m.motif_id as name, m.description,"
-                "m.created, m.updated, m.author\n"
-                "FROM motif m\n"
-                "WHERE m.motif_acc=\'%s\'")
+MOTIF_FIELDS = """
+               SELECT m.motif_acc as id, m.motif_id as name, m.description,
+               m.created, m.updated, m.author
+               FROM motif m
+               WHERE m.motif_acc='%s'
+               """
 
 # Fetching genome fields from the db
-GENOME_FIELDS = ("SELECT g.upid as id, g.scientific_name as name, g.assembly_acc, g.description, "
-                 "g.total_length, tx.tax_string, g.ncbi_id, g.num_rfam_regions,g.num_families, "
-                 "g.common_name, g.assembly_name, g.assembly_level, g.created, g.updated\n"
-                 "from genome g, taxonomy tx\n"
-                 "where g.ncbi_id=tx.ncbi_id\n"
-                 "and g.upid=\'%s\'")
+GENOME_FIELDS = """
+                SELECT g.upid as id, g.scientific_name as name, g.assembly_acc, g.description,
+                g.total_length, tx.tax_string, g.ncbi_id, g.num_rfam_regions,g.num_families,
+                g.common_name, g.assembly_name, g.assembly_level, g.created, g.updated
+                FROM genome g, taxonomy tx
+                WHERE g.ncbi_id=tx.ncbi_id
+                AND g.upid='%s'
+                """
 
 FULL_REGION_FIELDS = """
     SELECT
@@ -141,72 +147,99 @@ FULL_REGION_SEEDS = """
 
 # FAMILIES
 # Fetch pdb ids related to a family accession
-PDB_IDs_QUERY = ("SELECT distinct pdb_id FROM pdb_full_region\n"
-                 "WHERE rfam_acc=\'%s\' and is_significant=1")
+PDB_IDs_QUERY = """
+                SELECT distinct pdb_id
+                FROM pdb_full_region
+                WHERE rfam_acc='%s'
+                AND is_significant=1
+                """
 
 # Fetch ncbi ids related to a family accession
 NCBI_IDs_QUERY = """
-    SELECT tx.ncbi_id, tx.tax_string
-    FROM taxonomy tx, full_region fr, rfamseq rs
-    WHERE tx.ncbi_id=rs.ncbi_id
-    AND fr.rfamseq_acc=rs.rfamseq_acc
-    AND fr.is_significant=1
-    AND fr.rfam_acc='%s'
-    GROUP BY tx.ncbi_id
-"""
+                 SELECT tx.ncbi_id, tx.tax_string
+                 FROM taxonomy tx, full_region fr, rfamseq rs
+                 WHERE tx.ncbi_id=rs.ncbi_id
+                 AND fr.rfamseq_acc=rs.rfamseq_acc
+                 AND fr.is_significant=1
+                 AND fr.rfam_acc='%s'
+                 GROUP BY tx.ncbi_id
+                 """
 
 # Fetch upids related to a family accession
 FAMILY_UPIDS = """
-    SELECT distinct upid
-    FROM genseq gs, full_region fr
-    WHERE gs.rfamseq_acc=fr.rfamseq_acc
-    AND fr.rfam_acc='%s'
-    AND fr.is_significant = 1
-    AND gs.version='14.0'
-"""
+               SELECT distinct upid
+               FROM genseq gs, full_region fr
+               WHERE gs.rfamseq_acc=fr.rfamseq_acc
+               AND fr.rfam_acc='%s'
+               AND fr.is_significant = 1
+               AND gs.version='14.0'
+               """
+
 
 # Fetch clan based on rfam_acc
-FAM_CLAN = ("SELECT clan_acc from clan_membership\n"
-            "WHERE rfam_acc=\'%s\'")
+FAM_CLAN = """
+           SELECT clan_acc
+           FROM clan_membership
+           WHERE rfam_acc='%s'
+           """
 
 # CLANS
 # Fetch clan members
-CLAN_FAMS = ("SELECT rfam_acc from clan_membership\n"
-             "WHERE clan_acc=\'%s\'")
+CLAN_FAMS = """
+            SELECT rfam_acc
+            from clan_membership
+            WHERE clan_acc='%s'
+            """
 
 # MOTIFS
-MOTIF_FAMS = ("SELECT distinct rfam_acc from motif_matches\n"
-              "where motif_acc=\'%s\'")
+MOTIF_FAMS = """
+             SELECT distinct rfam_acc
+             FROM motif_matches
+             WHERE motif_acc='%s'
+             """
 
 # GENOMES
 GENOME_FAMS = """
-    SELECT distinct rfam_acc
-    FROM full_region fr, genseq gs
-    WHERE fr.rfamseq_acc=gs.rfamseq_acc
-    AND fr.is_significant = 1
-    AND gs.upid='%s'
-    AND gs.version='14.0'
-"""
+              SELECT distinct rfam_acc
+              FROM full_region fr, genseq gs
+              WHERE fr.rfamseq_acc=gs.rfamseq_acc
+              AND fr.is_significant = 1
+              AND gs.upid='%s'
+              AND gs.version='14.0'
+              """
+
 
 # -------------------------ADDITIONAL FIELDS------------------------------
 
 # count # families associated with clan
-NUM_FAMS_CLAN = ("SELECT count(*) FROM clan_membership\n"
-                 "WHERE clan_acc=\'%s\'")
+NUM_FAMS_CLAN = """
+                SELECT count(*) FROM clan_membership
+                WHERE clan_acc='%s'
+                """
 
 # count # families associated with motif
-NUM_FAMS_MOTIF = ("SELECT count(*) FROM motif_family_stats\n"
-                  "WHERE motif_acc=\'%s\'")
+NUM_FAMS_MOTIF = """
+                 SELECT count(*) FROM motif_family_stats
+                 WHERE motif_acc='%s'
+                 """
 
 COUNT_FULL_REGION = """
-    SELECT count(*)
-    FROM full_region fr, genseq gs
-    WHERE fr.rfamseq_acc = gs.rfamseq_acc
-    AND fr.is_significant = 1
-    AND fr.type='full'
-    AND gs.upid = '%s'
-    AND gs.version='14.0'
-"""
+                    SELECT count(*)
+                    FROM full_region fr, genseq gs
+                    WHERE fr.rfamseq_acc = gs.rfamseq_acc
+                    AND fr.is_significant = 1
+                    AND fr.type='full'
+                    AND gs.upid = '%s'
+                    AND gs.version='14.0'
+                    """
+
+AU_ORCIDS = """
+            SELECT orcid
+            FROM author au, family_author fa
+            WHERE au.author_id=fa.author_id
+            AND rfam_acc='%s'
+            AND orcid <> ''
+            """
 
 # -----------------------------------------------------------------------------
 

@@ -19,7 +19,7 @@ Created on 27 Jan 2016
 Description: A set of database functions to ease processing and data
              retrieval from rfam_live
 
-TO DO: - modify reset_is_significant() to enable single clan reset
+ Todo  - modify reset_is_significant() to enable single clan reset
        - set_num_sig_seqs() we need a new field in the family table to hold the
          number of significant sequences per family. This can be performed after
          clan competition
@@ -906,6 +906,37 @@ def set_number_of_genomic_significant_hits(upid):
 
 # ----------------------------------------------------------------------------
 
+def fetch_author_orcid(author_name):
+    """
+    Searches for author by name and
+    :param author_name:
+    :return:
+    """
+
+    orcid = None
+    cnx = RfamDB.connect()
+
+    # Get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    query = """
+            Select orcid from author
+            where name like '%s%s%s' or synonyms like '%s%s%s'
+            """
+
+    cursor.execute(query % (chr(37), author_name, chr(37),
+                            chr(37), author_name, chr(37)))
+
+    result = cursor.fetchone()
+    if result is not None:
+        orcid = result[0]
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    # This will return none if there's no ORCiD available
+    return orcid
+# ----------------------------------------------------------------------------
 
 def update_chromosome_info_in_genseq():
     # connect to db
@@ -955,7 +986,6 @@ def update_chromosome_info_in_genseq():
     RfamDB.disconnect(cnx)
 
 # ----------------------------------------------------------------------------
-
 
 def update_assembly_names(upid_gca_file):
     """

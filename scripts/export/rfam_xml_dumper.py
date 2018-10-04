@@ -103,6 +103,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     filename = os.path.join(outdir, entry_acc + ".xml")
     fp_out = open(filename, 'w')
 
+    
     db_str = ET.tostring(db_xml, "utf-8")
     db_str_reformated = minidom.parseString(db_str)
 
@@ -482,7 +483,6 @@ def full_region_xml_builder(entries, upid):
                          '93838': 1, '186617': 1, '229533': 1, '351048': 1,
                          '456327': 1, '766192': 1, '1891747': 1}
 
-
     genome = Genome.objects.select_related('ncbi').get(upid=upid)
     chromosomes = get_chromosome_metadata()
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
@@ -495,8 +495,9 @@ def full_region_xml_builder(entries, upid):
         format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
 
     # work on 'seed' regions if not already exported
-    cursor.execute(rs.FULL_REGION_SEEDS % upid)
+    #cursor.execute(rs.FULL_REGION_SEEDS % upid)
 
+    """
     # if one of the cases of duplicates, work with the flags
     if genome.ncbi_id in tax_id_duplicates:
         if tax_id_duplicates[genome.ncbi_id] == 1:
@@ -504,12 +505,12 @@ def full_region_xml_builder(entries, upid):
                 format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
             # set flag to 0 to disable export
             tax_id_duplicates[genome.ncbi_id] = 0
-
+    """
     # capture the rest of the cases
-    else:
-        cursor.execute(rs.FULL_REGION_SEEDS % upid)
-        for row in result_iterator(cursor):
-            format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
+    #else:
+    cursor.execute(rs.FULL_REGION_SEEDS % upid)
+    for row in result_iterator(cursor):
+    	format_full_region(entries, row, genome, chromosomes, rnacentral_ids)
 
     cursor.close()
     cnx.disconnect()

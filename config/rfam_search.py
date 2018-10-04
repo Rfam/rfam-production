@@ -124,9 +124,9 @@ FULL_REGION_FIELDS = """
     AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
-    AND fr.type='full'
+    AND fr.type = 'full'
     AND gs.upid = '%s'
-    AND gs.version='14.0'
+    AND gs.version = '14.0'
 """
 
 FULL_REGION_SEEDS = """

@@ -90,7 +90,8 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
     fp.close()
 
     if os.path.isfile(upid_list):
-    	fp = open(upid_list, 'r')
+    	project_dir = fasta_input
+	fp = open(upid_list, 'r')
     	upids = [x.strip() for x in fp]
     	fp.close()
 
@@ -119,7 +120,7 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
                                         source, filename=None, to_file=True)
 
     else:
-
+	project_dir = fasta_input
 	upid = upid_list
 	subdir = os.path.join(project_dir, upid[-3:])
         updir = os.path.join(subdir, upid)

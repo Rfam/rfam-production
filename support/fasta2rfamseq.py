@@ -5,19 +5,15 @@ import subprocess
 from config import rfam_config as gf
 
 # -----------------------------------------------------------------------------
-
-
-def generate_rfamseq_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=True):
+# TO DO, set upid_taxid_file to None and try to fetch ncbi ids from Uniprot.
+# There's a chance that upids become unavailable though
+def extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=True):
     """
-    Parses a fasta file and generates rfamseq like matadata using esl-seqstat. The output is in
-    rfamseq table format.
+    Parses a fasta file and generates rfamseq like matadata using esl-seqstat
 
-    fasta_file: A valid merged genome fasta (UPXXXXXXXXX.fa)
-    taxid: A valid genome taxonomy id
-    source: The database where the genome was downloaded from
-    filename: A filename to be used for the output file. If None, uses fasta_file name
-    to_file: A boolean value indicating whether to write output to file or print the entries
-    on screen
+    fasta_file: A valid fasta file
+    taxid: A file with upid and taxid mappings.
+    database:
 
     returns: void
     """
@@ -37,7 +33,7 @@ def generate_rfamseq_metadata_from_fasta(fasta_file, taxid, source, filename=Non
     args = [gf.ESL_SEQSTAT, "-a", "--dna", fasta_file]
     # open a process pipe and run esl-seqstat. Stores the result in process
     process = subprocess.Popen(args, stdout=subprocess.PIPE)
-
+    
     # fetch esl-seqstat results
     result = process.communicate()
 
@@ -72,15 +68,10 @@ def generate_rfamseq_metadata_from_fasta(fasta_file, taxid, source, filename=Non
 
 def main(project_dir, upid_list, upid_gca_tax_file):
     """
-    Main function that does some input parsing and calls
-    generate_rfamseq_metadata_from_fasta to generate new entries for rfamseq table
 
-    project_dir: The path to a project directory where the genomes are initially
-    downloaded
-    upid_list: A file containing a list of upids for which to generate the .rfamseq
-    files
-    upid_gca_tax_file: A json file generated from the latest proteomes-all.tsv
-    Uniprot file
+    project_dir:
+    upid_list:
+    upid_gca_tax_file:
 
     return:
     """
@@ -88,31 +79,57 @@ def main(project_dir, upid_list, upid_gca_tax_file):
     upid_gca_tax_dict = json.load(fp)
     fp.close()
 
-    fp = open(upid_list, 'r')
-    upids = [x.strip() for x in fp]
-    fp.close()
+    if os.path.isfile(upid_list):
+    	fp = open(upid_list, 'r')
+    	upids = [x.strip() for x in fp]
+    	fp.close()
 
-    for upid in upids:
-        subdir = os.path.join(project_dir, upid[-3:])
+    	for upid in upids:
+        	print upid
+        	subdir = os.path.join(project_dir, upid[-3:])
+        	updir = os.path.join(subdir, upid)
+        	upfasta = os.path.join(updir, upid+'.fa')
+
+        	# do some sanity checks
+        	if os.path.exists(upfasta):
+            	# defining the source of the sequences according to assembly accession
+            		source = "UNIPROT; ENA"
+            		if upid in upid_gca_tax_dict:
+	    			if upid_gca_tax_dict[upid]["GCA"] != -1:
+                			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+                    				source = "NIH; NCBI"
+                			else:
+                    				source = "UNIPROT; ENA"
+
+	    	else:
+			print "%s not in the current Uniprot release"%upid
+			continue
+
+	    	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
+                                        source, filename=None, to_file=True)
+
+    else:
+
+	upid = upid_list
+	subdir = os.path.join(project_dir, upid[-3:])
         updir = os.path.join(subdir, upid)
         upfasta = os.path.join(updir, upid+'.fa')
 
-        # do some sanity checks
-        if os.path.exists(upfasta):
-            # defining the source of the sequences according to assembly accession
-            source = "UNIPROT; ENA"
-            if upid in upid_gca_tax_dict:
-                if upid_gca_tax_dict[upid]["GCA"] != -1:
-                    if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
-                        source = "NIH; NCBI"
-                    else:
-                        source = "UNIPROT; ENA"
-            else:
-                print "%s not found in the dictionary" % upid
-                continue
 
-            generate_rfamseq_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
-                                    source, filename=None, to_file=True)
+	source = "UNIPROT; ENA"
+	if upid in upid_gca_tax_dict:
+        	if upid_gca_tax_dict[upid]["GCA"] != -1:
+			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+				source = "NIH; NCBI"
+			else:
+				source = "UNIPROT; ENA"
+	else:
+		print "%s not in the current Uniprot release"%upid
+		sys.exit()
+
+	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
+                                        source, filename=None, to_file=True)
+
 
 # -----------------------------------------------------------------------------
 

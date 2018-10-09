@@ -66,7 +66,7 @@ def extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_fil
 # -----------------------------------------------------------------------------
 
 
-def main(fasta_input, upid_list=None, upid_gca_tax_file):
+def main(fasta_input, upid_list, upid_gca_tax_file):
     """
     This is the main function of the fasta2rfamseq script, which converts a
     fasta file to rfamseq table dumps (e.g. filename.rfamseq) for easy import
@@ -125,7 +125,6 @@ def main(fasta_input, upid_list=None, upid_gca_tax_file):
         updir = os.path.join(subdir, upid)
         upfasta = os.path.join(updir, upid+'.fa')
 
-
 	source = "UNIPROT; ENA"
 	if upid in upid_gca_tax_dict:
         	if upid_gca_tax_dict[upid]["GCA"] != -1:
@@ -134,7 +133,7 @@ def main(fasta_input, upid_list=None, upid_gca_tax_file):
 			else:
 				source = "UNIPROT; ENA"
 	else:
-		print "%s not in the current Uniprot release"%upid
+		print "%s not in the current Uniprot release" % upid
 		sys.exit()
 
 	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],

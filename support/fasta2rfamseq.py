@@ -66,15 +66,25 @@ def extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_fil
 # -----------------------------------------------------------------------------
 
 
-def main(project_dir, upid_list, upid_gca_tax_file):
+def main(fasta_input, upid_list=None, upid_gca_tax_file):
+    """
+    This is the main function of the fasta2rfamseq script, which converts a
+    fasta file to rfamseq table dumps (e.g. filename.rfamseq) for easy import
+    to rfam_live upon release
+
+    fasta_input: This can be a single fasta file or a genome project directory
+	         as orgnised by the genome download pipeline
+    upid_list:   This is a plain txt file listing all the upids in the genome
+                 project directory for which to generate the rfamseq files. 
+                 It defaults to None, for single fasta files
+    upid_gca_tax_file: This a json file mapping each upid to its corresponding
+                       taxid. In the case of Zasha or RNAcentral input, this 
+		       will be a mapping of the sequence accession in the 
+  		       fasta file to its associated taxid
+    
+    return: void
     """
 
-    project_dir:
-    upid_list:
-    upid_gca_tax_file:
-
-    return:
-    """
     fp = open(upid_gca_tax_file, 'r')
     upid_gca_tax_dict = json.load(fp)
     fp.close()

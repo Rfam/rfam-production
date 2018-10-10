@@ -3,7 +3,8 @@ import sys
 
 from config import rfam_config as rc
 
-# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
+
 
 def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=None):
     """
@@ -65,8 +66,22 @@ def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=
 
     return rnac_metadata_dict
 
-# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
 
+
+def generate_sequence_stats(fasta_file):
+    """
+    Uses esl-sfetch to generate stats for every sequence in the provided fasta file
+    and loads that information in a dictionary
+
+    fasta_file: A sequence file in fasta format
+
+    return: A dictionary with sequence statistics
+    """
+
+    pass
+
+# ----------------------------------------------------------------------------------
 if __name__ == "__main__":
 
     pass

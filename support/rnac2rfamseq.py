@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 from config import rfam_config as rc
 
@@ -30,10 +31,11 @@ def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=
         if rnac_line_contents[0] not in rnac_metadata_dict:
             rnac_metadata_dict[rnac_line_contents[0]] = {}
             rnac_metadata_dict[rnac_line_contents[0]]["source"] = rnac_line_contents[1]
-            seq_length = rnac_line_contents[3]
+            ncbi_id = rnac_line_contents[3]
             temp = rnac_line_contents[2].partition('/')
 
             previous_acc = temp[0]
+            """ Revise this section
             if temp[2] != '':
                 region_coords = temp[2].split('-')
                 seq_start = region_coords[0]
@@ -41,11 +43,9 @@ def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=
             else:
                 seq_start = 1
                 seq_end = seq_length
-
+            """
             rnac_metadata_dict[rnac_line_contents[0]]["previous_acc"] = previous_acc
-            rnac_metadata_dict[rnac_line_contents[0]]["seq_start"] = seq_start
-            rnac_metadata_dict[rnac_line_contents[0]]["seq_end"] = seq_end
-            rnac_metadata_dict[rnac_line_contents[0]]["seq_length"] = seq_length
+            rnac_metadata_dict[rnac_line_contents[0]]["ncbi_id"] = ncbi_id
             rnac_metadata_dict[rnac_line_contents[0]]["mol_type"] = rnac_line_contents[4]
 
     # close file handle
@@ -79,11 +79,78 @@ def generate_sequence_stats(fasta_file):
     return: A dictionary with sequence statistics
     """
 
-    pass
+    sequence_stats = {}
+    # create argument list required by subprocess PIPE
+    args = [rc.ESL_SEQSTAT, "-a", "--dna", fasta_file]
+
+    # open a process pipe and run esl-seqstat. Stores the result in process
+    process = subprocess.Popen(args, stdout=subprocess.PIPE)
+
+    # fetch esl-seqstat results
+    result = process.communicate()
+
+    # read in and clean-up sequence stats
+    seq_stats = [x[2:] for x in result[0].strip().split('\n') if x[0] == '=']
+
+    # process every sequence header to generate a rfamseq entry
+    for sequence in seq_stats:
+        seq_elements = [x.strip() for x in sequence.split(' ') if x != '']
+
+        rfamseq_acc = seq_elements[0].partition('_')[0]
+
+        if rfamseq_acc not in sequence_stats:
+            sequence_stats[rfamseq_acc] = {}
+            sequence_stats[rfamseq_acc]["length"] = seq_elements[1]
+            sequence_stats[rfamseq_acc]["desc"] = ' '.join(seq_elements[2:])
+
+    return sequence_stats
 
 # ----------------------------------------------------------------------------------
+
+
+def generate_rfamseq_tsv_dump(fasta_file, rnac_metadata_file, to_file = False):
+    """
+    Parses the sequence file and the rnacentral metadata file and generates an
+    rfamseq dump for the sequences to be imported to rfam_live
+
+    fasta_file: The path to the input fasta file as generated from RNAcentral
+    rnac_metadata_file: The path to the RNAcentral metadata file in tabular
+    format
+
+    return: void
+    """
+
+    rnac_metadata = load_rnacentral_metadata_to_dict(rnac_metadata_file)
+    sequence_stats = generate_sequence_stats(fasta_file)
+
+    for urs_id in rnac_metadata.keys():
+        rfamseq_acc = urs_id
+        accession = urs_id
+        version = '0'
+        taxid = rnac_metadata[urs_id]["ncbi_id"]
+        mol_type = rnac_metadata[urs_id]["mol_type"]
+        length = sequence_stats[urs_id]["length"]
+        description = sequence_stats[urs_id]["desc"]
+        previous_acc = rnac_metadata[urs_id]["previous_acc"]
+        source = rnac_metadata[urs_id]["source"]
+
+
+        rfamseq_entry = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (rfamseq_acc, accession,
+                                                          version, taxid,
+                                                          mol_type, length,
+                                                          description, previous_acc,
+                                                          source)
+
+        # TO DO provide the option to generate a file instead?
+
+        print rfamseq_entry
+
+# ----------------------------------------------------------------------------------
+
 if __name__ == "__main__":
 
-    pass
 
+    fasta_file = sys.argv[1]
+    rnac_metadata_file = sys.argv[2]
 
+    generate_rfamseq_tsv_dump(fasta_file, rnac_metadata_file, to_file=False)

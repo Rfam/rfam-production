@@ -27,11 +27,14 @@ def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=
     # loop over all lines in the rnacentral tsv file
     for rnac_line in fp:
         rnac_line_contents = rnac_line.strip().split('\t')
+        tax_id = rnac_line_contents[3]
+
+        # append taxid to URS to create RNAcentral accession
+        rnac_acc = rnac_line_contents[0] + '_' + tax_id
         # all URS entries must be unique, count if any skipped
-        if rnac_line_contents[0] not in rnac_metadata_dict:
-            rnac_metadata_dict[rnac_line_contents[0]] = {}
-            rnac_metadata_dict[rnac_line_contents[0]]["source"] = rnac_line_contents[1]
-            ncbi_id = rnac_line_contents[3]
+        if rnac_acc not in rnac_metadata_dict:
+            rnac_metadata_dict[rnac_acc] = {}
+            rnac_metadata_dict[rnac_acc]["source"] = rnac_line_contents[1]
             temp = rnac_line_contents[2].partition('/')
 
             previous_acc = temp[0]
@@ -44,9 +47,9 @@ def load_rnacentral_metadata_to_dict(rnac_metadata_file, to_file=False, destdir=
                 seq_start = 1
                 seq_end = seq_length
             """
-            rnac_metadata_dict[rnac_line_contents[0]]["previous_acc"] = previous_acc
-            rnac_metadata_dict[rnac_line_contents[0]]["ncbi_id"] = ncbi_id
-            rnac_metadata_dict[rnac_line_contents[0]]["mol_type"] = rnac_line_contents[4]
+            rnac_metadata_dict[rnac_acc]["previous_acc"] = previous_acc
+            rnac_metadata_dict[rnac_acc]["tax_id"] = tax_id
+            rnac_metadata_dict[rnac_acc]["mol_type"] = rnac_line_contents[4]
 
     # close file handle
     fp.close()
@@ -96,7 +99,7 @@ def generate_sequence_stats(fasta_file):
     for sequence in seq_stats:
         seq_elements = [x.strip() for x in sequence.split(' ') if x != '']
 
-        rfamseq_acc = seq_elements[0].partition('_')[0]
+        rfamseq_acc = seq_elements[0]
 
         if rfamseq_acc not in sequence_stats:
             sequence_stats[rfamseq_acc] = {}
@@ -127,7 +130,7 @@ def generate_rfamseq_tsv_dump(fasta_file, rnac_metadata_file, to_file = False):
         rfamseq_acc = urs_id
         accession = urs_id
         version = '0'
-        taxid = rnac_metadata[urs_id]["ncbi_id"]
+        taxid = rnac_metadata[urs_id]["tax_id"]
         mol_type = rnac_metadata[urs_id]["mol_type"]
         length = sequence_stats[urs_id]["length"]
         description = sequence_stats[urs_id]["desc"]

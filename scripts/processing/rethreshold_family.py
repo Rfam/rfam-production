@@ -59,19 +59,22 @@ def main(family_dir, multi=False):
 
         cmd = CMD % (MEMORY, family_dir, threshold, os.path.basename(family_dir))
 
+        os.chdir(family_dir)
         subprocess.call(cmd, shell=True)
 
     else:
         family_sub_dirs = os.listdir(family_dir)
 
         for subdir in family_sub_dirs:
-            desc_loc = os.path.join(family_dir, os.path.join(subdir, "DESC"))
+            subdir_loc = os.path.join()
+            desc_loc = os.path.join(os.path.join(family_dir, subdir), "DESC")
             threshold = get_threshold_from_DESC(desc_loc)
 
             cmd = CMD % (MEMORY, subdir, threshold, subdir)
 
             # this needs to be replaced with a command to submit a job to the
             # cluster
+            os.chdir(subdir_loc)
             subprocess.call(cmd, shell=True)
 
 

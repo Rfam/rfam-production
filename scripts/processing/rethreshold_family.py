@@ -6,12 +6,12 @@ import subprocess
 
 MEMORY = 6000
 
-CMD = ("bsub -M %s cd %s && "
-       "rfsearch.pl -t 30 -cnompi && rfmake.pl -t %s "
+CMD = ("bsub -M %s \"cd %s && "
+       "rfsearch.pl -t 30 -cnompi -ignoresm && rfmake.pl -t %s "
         "-a -forcethr && mkdir rscape-seed && R-scape "
         "--outdir rscape-seed --cyk align && mkdir rscape-align && "
         "R-scape --outdir rscape-align --cyk align && "
-        "cd .. && rqc-all.pl %s")
+        "cd .. && rqc-all.pl %s\"")
 
 
 # -----------------------------------------------------------------

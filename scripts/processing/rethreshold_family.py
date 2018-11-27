@@ -66,8 +66,8 @@ def main(family_dir, multi=False):
         family_sub_dirs = os.listdir(family_dir)
 
         for subdir in family_sub_dirs:
-            subdir_loc = os.path.join()
-            desc_loc = os.path.join(os.path.join(family_dir, subdir), "DESC")
+            subdir_loc = os.path.join(family_dir, subdir)
+            desc_loc = os.path.join(subdir_loc, "DESC")
             threshold = get_threshold_from_DESC(desc_loc)
 
             cmd = CMD % (MEMORY, subdir, threshold, subdir)

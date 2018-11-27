@@ -57,7 +57,7 @@ def main(family_dir, multi=False):
         desc_loc = os.path.join(family_dir, "DESC")
         threshold = get_threshold_from_DESC(desc_loc)
 
-        cmd = CMD % (MEMORY, family_dir, desc_loc, threshold)
+        cmd = CMD % (MEMORY, family_dir, threshold, os.path.basename(family_dir))
 
         subprocess.call(cmd, shell=True)
 
@@ -68,7 +68,7 @@ def main(family_dir, multi=False):
             desc_loc = os.path.join(family_dir, os.path.join(subdir, "DESC"))
             threshold = get_threshold_from_DESC(desc_loc)
 
-            cmd = CMD % (MEMORY, subdir, desc_loc, threshold)
+            cmd = CMD % (MEMORY, subdir, threshold, subdir)
 
             # this needs to be replaced with a command to submit a job to the
             # cluster

@@ -118,17 +118,17 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             sequence = sequence.join(seq_bits)
 
         # if no fasta file found, get the sequence from ENA
-        if (sequence == ''):
+        if sequence == '':
             sequence = fetch_seq_from_ena(entry)
 
         # build dictionary and update sequence list
-        if (sequence != '' and seq_validator(sequence) is True):
+        if sequence != '' and seq_validator(sequence) is True:
             json_obj_list.append(build_json_dict(entry, sequence))
         else:
             # log obsolete sequences
             logging.debug("%s", "\t".join(entry))
 
-        if (len(json_obj_list) == no_seqs):
+        if len(json_obj_list) == no_seqs:
             fp_out = open(
                 os.path.join(out_dir, filename + str(f_index) + ".json"), 'w')
 
@@ -143,7 +143,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
         cmd = ''
 
     # if list != empty write remaining seqs to new file
-    if (len(json_obj_list) > 0):
+    if len(json_obj_list) > 0:
         fp_out = open(
             os.path.join(out_dir, filename + str(f_index) + ".json"), 'w')
         json.dump(
@@ -170,7 +170,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
     out_dir:    The path to the output directory
     """
 
-    if(out_dir is None):
+    if out_dir is None:
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
@@ -215,7 +215,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
             #    sequence = fetch_seq_from_ena(entry)
 
             # check if seq string still empty,
-            if (sequence != '' and seq_validator(sequence) is True):
+            if sequence != '' and seq_validator(sequence) is True:
                 json_obj_list.append(build_json_dict(entry, sequence))
             else:
                 # log obsolete sequence
@@ -259,7 +259,7 @@ def build_json_dict(entry, sequence):
     edict["ncrna_class"] = entry[NCRNA_CLASS]
     edict["feature_type"] = entry[RNA_TYPE]
 
-    if (entry[ALIGNMENT] == "seed"):
+    if entry[ALIGNMENT] == "seed":
         edict["is_seed"] = '1'
     else:
         edict["is_seed"] = '0'
@@ -275,8 +275,8 @@ def build_json_dict(entry, sequence):
     species = entry[SPECIES]
     common_name = ''
 
-    if(species.find('(') != -1):
-        if (species.count('(') > 1):
+    if species.find('(') != -1:
+        if species.count('(') > 1:
             species = species.rsplit('(', 1)
             common_name = species[1]
         else:
@@ -317,7 +317,7 @@ def fetch_seq_from_ena(entry):
 
     seq_acc = entry[SEQACC].partition('.')[0]
 
-    if (start < end):
+    if start < end:
         seq_url = ENA_URL % (seq_acc, entry[SEQ_START], entry[SEQ_END])
     else:
         seq_url = ENA_URL % (seq_acc, entry[SEQ_END], entry[SEQ_START])
@@ -345,7 +345,7 @@ def seq_validator(sequence):
     # checks for ascii characters that should not appear in a fasta sequence
     seq_val = re.compile(r"[.-@|\s| -)|z-~|Z-`|EFIJLOPQX|efijlopqx+,]+")
 
-    if(seq_val.search(sequence) is None):
+    if seq_val.search(sequence) is None:
         return True
 
     return False
@@ -366,7 +366,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
     out_dir:   The path to the output directory
     """
 
-    if(out_dir is None):
+    if out_dir is None:
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
@@ -432,7 +432,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                 os.remove(ofile_path)
 
                 # update json obj list
-                if(sequence != '' and seq_validator(sequence) is True):
+                if sequence != '' and seq_validator(sequence) is True:
                     json_obj_list.append(build_json_dict(entry, sequence))
                 else:
                     # log obsolete sequence
@@ -476,15 +476,15 @@ def usage():
 
 if __name__ == '__main__':
 
-    if (sys.argv[1] == '-h'):
+    if sys.argv[1] == '-h':
         usage()
 
-    elif(len(sys.argv) >= 3):
+    elif len(sys.argv) >= 3:
         seq_dir = sys.argv[1]    # directory of rfam2rnac dump files
         fasta_dir = sys.argv[2]  # directory of fasta_files
         out_dir = None           # output directory
 
-        if (len(sys.argv) == 4):
+        if len(sys.argv) == 4:
             out_dir = sys.argv[3]
 
         rnac_to_json_multi(seq_dir, fasta_dir, out_dir)

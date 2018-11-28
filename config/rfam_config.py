@@ -25,6 +25,10 @@ RFAMLIVELOC = cfl.RFAMLIVELOC
 RFAMLOCAL = cfl.RFAMLOCAL
 RFAMREL = cfl.RFAMREL
 
+# ---------------------------------SEQDBs--------------------------------------
+
+RFAM_SEED_DB = cfl.RFAM_SEED_SEQ
+
 # ----------------------------Django settings----------------------------------
 
 # DATABASES

@@ -601,12 +601,6 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
     authors = authors.replace(';', ',')
     author_list = get_value_list(authors, rs.AUTH_DEL)
 
-    # to be deleted when author name is corrected on the db
-    if author_list.count("Argasinska") > 0:
-        author_list.remove("J")
-        author_list.remove("Argasinska")
-        author_list.append("Argasinska J")
-
     for author in author_list:
         ET.SubElement(add_fields, "field", name="author").text = author
 

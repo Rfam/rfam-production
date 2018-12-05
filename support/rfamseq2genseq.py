@@ -138,4 +138,6 @@ if __name__ == '__main__':
 
     else:
         # call generate_genseq_files_from_common_directory here
-        pass
+        rfamseq_file = sys.argv[1]
+        dest_dir = sys.argv[2]
+        convert_rfamseq_to_genseq(rfamseq_file, dest_dir=None)

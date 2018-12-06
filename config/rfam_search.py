@@ -24,7 +24,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "13.0"  # release version
+DB_RELEASE = "14.0"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
@@ -118,9 +118,11 @@ FULL_REGION_FIELDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
-    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, genseq gs, rfamseq rs
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description,
+    rs.ncbi_id as ncbi_id, tx.species as scientific_name, tx.tax_string
+    FROM full_region fr, family f, genseq gs, rfamseq rs, taxonomy tx
     WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND rs.ncbi_id=tx.ncbi_id
     AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1

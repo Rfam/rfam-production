@@ -386,6 +386,13 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
     name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+
+    scientific_name = None
+    if genome is not None:
+	scientific_name = genome.scientific_name
+    else:
+	scientific_name = region['scientific_name']
+
     description = '%s %s' % (genome.scientific_name, region["rfam_id"])
 
     # add a new family entry to the xml tree
@@ -404,8 +411,14 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     # adding cross references
     cross_refs = {}
 
+    ncbi_id = None
+    if genome is not None:
+	ncbi_id = genome.ncbi_id
+    else:
+	ncbi_id = region['ncbi_id']
+
     # create cross references dictionary
-    cross_refs["ncbi_taxonomy_id"] = [genome.ncbi_id]
+    cross_refs["ncbi_taxonomy_id"] = [ncbi_id]
     cross_refs["RFAM"] = [region["rfam_acc"]]
 
     ena_accession = ''
@@ -415,10 +428,14 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
         ena_accession = region["rfamseq_acc"]
 
     cross_refs["ENA"] = [ena_accession]
-    cross_refs["Uniprot"] = [genome.upid]
+    
+    if genome is not None:
+    	cross_refs["Uniprot"] = [genome.upid]
 
     if name in rnacentral_ids:
-        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(genome.ncbi_id)]
+        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(ncbi_id)]
+    else:
+	cross_refs["RNACENTRAL"] = name
 
     build_cross_references(entry, cross_refs)
 
@@ -482,9 +499,12 @@ def full_region_xml_builder(entries, upid):
                          '11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
                          '93838': 1, '186617': 1, '229533': 1, '351048': 1,
                          '456327': 1, '766192': 1, '1891747': 1}
-
-    genome = Genome.objects.select_related('ncbi').get(upid=upid)
-    chromosomes = get_chromosome_metadata()
+    genome = None
+    chromosomes = None
+    if upid[0:2]=='UP':
+    	genome = Genome.objects.select_related('ncbi').get(upid=upid)
+    	chromosomes = get_chromosome_metadata()
+    
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True, buffered=True)
@@ -725,6 +745,20 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
 
     add_fields = ET.SubElement(entry, "additional_fields")
 
+    tax_string = ''
+    species = ''
+    common_name = ''
+    scientific_name = ''
+    if genome is not None:
+	tax_string = genome.ncbi.tax_string
+	species = genome.ncbi_id
+	common_name = genome.common_name
+	scientific_name = genome.scientific_name
+    else:
+	tax_string = fields["tax_string"]
+	species = fields["ncbi_id"]
+	scientific_name = fields["scientific_name"]
+
     # adding entry type
     ET.SubElement(add_fields, "field", name="entry_type").text = "Sequence"
     ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(fields["rfamseq_acc"])
@@ -738,7 +772,8 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
     ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
-    ET.SubElement(add_fields, "field", name="tax_string").text = genome.ncbi.tax_string
+    #ET.SubElement(add_fields, "field", name="tax_string").text = genome.ncbi.tax_string
+    ET.SubElement(add_fields, "field", name="tax_string").text = tax_string
 
     if fields["rfamseq_acc"] in chromosomes:
         ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]][
@@ -747,7 +782,7 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
             "chromosome_type"]
 
     # add popular species if any
-    species = genome.ncbi_id
+    #species = genome.ncbi_id
     if species in rs.POPULAR_SPECIES:
         ET.SubElement(add_fields, "field", name="popular_species").text = species
 
@@ -758,9 +793,10 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
         ET.SubElement(add_fields, "field", name="rna_type").text = rna_type
 
     if genome.common_name:
-        ET.SubElement(add_fields, "field", name="common_name").text = genome.common_name
-
-    ET.SubElement(add_fields, "field", name="scientific_name").text = genome.scientific_name
+       #ET.SubElement(add_fields, "field", name="common_name").text = genome.common_name
+	ET.SubElement(add_fields, "field", name="common_name").text = common_name
+    #ET.SubElement(add_fields, "field", name="scientific_name").text = genome.scientific_name
+    ET.SubElement(add_fields, "field", name="scientific_name").text = scientific_name
 
     return add_fields
 

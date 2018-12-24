@@ -13,14 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import json
-import subprocess
-import urllib2
 import logging
-import sys
+import os
 import re
 import string
+import subprocess
+import sys
+import urllib2
+
 from config import config_local as cl
 from config import rfam_config as rfc
 
@@ -60,8 +61,8 @@ elif LSF_MODE is True:
 else:
     sys.exit("\nLSF_MODE has not been set properly.")
 
-# -----------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
 
 def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
     """
@@ -105,7 +106,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
         # check if the fasta file exists
         if os.path.exists(fam_fa_path):
             seq_id = entry[SEQACC] + '/' + \
-                entry[SEQ_START] + '-' + entry[SEQ_END]
+                     entry[SEQ_START] + '-' + entry[SEQ_END]
 
             cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -153,6 +154,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
 
     rnac_fp.close()
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -185,20 +187,24 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
     for seq_file in seq_files:
 
         fp = open(os.path.join(seq_dir, seq_file), 'r')
-
+        seq_file_path = ''
         for entry in fp:
             entry = entry.strip().split('\t')
 
-            fam_fa_path = os.path.join(fasta_dir, entry[RFAM_ACC] + ".fa")
+            if entry[ALIGNMENT] == 'seed' or entry[ALIGNMENT] == 'SEED':
+                seq_file_path = os.path.join(fasta_dir, "Rfam.seed")
+            else:
+                seq_file_path = os.path.join(fasta_dir, entry[RFAM_ACC] + ".fa")
+
             sequence = ''
             seq_bits = None
 
             # check if the fasta file exists
-            if os.path.exists(fam_fa_path):
+            if os.path.exists(seq_file_path):
                 seq_id = entry[SEQACC] + '/' + \
-                    entry[SEQ_START] + '-' + entry[SEQ_END]
+                         entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
+                cmd = "%s %s %s" % (ESL_PATH, seq_file_path, seq_id)
 
                 proc = subprocess.Popen(
                     cmd, shell=True, stdout=subprocess.PIPE)
@@ -299,6 +305,7 @@ def build_json_dict(entry, sequence):
 
     return edict
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -331,6 +338,7 @@ def fetch_seq_from_ena(entry):
 
     return sequence
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -349,6 +357,7 @@ def seq_validator(sequence):
         return True
 
     return False
+
 
 # -----------------------------------------------------------------------------
 
@@ -395,7 +404,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
             # check if the fasta file exists
             if os.path.exists(fam_fa_path):
                 seq_id = entry[SEQACC] + '/' + \
-                    entry[SEQ_START] + '-' + entry[SEQ_END]
+                         entry[SEQ_START] + '-' + entry[SEQ_END]
 
                 lfile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".list")
                 ofile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".out")
@@ -480,9 +489,9 @@ if __name__ == '__main__':
         usage()
 
     elif len(sys.argv) >= 3:
-        seq_dir = sys.argv[1]    # directory of rfam2rnac dump files
+        seq_dir = sys.argv[1]  # directory of rfam2rnac dump files
         fasta_dir = sys.argv[2]  # directory of fasta_files
-        out_dir = None           # output directory
+        out_dir = None  # output directory
 
         if len(sys.argv) == 4:
             out_dir = sys.argv[3]
@@ -492,5 +501,5 @@ if __name__ == '__main__':
     else:
         usage()
 
-    # NOTE: when the out_dir is None the output is generated within the input
-    # directory
+        # NOTE: when the out_dir is None the output is generated within the input
+        # directory

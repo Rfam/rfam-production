@@ -871,7 +871,7 @@ def set_number_of_distinct_families_in_genome(upid):
 
 def set_number_of_genomic_significant_hits(upid):
     """
-    Sets the number of significant fields for a specific genome according to
+    Sets the number of significant hits for a specific genome according to
     its corresponding upid id
 
     upid: A specific genome upid to update the number of significant hits

@@ -885,19 +885,41 @@ def set_number_of_genomic_significant_hits(upid):
     # get a new buffered cursor
     cursor = cnx.cursor(buffered=True)
 
-    count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
-                   "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                   "and fr.is_significant=1\n"
-                   "and gs.upid=\'%s\'")
+    if upid is None:
 
-    cursor.execute(count_query % upid)
-    count = cursor.fetchone()[0]
+        upids = fetch_all_upids()
 
-    # update is_significant field to 0
-    update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
+        for upid in upids:
 
-    # execute query
-    cursor.execute(update_query % (count, upid))
+
+            count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
+                           "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                           "and fr.is_significant=1\n"
+                           "and gs.upid=\'%s\'")
+
+            cursor.execute(count_query % upid)
+            count = cursor.fetchone()[0]
+
+            # update is_significant field to 0
+            update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
+
+            # execute query
+            cursor.execute(update_query % (count, upid))
+    else:
+
+        count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
+                       "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                       "and fr.is_significant=1\n"
+                       "and gs.upid=\'%s\'")
+
+        cursor.execute(count_query % upid)
+        count = cursor.fetchone()[0]
+
+        # update is_significant field to 0
+        update_query = "update genome set num_rfam_regions=%d where upid=\'%s\'"
+
+        # execute query
+        cursor.execute(update_query % (count, upid))
 
     # commit changes and disconnect
     cnx.commit()

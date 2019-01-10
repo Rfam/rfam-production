@@ -392,7 +392,7 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     else:
         scientific_name = region['scientific_name']
 
-    description = '%s %s' % (genome.scientific_name, region["rfam_id"])
+    description = '%s %s' % (scientific_name, region["rfam_id"])
 
     # add a new family entry to the xml tree
     entry_id = '%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
@@ -499,7 +499,7 @@ def full_region_xml_builder(entries, upid):
                          '93838': 1, '186617': 1, '229533': 1, '351048': 1,
                          '456327': 1, '766192': 1, '1891747': 1}
     genome = None
-    chromosomes = None
+    chromosomes = []
     if upid[0:2] == 'UP':
         genome = Genome.objects.select_related('ncbi').get(upid=upid)
         chromosomes = get_chromosome_metadata()
@@ -791,7 +791,7 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     for rna_type in rna_types:
         ET.SubElement(add_fields, "field", name="rna_type").text = rna_type
 
-    if genome.common_name:
+    if common_name:
         # ET.SubElement(add_fields, "field", name="common_name").text = genome.common_name
         ET.SubElement(add_fields, "field", name="common_name").text = common_name
     # ET.SubElement(add_fields, "field", name="scientific_name").text = genome.scientific_name

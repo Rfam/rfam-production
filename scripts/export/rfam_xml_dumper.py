@@ -384,8 +384,8 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     Format full regions for a genome. Genome metadata is retrieved only once.
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
-    name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
-
+    name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])   
+ 
     scientific_name = None
     if genome is not None:
         scientific_name = genome.scientific_name

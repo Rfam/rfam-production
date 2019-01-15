@@ -423,10 +423,10 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     ena_accession = ''
     if region["rfamseq_acc"].find('.') != -1:
         ena_accession = region["rfamseq_acc"].partition('.')[0]
-    else:
+	cross_refs["ENA"] = [ena_accession]
+    elif region["rfamseq_acc"][0:3]!="URS":
         ena_accession = region["rfamseq_acc"]
-
-    cross_refs["ENA"] = [ena_accession]
+    	cross_refs["ENA"] = [ena_accession]
 
     if genome is not None:
         cross_refs["Uniprot"] = [genome.upid]

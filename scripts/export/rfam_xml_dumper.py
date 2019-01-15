@@ -434,7 +434,9 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     if name in rnacentral_ids:
         cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(ncbi_id)]
     else:
-        cross_refs["RNACENTRAL"] = name
+	if "/" in name:
+		name = name.partition("/")[0]
+        cross_refs["RNACENTRAL"] = [name]
 
     build_cross_references(entry, cross_refs)
 

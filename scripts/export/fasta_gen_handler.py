@@ -57,10 +57,12 @@ def fasta_gen_handler(seq_file, out_dir, rfam_accessions=None):
 
         cursor.execute(query)
 
-        families = cursor.fetchall()
+        entries = cursor.fetchall()
 
         cursor.close()
         RfamDB.disconnect(cnx)
+
+        families = [str(fam[0]) for fam in entries]
     else:
         fp = open(rfam_accessions, 'r')
         families = [x.strip() for x in fp]
@@ -77,7 +79,7 @@ def fasta_gen_handler(seq_file, out_dir, rfam_accessions=None):
 
         # 1. Generate script file
         sh_path = shell_script_generator(
-            seq_file, str(fam[0]), out_dir, os.path.join(out_dir, "scripts"))
+            seq_file, fam, out_dir, os.path.join(out_dir, "scripts"))
 
         # 2. submit job under group
         cmd = "bsub < %s" % (sh_path)
@@ -159,13 +161,20 @@ if __name__ == '__main__':
         usage()
         sys.exit()
 
-    elif len(sys.argv) == 4:
+    elif len(sys.argv) == 3:
         sequence_file = sys.argv[1]
         output_dir = sys.argv[2]
-        rfam_accs = sys.argvp[3] # a list of rfam accessions
 
         if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
-            fasta_gen_handler(sequence_file, output_dir)
+            fasta_gen_handler(sequence_file, output_dir, None)
+
+    elif len(sys.argv) == 3:
+        sequence_file = sys.argv[1]
+        output_dir = sys.argv[2]
+        rfam_accs = sys.argvp[3]  # a list of rfam accessions
+
+        if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
+            fasta_gen_handler(sequence_file, output_dir, rfam_accs)
 
         else:
             print "\nIncorrect Input."

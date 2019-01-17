@@ -34,7 +34,7 @@ LSF_GROUP = rfam_config.FA_EXPORT_GROUP
 # -----------------------------------------------------------------------------
 
 
-def fasta_gen_handler(seq_file, out_dir):
+def fasta_gen_handler(seq_file, out_dir, rfam_accessions=None):
     """
     The purpose of this script is to handle the fasta generation process,
     generate individual shell scripts for each available family and submit
@@ -46,18 +46,25 @@ def fasta_gen_handler(seq_file, out_dir):
     """
 
     # fetch family accessions
-    cnx = RfamDB.connect()
+    families = []
 
-    cursor = cnx.cursor(buffered=True)
+    if rfam_accessions is None:
+        cnx = RfamDB.connect()
 
-    query = ("SELECT rfam_acc FROM family")
+        cursor = cnx.cursor(buffered=True)
 
-    cursor.execute(query)
+        query = ("SELECT rfam_acc FROM family")
 
-    families = cursor.fetchall()
+        cursor.execute(query)
 
-    cursor.close()
-    RfamDB.disconnect(cnx)
+        families = cursor.fetchall()
+
+        cursor.close()
+        RfamDB.disconnect(cnx)
+    else:
+        fp = open(rfam_accessions, 'r')
+        families = [x.strip() for x in fp]
+        fp.close()
 
     # create scripts dir within output directory
     if not os.path.exists(os.path.join(out_dir, "scripts")):
@@ -152,9 +159,10 @@ if __name__ == '__main__':
         usage()
         sys.exit()
 
-    elif len(sys.argv) == 3:
+    elif len(sys.argv) == 4:
         sequence_file = sys.argv[1]
         output_dir = sys.argv[2]
+        rfam_accs = sys.argvp[3] # a list of rfam accessions
 
         if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
             fasta_gen_handler(sequence_file, output_dir)

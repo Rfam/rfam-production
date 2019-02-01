@@ -39,6 +39,8 @@ from utils import RfamDB
 from utils.parse_taxbrowser import *
 
 django.setup()
+#settings.configure()
+
 from rfam_schemas.RfamLive.models import Genseq, Genome
 
 
@@ -178,6 +180,32 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # get associated clan
     clan = fetch_value(rs.FAM_CLAN, rfam_acc)
+
+    # get pseudoknot evidence
+    pseudoknots = []
+    # check if pseudoknot with covariation
+    pseudoknot_evidence = fetch_value(rs.SEED_PK_WITH_COV, rfam_acc)
+    if pseudoknot_evidence == 1:
+        pseudoknots.append("seed with covariation support")
+
+    pseudoknot_evidence = fetch_value(rs.SEED_PK_NO_COV, rfam_acc)
+    if pseudoknot_evidence == 1:
+        pseudoknots.append("seed no covariation support")
+
+    pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_WITH_COV, rfam_acc)
+    if pseudoknot_evidence == 1:
+        pseudoknots.append("predicted with covariation support")
+
+    pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_NO_COV, rfam_acc)
+    if pseudoknot_evidence == 1:
+        pseudoknots.append("predicted no covariation support")
+
+    fam_fields["pseudoknots"] = pseudoknots
+
+    if len(pseudoknots) > 0:
+        fam_fields["has_pseudoknot"] = "Yes"
+    else:
+        fam_fields["has_pseudoknot"] = "No"
 
     # need a function here to split dbxrefs in a pretty way
     go_ids = [x for x in dbxrefs if x.find("GO") != -1]
@@ -423,10 +451,11 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     ena_accession = ''
     if region["rfamseq_acc"].find('.') != -1:
         ena_accession = region["rfamseq_acc"].partition('.')[0]
-	cross_refs["ENA"] = [ena_accession]
-    elif region["rfamseq_acc"][0:3]!="URS":
+        cross_refs["ENA"] = [ena_accession]
+
+    elif region["rfamseq_acc"][0:3] != "URS":
         ena_accession = region["rfamseq_acc"]
-    	cross_refs["ENA"] = [ena_accession]
+        cross_refs["ENA"] = [ena_accession]
 
     if genome is not None:
         cross_refs["Uniprot"] = [genome.upid]
@@ -434,8 +463,8 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     if name in rnacentral_ids:
         cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(ncbi_id)]
     else:
-	if "/" in name:
-		name = name.partition("/")[0]
+        if "/" in name:
+            name = name.partition("/")[0]
         cross_refs["RNACENTRAL"] = [name]
 
     build_cross_references(entry, cross_refs)
@@ -659,6 +688,18 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
         for tax_string in tax_strings:
             ET.SubElement(add_fields, "field", name="tax_string").text = str(tax_string)
+
+
+        # work on pseudoknots here
+        if fields["has_pseudoknot"] == 1:
+            pseudoknots = fields["pseudoknots"]
+
+            ET.SubElement(add_fields, "field", name="has_pseudoknot").text = "Yes"
+
+            for pk_evidence in pseudoknots:
+                ET.SubElement(add_fields, "field", name="pseudoknot_evidence").text = pk_evidence
+        else:
+            ET.SubElement(add_fields, "field", name="has_pseudoknot").text = "No"
 
             # build hierarchical_fields tree here...
 

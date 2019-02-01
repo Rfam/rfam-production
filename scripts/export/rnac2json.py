@@ -13,14 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import json
-import subprocess
-import urllib2
 import logging
-import sys
+import os
 import re
 import string
+import subprocess
+import sys
+import urllib2
+
 from config import config_local as cl
 from config import rfam_config as rfc
 
@@ -60,8 +61,8 @@ elif LSF_MODE is True:
 else:
     sys.exit("\nLSF_MODE has not been set properly.")
 
-# -----------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
 
 def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
     """
@@ -105,7 +106,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
         # check if the fasta file exists
         if os.path.exists(fam_fa_path):
             seq_id = entry[SEQACC] + '/' + \
-                entry[SEQ_START] + '-' + entry[SEQ_END]
+                     entry[SEQ_START] + '-' + entry[SEQ_END]
 
             cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -118,17 +119,17 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             sequence = sequence.join(seq_bits)
 
         # if no fasta file found, get the sequence from ENA
-        if (sequence == ''):
+        if sequence == '':
             sequence = fetch_seq_from_ena(entry)
 
         # build dictionary and update sequence list
-        if (sequence != '' and seq_validator(sequence) is True):
+        if sequence != '' and seq_validator(sequence) is True:
             json_obj_list.append(build_json_dict(entry, sequence))
         else:
             # log obsolete sequences
             logging.debug("%s", "\t".join(entry))
 
-        if (len(json_obj_list) == no_seqs):
+        if len(json_obj_list) == no_seqs:
             fp_out = open(
                 os.path.join(out_dir, filename + str(f_index) + ".json"), 'w')
 
@@ -143,7 +144,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
         cmd = ''
 
     # if list != empty write remaining seqs to new file
-    if (len(json_obj_list) > 0):
+    if len(json_obj_list) > 0:
         fp_out = open(
             os.path.join(out_dir, filename + str(f_index) + ".json"), 'w')
         json.dump(
@@ -152,6 +153,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
         fp_out.close()
 
     rnac_fp.close()
+
 
 # -----------------------------------------------------------------------------
 
@@ -170,7 +172,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
     out_dir:    The path to the output directory
     """
 
-    if(out_dir is None):
+    if out_dir is None:
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
@@ -185,20 +187,24 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
     for seq_file in seq_files:
 
         fp = open(os.path.join(seq_dir, seq_file), 'r')
-
+        seq_file_path = ''
         for entry in fp:
             entry = entry.strip().split('\t')
 
-            fam_fa_path = os.path.join(fasta_dir, entry[RFAM_ACC] + ".fa")
+            if entry[ALIGNMENT] == 'seed' or entry[ALIGNMENT] == 'SEED':
+                seq_file_path = os.path.join(fasta_dir, "Rfam.seed")
+            else:
+                seq_file_path = os.path.join(fasta_dir, entry[RFAM_ACC] + ".fa")
+
             sequence = ''
             seq_bits = None
 
             # check if the fasta file exists
-            if os.path.exists(fam_fa_path):
+            if os.path.exists(seq_file_path):
                 seq_id = entry[SEQACC] + '/' + \
-                    entry[SEQ_START] + '-' + entry[SEQ_END]
+                         entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
+                cmd = "%s %s %s" % (ESL_PATH, seq_file_path, seq_id)
 
                 proc = subprocess.Popen(
                     cmd, shell=True, stdout=subprocess.PIPE)
@@ -215,7 +221,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
             #    sequence = fetch_seq_from_ena(entry)
 
             # check if seq string still empty,
-            if (sequence != '' and seq_validator(sequence) is True):
+            if sequence != '' and seq_validator(sequence) is True:
                 json_obj_list.append(build_json_dict(entry, sequence))
             else:
                 # log obsolete sequence
@@ -259,7 +265,7 @@ def build_json_dict(entry, sequence):
     edict["ncrna_class"] = entry[NCRNA_CLASS]
     edict["feature_type"] = entry[RNA_TYPE]
 
-    if (entry[ALIGNMENT] == "seed"):
+    if entry[ALIGNMENT] == "seed":
         edict["is_seed"] = '1'
     else:
         edict["is_seed"] = '0'
@@ -275,8 +281,8 @@ def build_json_dict(entry, sequence):
     species = entry[SPECIES]
     common_name = ''
 
-    if(species.find('(') != -1):
-        if (species.count('(') > 1):
+    if species.find('(') != -1:
+        if species.count('(') > 1:
             species = species.rsplit('(', 1)
             common_name = species[1]
         else:
@@ -299,6 +305,7 @@ def build_json_dict(entry, sequence):
 
     return edict
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -317,7 +324,7 @@ def fetch_seq_from_ena(entry):
 
     seq_acc = entry[SEQACC].partition('.')[0]
 
-    if (start < end):
+    if start < end:
         seq_url = ENA_URL % (seq_acc, entry[SEQ_START], entry[SEQ_END])
     else:
         seq_url = ENA_URL % (seq_acc, entry[SEQ_END], entry[SEQ_START])
@@ -330,6 +337,7 @@ def fetch_seq_from_ena(entry):
     sequence = sequence.join(seq_bits)
 
     return sequence
+
 
 # -----------------------------------------------------------------------------
 
@@ -345,10 +353,11 @@ def seq_validator(sequence):
     # checks for ascii characters that should not appear in a fasta sequence
     seq_val = re.compile(r"[.-@|\s| -)|z-~|Z-`|EFIJLOPQX|efijlopqx+,]+")
 
-    if(seq_val.search(sequence) is None):
+    if seq_val.search(sequence) is None:
         return True
 
     return False
+
 
 # -----------------------------------------------------------------------------
 
@@ -366,7 +375,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
     out_dir:   The path to the output directory
     """
 
-    if(out_dir is None):
+    if out_dir is None:
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
@@ -395,7 +404,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
             # check if the fasta file exists
             if os.path.exists(fam_fa_path):
                 seq_id = entry[SEQACC] + '/' + \
-                    entry[SEQ_START] + '-' + entry[SEQ_END]
+                         entry[SEQ_START] + '-' + entry[SEQ_END]
 
                 lfile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".list")
                 ofile_path = os.path.join(TMP_PATH, entry[SEQACC] + ".out")
@@ -432,7 +441,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                 os.remove(ofile_path)
 
                 # update json obj list
-                if(sequence != '' and seq_validator(sequence) is True):
+                if sequence != '' and seq_validator(sequence) is True:
                     json_obj_list.append(build_json_dict(entry, sequence))
                 else:
                     # log obsolete sequence
@@ -476,15 +485,15 @@ def usage():
 
 if __name__ == '__main__':
 
-    if (sys.argv[1] == '-h'):
+    if sys.argv[1] == '-h':
         usage()
 
-    elif(len(sys.argv) >= 3):
-        seq_dir = sys.argv[1]    # directory of rfam2rnac dump files
+    elif len(sys.argv) >= 3:
+        seq_dir = sys.argv[1]  # directory of rfam2rnac dump files
         fasta_dir = sys.argv[2]  # directory of fasta_files
-        out_dir = None           # output directory
+        out_dir = None  # output directory
 
-        if (len(sys.argv) == 4):
+        if len(sys.argv) == 4:
             out_dir = sys.argv[3]
 
         rnac_to_json_multi(seq_dir, fasta_dir, out_dir)
@@ -492,5 +501,5 @@ if __name__ == '__main__':
     else:
         usage()
 
-    # NOTE: when the out_dir is None the output is generated within the input
-    # directory
+        # NOTE: when the out_dir is None the output is generated within the input
+        # directory

@@ -24,7 +24,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "13.0"  # release version
+DB_RELEASE = "14.0"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
@@ -118,9 +118,11 @@ FULL_REGION_FIELDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
-    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, genseq gs, rfamseq rs
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description,
+    rs.ncbi_id as ncbi_id, tx.species as scientific_name, tx.tax_string
+    FROM full_region fr, family f, genseq gs, rfamseq rs, taxonomy tx
     WHERE fr.rfamseq_acc=gs.rfamseq_acc
+    AND rs.ncbi_id=tx.ncbi_id
     AND gs.rfamseq_acc=rs.rfamseq_acc
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
@@ -133,14 +135,17 @@ FULL_REGION_SEEDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
-    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description
-    FROM full_region fr, family f, genome g, rfamseq rs
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description, 
+    tx.species as scientific_name, rs.ncbi_id as ncbi_id, tx.tax_string
+    FROM full_region fr, family f, genseq gs, rfamseq rs, taxonomy tx
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
-    AND g.ncbi_id=rs.ncbi_id
+    AND gs.rfamseq_acc=rs.rfamseq_acc
+    AND rs.ncbi_id=tx.ncbi_id
     AND fr.rfam_acc=f.rfam_acc
     AND fr.is_significant=1
     AND fr.type='seed'
-    AND g.upid = '%s'
+    AND gs.upid = '%s'
+    AND gs.version='14.0'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -153,6 +158,12 @@ PDB_IDs_QUERY = """
                 WHERE rfam_acc='%s'
                 AND is_significant=1
                 """
+
+PSEUDOKNOTS_QUERY = """
+    SELECT distinct pseudoknot_id
+    FROM pseudoknots
+    WHERE rfam_acc='%s'
+    """
 
 # Fetch ncbi ids related to a family accession
 NCBI_IDs_QUERY = """
@@ -241,6 +252,37 @@ AU_ORCIDS = """
             AND orcid <> ''
             """
 
+SEED_PK_WITH_COV = """
+                SELECT count(*)
+                FROM pseudoknot
+                WHERE source='seed'
+                AND covariation=1
+                AND rfam_acc='%s'
+                """
+
+SEED_PK_NO_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='seed'
+    AND covariation=0
+    AND rfam_acc='%s'
+    """
+
+RSCAPE_PK_WITH_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='rscape'
+    AND covariation=1
+    AND rfam_acc='%s'
+    """
+
+RSCAPE_PK_NO_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='rscape'
+    AND covariation=0
+    AND rfam_acc='%s'
+    """
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

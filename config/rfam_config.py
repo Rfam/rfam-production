@@ -25,6 +25,10 @@ RFAMLIVELOC = cfl.RFAMLIVELOC
 RFAMLOCAL = cfl.RFAMLOCAL
 RFAMREL = cfl.RFAMREL
 
+# ---------------------------------SEQDBs--------------------------------------
+
+RFAM_SEED_DB = cfl.RFAM_SEED_SEQ_14_1
+
 # ----------------------------Django settings----------------------------------
 
 # DATABASES
@@ -41,7 +45,7 @@ FA_GEN = cfl.FA_GEN
 ESL_PATH = cfl.ESL_SFETCH
 RFAMSEQ_PATH = cfl.RFAMSEQ_PATH
 FAM_VIEW_PL = cfl.FAM_VIEW_PL
-
+ESL_SEQSTAT = cfl.ESL_SEQSTAT
 TMP_PATH = cfl.TMP_PATH
 
 ESL_FSEQ_PATH = cfl.ESL_FSEQ_PATH

@@ -183,29 +183,33 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # get pseudoknot evidence
     pseudoknots = []
-    # check if pseudoknot with covariation
+    
+    # check if seed pseudoknot with covariation
     pseudoknot_evidence = fetch_value(rs.SEED_PK_WITH_COV, rfam_acc)
-    if pseudoknot_evidence == 1:
+    if pseudoknot_evidence > 0:
         pseudoknots.append("seed with covariation support")
 
+    # check if seed pseudoknot with no covariation
     pseudoknot_evidence = fetch_value(rs.SEED_PK_NO_COV, rfam_acc)
-    if pseudoknot_evidence == 1:
+    if pseudoknot_evidence > 0:
         pseudoknots.append("seed no covariation support")
 
+    # check if rscape pseudoknot with  covariation
     pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_WITH_COV, rfam_acc)
-    if pseudoknot_evidence == 1:
+    if pseudoknot_evidence > 0:
         pseudoknots.append("predicted with covariation support")
 
+    # check if rscape pseudoknot with no covariation
     pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_NO_COV, rfam_acc)
-    if pseudoknot_evidence == 1:
+    if pseudoknot_evidence > 0:
         pseudoknots.append("predicted no covariation support")
 
     fam_fields["pseudoknots"] = pseudoknots
 
     if len(pseudoknots) > 0:
-        fam_fields["has_pseudoknot"] = "Yes"
+        fam_fields["has_pseudoknot"] = 1
     else:
-        fam_fields["has_pseudoknot"] = "No"
+        fam_fields["has_pseudoknot"] = 0
 
     # need a function here to split dbxrefs in a pretty way
     go_ids = [x for x in dbxrefs if x.find("GO") != -1]

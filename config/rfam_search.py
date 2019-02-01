@@ -159,6 +159,12 @@ PDB_IDs_QUERY = """
                 AND is_significant=1
                 """
 
+PSEUDOKNOTS_QUERY = """
+    SELECT distinct pseudoknot_id
+    FROM pseudoknots
+    WHERE rfam_acc='%s'
+    """
+
 # Fetch ncbi ids related to a family accession
 NCBI_IDs_QUERY = """
                  SELECT tx.ncbi_id, tx.tax_string
@@ -246,6 +252,37 @@ AU_ORCIDS = """
             AND orcid <> ''
             """
 
+SEED_PK_WITH_COV = """
+                SELECT count(*)
+                FROM pseudoknot
+                WHERE source='seed'
+                AND covariation=1
+                AND rfam_acc='%s'
+                """
+
+SEED_PK_NO_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='seed'
+    AND covariation=0
+    AND rfam_acc='%s'
+    """
+
+RSCAPE_PK_WITH_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='rscape'
+    AND covariation=1
+    AND rfam_acc='%s'
+    """
+
+RSCAPE_PK_NO_COV = """
+    SELECT count(*)
+    FROM pseudoknot
+    WHERE source='rscape'
+    AND covariation=0
+    AND rfam_acc='%s'
+    """
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':

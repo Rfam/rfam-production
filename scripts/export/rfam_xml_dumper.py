@@ -185,22 +185,22 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     pseudoknots = []
     
     # check if seed pseudoknot with covariation
-    pseudoknot_evidence = fetch_value(rs.SEED_PK_WITH_COV, rfam_acc)
+    pseudoknot_evidence = int(fetch_value(rs.SEED_PK_WITH_COV, rfam_acc))
     if pseudoknot_evidence > 0:
         pseudoknots.append("seed with covariation support")
 
     # check if seed pseudoknot with no covariation
-    pseudoknot_evidence = fetch_value(rs.SEED_PK_NO_COV, rfam_acc)
+    pseudoknot_evidence = int(fetch_value(rs.SEED_PK_NO_COV, rfam_acc))
     if pseudoknot_evidence > 0:
         pseudoknots.append("seed no covariation support")
 
     # check if rscape pseudoknot with  covariation
-    pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_WITH_COV, rfam_acc)
+    pseudoknot_evidence = int(fetch_value(rs.RSCAPE_PK_WITH_COV, rfam_acc))
     if pseudoknot_evidence > 0:
         pseudoknots.append("predicted with covariation support")
 
     # check if rscape pseudoknot with no covariation
-    pseudoknot_evidence = fetch_value(rs.RSCAPE_PK_NO_COV, rfam_acc)
+    pseudoknot_evidence = int(fetch_value(rs.RSCAPE_PK_NO_COV, rfam_acc))
     if pseudoknot_evidence > 0:
         pseudoknots.append("predicted no covariation support")
 

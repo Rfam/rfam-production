@@ -18,7 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
-
+import math
 from config import rfam_local as conf
 from scripts.validation import genome_search_validator as gsv
 from utils import genome_search_utils as gsu
@@ -27,7 +27,7 @@ from utils import scan_utils as su
 # -----------------------------------------------------------------------------
 
 #SPLIT_SIZE = 5427083
-SPLIT_SIZE = 2000000
+SPLIT_SIZE = 500000
 SRCH_MEM = 12000
 SCAN_MEM = 12000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
@@ -138,7 +138,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
         gen_input_dir = ''
 	nts = gsu.count_nucleotides_in_fasta(seq_file_loc)
 	# check if large seq file and make sure we can split in more than 1 files
-        if nts >= SPLIT_SIZE and ceil(nts/SPLIT_SIZE) > 1:
+        if nts >= SPLIT_SIZE and math.ceil(nts/SPLIT_SIZE) > 1:
 	    gen_input_dir = os.path.join(input_dir, filename)
 
             # create a distinct directory for the genome

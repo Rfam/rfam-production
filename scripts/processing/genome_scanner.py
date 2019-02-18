@@ -136,7 +136,9 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
             os.mkdir(gen_output_dir, 0775)
 
         gen_input_dir = ''
-        if gsu.count_nucleotides_in_fasta(seq_file_loc) >= SPLIT_SIZE:
+	nts = gsu.count_nucleotides_in_fasta(seq_file_loc)
+	# check if large seq file and make sure we can split in more than 1 files
+        if nts >= SPLIT_SIZE and ceil(nts/SPLIT_SIZE) > 1:
 	    gen_input_dir = os.path.join(input_dir, filename)
 
             # create a distinct directory for the genome

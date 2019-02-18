@@ -27,9 +27,9 @@ from utils import scan_utils as su
 # -----------------------------------------------------------------------------
 
 #SPLIT_SIZE = 5427083
-SPLIT_SIZE = 500000
-SRCH_MEM = 12000
-SCAN_MEM = 12000
+SPLIT_SIZE = 2000000
+SRCH_MEM = 6000
+SCAN_MEM = 6000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
 RFAMSEQ_SIZE = 742849.287494 #
 CM_NO = 3016  # number of cms in Rfam.cm file
@@ -99,7 +99,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
     # initialize output space
     if not os.path.exists(dest_dir):
         os.mkdir(dest_dir, 0775)
-
+    
     # create subdirs
     i = 0
     while i < SUB_DIRS:

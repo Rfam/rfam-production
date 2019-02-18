@@ -26,9 +26,10 @@ from utils import scan_utils as su
 
 # -----------------------------------------------------------------------------
 
-SPLIT_SIZE = 5427083
-SRCH_MEM = 40000
-SCAN_MEM = 40000
+#SPLIT_SIZE = 5427083
+SPLIT_SIZE = 2000000
+SRCH_MEM = 12000
+SCAN_MEM = 12000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
 RFAMSEQ_SIZE = 742849.287494 #
 CM_NO = 3016  # number of cms in Rfam.cm file
@@ -83,7 +84,7 @@ def calculate_required_memory():
 # -------------------------------------------------------------------------
 
 
-def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", size=RFAMSEQ_SIZE):
+def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", size=None):
     """
     using cmsearch by default unless defined otherwise
 
@@ -118,9 +119,9 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
         # 1. get size
         seq_file_loc = os.path.join(input_dir, seq_file)
 
-	if size is None:
+	if size is None:		
 		# size * 2 as both strands are being searched and divided by 1M as the size needs to be in Mb
-		size = (su.get_nt_count(seq_file_loc, type="dna") * 2)/1000000 
+		size = (float(su.get_nt_count(seq_file_loc, type="dna")) * 2.0)/1000000.0 
 	else:
 		size = RFAMSEQ_SIZE
 
@@ -151,7 +152,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
             gsu.split_seq_file(seq_file_loc, SPLIT_SIZE, dest_dir=gen_input_dir)
 
             # list all smaller files
-            genome_chunks = [x for x in os.listdir(gen_input_dir) if x.find(".fa.") != -1]
+            genome_chunks = [x for x in os.listdir(gen_input_dir) if not x.endswith(".fa") or not x.endswith(".ssi") != -1]
             group_idx = out_idx
 
             # group_idx = 0
@@ -193,11 +194,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               	inf_tbl_file, size,
                                               	conf.CMFILE, chunk_loc)
 	
-
-
-
                 subprocess.call(cmd, shell=True)
-	
         # small enough genomes that don't need splitting
         else:
       		group_idx = out_idx
@@ -237,11 +234,12 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               conf.CMFILE, seq_file_loc)
 
             	subprocess.call(cmd, shell=True)
-
-        out_idx += 1
+        
+	out_idx += 1
         if out_idx == SUB_DIRS:
             out_idx = 0
-
+	size = None
+    
     fp.close()  
 
 # ------------------------------------------------------------------------------------------------

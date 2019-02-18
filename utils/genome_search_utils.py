@@ -190,7 +190,7 @@ def index_sequence_file(seq_file):
     esl_sfetch = ""
 
     # call command to index sequence file
-    cmd = esl_sfetch + " --index %s" % seq_file
+    cmd = "esl-sfetch --index %s" % seq_file
     subprocess.call(cmd, shell=True)
 
 # -----------------------------------------------------------------------------

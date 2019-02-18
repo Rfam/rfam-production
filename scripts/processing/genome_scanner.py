@@ -93,6 +93,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
     :return:
     """
 
+    fp = open(os.path.join(dest_dir,"result_locations.txt"),'w')
+
     # initialize output space
     if not os.path.exists(dest_dir):
         os.mkdir(dest_dir, 0775)
@@ -127,12 +129,14 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
         gen_output_dir = os.path.join(os.path.join(dest_dir, chr(SGROUP_IDX + out_idx)),
                                       filename)
 
+	fp.write(gen_output_dir+'\n')
+
         if not os.path.exists(gen_output_dir):
             os.mkdir(gen_output_dir, 0775)
 
         gen_input_dir = ''
         if gsu.count_nucleotides_in_fasta(seq_file_loc) >= SPLIT_SIZE:
-            gen_input_dir = os.path.join(input_dir, filename)
+	    gen_input_dir = os.path.join(input_dir, filename)
 
             # create a distinct directory for the genome
             if not os.path.exists(gen_input_dir):
@@ -148,7 +152,6 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
 
             # list all smaller files
             genome_chunks = [x for x in os.listdir(gen_input_dir) if x.find(".fa.") != -1]
-
             group_idx = out_idx
 
             # group_idx = 0
@@ -233,16 +236,13 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               inf_tbl_file, size,
                                               conf.CMFILE, seq_file_loc)
 
-
-
-
-
             	subprocess.call(cmd, shell=True)
 
         out_idx += 1
         if out_idx == SUB_DIRS:
             out_idx = 0
 
+    fp.close()  
 
 # ------------------------------------------------------------------------------------------------
 

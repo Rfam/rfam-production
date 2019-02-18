@@ -29,8 +29,8 @@ SPLIT_SIZE = 5427083
 SRCH_MEM = 40000
 SCAN_MEM = 40000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
-RFAMSEQ_SIZE = 742855.34296 #
-CM_NO = 2750  # number of cms in Rfam.cm file
+RFAMSEQ_SIZE = 742849.287494 #
+CM_NO = 3016  # number of cms in Rfam.cm file
 CPU_NO = 5
 SGROUP_IDX = 65  # subgroup index - Ascii for A
 LSF_GROUP = "/rfam_srch_mpi/%s"
@@ -119,8 +119,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch"):
         gen_output_dir = os.path.join(os.path.join(dest_dir, chr(SGROUP_IDX + out_idx)),
                                       filename)
 
-    if not os.path.exists(gen_output_dir):
-        os.mkdir(gen_output_dir, 0775)
+        if not os.path.exists(gen_output_dir):
+            os.mkdir(gen_output_dir, 0775)
 
         gen_input_dir = ''
         if gsu.count_nucleotides_in_fasta(seq_file_loc) >= SPLIT_SIZE:
@@ -549,7 +549,6 @@ def multi_cm_sequence_scan(cm_dir, sequence_dir, tool="cmsearch", seqdb_size=Non
 
 # -------------------------------------------------------------------------
 
-
 if __name__ == '__main__':
 
     """
@@ -596,6 +595,13 @@ if __name__ == '__main__':
             suffix = upid_input[-3:]
             updir = os.path.join(os.path.join(project_dir, suffix), upid)
             single_genome_scan_from_download_directory(updir, upid, tool="cmsearch")
+
+    # this option allows the user to launch batch genome search from within a single directory
+    elif '--batch' in sys.argv:
+        input_dir = sys.argv[1]
+        dest_dir = sys.argv[2]
+
+        genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch")
 
     else:
         print "Wrong Input"

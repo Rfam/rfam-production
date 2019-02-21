@@ -25,8 +25,9 @@ def fetch_sequence(seq_file, seq_acc, seq_start, seq_end, type='seed'):
                               str(seq_start), str(seq_end))
 
     elif type == 'full':
-        cmd = "esl-sfetch -c %s..%s %s -%s" % (str(seq_start), str(seq_end),
+	cmd = "esl-sfetch -c %s..%s %s %s" % (str(seq_start), str(seq_end),
                                                seq_file, str(seq_acc))
+
     proc = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE)
 
@@ -75,8 +76,8 @@ def generate_md5s_and_populate_table(seq_file, type = "seed", dest_dir = None):
 
         # extract sequence from sequence file
         sequence = fetch_sequence(seq_file, seq_acc, seq_start, seq_end, type)
-
-        # Replace Ts with Us as done by RNAcentral
+        
+	# Replace Ts with Us as done by RNAcentral
         # Note: there shouldn't be any in the seed alignments
         sequence = sequence.replace('T', 'U')
 

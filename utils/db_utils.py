@@ -1063,7 +1063,7 @@ def fetch_metagenomic_regions():
     cursor = cnx.cursor(buffered=True)
 
     # update is_significant field to 0
-    query = ("Select rfam_acc, rfamseq_acc, seq_start, seq_end "
+    query = ("Select rfam_acc, umgseq_acc, seq_start, seq_end "
              "from meta_full_region")
 
     cursor.execute(query)

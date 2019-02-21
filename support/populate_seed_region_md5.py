@@ -124,8 +124,9 @@ if __name__ == '__main__':
         type = "full"
     else:
         print "\nWrong selection of type: %s\n" % type_flag
+	sys.exit()
 
-    generate_md5s_and_populate_table(seq_file, type="seed", dest_dir=None)
+    generate_md5s_and_populate_table(seq_file, type, dest_dir=None)
 
 
 

@@ -124,6 +124,8 @@ if __name__ == '__main__':
         type = "full"
     else:
         print "\nWrong selection of type: %s\n" % type_flag
+	print "Usage: populate_seed_region_md5.py sequence_source type\n"
+	print "Please select one of two types --seed|--full\n"
 	sys.exit()
 
     generate_md5s_and_populate_table(seq_file, type, dest_dir=None)

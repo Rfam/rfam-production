@@ -39,7 +39,7 @@ LSF_GROUP = "/rfam_srch_mpi/%s"
 RFAM_SRCH_GROUP = "/rfam_search"
 SUB_DIRS = 26  # max 26 subdirs as the number of the alphabet
 MAX_JOBS = 50
-
+MAX_FILES = 5000
 # filtered - add this as a command line option
 
 CREATE_SUBGROUP = "bgadd -L %s %s"
@@ -111,7 +111,7 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
 
     # get candidate sequence files
     seq_files = [x for x in os.listdir(input_dir)
-                 if x.endswith('.fa') or x.endswith('.fasta')]
+                 if x.endswith('.fa') or x.endswith('.fasta') or x.endswith('.fna')]
 
     out_idx = 0
 
@@ -127,8 +127,11 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
 
         filename = seq_file.partition('.')[0]
 
-        gen_output_dir = os.path.join(os.path.join(dest_dir, chr(SGROUP_IDX + out_idx)),
+        if len(seq_files) > MAX_FILES:
+		gen_output_dir = os.path.join(os.path.join(dest_dir, chr(SGROUP_IDX + out_idx)),
                                       filename)
+	else:
+		gen_output_dir = os.path.join(dest_dir, filename)
 
 	fp.write(gen_output_dir+'\n')
 

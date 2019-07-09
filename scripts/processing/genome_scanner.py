@@ -28,8 +28,8 @@ from utils import scan_utils as su
 
 #SPLIT_SIZE = 5427083
 SPLIT_SIZE = 2000000
-SRCH_MEM = 6000
-SCAN_MEM = 6000
+SRCH_MEM = 10000
+SCAN_MEM = 10000
 #RFAMSEQ_SIZE = 451031.997884  # size of rfamseq13 in Mb
 RFAMSEQ_SIZE = 742849.287494 #
 CM_NO = 3016  # number of cms in Rfam.cm file

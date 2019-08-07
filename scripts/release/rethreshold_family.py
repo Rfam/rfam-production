@@ -94,17 +94,16 @@ if __name__ == '__main__':
                         type=str, default=None)
     args = parser.parse_args()
 
-    if args.h:
-        parser.print_help()
+    #if args.h:
+    #    parser.print_help()
 
-    elif args.acc:
+    if args.acc:
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
-            checkout_family(args.acc)
             family_dir = os.path.join(args.dest_dir, args.acc)
-            
+            # checkout family if not done already
+            if not os.path.exists(family_dir):
+                checkout_family(args.acc)
+
+
             submit_new_rfsearch_job(family_dir)
-
-
-
-

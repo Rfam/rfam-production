@@ -31,7 +31,7 @@ def checkout_family(rfam_acc):
 
     rfam_acc: A valid Rfam accession
 
-    return:
+    return: None
     """
 
     cmd = "rfco.pl %s" % rfam_acc
@@ -42,6 +42,22 @@ def checkout_family(rfam_acc):
 
 # ----------------------------------------------------------------------------------
 
-if __name__== '__main__':
+def submit_new_rfsearch_job(family_dir):
+    """
+    Submits a new lsf job that runs rfsearch to update SCORES for a new release
+
+    family_dir: The physical location of the family directory
+
+    return: None
+    """
+    # use the pre-process command to change directory to family_dir
+    cmd = """
+          bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %8 -g %s -R \"span[hosts=1]\"
+          cd %s && rfsearch.pl -cnompi
+          """
+
+# ----------------------------------------------------------------------------------
+
+if __name__ == '__main__':
 
     pass

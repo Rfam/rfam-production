@@ -67,6 +67,28 @@ def submit_new_rfsearch_job(family_dir):
 
 # ----------------------------------------------------------------------------------
 
+
+def fetch_rfam_accessions_from_file(accession_list):
+    """
+    This function parses a .txt file containing Rfam accessions and returns those
+    accession_list: This is a .txt file containing a list of Rfam accessions
+
+    return: list of Rfam family accessions
+    """
+    pass
+
+# ----------------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-    pass
+    # create a new argument parser object
+    parser = argparse.ArgumentParser(description='Update scores for new release')
+    parser.add_argument('-f', help='a file containing a list of Rfam family accessions')
+    parser.add_argument('-a', help='runs rfsearch on all families')
+    parser.add_argument('--dest_dir', help='destination directory where to checkout families')
+    args = parser.parse_args()
+
+
+
+
+

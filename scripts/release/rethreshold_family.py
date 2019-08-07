@@ -22,8 +22,10 @@ import argparse
 
 LSF_GROUP = "/family_srch"
 MEMORY = 8000
+CPU = 8
 
 # ----------------------------------------------------------------------------------
+
 
 def checkout_family(rfam_acc):
     """
@@ -42,19 +44,26 @@ def checkout_family(rfam_acc):
 
 # ----------------------------------------------------------------------------------
 
+
 def submit_new_rfsearch_job(family_dir):
     """
-    Submits a new lsf job that runs rfsearch to update SCORES for a new release
+    Submits a new lsf job that runs rfsearch to update SCORES for a new release.
+    If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
 
     family_dir: The physical location of the family directory
 
     return: None
     """
     # use the pre-process command to change directory to family_dir
-    cmd = """
-          bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %8 -g %s -R \"span[hosts=1]\"
-          cd %s && rfsearch.pl -cnompi
-          """
+
+    lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
+    lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
+
+    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+          "cd %s && rfsearch.pl -cnompi")
+
+    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+                         CPU, LSF_GROUP, family_dir), shell=True)
 
 # ----------------------------------------------------------------------------------
 

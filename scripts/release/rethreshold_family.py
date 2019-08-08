@@ -110,20 +110,35 @@ def checkout_and_search_family(rfam_acc, dest_dir):
 # ----------------------------------------------------------------------------------
 
 
+def parse_arguments():
+	"""
+	Uses python's argparse to parse the command line arguments
+
+	return: Argparse parser object
+	"""
+
+	# create a new argument parser object
+    	parser = argparse.ArgumentParser(description='Update scores for new release')
+
+    	# group required arguments together
+    	req_args = parser.add_argument_group("required arguments")
+    	req_args.add_argument('--dest_dir', help='destination directory where to checkout families',
+                        type=str, required=True)
+
+    	parser.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
+    	parser.add_argument('--all', help='runs rfsearch on all families', type=str)
+    	parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
+                        type=str, default=None)
+
+	return parser
+
+# ----------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     # create a new argument parser object
-    parser = argparse.ArgumentParser(description='Update scores for new release')
-
-    # group required arguments together
-    req_args = parser.add_argument_group("required arguments")
-    req_args.add_argument('--dest_dir', help='destination directory where to checkout families',
-                        type=str, required=True)
-
-    parser.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
-    parser.add_argument('--all', help='runs rfsearch on all families', type=str)
-    parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
-                        type=str, default=None)
+    parser = parse_arguments()
     args = parser.parse_args()
 
     #if args.h:

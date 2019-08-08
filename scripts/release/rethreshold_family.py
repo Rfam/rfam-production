@@ -60,7 +60,7 @@ def submit_new_rfsearch_job(family_dir):
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s "
-          "cd %s && pwd && rfsearch.pl -cnompi")
+          "cd %s && rfsearch.pl -cnompi")
 
     print cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file, CPU, LSF_GROUP, family_dir)
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,

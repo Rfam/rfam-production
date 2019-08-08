@@ -102,7 +102,7 @@ def checkout_and_search_family(rfam_acc, dest_dir):
 	family_dir = os.path.join(dest_dir, rfam_acc)
 	# checkout family if not done already
         if not os.path.exists(family_dir):
-        	checkout_family(args.acc)
+        	checkout_family(rfam_acc)
 	
 	submit_new_rfsearch_job(family_dir)
 

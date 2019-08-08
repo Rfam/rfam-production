@@ -137,7 +137,17 @@ def parse_arguments():
 
 # ----------------------------------------------------------------------------------
 
+def validate_family(dest_dir, rfam_acc):
+	"""
+	Checks if the job ran successfully by checking if .err file is empty and 
+	Success keyword exists in .out file. As an additional sanity check, the
+	number of files in the checkout dir is considered, which needs to be > 8,
+	the total number of files of a clean chekout
+	"""
 
+	pass
+
+# ----------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     # create a new argument parser object

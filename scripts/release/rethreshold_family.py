@@ -59,24 +59,34 @@ def submit_new_rfsearch_job(family_dir):
     lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
-    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
-          "cd %s && rfsearch.pl -cnompi")
+    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s "
+          "cd %s && pwd && rfsearch.pl -cnompi")
 
+    print cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file, CPU, LSF_GROUP, family_dir)
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, family_dir), shell=True)
 
 # ----------------------------------------------------------------------------------
 
-def fetch_rfam_accessions_from_file(accession_list):
+
+def load_rfam_accessions_from_file(accession_list):
     """
     This function parses a .txt file containing Rfam accessions and returns those
     accession_list: This is a .txt file containing a list of Rfam accessions
 
     return: list of Rfam family accessions
     """
-    pass
+    
+    fp = open(accession_list, 'r')
+    
+    accessions = [x.strip() for x in fp]
+
+    fp.close()
+
+    return accessions
 
 # ----------------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
@@ -101,9 +111,26 @@ if __name__ == '__main__':
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
             family_dir = os.path.join(args.dest_dir, args.acc)
-            # checkout family if not done already
+            
+	    # checkout family if not done already
             if not os.path.exists(family_dir):
                 checkout_family(args.acc)
 
-
             submit_new_rfsearch_job(family_dir)
+    
+    elif args.f:
+	if not os.path.isfile(args.f):
+		print "The file location you provided does not exist!\n"
+	# move to destination directory
+	os.chdir(args.dest_dir)
+	accessions = load_rfam_accessions_from_file(args.f)
+
+	for rfam_acc in accessions:
+		# get location of family directory
+		family_dir = os.path.join(args.dest_dir, rfam_acc)
+		
+		# checkout family if not done already
+            	if not os.path.exists(family_dir):
+                	checkout_family(rfam_acc)
+	
+		submit_new_rfsearch_job(family_dir)

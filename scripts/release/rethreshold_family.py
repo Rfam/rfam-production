@@ -63,7 +63,7 @@ def submit_new_rfsearch_job(family_dir):
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s cd %s && rfsearch.pl -cnompi")
+          "-J %s \"cd %s && rfsearch.pl -cnompi\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
@@ -105,6 +105,7 @@ def checkout_and_search_family(rfam_acc, dest_dir):
 	family_dir = os.path.join(dest_dir, rfam_acc)
 	# checkout family if not done already
         if not os.path.exists(family_dir):
+		os.chdir(dest_dir)
         	checkout_family(rfam_acc)
 	
 	submit_new_rfsearch_job(family_dir)

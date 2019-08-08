@@ -62,7 +62,6 @@ def submit_new_rfsearch_job(family_dir):
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s "
           "cd %s && rfsearch.pl -cnompi")
 
-    print cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file, CPU, LSF_GROUP, family_dir)
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, family_dir), shell=True)
 

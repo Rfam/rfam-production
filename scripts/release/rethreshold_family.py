@@ -88,6 +88,28 @@ def load_rfam_accessions_from_file(accession_list):
 # ----------------------------------------------------------------------------------
 
 
+def checkout_and_search_family(rfam_acc, dest_dir):
+	"""
+	This function combines family checkout (rfco.pl) and re-scoring of hits 
+	using rfsearch.pl. 
+
+	rfam_acc: A valid Rfam family accession (RFXXXXX)
+	dest_dir: A valid destination directory, where to checkout the family
+
+	return: void
+	"""
+
+	# get family directory
+	family_dir = os.path.join(dest_dir, rfam_acc)
+	# checkout family if not done already
+        if not os.path.exists(family_dir):
+        	checkout_family(args.acc)
+	
+	submit_new_rfsearch_job(family_dir)
+
+# ----------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     # create a new argument parser object
@@ -110,13 +132,7 @@ if __name__ == '__main__':
     if args.acc:
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
-            family_dir = os.path.join(args.dest_dir, args.acc)
-            
-	    # checkout family if not done already
-            if not os.path.exists(family_dir):
-                checkout_family(args.acc)
-
-            submit_new_rfsearch_job(family_dir)
+   	    checkout_and_search_family(args.acc, args.dest_dir)         
     
     elif args.f:
 	if not os.path.isfile(args.f):
@@ -126,11 +142,5 @@ if __name__ == '__main__':
 	accessions = load_rfam_accessions_from_file(args.f)
 
 	for rfam_acc in accessions:
-		# get location of family directory
-		family_dir = os.path.join(args.dest_dir, rfam_acc)
-		
-		# checkout family if not done already
-            	if not os.path.exists(family_dir):
-                	checkout_family(rfam_acc)
+		checkout_and_search_family(rfam_acc, args.dest_dir)		
 	
-		submit_new_rfsearch_job(family_dir)

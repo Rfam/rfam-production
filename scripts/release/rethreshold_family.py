@@ -15,6 +15,7 @@ limitations under the License.
 
 import os
 import sys
+import math
 import subprocess
 import argparse
 
@@ -23,7 +24,7 @@ import argparse
 LSF_GROUP = "/family_srch"
 MEMORY = 8000
 CPU = 8
-
+MAX_JOB_COUNT = 1000
 # ----------------------------------------------------------------------------------
 
 
@@ -157,6 +158,29 @@ if __name__ == '__main__':
 	os.chdir(args.dest_dir)
 	accessions = load_rfam_accessions_from_file(args.f)
 
+	"""
+	# get number of job batches we need to submit
+        # casting to int chops off decimals and ceil rounds up to nearest int
+	if len(accessions) > MAX_JOB_COUNT:
+		no_batches = int(math.ceil(len(accessions)/MAX_JOB_COUNT))
+	
+	i = 0
+	while i < no_batches:
+		lidx = i * MAX_JOB_COUNT     # left index
+		ridx = (i+1) * MAX_JOB_COUNT # right index
+		
+		# get exactly MAX_JOB_COUNT items
+		if i < no_batches - 1:
+			new_batch = accessions[lidx:ridx]
+		# get remaining accessions for last batch
+		else:
+			new_batch = accessions[lidx:]		
+
+		# call function to submit batch
+		# while monitoring is True:
+		# cluster monitoring function to be called here	
+		i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
+	"""
 	for rfam_acc in accessions:
 		checkout_and_search_family(rfam_acc, args.dest_dir)		
 	

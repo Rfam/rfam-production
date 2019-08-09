@@ -18,7 +18,7 @@ import sys
 import math
 import subprocess
 import argparse
-
+from subprocess import Popen, PIPE
 # ------------------------------------- GLOBALS ------------------------------------
 
 LSF_GROUP = "/family_srch"
@@ -132,20 +132,41 @@ def parse_arguments():
     	parser.add_argument('--all', help='runs rfsearch on all families', type=str)
     	parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
                         type=str, default=None)
+	parser.add_argument('-v', help='runs validation checks', action="store_true")
 
 	return parser
 
 # ----------------------------------------------------------------------------------
 
-def validate_family(dest_dir, rfam_acc):
+def is_valid_family(dest_dir, rfam_acc):
 	"""
 	Checks if the job ran successfully by checking if .err file is empty and 
-	Success keyword exists in .out file. As an additional sanity check, the
-	number of files in the checkout dir is considered, which needs to be > 8,
-	the total number of files of a clean chekout
+	that Success keyword exists in .out file. As an additional sanity check, we
+	look for the rfsearch.log file as an indication that rfsearch actually ran.
+	
+	return: True if the family is valid, False otherwise
 	"""
 
-	pass
+	family_dir = os.path.join(dest_dir, rfam_acc)
+	
+	# If log file does not exist rfsearch did not run for some reason
+	if not os.path.exists(os.path.join(family_dir, "rfsearch.log")):
+		return False
+	
+	# check if lsf .err file is empty 
+	if not os.path.getsize(os.path.join(family_dir, "auto_rfsearch.err")) == 0:
+		return False
+
+	# check if success in .out file
+	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
+
+	process = Popen(['grep', 'Success', lsf_out_file], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	output, err = process.communicate()
+
+	if output.find("Successfully completed.") == -1:
+		return False
+	
+	return True
 
 # ----------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -160,9 +181,9 @@ if __name__ == '__main__':
     if args.acc:
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
-   	    checkout_and_search_family(args.acc, args.dest_dir)         
+   	    #checkout_and_search_family(args.acc, args.dest_dir)         
     
-    elif args.f:
+    elif args.f and not args.v:
 	if not os.path.isfile(args.f):
 		print "The file location you provided does not exist!\n"
 	# move to destination directory
@@ -193,5 +214,28 @@ if __name__ == '__main__':
 		i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
 	"""
 	for rfam_acc in accessions:
-		checkout_and_search_family(rfam_acc, args.dest_dir)		
-	
+		#checkout_and_search_family(rfam_acc, args.dest_dir)		
+		pass
+    elif args.v:
+	if args.acc:
+		if not is_valid_family(args.dest_dir, args.acc):
+			print "The family %s does not validate!" % args.acc
+	elif args.f:
+		fp = open(os.path.join(args.dest_dir, "validation.log"),'w')
+		accessions = load_rfam_accessions_from_file(args.f)
+		for rfam_acc in accessions:
+			if not is_valid_family(args.dest_dir, rfam_acc):
+				fp.write(rfam_acc + '\n')
+		
+		fp.close()
+
+	elif args.all:
+		fp = open(os.path.join(args.dest_dir, "validation.log"),'w')
+		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+		for rfam_acc in accessions:
+			if not is_valid_family(dest_dir, rfam_acc):
+				fp.write(rfam_acc + '\n')
+		
+		fp.close()
+
+	print "Validation process completed! Check validation.log for erroneous searches!"

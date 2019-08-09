@@ -19,12 +19,16 @@ import math
 import subprocess
 import argparse
 from subprocess import Popen, PIPE
-# ------------------------------------- GLOBALS ------------------------------------
 
+# ------------------------------------- GLOBALS ------------------------------------
+# this group only allows 10 rfsearch jobs to run concurrently
+# this means 10*100 = 1000 jobs running concurrently which is the lsf limit
+ 
 LSF_GROUP = "/family_srch"
 MEMORY = 8000
 CPU = 8
 MAX_JOB_COUNT = 1000
+
 # ----------------------------------------------------------------------------------
 
 

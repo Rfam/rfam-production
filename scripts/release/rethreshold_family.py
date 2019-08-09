@@ -219,7 +219,12 @@ if __name__ == '__main__':
 	"""
 	for rfam_acc in accessions:
 		checkout_and_search_family(rfam_acc, args.dest_dir)		
-		
+
+    elif args.a and not args.v:
+	# fetch Rfam family accessions from the database
+	# call checkout_and_search_family for every family in the list
+	pass
+
     elif args.v:
 	if args.acc:
 		if not is_valid_family(args.dest_dir, args.acc):

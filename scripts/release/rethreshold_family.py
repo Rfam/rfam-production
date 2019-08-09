@@ -218,8 +218,8 @@ if __name__ == '__main__':
 		i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
 	"""
 	for rfam_acc in accessions:
-		#checkout_and_search_family(rfam_acc, args.dest_dir)		
-		pass
+		checkout_and_search_family(rfam_acc, args.dest_dir)		
+		
     elif args.v:
 	if args.acc:
 		if not is_valid_family(args.dest_dir, args.acc):

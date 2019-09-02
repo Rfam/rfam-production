@@ -120,13 +120,13 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
                                         source, filename=None, to_file=True)
 
     else:
-	project_dir = fasta_input
-	upid = upid_list
-	subdir = os.path.join(project_dir, upid[-3:])
-        updir = os.path.join(subdir, upid)
-        upfasta = os.path.join(updir, upid+'.fa')
+    	project_dir = fasta_input
+    	upid = upid_list
+    	subdir = os.path.join(project_dir, upid[-3:])
+            updir = os.path.join(subdir, upid)
+            upfasta = os.path.join(updir, upid+'.fa')
 
-	source = "UNIPROT; ENA"
+    	source = "UNIPROT; ENA"
 	if upid in upid_gca_tax_dict:
         	if upid_gca_tax_dict[upid]["GCA"] != -1:
 			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":

@@ -146,8 +146,15 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
 
 if __name__ == '__main__':
 
-    project_dir = sys.argv[1]
-    upid_list = sys.argv[2]
-    upid_gca_tax_file = sys.argv[3]
+    #project_dir = sys.argv[1]
+    #upid_list = sys.argv[2]
+    #upid_gca_tax_file = sys.argv[3]
 
-    main(project_dir, upid_list, upid_gca_tax_file)
+    #main(fasta_input, upid_list, upid_gca_tax_file)
+
+    fasta_file = sys.argv[1]
+    taxid = sys.argv[2]
+    source = sys.argv[3]
+    filename = sys.argv[4]
+
+    extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=False)

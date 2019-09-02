@@ -16,13 +16,11 @@ hints:
   SoftwareRequirement:
     packages:
       easel: {}
-        # specs: [ https://identifiers.org/rrid/RRID:TBD ]
-        # version: [ "???" ]
 
 inputs:
   sequences:
     type: File
-#    format: edam:format_1929  # FASTA
+    format: edam:format_1929  # FASTA
     inputBinding:
       position: 3
       valueFrom: $(self.basename)
@@ -33,12 +31,23 @@ inputs:
 
 baseCommand: [ esl-ssplit.pl, '-n', '-r']
 
+successCodes: [0, 2] # esl-ssplit will fail if chunk number == 1, which is fine for us.
+
 outputs:
-  chunks:
+  sequence_chunks:
     type: File[]
     format: edam:format_1929  # FASTA
     outputBinding:
-      glob: $(inputs.sequences.basename + '.*')
+      glob: $(inputs.sequences.basename + '*')
+      # If number of files is larger than 1, do not include the input file which was matched by glob
+      outputEval: |
+        ${
+          if (self.length === 1){
+            return self;
+          } else {
+            return self.filter(function(el){return el.basename !== inputs.sequences.basename});
+          }
+        }
 
 $namespaces:
   edam: http://edamontology.org/

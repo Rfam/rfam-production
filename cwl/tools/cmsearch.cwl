@@ -8,6 +8,8 @@ requirements:
     ramMin: 10240
     coresMin: 4
 hints:
+  DockerRequirement:
+    dockerPull: ikalvari/rfam-cloud:dev
   SoftwareRequirement:
     packages:
       infernal:
@@ -70,12 +72,42 @@ inputs:
     default: false
     inputBinding:
       prefix: --cut_ga
+
+  rfam:
+    label: set heuristic filters at Rfam-level (fast)
+    type: boolean?
+    default: false
+    inputBinding:
+      prefix: --rfam
+
+  nohmmonly:
+    label: Disable hmm-only thresholds
+    type: boolean?
+    default: false
+    inputBinding:
+      prefix: --nohmmonly
+
+  notextw:
+    label: Unlimit the length of each line in the main output
+    type: boolean?
+    default: false
+    inputBinding:
+      prefix: --notextw
+  acc:
+    label: Output RFam accession rather than Rfam ID
+    type: boolean?
+    default: false
+    inputBinding:
+      prefix: --acc
+
 baseCommand: cmsearch
+
 arguments:
   - valueFrom: matches.tbl
     prefix: --tblout
   - valueFrom: $(runtime.cores)
     prefix: --cpu
+
 outputs:
   matches:
     label: target hits table, format 2
@@ -83,6 +115,7 @@ outputs:
     type: File
     outputBinding:
       glob: matches.tbl
+      outputEval: ${self[0].basename=inputs.query_sequences.basename + '_matches.tbl'; return self;}
 $namespaces:
  edam: http://edamontology.org/
  s: http://schema.org/

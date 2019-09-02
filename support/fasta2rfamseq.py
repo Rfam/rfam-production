@@ -91,30 +91,29 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
 
     if os.path.isfile(upid_list):
     	project_dir = fasta_input
-	fp = open(upid_list, 'r')
+    	fp = open(upid_list, 'r')
     	upids = [x.strip() for x in fp]
     	fp.close()
 
     	for upid in upids:
-        	print upid
-        	subdir = os.path.join(project_dir, upid[-3:])
-        	updir = os.path.join(subdir, upid)
-        	upfasta = os.path.join(updir, upid+'.fa')
+        	#print upid
+            subdir = os.path.join(project_dir, upid[-3:])
+            updir = os.path.join(subdir, upid)
+            upfasta = os.path.join(updir, upid+'.fa')
 
         	# do some sanity checks
-        	if os.path.exists(upfasta):
-            	# defining the source of the sequences according to assembly accession
-            		source = "UNIPROT; ENA"
-            		if upid in upid_gca_tax_dict:
-	    			if upid_gca_tax_dict[upid]["GCA"] != -1:
-                			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
-                    				source = "NIH; NCBI"
-                			else:
-                    				source = "UNIPROT; ENA"
-
-	    	else:
-			 print "%s not in the current Uniprot release"%upid
-			 continue
+            if os.path.exists(upfasta):
+            # defining the source of the sequences according to assembly accession
+                source = "UNIPROT; ENA"
+                if upid in upid_gca_tax_dict:
+                    if upid_gca_tax_dict[upid]["GCA"] != -1:
+                        if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+                            source = "NIH; NCBI"
+                        else:
+                            source = "UNIPROT; ENA"
+            else:
+                print "%s not in the current Uniprot release" % upid
+                continue
 
 	    	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
                                         source, filename=None, to_file=True)
@@ -129,10 +128,10 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
     	source = "UNIPROT; ENA"
 	
     if upid in upid_gca_tax_dict:
-        	if upid_gca_tax_dict[upid]["GCA"] != -1:
-			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+        if upid_gca_tax_dict[upid]["GCA"] != -1:
+            if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
 				source = "NIH; NCBI"
-			else:
+            else:
 				source = "UNIPROT; ENA"
 	else:
 		print "%s not in the current Uniprot release" % upid

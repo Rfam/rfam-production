@@ -123,11 +123,12 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
     	project_dir = fasta_input
     	upid = upid_list
     	subdir = os.path.join(project_dir, upid[-3:])
-            updir = os.path.join(subdir, upid)
-            upfasta = os.path.join(updir, upid+'.fa')
+        updir = os.path.join(subdir, upid)
+        upfasta = os.path.join(updir, upid+'.fa')
 
     	source = "UNIPROT; ENA"
-	if upid in upid_gca_tax_dict:
+	
+    if upid in upid_gca_tax_dict:
         	if upid_gca_tax_dict[upid]["GCA"] != -1:
 			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
 				source = "NIH; NCBI"
@@ -157,4 +158,4 @@ if __name__ == '__main__':
     source = sys.argv[3]
     filename = sys.argv[4]
 
-    extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=False)
+    extract_metadata_from_fasta(fasta_file, taxid, source, filename=filename, to_file=False)

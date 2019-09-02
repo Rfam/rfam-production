@@ -327,6 +327,9 @@ def infernal_to_full_region(inf_output_file, dest_dir, filename=None):
 
     scores = infernal_output_parser(inf_output_file, ss_notation="wuss")
 
+    if dest_dir is None:
+        dest_dir = os.path.split(inf_output_file)[0]
+
     if filename is None:
         filename = os.path.basename(inf_output_file).partition('.')[0]
 

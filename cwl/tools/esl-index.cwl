@@ -7,14 +7,15 @@ requirements:
   ResourceRequirement:
     coresMax: 1
     ramMin: 1024  # just a default, could be lowered
+  InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
     listing: [ $(inputs.sequences) ]
 hints:
+  DockerRequirement:
+    dockerPull: ikalvari/rfam-cloud:dev
   SoftwareRequirement:
     packages:
       easel: {}
-        # specs: [ https://identifiers.org/rrid/RRID:TBD ]
-        # version: [ "???" ]
 
 inputs:
   sequences:
@@ -27,12 +28,10 @@ inputs:
 baseCommand: [ esl-sfetch, --index ]
 
 outputs:
-  sequences_with_index:
+  sequence_index_file:
     type: File
-    secondaryFiles: .ssi
-    format: edam:format_1929  # FASTA
     outputBinding:
-      glob: $(inputs.sequences.basename)
+      glob: $(inputs.sequences.basename + '.ssi')
 
 $namespaces:
   edam: http://edamontology.org/

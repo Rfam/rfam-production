@@ -113,8 +113,8 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
                     				source = "UNIPROT; ENA"
 
 	    	else:
-			print "%s not in the current Uniprot release"%upid
-			continue
+			 print "%s not in the current Uniprot release"%upid
+			 continue
 
 	    	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
                                         source, filename=None, to_file=True)

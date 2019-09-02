@@ -155,6 +155,5 @@ if __name__ == '__main__':
     fasta_file = sys.argv[1]
     taxid = sys.argv[2]
     source = sys.argv[3]
-    filename = sys.argv[4]
 
-    extract_metadata_from_fasta(fasta_file, taxid, source, filename=filename, to_file=False)
+    extract_metadata_from_fasta(fasta_file, taxid, source, filename=False, to_file=False)

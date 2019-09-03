@@ -2,26 +2,51 @@
 
 cwlVersion: v1.0
 class: Workflow
+requirements:
+  StepInputExpressionRequirement: {}
+  InlineJavascriptRequirement: {}
+  ScatterFeatureRequirement: {}
+  SubworkflowFeatureRequirement: {}
+
 inputs:
-  tarball: File
-  name_of_file_to_extract: string
+  sequences:
+    type: File
+  covariance_model_database:
+    type: File
 
 outputs:
-  compiled_class:
+  genome_scanner_matches:
+    type: File[]
+    outputSource: genome_scanner/cmsearch_matches
+  rfam_files:
+    type: File[]
+    outputSource: infernal2rfam/rfam_file
+  merged_matches:
     type: File
-    outputSource: compile/classfile
+    outputSource: merge_matches/result
 
 steps:
-  untar:
-    run: tar-param.cwl
+  genome_scanner:
     in:
-      tarfile: tarball
-      extractfile: name_of_file_to_extract
-    out: [extracted_file]
+      sequences: sequences
+      covariance_model_database: covariance_model_database
+    out:
+      - cmsearch_matches
+    run: ./genome_scanner.cwl
 
-  compile:
-    run: arguments.cwl
+  infernal2rfam:
+    scatter: infernal_file
     in:
-      src: untar/extracted_file
-    out: [classfile]
+      infernal_file: genome_scanner/cmsearch_matches
+      infernal_tbl:
+        default: True
+    out:
+      - rfam_file
+    run: ../tools/infernal2rfam.cwl
 
+  merge_matches:
+    in:
+      files: infernal2rfam/rfam_file
+    out:
+      - result
+    run: ../tools/concat_files.cwl

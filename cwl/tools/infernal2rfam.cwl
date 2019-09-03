@@ -42,6 +42,7 @@ outputs:
     type: File
     outputBinding:
       glob: '*.txt'
+      outputEval: ${self[0].basename=inputs.infernal_file.basename + '_rfam.txt'; return self;}
 
 $namespaces:
   edam: http://edamontology.org/

@@ -17,12 +17,10 @@ outputs:
   chunked_sequence:
     type: File[]
     outputSource: chunk/sequence_chunks
-#  chunked_sequence_indexes:
-#    type: File[]
-#    outputSource: indexing/sequence_index_file
   cmsearch_matches:
     type: File[]
     outputSource: cmsearch/matches
+
 steps:
   chunk:
     in:
@@ -60,4 +58,3 @@ steps:
     out:
       - matches
     run: ../tools/cmsearch.cwl
-

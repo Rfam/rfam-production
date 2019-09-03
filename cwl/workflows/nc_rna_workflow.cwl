@@ -21,9 +21,12 @@ outputs:
   rfam_files:
     type: File[]
     outputSource: infernal2rfam/rfam_file
-  merged_matches:
+  merge_infernal_files:
     type: File
-    outputSource: merge_matches/result
+    outputSource: merge_infernal_files/result
+  merge_gff:
+    type: File
+    outputSource: merge_gff/result
 
 steps:
   genome_scanner:
@@ -44,9 +47,30 @@ steps:
       - rfam_file
     run: ../tools/infernal2rfam.cwl
 
-  merge_matches:
+  merge_infernal_files:
     in:
       files: infernal2rfam/rfam_file
+      outfile_name:
+        default: 'merged.txt'
+    out:
+      - result
+    run: ../tools/concat_files.cwl
+
+  infernal2gff:
+    scatter: infernal_file
+    in:
+      infernal_file: genome_scanner/cmsearch_matches
+      all:
+        default: True
+    out:
+      - gff
+    run: ../tools/infernal2gff/infernal2gff.cwl
+
+  merge_gff:
+    in:
+      files: infernal2gff/gff
+      outfile_name:
+        default: 'merged.gff'
     out:
       - result
     run: ../tools/concat_files.cwl

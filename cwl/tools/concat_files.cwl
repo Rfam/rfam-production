@@ -14,6 +14,9 @@ inputs:
     streamable: true
     inputBinding:
       position: 1
+  outfile_name:
+    type: string?
+    default: result
 
 baseCommand: cat
 
@@ -26,7 +29,9 @@ outputs:
       glob: result
       outputEval: |
         ${ self[0].format = inputs.files[0].format;
-           return self; }
+           self[0].basename = inputs.outfile_name;
+           return self;
+         }
 
 $namespaces:
  s: http://schema.org/

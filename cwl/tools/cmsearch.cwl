@@ -5,7 +5,7 @@ doc: "http://eddylab.org/infernal/Userguide.pdf"
 
 requirements:
   ResourceRequirement:
-    ramMin: 10240
+    ramMin: 4096
     coresMin: 4
 hints:
   DockerRequirement:
@@ -64,7 +64,7 @@ inputs:
       thresholds (0.02 for F1, 0.001 for F2 and 0.00001 for F3). Additionally
       a bias composition filter is used after the F1 stage (with P=0.02
       survival threshold).  Any hit that survives all stages and has an HMM
-      E-value or bit score above the reporting threshold will be output. 
+      E-value or bit score above the reporting threshold will be output.
 
   cut_ga:
     label: use CM's GA gathering cutoffs as reporting thresholds

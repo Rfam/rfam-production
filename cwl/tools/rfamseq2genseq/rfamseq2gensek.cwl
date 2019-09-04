@@ -11,7 +11,7 @@ inputs:
     inputBinding:
       position: 2
 
-baseCommand: [python, /Users/mdb/Projects/rfam-production/cwl/tools/rfamseq2gensek/rfamseq2genseq_single.py]
+baseCommand: [python, /rfam/rfam-production/cwl/tools/rfamseq2genseq/rfamseq2genseq_single.py]
 
 outputs:
   genseq:

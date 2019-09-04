@@ -21,10 +21,10 @@ outputs:
   rfam_files:
     type: File[]
     outputSource: infernal2rfam/rfam_file
-  merge_infernal_files:
+  merged_infernal:
     type: File
     outputSource: merge_infernal_files/result
-  merge_gff:
+  merged_gff:
     type: File
     outputSource: merge_gff/result
 

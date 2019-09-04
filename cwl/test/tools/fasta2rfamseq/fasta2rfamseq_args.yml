@@ -1,0 +1,5 @@
+fasta_file:
+  class: File
+  path: ./UP000007203.fa
+tax_id: 489543
+source: UNIPROT; ENA

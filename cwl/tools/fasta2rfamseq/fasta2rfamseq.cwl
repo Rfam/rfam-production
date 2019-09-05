@@ -6,7 +6,7 @@ label: Tool to generate taxonomy entries based on a list of tax ids
 
 hints:
   DockerRequirement:
-    dockerPull: ikalvari/rfam-production:infernal
+    dockerPull: rfam/rfam-production:cwl-infernal
 
 inputs:
   fasta_file:

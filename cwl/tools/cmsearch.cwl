@@ -9,7 +9,7 @@ requirements:
     coresMin: 4
 hints:
   DockerRequirement:
-    dockerPull: rfam/rfam-production:cwl-infernal
+    dockerPull: rfam/rfam-production:easel
   SoftwareRequirement:
     packages:
       infernal:

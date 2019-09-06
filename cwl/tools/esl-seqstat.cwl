@@ -12,7 +12,7 @@ requirements:
     listing: [ $(inputs.sequences) ]
 hints:
   DockerRequirement:
-    dockerPull: miguelboland/easel:latest
+    dockerPull: rfam/rfam-production:easel
   SoftwareRequirement:
     packages:
       easel: {}

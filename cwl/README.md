@@ -2,16 +2,16 @@
 Create a python environment and install toil with cwl extras and the dependencies defined in cwl-requirements.txt. Toil currently supports python 2.7 only
 
 
-Create a toil directory and create a new virtualenv toil/venv:
+Create a toil directory and create a new virtualenv toil/venv:  
 `virtualenv —-python=python2.7 venv`
 
-Activate your virtual environment by running:
+Activate your virtual environment by running:  
 `source toil/venv/bin/activate`
 
-Upgrade pip to the latest version:
+Upgrade pip to the latest version:  
 `pip install --upgrade pip`
 
-Upgrade additional software:
+Upgrade additional software:  
 `pip install -U setuptools wheel ruamel.yaml==0.15.77`
 
 Finally install and test toil by running the following:

@@ -2,7 +2,7 @@
 Create a python environment and install toil with cwl extras and the dependencies defined in cwl-requirements.txt. Toil currently supports python 2.7 only
 
 
-Create a toil directory and create a new virtualenv toil/venv:  
+Create a toil directory and create a new virtualenv **toil/venv**:  
 `virtualenv —-python=python2.7 venv`
 
 Activate your virtual environment by running:  

@@ -4,7 +4,7 @@ label: Script to map an infernal file to a rfam file
 
 hints:
   DockerRequirement:
-    dockerPull: miguelboland/rfam-production:latest
+    dockerPull: rfam/rfam-production:cwl-infernal
 
 requirements:
   InlineJavascriptRequirement: {}

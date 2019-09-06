@@ -12,6 +12,7 @@ requirements:
     ramMin: 1024  # just a default, could be lowered
 
 hints:
+requirements:
   DockerRequirement:
     dockerPull: rfam/rfam-production:cwl-infernal
 

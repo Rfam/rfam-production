@@ -4,6 +4,8 @@ label: Script to map an rfamseq file to a genseq file
 
 requirements:
   InlineJavascriptRequirement: {}
+  DockerRequirement:
+    dockerPull: rfam/rfam-production:cwl-infernal
 
 inputs:
   rfamseq:

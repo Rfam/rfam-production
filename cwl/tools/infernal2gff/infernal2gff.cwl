@@ -11,7 +11,7 @@ requirements:
 
 hints:
   DockerRequirement:
-    dockerPull: miguelboland/infernal2gff:latest
+    dockerPull: rfam/rfam-production:cwl-infernal
 
 inputs:
   infernal_file:

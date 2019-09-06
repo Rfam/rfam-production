@@ -4,6 +4,13 @@ cwlVersion: v1.0
 class: CommandLineTool
 label: Tool to generate taxonomy entries based on a list of tax ids
 
+# use javascript for input name parsing
+requirements:
+  InlineJavascriptRequirement: {}
+  ResourceRequirement:
+    coresMax: 1
+    ramMin: 1024  # just a default, could be lowered
+
 hints:
   DockerRequirement:
     dockerPull: rfam/rfam-production:cwl-infernal
@@ -26,6 +33,6 @@ baseCommand: [python, '/rfam/rfam-production/support/fasta2rfamseq.py']
 
 outputs:
   rfamseq_entries:
-    type: stdout
-
-stdout: test.rfamseq
+    type: File
+    outputBinding:
+      glob: ${self[0].basename=inputs.fasta_file.basename + '.fa'; return self;}.rfamseq

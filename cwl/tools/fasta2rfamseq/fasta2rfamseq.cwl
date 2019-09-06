@@ -29,8 +29,6 @@ outputs:
     type: stdout
 
 stdout: test.rfamseq
-<<<<<<< HEAD:cwl/tools/fasta2rfamseq/fasta2rfamseq.cwl
-=======
 
 $namespaces:
   edam: http://edamontology.org/
@@ -41,4 +39,3 @@ $schemas:
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder: "EMBL - European Bioinformatics Institute"
->>>>>>> Re-inserted missing schema definition:cwl/tools/generate_rfamseq_data.cwl

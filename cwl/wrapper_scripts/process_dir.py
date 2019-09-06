@@ -27,9 +27,9 @@ import logging
 
 REFERENCE_DB_NAME = 'RF02567.cm' # This needs to be modified
 
-CWL_EXECUTOR = 'toil-cwl-runner'
+CWL_EXECUTOR = 'cwltool'
 
-CWL_WORKFLOW_OPTIONS = []
+CWL_WORKFLOW_OPTIONS = ['--singularity']
 
 current_dir = os.path.dirname(__file__)
 
@@ -159,7 +159,7 @@ def launch_pipeline(outdir, config):
     
     if rc:
         logging.info('\tAn error occurred in workflow')
-        logging.info(err)
+        logging.info(err.decode('UTF-8'))
     
     else:
         logging.info('\tWorkflow completed successfully')

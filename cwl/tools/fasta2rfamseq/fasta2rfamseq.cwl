@@ -4,7 +4,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 label: Tool to generate taxonomy entries based on a list of tax ids
 
-hints:
+requirements:
   DockerRequirement:
     dockerPull: rfam/rfam-production:cwl-infernal
 

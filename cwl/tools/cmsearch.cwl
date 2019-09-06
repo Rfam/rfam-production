@@ -9,7 +9,7 @@ requirements:
     coresMin: 4
 hints:
   DockerRequirement:
-    dockerPull: ikalvari/rfam-cloud:dev
+    dockerPull: rfam/rfam-production:cwl-infernal
   SoftwareRequirement:
     packages:
       infernal:

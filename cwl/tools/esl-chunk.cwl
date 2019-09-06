@@ -12,7 +12,7 @@ requirements:
   InlineJavascriptRequirement: {}
 hints:
   DockerRequirement:
-    dockerPull: ikalvari/rfam-cloud:dev
+    dockerPull: rfam/rfam-production:cwl-infernal
   SoftwareRequirement:
     packages:
       easel: {}

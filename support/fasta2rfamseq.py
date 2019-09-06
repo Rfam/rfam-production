@@ -27,10 +27,11 @@ def extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_fil
     if to_file is True:
         if filename is None:
             filename = os.path.basename(fasta_file).partition('.')[0]
+        
         destination = os.path.split(fasta_file)[0]
-        output_fp = open(os.path.join(destination, filename+".rfamseq"), 'w')
+        output_fp = open(os.path.join(destination, filename + ".rfamseq"), 'w')
 
-    args = [gf.ESL_SEQSTAT, "-a", "--dna", fasta_file]
+    args = ["esl-seqstat", "-a", "--dna", fasta_file]
     # open a process pipe and run esl-seqstat. Stores the result in process
     process = subprocess.Popen(args, stdout=subprocess.PIPE)
     
@@ -156,4 +157,4 @@ if __name__ == '__main__':
     taxid = sys.argv[2]
     source = sys.argv[3]
 
-    extract_metadata_from_fasta(fasta_file, taxid, source, filename=False, to_file=False)
+    extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=True)

@@ -133,7 +133,7 @@ def parse_arguments():
                         type=str, required=True)
 
     	parser.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
-    	parser.add_argument('--all', help='runs rfsearch on all families', type=str)
+    	parser.add_argument('--all', help='runs rfsearch on all families', action="store_true")
     	parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
                         type=str, default=None)
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 	for rfam_acc in accessions:
 		checkout_and_search_family(rfam_acc, args.dest_dir)		
 
-    elif args.a and not args.v:
+    elif args.acc and not args.v:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list
 	pass

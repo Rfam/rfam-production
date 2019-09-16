@@ -181,8 +181,8 @@ def check_rfsearch_log_success(family_dir):
 	order to mark the family as successfully completed.
 	"""
 
-	rfsearch_log = os.path.join(family_dir, "rfsearch.log")
-	process = Popen(['tail', '-1', lsf_out_file], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	rfsearch_log_file = os.path.join(family_dir, "rfsearch.log")
+	process = Popen(['tail', '-1', rfsearch_log_file], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         output, err = process.communicate()
 
 	if output.find("# [ok]") == -1:

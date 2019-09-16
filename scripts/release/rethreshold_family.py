@@ -159,7 +159,8 @@ def is_valid_family(dest_dir, rfam_acc):
 	
 	# check if lsf .err file is empty 
 	if not os.path.getsize(os.path.join(family_dir, "auto_rfsearch.err")) == 0:
-		return False
+		return check_rfsearch_log_success(family_dir)
+		#return False
 
 	# check if success in .out file
 	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
@@ -173,6 +174,23 @@ def is_valid_family(dest_dir, rfam_acc):
 	return True
 
 # ----------------------------------------------------------------------------------
+
+def check_rfsearch_log_success(family_dir):
+	"""
+	Checks if the rfsearch.log file contains the success string # [ok] in 
+	order to mark the family as successfully completed.
+	"""
+
+	rfsearch_log = os.path.join(family_dir, "rfsearch.log")
+	process = Popen(['tail', '-1', lsf_out_file], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = process.communicate()
+
+	if output.find("# [ok]") == -1:
+		return False
+	
+	return True	
+# ----------------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     # create a new argument parser object

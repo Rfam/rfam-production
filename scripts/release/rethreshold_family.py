@@ -242,7 +242,7 @@ if __name__ == '__main__':
 		fp = open(os.path.join(args.dest_dir, "validation.log"),'w')
 		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		for rfam_acc in accessions:
-			if not is_valid_family(dest_dir, rfam_acc):
+			if not is_valid_family(args.dest_dir, rfam_acc):
 				fp.write(rfam_acc + '\n')
 		
 		fp.close()

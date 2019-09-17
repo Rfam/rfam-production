@@ -100,7 +100,7 @@ def load_rfam_accessions_from_file(accession_list):
 # ----------------------------------------------------------------------------------
 
 
-def checkout_and_search_family(rfam_acc, dest_dir):
+def checkout_and_search_family(rfam_acc, dest_dir, rfmake=False):
 	"""
 	This function combines family checkout (rfco.pl) and re-scoring of hits 
 	using rfsearch.pl. If the family directory already exists, then the 
@@ -108,6 +108,7 @@ def checkout_and_search_family(rfam_acc, dest_dir):
 
 	rfam_acc: A valid Rfam family accession (RFXXXXX)
 	dest_dir: A valid destination directory, where to checkout the family
+	rfmake: If True, run rfmake after rfsearch completes. Default False 
 
 	return: void
 	"""
@@ -119,7 +120,7 @@ def checkout_and_search_family(rfam_acc, dest_dir):
 		os.chdir(dest_dir)
         	checkout_family(rfam_acc)
 	
-	submit_new_rfsearch_job(family_dir)
+	submit_new_rfsearch_job(family_dir, rfmake)
 
 # ----------------------------------------------------------------------------------
 

@@ -212,9 +212,13 @@ if __name__ == '__main__':
     #    parser.print_help()
 
     if args.acc and not args.v:
+	# check accession provided is valid 
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
-   	    #checkout_and_search_family(args.acc, args.dest_dir)         
+	    if args.rfmake:
+   	    	checkout_and_search_family(args.acc, args.dest_dir, rfmake=True)
+	    else:
+		checkout_and_search_family(args.acc, args.dest_dir, rfmake=False)         
     
     elif args.f and not args.v:
 	if not os.path.isfile(args.f):
@@ -222,7 +226,7 @@ if __name__ == '__main__':
 	# move to destination directory
 	os.chdir(args.dest_dir)
 	accessions = load_rfam_accessions_from_file(args.f)
-
+	
 	"""
 	# get number of job batches we need to submit
         # casting to int chops off decimals and ceil rounds up to nearest int
@@ -248,7 +252,7 @@ if __name__ == '__main__':
 	"""
 	for rfam_acc in accessions:
 		checkout_and_search_family(rfam_acc, args.dest_dir)		
-
+    
     elif args.acc and not args.v:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list

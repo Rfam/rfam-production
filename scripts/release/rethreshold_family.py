@@ -253,7 +253,8 @@ if __name__ == '__main__':
 	for rfam_acc in accessions:
 		checkout_and_search_family(rfam_acc, args.dest_dir)		
     
-    elif args.acc and not args.v:
+    # run rfsearch on all families in the database
+    elif args.all and not args.v:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list
 	pass

@@ -56,7 +56,8 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
     If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
 
     family_dir: The physical location of the family directory
-
+    rfmake: If True, run rfmake after rfsearch completes. Default False
+ 
     return: None
     """
     # use the pre-process command to change directory to family_dir

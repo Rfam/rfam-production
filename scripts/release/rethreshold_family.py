@@ -97,7 +97,8 @@ def load_rfam_accessions_from_file(accession_list):
 def checkout_and_search_family(rfam_acc, dest_dir):
 	"""
 	This function combines family checkout (rfco.pl) and re-scoring of hits 
-	using rfsearch.pl. 
+	using rfsearch.pl. If the family directory already exists, then the 
+	checkout step will be ignored 
 
 	rfam_acc: A valid Rfam family accession (RFXXXXX)
 	dest_dir: A valid destination directory, where to checkout the family

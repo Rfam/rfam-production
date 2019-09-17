@@ -211,7 +211,7 @@ if __name__ == '__main__':
     #if args.h:
     #    parser.print_help()
 
-    if args.acc:
+    if args.acc and not args.v:
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
    	    #checkout_and_search_family(args.acc, args.dest_dir)         

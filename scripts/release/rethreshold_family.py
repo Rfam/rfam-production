@@ -50,7 +50,7 @@ def checkout_family(rfam_acc):
 # ----------------------------------------------------------------------------------
 
 
-def submit_new_rfsearch_job(family_dir):
+def submit_new_rfsearch_job(family_dir, rfmake=False):
     """
     Submits a new lsf job that runs rfsearch to update SCORES for a new release.
     If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
@@ -68,6 +68,12 @@ def submit_new_rfsearch_job(family_dir):
 
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
           "-J %s \"cd %s && rfsearch.pl -cnompi\"")
+
+    # If rfmake is set to True, runs rfmake following rfsearch, otherwise run rfsearch
+    # only by default
+    if rfmake is True:
+	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
+          "-J %s \"cd %s && rfsearch.pl -cnompi && rfmake.pl\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
@@ -137,6 +143,8 @@ def parse_arguments():
     	parser.add_argument('--all', help='runs rfsearch on all families', action="store_true")
     	parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
                         type=str, default=None)
+	parser.add_argument('--rfmake', help='run rfmake after rfsearch completion', 
+			   action="store_true")
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
 
 	return parser

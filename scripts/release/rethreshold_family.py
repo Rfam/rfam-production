@@ -223,6 +223,7 @@ if __name__ == '__main__':
     elif args.f and not args.v:
 	if not os.path.isfile(args.f):
 		print "The file location you provided does not exist!\n"
+		sys.exit()
 	# move to destination directory
 	os.chdir(args.dest_dir)
 	accessions = load_rfam_accessions_from_file(args.f)
@@ -251,7 +252,7 @@ if __name__ == '__main__':
 		i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
 	"""
 	for rfam_acc in accessions:
-		checkout_and_search_family(rfam_acc, args.dest_dir)		
+		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
     
     # run rfsearch on all families in the database
     elif args.all and not args.v:

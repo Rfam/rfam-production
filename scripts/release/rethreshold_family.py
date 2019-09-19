@@ -20,6 +20,7 @@ import subprocess
 import argparse
 from subprocess import Popen, PIPE
 
+from utils import db_utils as db
 # ------------------------------------- GLOBALS ------------------------------------
 # this group only allows 10 rfsearch jobs to run concurrently
 # this means 10*100 = 1000 jobs running concurrently which is the lsf limit
@@ -256,7 +257,10 @@ if __name__ == '__main__':
     elif args.all and not args.v:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list
-	pass
+	# fetches all rfam accessions from the database in DESC order based on the number of sequences in SEEDs
+	rfam_acc_list = db.fetch_rfam_accs_sorted(order='DESC')
+	for rfam_acc in rfam_acc_list:
+		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)
 
     elif args.v:
 	if args.acc:

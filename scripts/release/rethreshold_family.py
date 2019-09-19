@@ -215,10 +215,8 @@ if __name__ == '__main__':
 	# check accession provided is valid 
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
-	    if args.rfmake:
-   	    	checkout_and_search_family(args.acc, args.dest_dir, rfmake=True)
-	    else:
-		checkout_and_search_family(args.acc, args.dest_dir, rfmake=False)         
+	    
+   	    checkout_and_search_family(args.acc, args.dest_dir, rfmake=args.rfmake)
     
     elif args.f and not args.v:
 	if not os.path.isfile(args.f):

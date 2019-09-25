@@ -277,7 +277,7 @@ if __name__ == '__main__':
 		fp.close()
 
 		if os.path.getsize(validation_file) == 0:
-                        print "Validation process completed! All families completed successfully!"
+                        print "Validation process completed! All searches completed successfully!"
                 else:
                         print "Validation process completed! Check validation.log for erroneous searches!"
 
@@ -292,6 +292,6 @@ if __name__ == '__main__':
 		fp.close()
 
 		if os.path.getsize(validation_file) == 0:
-			print "Validation process completed! All families completed successfully!"
+			print "Validation process completed! All searches completed successfully!"
 		else:
 			print "Validation process completed! Check validation.log for erroneous searches!"

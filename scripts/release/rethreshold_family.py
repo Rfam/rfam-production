@@ -267,7 +267,8 @@ if __name__ == '__main__':
 		if not is_valid_family(args.dest_dir, args.acc):
 			print "The family %s does not validate!" % args.acc
 	elif args.f:
-		fp = open(os.path.join(args.dest_dir, "validation.log"),'w')
+		validation_file = os.path.join(args.dest_dir, "validation.log")
+		fp = open(validation_file),'w')
 		accessions = load_rfam_accessions_from_file(args.f)
 		for rfam_acc in accessions:
 			if not is_valid_family(args.dest_dir, rfam_acc):
@@ -275,8 +276,14 @@ if __name__ == '__main__':
 		
 		fp.close()
 
+		if os.path.getsize(validation_file) == 0:
+                        print "Validation process completed! All families completed successfully!"
+                else:
+                        print "Validation process completed! Check validation.log for erroneous searches!"
+
 	elif args.all:
-		fp = open(os.path.join(args.dest_dir, "validation.log"),'w')
+		validation_file = os.path.join(args.dest_dir, "validation.log")
+		fp = open(validation_file),'w')
 		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		for rfam_acc in accessions:
 			if not is_valid_family(args.dest_dir, rfam_acc):
@@ -284,4 +291,7 @@ if __name__ == '__main__':
 		
 		fp.close()
 
-	print "Validation process completed! Check validation.log for erroneous searches!"
+		if os.path.getsize(validation_file) == 0:
+			print "Validation process completed! All families completed successfully!"
+		else:
+			print "Validation process completed! Check validation.log for erroneous searches!"

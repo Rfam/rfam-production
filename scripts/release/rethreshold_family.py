@@ -268,7 +268,7 @@ if __name__ == '__main__':
 			print "The family %s does not validate!" % args.acc
 	elif args.f:
 		validation_file = os.path.join(args.dest_dir, "validation.log")
-		fp = open(validation_file),'w')
+		fp = open(validation_file, 'w')
 		accessions = load_rfam_accessions_from_file(args.f)
 		for rfam_acc in accessions:
 			if not is_valid_family(args.dest_dir, rfam_acc):
@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
 	elif args.all:
 		validation_file = os.path.join(args.dest_dir, "validation.log")
-		fp = open(validation_file),'w')
+		fp = open(validation_file, 'w')
 		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		for rfam_acc in accessions:
 			if not is_valid_family(args.dest_dir, rfam_acc):

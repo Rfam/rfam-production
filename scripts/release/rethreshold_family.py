@@ -26,7 +26,7 @@ from utils import db_utils as db
 # this means 10*100 = 1000 jobs running concurrently which is the lsf limit
  
 LSF_GROUP = "/family_srch"
-MEMORY = 1000
+MEMORY = 2000 
 CPU = 8
 MAX_JOB_COUNT = 1000
 

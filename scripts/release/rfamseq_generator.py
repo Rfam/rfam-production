@@ -136,8 +136,10 @@ def merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_t
     return: Void
     """
     
-    if file_type == 'fasta' or file_type == 'FASTA':
+    if file_type.lower() == 'fasta':
 	file_type = 'fa'
+    elif file_type.lower() == 'tblout':
+	file_type = 'tbl'
 
     err_cases_fp = os.path.join(dest_dir, filename+'_err_cases.txt')
 
@@ -198,7 +200,8 @@ def parse_arguments():
     	parser.add_argument('-f', help='a file containing a list of valid UPIDs', type=str)
     	parser.add_argument('--all', help='merges all genomes to build the new Rfamseq', action="store_true")
 	parser.add_argument('--out', help='a name for the output and or full destination path', type=str)
-	parser.add_argument('--type', help='the type of the file to merge', type=str, default='fasta')
+	parser.add_argument('--type', help='the type of the file to merge (fasta, tblout, rfamseq, genseq)', 
+				choices=['fasta', 'tblout', 'rfamseq', 'genseq'], type=str, default='fasta')
 	
 	return parser
 

@@ -210,17 +210,19 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
+    dest_dir = os.getcwd()
+    filename = 'rfamseq.fasta'
+
+    if os.path.isdir(args.out):
+	info = os.path.split(args.out)
+	dest_dir = info[0]
+	filename = info[1]
+    else:
+	filename = args.out
+
     if args.all is True:
 	project_dir = args.project_dir
 	file_type = args.type
-	dest_dir = os.getcwd()
-	filename = 'rfamseq.fasta'
-    	if os.path.isdir(args.out):
-		info = os.path.split(args.out)
-		dest_dir = info[0]
-		filename = info(1)
-	else:
-		filename = args.out
 
     	#merge_all_genome_files(project_dir, dest_dir, filename=filename)
     	merge_project_files(project_dir, dest_dir, file_type, filename)
@@ -228,13 +230,6 @@ if __name__ == '__main__':
     elif args.f and args.all is False:
 	project_dir = args.project_dir
 	acc_list_file = args.f
-	dest_dir = os.getcwd()
-        filename = 'rfamseq.fasta'
-        
-	if os.path.isdir(args.out):
-                info = os.path.split(args.out)
-                dest_dir = info[0]
-                filename = info(1)
         file_type = args.f
 
 	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename=filename)

@@ -210,7 +210,8 @@ if __name__ == '__main__':
     dest_dir = os.getcwd()
     filename = 'rfamseq.fasta'
 
-    if os.path.isdir(args.out):
+    if os.path.isfile(args.out) or args.out.find("/")!= -1 :
+	absolute_path = os.path.abspath(args.out)
 	info = os.path.split(args.out)
 	dest_dir = info[0]
 	filename = info[1]

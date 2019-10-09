@@ -177,8 +177,35 @@ def merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_t
     rfamseq_fp.close()
 
 # ------------------------------------------------------------------------
+
+def parse_arguments():
+	"""
+	Uses python's argparse to parse the command line arguments
+	
+	return: Argparse parser object
+	"""
+
+	# create a new argument parser object
+    	parser = argparse.ArgumentParser(description='Merges genomes into a unified fasta file (Rfamseq)')
+
+    	# group required arguments together
+    	req_args = parser.add_argument_group("required arguments")
+    	req_args.add_argument('--project_dir', help='A project directory where the genome directories reside',
+                        type=str, required=True)
+
+    	parser.add_argument('-f', help='a file containing a list of valid UPIDs', type=str)
+    	parser.add_argument('--all', help='merges all genomes to build the new Rfamseq', action="store_true")
+	parser.add_argument('--filename', help='a filename for the output file', type=str)
+	parser.add_argument()
+	return parser
+
+# ------------------------------------------------------------------------
 	
 if __name__ == '__main__':
+
+    # create a new argument parser object
+    parser = parse_arguments()
+    args = parser.parse_args()
 
     if len(sys.argv) == 5:
     	
@@ -198,5 +225,5 @@ if __name__ == '__main__':
 	dest_dir = sys.argv[3]
         file_type = sys.argv[4]
         filename = sys.argv[5]
-	
+
 	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename=filename)

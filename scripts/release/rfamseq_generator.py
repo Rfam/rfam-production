@@ -195,7 +195,7 @@ def parse_arguments():
 	
     	parser.add_argument('-f', help='a file containing a list of valid UPIDs', type=str)
     	parser.add_argument('--all', help='merges all genomes to build the new Rfamseq', action="store_true")
-	parser.add_argument('--filename', help='a filename for the output file', type=str)
+	parser.add_argument('--out', help='a name for the output and or full destination path', type=str)
 	parser.add_argument('--type', help='the type of the file to merge', type=str, default='fasta')
 	
 	parser.add_argument()

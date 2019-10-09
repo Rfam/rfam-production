@@ -233,7 +233,7 @@ if __name__ == '__main__':
     
     elif args.f and args.all is False:
 	project_dir = args.project_dir
-	acc_list_file = args.f
+	acc_list_file = os.path.abspath(args.f)
         file_type = args.type
 
 	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename)

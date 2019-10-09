@@ -192,11 +192,14 @@ def parse_arguments():
     	req_args = parser.add_argument_group("required arguments")
     	req_args.add_argument('--project_dir', help='A project directory where the genome directories reside',
                         type=str, required=True)
-
+	
     	parser.add_argument('-f', help='a file containing a list of valid UPIDs', type=str)
     	parser.add_argument('--all', help='merges all genomes to build the new Rfamseq', action="store_true")
 	parser.add_argument('--filename', help='a filename for the output file', type=str)
+	parser.add_argument('--type', help='the type of the file to merge', type=str, default='fasta')
+	
 	parser.add_argument()
+	
 	return parser
 
 # ------------------------------------------------------------------------
@@ -207,9 +210,9 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
-    if len(sys.argv) == 5:
+    if args.all is True:
     	
-	project_dir = sys.argv[1]
+	project_dir = args.project_dir
     	dest_dir = sys.argv[2]
     	file_type = sys.argv[3]
     	filename = sys.argv[4]

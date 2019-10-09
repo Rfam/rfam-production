@@ -211,13 +211,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.all is True:
-    	
 	project_dir = args.project_dir
-    	dest_dir = sys.argv[2]
-    	file_type = sys.argv[3]
-    	filename = sys.argv[4]
-
-    	# TODO parse a list of upid accessions to enable merge on a subset of genomes
+	file_type = args.type
+	dest_dir = os.getcwd()
+	filename = 'rfamseq.fasta'
+    	if os.path.isdir(args.out):
+		info = os.path.split(args.out)
+		dest_dir = info[0]
+		filename = info(1)
+	else:
+		filename = args.out
 
     	#merge_all_genome_files(project_dir, dest_dir, filename=filename)
     	merge_project_files(project_dir, dest_dir, file_type, filename)

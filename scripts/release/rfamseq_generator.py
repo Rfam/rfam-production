@@ -225,11 +225,16 @@ if __name__ == '__main__':
     	#merge_all_genome_files(project_dir, dest_dir, filename=filename)
     	merge_project_files(project_dir, dest_dir, file_type, filename)
     
-    elif len(sys.argv) == 6:
-	project_dir = sys.argv[1]
-	acc_list_file = sys.argv[2]
-	dest_dir = sys.argv[3]
-        file_type = sys.argv[4]
-        filename = sys.argv[5]
+    elif args.f and args.all is False:
+	project_dir = args.project_dir
+	acc_list_file = args.f
+	dest_dir = os.getcwd()
+        filename = 'rfamseq.fasta'
+        
+	if os.path.isdir(args.out):
+                info = os.path.split(args.out)
+                dest_dir = info[0]
+                filename = info(1)
+        file_type = args.f
 
 	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename=filename)

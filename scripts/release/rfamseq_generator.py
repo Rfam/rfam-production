@@ -135,6 +135,9 @@ def merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_t
 
     return: Void
     """
+    
+    if file_type == 'fasta' or file_type == 'FASTA':
+	file_type = 'fa'
 
     err_cases_fp = os.path.join(dest_dir, filename+'_err_cases.txt')
 
@@ -228,6 +231,6 @@ if __name__ == '__main__':
     elif args.f and args.all is False:
 	project_dir = args.project_dir
 	acc_list_file = args.f
-        file_type = args.f
+        file_type = args.type
 
-	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename=filename)
+	merge_files_from_accession_list(project_dir, acc_list_file, dest_dir, file_type, filename)

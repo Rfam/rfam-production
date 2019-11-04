@@ -201,6 +201,71 @@ def check_rfsearch_log_success(family_dir):
 		return False
 	
 	return True	
+
+# ----------------------------------------------------------------------------------
+
+def count_hits(scores_file):
+	"""
+	Function to count SEED and FULL hits in outlist and species files at three
+	different thresholds (above ga, below ga, below rev)
+
+	scores_file: This is either the species or the outlist files from the family
+	directories
+
+	return: A dictionary with SEED and FULL counts at different thresholds
+	"""
+
+	# check point flags
+	flag_curr = 0
+	flag_rev = 0
+
+	# initialization of counts
+	counts = {"seed_above_curr": 0,
+		"full_above_ga": 0,
+		"full_below_ga": 0,
+		"seed_below_ga": 0,
+		"seed_below_rev": 0,
+		"full_below_rev": 0 }
+
+	# load file for easy parsing
+        fp = open(scores_file, 'r')
+
+	# generate stats
+	for line in fp:
+		# make flag_curr = 1 when we reach that line
+		if line.find("CURRENT THRESHOLD") != -1:
+			flag_curr = 1
+			continue
+
+		# when we reach the reversed sequence line set the flag to 1
+		if line.find("BEST REVERSED") != -1:
+			flag_rev = 1
+			continue
+
+		# we are above the 
+		if flag_curr == 0 and flag_rev == 0:
+			if line.find("SEED") != -1:
+				counts["seed_above_ga"] += 1
+			elif line.find("FULL") != -1:
+				counts["full_above_ga"] += 1
+		# we are somewhere in between current threshold and reversed cutoff
+		elif flag_curr == 1 and flag_rev == 0:
+			if line.find("SEED") != -1:
+				counts["seed_below_ga"] += 1
+			elif line.find("FULL") != -1:
+				counts["full_below_ga"] += 1
+
+		elif flag_curr == 1 and flag_rev == 1:
+			if line.find("SEED") != -1:
+				counts["seed_below_rev"] += 1
+			elif line.find("FULL") != -1:
+				counts["full_below_rev"] += 1
+		
+	fp.close()
+	
+	
+	return counts
+
 # ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':

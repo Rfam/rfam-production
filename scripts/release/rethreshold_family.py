@@ -152,7 +152,7 @@ def parse_arguments():
 			   action="store_true")
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
 	
-	parser.add_argument('--report', help='generates search reports' action="store_true")
+	parser.add_argument('--report', help='generates search reports', action="store_true")
 
 	return parser
 
@@ -364,3 +364,7 @@ if __name__ == '__main__':
 			print "Validation process completed! All searches completed successfully!"
 		else:
 			print "Validation process completed! Check validation.log for erroneous searches!"
+
+    elif args.reports:
+
+	print "Test"

@@ -250,18 +250,21 @@ def count_hits(scores_file):
 		if flag_curr == 0 and flag_rev == 0:
 			if line.find("SEED") != -1:
 				counts["seed_above_ga"] += 1
+		
 			elif line.find("FULL") != -1:
 				counts["full_above_ga"] += 1
 		# we are somewhere in between current threshold and reversed cutoff
 		elif flag_curr == 1 and flag_rev == 0:
 			if line.find("SEED") != -1:
 				counts["seed_below_ga"] += 1
+		
 			elif line.find("FULL") != -1:
 				counts["full_below_ga"] += 1
 
 		elif flag_curr == 1 and flag_rev == 1:
 			if line.find("SEED") != -1:
 				counts["seed_below_rev"] += 1
+		
 			elif line.find("FULL") != -1:
 				counts["full_below_rev"] += 1
 		
@@ -270,6 +273,36 @@ def count_hits(scores_file):
 	
 	return counts
 
+# ----------------------------------------------------------------------------------
+
+def write_family_report_file(family_dir, scores_file = "species"):
+	"""
+	Function to generate a report about the outcome of a new search 
+
+	family_dir: A valid location of an Rfam family checkout
+	scores_file: This is a string which specifies the file to parse (outlist | species)
+	It parses species file by default.
+
+	return: void
+	"""
+
+	scores_file_loc = os.path.join(family_dir, scores_file)
+	counts = count_hits(scores_file)
+
+	report_fp = open(os.path.join(family_dir, "search_report.txt"),'w')
+
+	# sum all seed counts to get total number of seed sequences - TODO double check with number in DB
+	total_seed_seqs = counts_dict["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]
+	
+	if counts_dict["seed_below_rev"] != 0:
+		report_fp.write("CRITICAL: %s SEED sequences below reversed cutoff\n\n" % str(counts_dict["seed_below_rev"]))
+	
+	report_fp.write("Total number of SEED sequences %s\n" % total_seed_seqs)
+	
+	# TODO - implement the remaining functionality
+
+	report_fp.close()
+	
 # ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -365,6 +398,14 @@ if __name__ == '__main__':
 		else:
 			print "Validation process completed! Check validation.log for erroneous searches!"
 
-    elif args.reports:
+    elif args.report:
+	if args.acc:
+		# check if searches where validated 
+		if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
+			sys.exit("WARNING: This search may be invalid. Run validation and try again!")
+		family_dir = os.path.join(args.dest_dir, args.acc)
+		species_file = os.path.join(family_dir, "species")
+		
+		counts = count_hits(species_file)
 
-	print "Test"
+		

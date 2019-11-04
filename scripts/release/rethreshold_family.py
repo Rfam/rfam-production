@@ -142,13 +142,17 @@ def parse_arguments():
     	req_args.add_argument('--dest_dir', help='destination directory where to checkout families',
                         type=str, required=True)
 
-    	parser.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
-    	parser.add_argument('--all', help='runs rfsearch on all families', action="store_true")
-    	parser.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
+	mutually_exclusive_args=parser.add_mutually_exclusive_group()
+    	mutually_exclusive_args.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
+    	mutually_exclusive_args.add_argument('--all', help='runs rfsearch on all families', action="store_true")
+    	mutually_exclusive_args.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
                         type=str, default=None)
+	
 	parser.add_argument('--rfmake', help='run rfmake after rfsearch completion', 
 			   action="store_true")
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
+	
+	parser.add_argument('--report', help='generates search reports' action="store_true")
 
 	return parser
 

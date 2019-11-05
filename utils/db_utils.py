@@ -1114,11 +1114,59 @@ def get_number_of_full_hits(rfam_acc):
 
 # ----------------------------------------------------------------------------
 
+def get_family_unique_ncbi_ids(rfam_acc):
+    """
+    Creates a list of unique NCBI ids per family based on the unique SEED and
+    FULL NCBI ids
+
+    rfam_acc: A valid Rfam family accession
+
+    return (list): A list of unique NCBI ids associated with a specific Rfam
+    family
+    """
+
+    seed_query = """
+select distinct rs.ncbi_id 
+from seed_region sr, rfamseq rs
+where sr.rfamseq_acc=rs.rfamseq_acc
+and sr.rfam_acc = '%s'
+"""
+
+    full_query = """
+select distinct rs.ncbi_id 
+from full_region fr, rfamseq rs
+where fr.rfamseq_acc=rs.rfamseq_acc
+and fr.rfam_acc = '%s'
+and fr.type = 'full'
+"""
+
+    cnx = RfamDB.connect()
+
+    cursor_seed = cnx.cursor(buffered=True)
+    cursor_full = cnx.cursor(buffered=True)
+    
+    cursor_seed.execute(seed_query % rfam_acc)
+
+    seed_ncbi_ids = list(cursor_seed.fetchall()[0])
+    cursor_full.execute(full_query % rfam_acc)
+
+    full_ncbi_ids = list(cursor_full.fetchall()[0])
+
+    unique_family_ncbi_ids = list(set(full_ncbi_ids).union(set(seed_ncbi_ids)))
+
+    cursor_seed.close()
+    cursor_full.close()
+    RfamDB.disconnect(cnx)
+
+    return unique_family_ncbi_ids
+
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
 
     """
     TO DO: Develop a script to call all of these functions after running the view
     processes
     """
-   
+  
     pass 

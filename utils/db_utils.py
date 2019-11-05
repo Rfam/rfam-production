@@ -1056,6 +1056,34 @@ def update_assembly_names(upid_gca_file):
 
 # ----------------------------------------------------------------------------
 
+def get_number_of_seed_sequences(rfam_acc):
+	"""
+	Gets the number of SEED sequences for a specific Rfam family from the
+	database.
+
+	rfam_acc: A valid Rfam family accession
+
+	return (int): Number of SEED sequences
+	"""
+	
+	# connect to db
+    	cnx = RfamDB.connect()
+
+	 # get a new buffered cursor
+    	cursor = cnx.cursor(buffered=True)
+
+	query = "Select count(*) from seed_region where rfam_acc=\'%s\'" % rfam_acc
+
+	cursor.execute(query)
+
+	number_seed_seqs = int(cursor.fetchone()[0])
+
+	cursor.close()
+	RfamDB.disconnect(cnx)
+
+	return number_seed_seqs
+
+# ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -1063,4 +1091,5 @@ if __name__ == "__main__":
     TO DO: Develop a script to call all of these functions after running the view
     processes
     """
-    set_number_of_genomic_significant_hits(None)
+   
+    pass 

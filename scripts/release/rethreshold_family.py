@@ -224,7 +224,7 @@ def count_hits(scores_file):
 	flag_rev = 0
 
 	# initialization of counts
-	counts = {"seed_above_curr": 0,
+	counts = {"seed_above_ga": 0,
 		"full_above_ga": 0,
 		"full_below_ga": 0,
 		"seed_below_ga": 0,
@@ -283,26 +283,53 @@ def write_family_report_file(family_dir, scores_file = "species"):
 	scores_file: This is a string which specifies the file to parse (outlist | species)
 	It parses species file by default.
 
-	return: void
+	return (int): A number specifying the curation priority for a specific family, where
+	3: critical, 2: critical but not erroneous, 1: check seed, 0: no attention needed    
 	"""
 
+	priority = 0
+	# fetch number of seed sequences from the database
+	rfam_acc = os.path.basename(family_dir)
+	no_seed_seqs = db.get_number_of_seed_sequences(rfam_acc)	
+
 	scores_file_loc = os.path.join(family_dir, scores_file)
-	counts = count_hits(scores_file)
+	counts = count_hits(scores_file_loc)
 
 	report_fp = open(os.path.join(family_dir, "search_report.txt"),'w')
 
-	# sum all seed counts to get total number of seed sequences - TODO double check with number in DB
-	total_seed_seqs = counts_dict["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]
+	# sum all seed counts to get total number of seed sequences
+	counted_seed_seqs = counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]
 	
-	if counts_dict["seed_below_rev"] != 0:
-		report_fp.write("CRITICAL: %s SEED sequences below reversed cutoff\n\n" % str(counts_dict["seed_below_rev"]))
-	
-	report_fp.write("Total number of SEED sequences %s\n" % total_seed_seqs)
-	
-	# TODO - implement the remaining functionality
+	# Critical SEED issues
+	if counts["seed_below_rev"] != 0:
+		report_fp.write("CRITICAL: %s SEED sequences below reversed cutoff\n" % str(counts["seed_below_rev"]))
+		priority = 3
 
+	if counts["seed_below_ga"] > counts["seed_above_ga"]:
+		percentage = float(counts["seed_below_ga"] * 100) / float(no_seed_seqs)
+		report_fp.write("CRITICAL: More SEED sequences below GA than above. %s\n" % percentage)
+		
+		if priority < 2:
+			priority = 2
+	
+	if counted_seed_seqs != no_seed_seqs:
+		report_fp.write("WARNING: The number of SEED sequences in the database does not match the number in the alignment\n\n")			
+		priority = 3
+
+	# TODO - Develop code to check taxonomic distribution
+        # TODO - Use information from FULL hits too	
+
+	# some useful information
+	report_fp.write("Total number of SEED sequences in DB: %s\n" % no_seed_seqs)
+	report_fp.write("Total number of SEED sequences counted: %s\n" % counted_seed_seqs)
+
+	report_fp.write("%s SEED sequences are above GA\n" % counts["seed_above_ga"])
+	report_fp.write("%s SEED sequences are below GA\n" % counts["seed_below_ga"])
+	report_fp.write("%s SEED sequences are below the reversed cutoff\n" % counts["seed_below_rev"])	
+	
 	report_fp.close()
 	
+	return priority
 # ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -310,9 +337,6 @@ if __name__ == '__main__':
     # create a new argument parser object
     parser = parse_arguments()
     args = parser.parse_args()
-
-    #if args.h:
-    #    parser.print_help()
 
     if args.acc and not args.v:
 	# check accession provided is valid 
@@ -405,7 +429,5 @@ if __name__ == '__main__':
 			sys.exit("WARNING: This search may be invalid. Run validation and try again!")
 		family_dir = os.path.join(args.dest_dir, args.acc)
 		species_file = os.path.join(family_dir, "species")
-		
-		counts = count_hits(species_file)
 
 		

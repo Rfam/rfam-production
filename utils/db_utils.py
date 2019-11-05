@@ -1085,6 +1085,35 @@ def get_number_of_seed_sequences(rfam_acc):
 
 # ----------------------------------------------------------------------------
 
+def get_number_of_full_hits(rfam_acc):
+        """
+        Gets the number of FULL hits from the full_region table for a specific 
+	Rfam family.
+
+        rfam_acc: A valid Rfam family accession
+
+        return (int): Number of FULL hits from full_region table
+        """
+
+        # connect to db
+        cnx = RfamDB.connect()
+
+         # get a new buffered cursor
+        cursor = cnx.cursor(buffered=True)
+
+        query = "Select count(*) from full_region where rfam_acc=\'%s\' and type=\'full\'" % rfam_acc
+
+        cursor.execute(query)
+
+        number_full_hits = int(cursor.fetchone()[0])
+
+        cursor.close()
+        RfamDB.disconnect(cnx)
+
+        return number_full_hits
+
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
 
     """

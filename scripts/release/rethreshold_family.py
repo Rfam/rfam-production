@@ -275,6 +275,28 @@ def count_hits(scores_file):
 
 # ----------------------------------------------------------------------------------
 
+def generate_search_stats(family_dir):
+	"""
+	Function to generate useful search stats per family
+
+	family_dir: A valid Rfam family checkout directory where pre-computed searches
+	were ran
+
+	return: report string
+	"""
+
+	rfam_acc = os.path.basename(family_dir)
+
+	# get some useful numbers from the database
+        no_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
+	no_full_hits_db = db.get_number_of_full_hits(rfam_acc)
+	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
+
+	# TODO - generate some useful stats from the search results
+
+
+# ----------------------------------------------------------------------------------
+
 def write_family_report_file(family_dir, scores_file = "species"):
 	"""
 	Function to generate a report about the outcome of a new search 
@@ -330,6 +352,7 @@ def write_family_report_file(family_dir, scores_file = "species"):
 	report_fp.close()
 	
 	return priority
+
 # ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':

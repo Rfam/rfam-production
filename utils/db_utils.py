@@ -1147,10 +1147,10 @@ and fr.type = 'full'
     
     cursor_seed.execute(seed_query % rfam_acc)
 
-    seed_ncbi_ids = list(cursor_seed.fetchall()[0])
+    seed_ncbi_ids = [x[0] for x in cursor_seed.fetchall()]
+    
     cursor_full.execute(full_query % rfam_acc)
-
-    full_ncbi_ids = list(cursor_full.fetchall()[0])
+    full_ncbi_ids = [x[0] for x in cursor_full.fetchall()]
 
     unique_family_ncbi_ids = list(set(full_ncbi_ids).union(set(seed_ncbi_ids)))
 

@@ -506,7 +506,7 @@ if __name__ == '__main__':
                 else:
                         print "Validation process completed! Check validation.log for erroneous searches!"
 
-	elif args.all:
+	elif args.all and not args.report:
 		validation_file = os.path.join(args.dest_dir, "validation.log")
 		fp = open(validation_file, 'w')
 		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
@@ -522,15 +522,15 @@ if __name__ == '__main__':
 			print "Validation process completed! Check validation.log for erroneous searches!"
 
     elif args.report:
-	if args.acc:
-		# check if searches where validated 
-		if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
-			sys.exit("WARNING: This search may be invalid. Run validation and try again!")
-		family_dir = os.path.join(args.dest_dir, args.acc)
-		species_file = os.path.join(family_dir, "species")
-	elif args.all:
-		families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
-		for family in families:
-			family_dir = os.path.join(args.dest_dir)
-			generate_search_stats(family_dir, scores_file = 'species')
-		
+		if args.acc:
+			# check if searches where validated 
+			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
+				sys.exit("WARNING: This search may be invalid. Run validation and try again!")
+			family_dir = os.path.join(args.dest_dir, args.acc)
+			species_file = os.path.join(family_dir, "species")
+		elif args.all:
+			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
+			for family in families:
+				family_dir = os.path.join(args.dest_dir)
+				generate_search_stats(family_dir, scores_file = 'species')
+			

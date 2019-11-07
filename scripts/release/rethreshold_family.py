@@ -529,7 +529,7 @@ if __name__ == '__main__':
 		
 		elif args.all:
 	
-			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
+			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		
 			for family in families:
 				family_dir = os.path.join(args.dest_dir, family)

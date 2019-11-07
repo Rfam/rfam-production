@@ -360,8 +360,6 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
 	new_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).difference(set(ncbi_ids_from_seed))))
 
-	print ("rfam_acc\tnum_seed_seqs\tnum_full_hits\tnum_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t"),
-	print ("tnum_seed_below_ga\tnum_full_below_ga\tSEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids")
 	print ('\t'.join([rfam_acc, str(no_seed_seqs_db), str(no_full_hits_db), str(len(unique_ncbi_ids_db)), 
 			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["seed_below_ga"]), 
 			str(counts["full_below_ga"]), str(counts["seed_below_rev"]), str(counts["full_below_rev"]), 
@@ -520,6 +518,10 @@ if __name__ == '__main__':
 			print "Validation process completed! Check validation.log for erroneous searches!"
 
     elif args.report:
+		# print report header
+		print ("rfam_acc\tnum_seed_seqs\tnum_full_hits\tnum_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t"),
+        	print ("tnum_seed_below_ga\tnum_full_below_ga\tSEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids")
+		
 		if args.acc:
 			# check if searches where validated 
 			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):

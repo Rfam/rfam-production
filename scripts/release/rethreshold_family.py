@@ -433,21 +433,18 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
-    family_dir = "/hps/nobackup/production/xfam/rfam/RELEASES/14.2/family_searches/batch1/RF00721"
-    generate_search_stats(family_dir, scores_file = 'species')
-    sys.exit()
-
-    if args.acc and not args.v:
+    if args.acc and not args.v and not args.report:
 	# check accession provided is valid 
         if args.acc[0:2] == 'RF' and len(args.acc) == 7:
             os.chdir(args.dest_dir)
 	    
-   	    checkout_and_search_family(args.acc, args.dest_dir, rfmake=args.rfmake)
+  	    checkout_and_search_family(args.acc, args.dest_dir, rfmake=args.rfmake)
     
     elif args.f and not args.v:
 	if not os.path.isfile(args.f):
 		print "The file location you provided does not exist!\n"
 		sys.exit()
+	
 	# move to destination directory
 	os.chdir(args.dest_dir)
 	accessions = load_rfam_accessions_from_file(args.f)
@@ -479,14 +476,14 @@ if __name__ == '__main__':
 		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
     
     # run rfsearch on all families in the database
-    elif args.all and not args.v:
+    elif args.all and not args.v and not args.report:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list
 	# fetches all rfam accessions from the database in DESC order based on the number of sequences in SEEDs
 	rfam_acc_list = db.fetch_rfam_accs_sorted(order='DESC')
 	for rfam_acc in rfam_acc_list:
 		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)
-
+    
     elif args.v:
 	if args.acc:
 		if not is_valid_family(args.dest_dir, args.acc):
@@ -510,6 +507,7 @@ if __name__ == '__main__':
 		validation_file = os.path.join(args.dest_dir, "validation.log")
 		fp = open(validation_file, 'w')
 		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+		
 		for rfam_acc in accessions:
 			if not is_valid_family(args.dest_dir, rfam_acc):
 				fp.write(rfam_acc + '\n')
@@ -528,6 +526,7 @@ if __name__ == '__main__':
 				sys.exit("WARNING: This search may be invalid. Run validation and try again!")
 			family_dir = os.path.join(args.dest_dir, args.acc)
 			species_file = os.path.join(family_dir, "species")
+		
 		elif args.all:
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
 			for family in families:

@@ -528,8 +528,10 @@ if __name__ == '__main__':
 			species_file = os.path.join(family_dir, "species")
 		
 		elif args.all:
+	
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
+		
 			for family in families:
-				family_dir = os.path.join(args.dest_dir)
+				family_dir = os.path.join(args.dest_dir, family)
 				generate_search_stats(family_dir, scores_file = 'species')
 			

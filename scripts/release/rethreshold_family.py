@@ -275,25 +275,97 @@ def count_hits(scores_file):
 
 # ----------------------------------------------------------------------------------
 
-def generate_search_stats(family_dir):
+def generate_search_stats(family_dir, scores_file = 'species'):
 	"""
 	Function to generate useful search stats per family
 
 	family_dir: A valid Rfam family checkout directory where pre-computed searches
 	were ran
+	scores_file: A string specifying the scores file to parse (outlist, species) 
 
 	return: report string
 	"""
-
+	
 	rfam_acc = os.path.basename(family_dir)
+	# check point flags
+        flag_curr = 0
+        flag_rev = 0
+	elements = None
+	prev_line = None
+        
+	# initialization of counts
+        counts = {"seed_above_ga": 0,
+                "full_above_ga": 0,
+                "full_below_ga": 0,
+                "seed_below_ga": 0,
+                "seed_below_rev": 0,
+                "full_below_rev": 0 }
 
 	# get some useful numbers from the database
         no_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
 	no_full_hits_db = db.get_number_of_full_hits(rfam_acc)
 	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
 
-	# TODO - generate some useful stats from the search results
+	scores_fp = open(os.path.join(family_dir, scores_file), 'r')
 
+	# this will basically read the first line which is a header so no harm
+	line = scores_fp.readline()
+	prev_line = line
+
+	ncbi_ids_from_seed = []
+	
+	# generate stats
+        for line in scores_fp:
+		
+		# make flag_curr = 1 when we reach that line
+                if line.find("CURRENT THRESHOLD") != -1:
+                        flag_curr = 1
+                       	continue
+
+                # when we reach the reversed sequence line set the flag to 1
+                if line.find("BEST REVERSED") != -1:
+                        flag_rev = 1
+                        continue
+
+		if line[0] != '#':
+                        elements = [x for x in line.strip().split(' ') if x!= '']
+
+			# add id to ncbi_ids
+			ncbi_ids_from_seed.append(elements[5])
+                	
+			# we are above the GA
+                	if flag_curr == 0 and flag_rev == 0:
+                        	if elements[2] == "SEED":
+                                	counts["seed_above_ga"] += 1
+
+                        	elif elements[2] == "FULL":
+                                	counts["full_above_ga"] += 1
+                
+			# we are somewhere in between current threshold and reversed cutoff
+                	elif flag_curr == 1 and flag_rev == 0:
+				if elements[2] == "SEED":
+                                	counts["seed_below_ga"] += 1
+
+                        	elif elements[2] == "FULL":
+                                	counts["full_below_ga"] += 1
+
+                	elif flag_curr == 1 and flag_rev == 1:
+                        	if elements[2] == "SEED":
+                                	counts["seed_below_rev"] += 1
+
+                      		elif elements[2] == "FULL":
+                                	counts["full_below_rev"] += 1
+
+        scores_fp.close()
+
+	new_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).difference(set(ncbi_ids_from_seed))))
+
+	print ("rfam_acc\tnum_seed_seqs\tnum_full_hits\tnum_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t"),
+	print ("tnum_seed_below_ga\tnum_full_below_ga\tSEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids")
+	print ('\t'.join([rfam_acc, str(no_seed_seqs_db), str(no_full_hits_db), str(len(unique_ncbi_ids_db)), 
+			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["seed_below_ga"]), 
+			str(counts["full_below_ga"]), str(counts["seed_below_rev"]), str(counts["full_below_rev"]), 
+			str(new_ncbi_ids_found)]))
 
 # ----------------------------------------------------------------------------------
 
@@ -360,6 +432,10 @@ if __name__ == '__main__':
     # create a new argument parser object
     parser = parse_arguments()
     args = parser.parse_args()
+
+    family_dir = "/hps/nobackup/production/xfam/rfam/RELEASES/14.2/family_searches/batch1/RF00721"
+    generate_search_stats(family_dir, scores_file = 'species')
+    sys.exit()
 
     if args.acc and not args.v:
 	# check accession provided is valid 
@@ -452,5 +528,9 @@ if __name__ == '__main__':
 			sys.exit("WARNING: This search may be invalid. Run validation and try again!")
 		family_dir = os.path.join(args.dest_dir, args.acc)
 		species_file = os.path.join(family_dir, "species")
-
+	elif args.all:
+		families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(x)]
+		for family in families:
+			family_dir = os.path.join(args.dest_dir)
+			generate_search_stats(family_dir, scores_file = 'species')
 		

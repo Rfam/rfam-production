@@ -291,7 +291,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         flag_rev = 0
 	elements = None
 	prev_line = None
-        
+	
 	# initialization of counts
         counts = {"seed_above_ga": 0,
                 "full_above_ga": 0,
@@ -336,7 +336,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                         	if elements[2] == "SEED":
                                 	counts["seed_above_ga"] += 1
 
-                        	elif elements[2] == "FULL":
+                        	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_above_ga"] += 1
                 
 			# we are somewhere in between current threshold and reversed cutoff
@@ -344,14 +344,14 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 				if elements[2] == "SEED":
                                 	counts["seed_below_ga"] += 1
 
-                        	elif elements[2] == "FULL":
+                        	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_below_ga"] += 1
 
                 	elif flag_curr == 1 and flag_rev == 1:
                         	if elements[2] == "SEED":
                                 	counts["seed_below_rev"] += 1
 
-                      		elif elements[2] == "FULL":
+                      		elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_below_rev"] += 1
 
         scores_fp.close()

@@ -329,7 +329,8 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                         elements = [x for x in line.strip().split(' ') if x!= '']
 			# add id to ncbi_ids
 			ncbi_ids_from_seed.append(elements[5])
-                	
+                	if elements[2] not in labels:
+				labels[elements[2]]=''	
 			# we are above the GA
                 	if flag_curr == 0 and flag_rev == 0:
                         	if elements[2] == "SEED":
@@ -524,8 +525,8 @@ if __name__ == '__main__':
 			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
 				sys.exit("WARNING: This search may be invalid. Run validation and try again!")
 			family_dir = os.path.join(args.dest_dir, args.acc)
-			species_file = os.path.join(family_dir, "species")
-		
+			generate_search_stats(family_dir, scores_file = 'species')	
+	
 		elif args.all:
 	
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]

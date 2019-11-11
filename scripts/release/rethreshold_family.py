@@ -69,13 +69,13 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7\"")
+          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax\"")
 
     # If rfmake is set to True, runs rfmake following rfsearch, otherwise run rfsearch
     # only by default
     if rfmake is True:
 	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 && rfmake.pl\"")
+          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax && rfmake.pl\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
@@ -270,7 +270,6 @@ def count_hits(scores_file):
 		
 	fp.close()
 	
-	
 	return counts
 
 # ----------------------------------------------------------------------------------
@@ -313,7 +312,6 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	prev_line = line
 
 	ncbi_ids_from_seed = []
-	
 	# generate stats
         for line in scores_fp:
 		
@@ -329,7 +327,6 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
 		if line[0] != '#':
                         elements = [x for x in line.strip().split(' ') if x!= '']
-
 			# add id to ncbi_ids
 			ncbi_ids_from_seed.append(elements[5])
                 	
@@ -534,6 +531,8 @@ if __name__ == '__main__':
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		
 			for family in families:
-				family_dir = os.path.join(args.dest_dir, family)
-				generate_search_stats(family_dir, scores_file = 'species')
+				print family
+				if family not in ['RF02924', 'RF03064', 'RF02913', 'RF02543', 'RF00017', 'RF02540']:
+					family_dir = os.path.join(args.dest_dir, family)
+					generate_search_stats(family_dir, scores_file = 'species')
 			

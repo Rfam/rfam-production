@@ -298,11 +298,14 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                 "full_below_ga": 0,
                 "seed_below_ga": 0,
                 "seed_below_rev": 0,
-                "full_below_rev": 0 }
-
+                "full_below_rev": 0,
+		"not_above_ga": 0,
+		"not_below_ga": 0,
+		}
+	
 	# get some useful numbers from the database
-        no_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
-	no_full_hits_db = db.get_number_of_full_hits(rfam_acc)
+        num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
+	num_full_hits_db = db.get_number_of_full_hits(rfam_acc)
 	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
 
 	scores_fp = open(os.path.join(family_dir, scores_file), 'r')
@@ -311,7 +314,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	line = scores_fp.readline()
 	prev_line = line
 
-	ncbi_ids_from_seed = []
+	ncbi_ids_from_hits = []
 	# generate stats
         for line in scores_fp:
 		
@@ -327,10 +330,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
 		if line[0] != '#':
                         elements = [x for x in line.strip().split(' ') if x!= '']
+			
 			# add id to ncbi_ids
-			ncbi_ids_from_seed.append(elements[5])
-                	if elements[2] not in labels:
-				labels[elements[2]]=''	
+			ncbi_ids_from_hits.append(elements[5])
+			
 			# we are above the GA
                 	if flag_curr == 0 and flag_rev == 0:
                         	if elements[2] == "SEED":
@@ -338,7 +341,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
                         	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_above_ga"] += 1
-                
+        			
+				elif elements[2] == "NOT":
+					counts["not_above_ga"] += 1         
+
 			# we are somewhere in between current threshold and reversed cutoff
                 	elif flag_curr == 1 and flag_rev == 0:
 				if elements[2] == "SEED":
@@ -346,6 +352,9 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
                         	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_below_ga"] += 1
+
+				elif elements[2] == "NOT": 
+                                        counts["not_below_ga"] += 1
 
                 	elif flag_curr == 1 and flag_rev == 1:
                         	if elements[2] == "SEED":
@@ -356,12 +365,17 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
         scores_fp.close()
 
-	new_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).difference(set(ncbi_ids_from_seed))))
+	ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(set(ncbi_ids_from_hits))))
 
-	print ('\t'.join([rfam_acc, str(no_seed_seqs_db), str(no_full_hits_db), str(len(unique_ncbi_ids_db)), 
-			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["seed_below_ga"]), 
-			str(counts["full_below_ga"]), str(counts["seed_below_rev"]), str(counts["full_below_rev"]), 
-			str(new_ncbi_ids_found)]))
+	new_ncbi_ids_found = 0
+
+	if unique_ncbi_ids_db < ncbi_ids_found:
+		new_ncbi_ids_found = ncbi_ids_found - unique_ncbi_ids_db
+
+	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(num_full_hits_db), str(len(unique_ncbi_ids_db)), 
+			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["not_above_ga"]), 
+			str(counts["seed_below_ga"]), str(counts["full_below_ga"]), str(counts["not_below_ga"]),
+			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found)]))
 
 # ----------------------------------------------------------------------------------
 
@@ -517,8 +531,9 @@ if __name__ == '__main__':
 
     elif args.report:
 		# print report header
-		print ("rfam_acc\tnum_seed_seqs\tnum_full_hits\tnum_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t"),
-        	print ("tnum_seed_below_ga\tnum_full_below_ga\tSEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids")
+		print ("RFAM_ACC\tnum_seed_seqs\tnum_full_hits\tnum_curr_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t".upper()),
+		print ("num_not_above_ga\tnum_seed_below_ga\tnum_full_below_ga\tnum_not_below_GA\t".upper()),
+        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids".upper())
 		
 		if args.acc:
 			# check if searches where validated 
@@ -532,7 +547,6 @@ if __name__ == '__main__':
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		
 			for family in families:
-				print family
 				if family not in ['RF02924', 'RF03064', 'RF02913', 'RF02543', 'RF00017', 'RF02540']:
 					family_dir = os.path.join(args.dest_dir, family)
 					generate_search_stats(family_dir, scores_file = 'species')

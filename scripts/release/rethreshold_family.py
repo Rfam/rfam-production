@@ -139,7 +139,7 @@ def parse_arguments():
 
     	# group required arguments together
     	req_args = parser.add_argument_group("required arguments")
-    	req_args.add_argument('--dest_dir', help='destination directory where to checkout families',
+    	req_args.add_argument('--dest-dir', help='destination directory where to checkout families',
                         type=str, required=True)
 
 	mutually_exclusive_args=parser.add_mutually_exclusive_group()

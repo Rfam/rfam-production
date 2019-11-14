@@ -83,6 +83,32 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
 # ----------------------------------------------------------------------------------
 
 
+def submit_new_rfmake_job(family_dir):
+    """
+    Submits a new lsf job that runs rfsearch to update SCORES for a new release.
+    If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
+
+    family_dir: The physical location of the family directory
+    rfmake: If True, run rfmake after rfsearch completes. Default False
+ 
+    return: None
+    """
+    # use the pre-process command to change directory to family_dir
+
+    rfam_acc = os.path.basename(family_dir)
+
+    lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
+    lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
+
+    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
+          "-J %s \"cd %s && rfmake.pl\"")
+
+    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+                         CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
+
+# ----------------------------------------------------------------------------------
+
+
 def load_rfam_accessions_from_file(accession_list):
     """
     This function parses a .txt file containing Rfam accessions and returns those
@@ -484,7 +510,7 @@ if __name__ == '__main__':
 		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
     
     # run rfsearch on all families in the database
-    elif args.all and not args.v and not args.report:
+    elif args.all and not args.v and not args.report and not args.rfmake:
 	# fetch Rfam family accessions from the database
 	# call checkout_and_search_family for every family in the list
 	# fetches all rfam accessions from the database in DESC order based on the number of sequences in SEEDs
@@ -548,3 +574,14 @@ if __name__ == '__main__':
 				if family not in ['RF02924', 'RF03064', 'RF02913', 'RF02543', 'RF00017', 'RF02540']:
 					family_dir = os.path.join(args.dest_dir, family)
 					generate_search_stats(family_dir, scores_file = 'species')
+
+    elif args.rfmake:
+	if args.all:
+		families = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+		
+		for family in families:
+			family_dir = os.path.join(args.dest_dir, family)
+			submit_new_rfmake_job(family_dir)
+	elif args.acc:
+		family_dir = os.path.join(args.dest_dir, args.acc)
+		submit_new_rfmake_job(family_dir)

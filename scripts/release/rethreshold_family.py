@@ -585,3 +585,12 @@ if __name__ == '__main__':
 	elif args.acc:
 		family_dir = os.path.join(args.dest_dir, args.acc)
 		submit_new_rfmake_job(family_dir)
+	
+	elif args.f: 
+		fp = open(args.f, r)
+		families = [x.strip() for x in fp]
+		fp.close()
+
+		for family in families:
+                        family_dir = os.path.join(args.dest_dir, family)
+                        submit_new_rfmake_job(family_dir) 

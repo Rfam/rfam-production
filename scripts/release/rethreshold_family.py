@@ -391,6 +391,8 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
         scores_fp.close()
 
+	missing_seed_seqs = num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"])
+
 	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 
 	new_ncbi_ids_found = abs(total_ncbi_ids_found - len(unique_ncbi_ids_db))
@@ -398,7 +400,8 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(num_full_hits_db), str(len(unique_ncbi_ids_db)), 
 			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["not_above_ga"]), 
 			str(counts["seed_below_ga"]), str(counts["full_below_ga"]), str(counts["not_below_ga"]),
-			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found)]))
+			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found)]), 
+			str(missing_seed_seq))
 
 # ----------------------------------------------------------------------------------
 
@@ -557,7 +560,7 @@ if __name__ == '__main__':
 		# print report header
 		print ("RFAM_ACC\tnum_seed_seqs\tnum_full_hits\tnum_curr_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t".upper()),
 		print ("num_not_above_ga\tnum_seed_below_ga\tnum_full_below_ga\tnum_not_below_GA\t".upper()),
-        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids".upper())
+        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids\tmissing_seed_seqs".upper())
 		
 		if args.acc:
 			# check if searches where validated 

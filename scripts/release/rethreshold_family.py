@@ -317,6 +317,9 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         flag_rev = 0
 	elements = None
 	prev_line = None
+
+	seen_ga = False
+	seen_rev_before_ga = False
 	
 	# initialization of counts
         counts = {"seed_above_ga": 0,
@@ -347,11 +350,18 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 		# make flag_curr = 1 when we reach that line
                 if line.find("CURRENT THRESHOLD") != -1:
                         flag_curr = 1
+			# if we reached this point, it means we saw GA
+			seen_ga = True
                        	continue
 
                 # when we reach the reversed sequence line set the flag to 1
                 if line.find("BEST REVERSED") != -1:
                         flag_rev = 1
+			
+			# check if GA is false at this point. If yes, this means we saw REV first.
+			# setting flag to True
+			if seen_ga is False:
+				seen_rev_before_ga = True
                         continue
 
 		if line[0] != '#':
@@ -401,7 +411,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["not_above_ga"]), 
 			str(counts["seed_below_ga"]), str(counts["full_below_ga"]), str(counts["not_below_ga"]),
 			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found)]), 
-			str(missing_seed_seq))
+			str(missing_seed_seq), str(seen_rev_before_ga))
 
 # ----------------------------------------------------------------------------------
 
@@ -560,7 +570,7 @@ if __name__ == '__main__':
 		# print report header
 		print ("RFAM_ACC\tnum_seed_seqs\tnum_full_hits\tnum_curr_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t".upper()),
 		print ("num_not_above_ga\tnum_seed_below_ga\tnum_full_below_ga\tnum_not_below_GA\t".upper()),
-        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids\tmissing_seed_seqs".upper())
+        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids\tmissing_seed_seqs\trev_above_ga".upper())
 		
 		if args.acc:
 			# check if searches where validated 

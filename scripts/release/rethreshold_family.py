@@ -322,6 +322,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	seen_rev_before_ga = False
 
 	review_family = False
+	full_check = False
 	
 	# initialization of counts
         counts = {"seed_above_ga": 0,
@@ -408,17 +409,21 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 
 	new_ncbi_ids_found = abs(total_ncbi_ids_found - len(unique_ncbi_ids_db))
-	# ABS(NFULL_OLD-NFULL_NEW) > 0.1 * NFULL_OLD
-
 	
-	if ((missing_seed_seqs > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) or (counts["seed_below_rev"] > 0)):
+	# ABS(NFULL_OLD-NFULL_NEW) > 0.1 * NFULL_OLD
+	full_diff = abs(num_full_hits_db - (counts["full_above_ga"] + counts["full_below_ga"]))
+	
+	if full_diff > (0.1 * num_full_hits_db):
+		full_check = True
+	
+	if ((missing_seed_seqs > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) or (counts["seed_below_rev"] > 0) or full_check):
 		review_family = True  
 
 	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(num_full_hits_db), str(len(unique_ncbi_ids_db)), 
 			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["not_above_ga"]), 
 			str(counts["seed_below_ga"]), str(counts["full_below_ga"]), str(counts["not_below_ga"]),
-			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found)]), 
-			str(missing_seed_seq), str(seen_rev_before_ga), str(review_family))
+			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found), 
+			str(missing_seed_seqs), str(seen_rev_before_ga), str(review_family)]))
 
 # ----------------------------------------------------------------------------------
 

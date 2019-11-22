@@ -351,7 +351,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         for line in scores_fp:
 		
 		# make flag_curr = 1 when we reach that line
-                if line.find("CURRENT THRESHOLD") != -1:
+                if line.find("CURRENT GA THRESHOLD") != -1:
                         flag_curr = 1
 			# if we reached this point, it means we saw GA
 			seen_ga = True

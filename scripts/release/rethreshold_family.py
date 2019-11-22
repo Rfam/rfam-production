@@ -404,7 +404,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
         scores_fp.close()
 
-	missing_seed_seqs = num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"])
+	missing_seed_seqs = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
 
 	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 

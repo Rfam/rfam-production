@@ -317,9 +317,11 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         flag_rev = 0
 	elements = None
 	prev_line = None
+	
 
 	seen_ga = False
 	seen_rev_before_ga = False
+	ga_theshold = 0.0
 
 	review_family = False
 	full_check = False
@@ -355,7 +357,11 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                         flag_curr = 1
 			# if we reached this point, it means we saw GA
 			seen_ga = True
-                       	continue
+                       	
+			# get GA threshold
+			elements = line.split(' ')
+			ga_theshold = float(elements[-3])
+			continue
 
                 # when we reach the reversed sequence line set the flag to 1
                 if line.find("BEST REVERSED") != -1:

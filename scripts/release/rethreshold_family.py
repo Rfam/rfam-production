@@ -320,7 +320,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	
 	seen_ga = False
 	seen_rev_before_ga = False
-	ga_theshold = 0.0
+	ga_bit_score = 0.0
 	ga_rev_gap = 0
 
 	review_family = False
@@ -360,7 +360,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                        	
 			# get GA threshold
 			elements = line.split(' ')
-			ga_theshold = float(elements[-3])
+			ga_bit_score = float(elements[-3])
 			continue
 
                 # when we reach the reversed sequence line set the flag to 1

@@ -318,14 +318,14 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	elements = None
 	prev_line = None
 	
-
 	seen_ga = False
 	seen_rev_before_ga = False
 	ga_theshold = 0.0
+	ga_rev_gap = 0
 
 	review_family = False
 	full_check = False
-	
+
 	# initialization of counts
         counts = {"seed_above_ga": 0,
                 "full_above_ga": 0,
@@ -408,6 +408,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
                       		elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_below_rev"] += 1
 
+			# if between GA and REV count sequences
+			if ((flag_curr == 1 and flag_rev == 0) or (flag_curr == 0 and flag_rev == 1)):
+				ga_rev_gap += 1
+		
         scores_fp.close()
 
 	missing_seed_seqs = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))

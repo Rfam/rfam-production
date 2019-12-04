@@ -1162,13 +1162,14 @@ and fr.type = 'full'
 
 # ----------------------------------------------------------------------------
 
-def fetch_type_specific_rfam_accessions(rna_type):
+def fetch_type_specific_rfam_accessions(rna_type, return_type = "list"):
 	"""
 	Fetches all Rfam family accessions from the database matching the
 	rna_type parameter
 
 	rna_type: A string specifying a valid type of ncRNAs to extract
 	from the database 
+	return_type: The python type the data will be return 
 	"""
 
 	query = """
@@ -1181,11 +1182,19 @@ where type like '%s%s%s'
 
 	cursor.execute(query % (chr(37), rna_type, chr(37)))
 
-	rfam_accs = [x[0] for x in cursor.fetchall()]
+	rfam_accs = None
+
+	# process accessions
+	if return_type == "list":
+		rfam_accs = [x[0] for x in cursor.fetchall()]
+	elif return_type == "dict":
+		for rfam_acc in [x[0] for x in cursor.fetchall()]	
+			rfam_accs[rfam_acc] = ''
 
 	cursor.close()
 	RfamDB.disconnect(cnx)
 
+	
 	return rfam_accs
 
 # ----------------------------------------------------------------------------

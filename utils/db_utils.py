@@ -1162,6 +1162,34 @@ and fr.type = 'full'
 
 # ----------------------------------------------------------------------------
 
+def fetch_type_specific_rfam_accessions(rna_type):
+	"""
+	Fetches all Rfam family accessions from the database matching the
+	rna_type parameter
+
+	rna_type: A string specifying a valid type of ncRNAs to extract
+	from the database 
+	"""
+
+	query = """
+select rfam_acc from family
+where type like '%s%s%s'
+"""
+
+	cnx = RfamDB.connect()
+    	cursor = cnx.cursor(buffered=True)
+
+	cursor.execute(query % (chr(37), rna_type, chr(37)))
+
+	rfam_accs = [x[0] for x in cursor.fetchall()]
+
+	cursor.close()
+	RfamDB.disconnect(cnx)
+
+	return rfam_accs
+
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
 
     """
@@ -1169,4 +1197,5 @@ if __name__ == "__main__":
     processes
     """
   
-    pass 
+    pass
+

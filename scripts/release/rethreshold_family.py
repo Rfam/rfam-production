@@ -429,10 +429,13 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 		
         scores_fp.close()
 
+	# computes the number of any missing SEED sequences. That is SEEDs that do not appear in the outlist
 	missing_seed_seqs = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
 
+	# compute the total number of ncbi_ids including 
 	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 
+	# calulates the number of new ncbi ids added to the full region after a new search
 	new_ncbi_ids_found = abs(total_ncbi_ids_found - len(unique_ncbi_ids_db))
 	
 	# ABS(NFULL_OLD-NFULL_NEW) > 0.1 * NFULL_OLD

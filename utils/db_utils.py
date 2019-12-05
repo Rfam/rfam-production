@@ -1188,7 +1188,7 @@ where type like '%s%s%s'
 	if return_type == "list":
 		rfam_accs = [x[0] for x in cursor.fetchall()]
 	elif return_type == "dict":
-		for rfam_acc in [x[0] for x in cursor.fetchall()]	
+		for rfam_acc in [x[0] for x in cursor.fetchall()]:	
 			rfam_accs[rfam_acc] = ''
 
 	cursor.close()

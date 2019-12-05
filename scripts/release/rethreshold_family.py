@@ -437,6 +437,9 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	
 	# ABS(NFULL_OLD-NFULL_NEW) > 0.1 * NFULL_OLD
 	full_diff = abs(num_full_hits_db - (counts["full_above_ga"] + counts["full_below_ga"]))
+
+	# compute GA/REV bit score difference
+	ga_rev_bitscore_diff = abs(ga_bit_score - rev_bit_score)
 	
 	if full_diff > (0.1 * num_full_hits_db):
 		full_check = True

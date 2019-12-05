@@ -1182,7 +1182,7 @@ where type like '%s%s%s'
 
 	cursor.execute(query % (chr(37), rna_type, chr(37)))
 
-	rfam_accs = None
+	rfam_accs = {}
 
 	# process accessions
 	if return_type == "list":

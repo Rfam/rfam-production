@@ -327,8 +327,8 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	seen_ga = False
 	seen_rev_before_ga = False
 	ga_bit_score = 0.0
-	ga_rev_gap = 0
 	rev_bit_score = 0.0
+	ga_rev_seq_gap = 0	# gap in sequences between GA/REV thresholds
 
 	review_family = False
 	full_check = False
@@ -425,7 +425,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
 			# if between GA and REV count sequences
 			if ((flag_curr == 1 and flag_rev == 0) or (flag_curr == 0 and flag_rev == 1)):
-				ga_rev_gap += 1
+				ga_rev_seq_gap += 1
 		
         scores_fp.close()
 

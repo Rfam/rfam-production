@@ -317,6 +317,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	"""
 	
 	rfam_acc = os.path.basename(family_dir)
+	
 	# check point flags
         flag_curr = 0
         flag_rev = 0
@@ -613,11 +614,12 @@ if __name__ == '__main__':
 		elif args.all:
 	
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
-		
+			
+			# fetch Rfam family accessions to exclude if defined
 			exclude_accs = {}
 			if args.exclude_type:
-		               	exclude_accs = db.fetch_type_specific_rfam_accessions(exclude_type, return_type="dict")	
-
+				exclude_accs = db.fetch_type_specific_rfam_accessions(args.exclude_type, return_type="dict")	
+			
 			for family in families:
 				# families of which searches did not complete
 				# remove the database on 

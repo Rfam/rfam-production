@@ -328,6 +328,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	seen_rev_before_ga = False
 	ga_bit_score = 0.0
 	ga_rev_gap = 0
+	rev_bit_score = 0.0
 
 	review_family = False
 	full_check = False
@@ -385,6 +386,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 
 		if line[0] != '#':
                         elements = [x for x in line.strip().split(' ') if x!= '']
+			
+			# first line after hitting REV line 
+			if flag_rev == 1 and rev_bit_score == 0.0: 
+				rev_bit_score = float(elements[0])
 			
 			# add id to ncbi_ids
 			ncbi_ids_from_hits.add(elements[5])

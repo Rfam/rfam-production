@@ -29,6 +29,8 @@ LSF_GROUP = "/family_srch"
 MEMORY = 2000 
 CPU = 8
 MAX_JOB_COUNT = 1000
+family_exceptions = {'RF02924': '', 'RF03064': '', 'RF02913': '', 
+		   'RF02543': '', 'RF00017': '', 'RF02540': ''}
 
 # ----------------------------------------------------------------------------------
 
@@ -179,7 +181,10 @@ def parse_arguments():
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
 	
 	parser.add_argument('--report', help='generates search reports', action="store_true")
-
+	
+	# this is mutually exclusive with --acc option
+	parser.add_argument('--exclude-type', help='type(s) of ncRNAs to exclude',type=str, default=None)
+	
 	return parser
 
 # ----------------------------------------------------------------------------------
@@ -341,6 +346,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
 	num_full_hits_db = db.get_number_of_full_hits(rfam_acc)
 	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
+	
+#	eclude_accs = []
+#	if exclusion_type is not None:
+#		exclude_accs = db.fetch_type_specific_rfam_accessions(exclusion_type, return_type="dict")
 
 	scores_fp = open(os.path.join(family_dir, scores_file), 'r')
 
@@ -605,8 +614,14 @@ if __name__ == '__main__':
 	
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
 		
+			exclude_accs = {}
+			if args.exclude_type:
+		               	exclude_accs = db.fetch_type_specific_rfam_accessions(exclude_type, return_type="dict")	
+
 			for family in families:
-				if family not in ['RF02924', 'RF03064', 'RF02913', 'RF02543', 'RF00017', 'RF02540']:
+				# families of which searches did not complete
+				# remove the database on 
+				if family not in exclude_accs and family not in family_exceptions:
 					family_dir = os.path.join(args.dest_dir, family)
 					generate_search_stats(family_dir, scores_file = 'species')
 

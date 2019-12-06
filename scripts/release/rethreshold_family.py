@@ -222,6 +222,32 @@ def is_valid_family(dest_dir, rfam_acc):
 
 # ----------------------------------------------------------------------------------
 
+def check_consistent_number_of_seed_hits(num_seed_db, seedoutlist):
+	"""
+	Parses the seedoutlist file and compares the number of seed sequences
+	obtained from the database and the number of seed hits in the outlist file
+
+	num_seed_db: The number of seed sequences found in the database
+	seedoutlist: The SEED specific outlist file
+
+	return (boolean): True if the number is consistent, False otherwise. 
+	"""
+	
+	seed_count = 0
+	seed_fp = open(seedoutlist, 'r')
+
+	for line in fp:
+		if line[0] != '#':
+			seed_count += 1
+
+	fp.close()
+
+	if seed_count == num_seed_db:
+		return True
+
+	return False
+	
+# ----------------------------------------------------------------------------------
 def check_rfsearch_log_success(family_dir):
 	"""
 	Checks if the rfsearch.log file contains the success string # [ok] in 

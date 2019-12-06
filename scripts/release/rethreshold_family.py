@@ -456,7 +456,7 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 			str(counts["seed_below_rev"]), str(missing_seed_seqs), str(num_full_hits_db), str(counts["full_above_ga"]), 
 			str(counts["full_below_ga"]), str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), 
 			str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
-			str(seen_rev_before_ga), str(review_family)]))
+			str(int(seen_rev_before_ga)), str(int(review_family))]))
 
 # ----------------------------------------------------------------------------------
 

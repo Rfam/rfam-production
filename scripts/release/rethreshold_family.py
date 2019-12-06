@@ -222,7 +222,7 @@ def is_valid_family(dest_dir, rfam_acc):
 
 # ----------------------------------------------------------------------------------
 
-def check_consistent_number_of_seed_hits(num_seed_db, seedoutlist):
+def check_seed_hit_number_is_consistent(num_seed_db, seedoutlist):
 	"""
 	Parses the seedoutlist file and compares the number of seed sequences
 	obtained from the database and the number of seed hits in the outlist file

@@ -444,17 +444,19 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 	# compute GA/REV bit score difference
 	ga_rev_bitscore_diff = abs(ga_bit_score - rev_bit_score)
 	
+	
 	if full_diff > (0.1 * num_full_hits_db):
 		full_check = True
-	
+
+	# constraints to be met for reviewing families	
 	if ((missing_seed_seqs > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) or (counts["seed_below_rev"] > 0) or full_check):
 		review_family = True  
 
-	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(num_full_hits_db), str(len(unique_ncbi_ids_db)), 
-			str(counts["seed_above_ga"]), str(counts["full_above_ga"]), str(counts["not_above_ga"]), 
-			str(counts["seed_below_ga"]), str(counts["full_below_ga"]), str(counts["not_below_ga"]),
-			str(counts["seed_below_rev"]), str(counts["full_below_rev"]), str(new_ncbi_ids_found), 
-			str(missing_seed_seqs), str(seen_rev_before_ga), str(review_family)]))
+	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
+			str(counts["seed_below_rev"]), str(missing_seed_seqs), str(num_full_hits_db), str(counts["full_above_ga"]), 
+			str(counts["full_below_ga"]), str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), 
+			str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
+			str(seen_rev_before_ga), str(review_family)]))
 
 # ----------------------------------------------------------------------------------
 
@@ -611,10 +613,11 @@ if __name__ == '__main__':
 
     elif args.report:
 		# print report header
-		print ("RFAM_ACC\tnum_seed_seqs\tnum_full_hits\tnum_curr_ncbi_ids\tnum_seed_above_GA\tnum_full_above_ga\t".upper()),
-		print ("num_not_above_ga\tnum_seed_below_ga\tnum_full_below_ga\tnum_not_below_GA\t".upper()),
-        	print ("SEED_below_rev\tfull_below_rev\tnum_new_ncbi_ids\tmissing_seed_seqs\trev_above_ga\treview_family".upper())
-		
+
+		print ("RFAM_ACC\tnum_seed_seqs\tnum_seed_above_GA\tnum_seed_below_ga\tseed_below_rev\tmissing_seeds\t".upper()),		
+		print ("num_full_DB\tfull_above_ga\tfull_below_ga\tnum_full_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
+		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family".upper()),
+
 		if args.acc:
 			# check if searches where validated 
 			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):

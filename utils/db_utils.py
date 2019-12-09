@@ -1101,7 +1101,7 @@ def get_number_of_full_hits(rfam_acc):
          # get a new buffered cursor
         cursor = cnx.cursor(buffered=True)
 
-        query = "Select count(*) from full_region where rfam_acc=\'%s\' and type=\'full\'" % rfam_acc
+        query = "Select count(*) from full_region where rfam_acc=\'%s\' and type=\'full\' and is_significant=1" % rfam_acc
 
         cursor.execute(query)
 

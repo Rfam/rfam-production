@@ -222,7 +222,7 @@ def is_valid_family(dest_dir, rfam_acc):
 
 # ----------------------------------------------------------------------------------
 
-def check_seed_hit_number_is_consistent(num_seed_db, seedoutlist):
+def get_missing_seeds_seedoutlist(num_seed_db, seedoutlist):
 	"""
 	Parses the seedoutlist file and compares the number of seed sequences
 	obtained from the database and the number of seed hits in the outlist file
@@ -236,18 +236,16 @@ def check_seed_hit_number_is_consistent(num_seed_db, seedoutlist):
 	seed_count = 0
 	seed_fp = open(seedoutlist, 'r')
 
-	for line in fp:
+	for line in seed_fp:
 		if line[0] != '#':
 			seed_count += 1
 
-	fp.close()
-
-	if seed_count == num_seed_db:
-		return True
-
-	return False
+	seed_fp.close()
+		
+	return num_seed_db - seed_count
 	
 # ----------------------------------------------------------------------------------
+
 def check_rfsearch_log_success(family_dir):
 	"""
 	Checks if the rfsearch.log file contains the success string # [ok] in 
@@ -374,6 +372,9 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
 	num_full_hits_db = db.get_number_of_full_hits(rfam_acc)
 	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
+
+	seedoutlist = os.path.join(family_dir, "seedoutlist")
+	missing_seed_seqs_so = get_missing_seeds_seedoutlist(num_seed_seqs_db, seedoutlist)
 	
 #	eclude_accs = []
 #	if exclusion_type is not None:
@@ -456,8 +457,8 @@ def generate_search_stats(family_dir, scores_file = 'species'):
         scores_fp.close()
 
 	# computes the number of any missing SEED sequences. That is SEEDs that do not appear in the outlist
-	missing_seed_seqs = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
-
+	missing_seed_seqs_o = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
+	
 	# compute the total number of ncbi_ids including 
 	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 
@@ -475,14 +476,16 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 		full_check = True
 
 	# constraints to be met for reviewing families	
-	if ((missing_seed_seqs > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) or (counts["seed_below_rev"] > 0) or full_check):
+	if ((missing_seed_seqs_o > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) 
+		or (counts["seed_below_rev"] > 0) or full_check or missing_seed_seqs_so):
 		review_family = True  
 
 	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
-			str(counts["seed_below_rev"]), str(missing_seed_seqs), str(num_full_hits_db), str(counts["full_above_ga"]), 
-			str(counts["full_below_ga"]), str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), 
-			str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
-			str(int(seen_rev_before_ga)), str(int(review_family))]))
+			str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
+			str(num_full_hits_db), str(counts["full_above_ga"]), str(counts["full_below_ga"]), 
+			str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), 
+			str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), 
+			str(int(review_family))]))
 
 # ----------------------------------------------------------------------------------
 
@@ -639,9 +642,8 @@ if __name__ == '__main__':
 
     elif args.report:
 		# print report header
-
-		print ("RFAM_ACC\tnum_seed_seqs\tnum_seed_above_GA\tnum_seed_below_ga\tseed_below_rev\tmissing_seeds\t".upper()),		
-		print ("num_full_DB\tfull_above_ga\tfull_below_ga\tnum_full_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
+		print ("RFAM_ACC\tseed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),		
+		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tfull_below_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
 		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family".upper()),
 
 		if args.acc:

@@ -329,7 +329,7 @@ def count_hits(scores_file):
 
 # ----------------------------------------------------------------------------------
 
-def generate_search_stats(family_dir, scores_file = 'species'):
+def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	"""
 	Function to generate useful search stats per family
 
@@ -368,6 +368,10 @@ def generate_search_stats(family_dir, scores_file = 'species'):
 		"not_below_ga": 0,
 		}
 	
+	miRNAs = {}
+	if tag_miRNA is True:
+		pass
+
 	# get some useful numbers from the database
         num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
 	num_full_hits_db = db.get_number_of_full_hits(rfam_acc)
@@ -644,7 +648,7 @@ if __name__ == '__main__':
 		# print report header
 		print ("RFAM_ACC\tseed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),		
 		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tfull_below_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
-		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family".upper()),
+		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family\n".upper()),
 
 		if args.acc:
 			# check if searches where validated 

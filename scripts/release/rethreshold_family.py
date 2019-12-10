@@ -353,6 +353,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	ga_bit_score = 0.0
 	rev_bit_score = 0.0
 	ga_rev_seq_gap = 0	# gap in sequences between GA/REV thresholds
+	is_miRNA = 0
 
 	review_family = False
 	full_check = False
@@ -368,9 +369,14 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 		"not_below_ga": 0,
 		}
 	
+	# fetch miRNA accessions from the database
 	miRNAs = {}
 	if tag_miRNA is True:
-		pass
+		miRNAs.update(db.fetch_type_specific_rfam_accessions("miRNA", return_type="dict"))
+
+	if rfam_acc in miRNAs:
+		is_miRNA = 1
+	
 
 	# get some useful numbers from the database
         num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
@@ -380,10 +386,6 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	seedoutlist = os.path.join(family_dir, "seedoutlist")
 	missing_seed_seqs_so = get_missing_seeds_seedoutlist(num_seed_seqs_db, seedoutlist)
 	
-#	eclude_accs = []
-#	if exclusion_type is not None:
-#		exclude_accs = db.fetch_type_specific_rfam_accessions(exclusion_type, return_type="dict")
-
 	scores_fp = open(os.path.join(family_dir, scores_file), 'r')
 
 	# this will basically read the first line which is a header so no harm
@@ -484,12 +486,21 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 		or (counts["seed_below_rev"] > 0) or full_check or missing_seed_seqs_so):
 		review_family = True  
 
-	print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
+	if tag_miRNA is True:
+		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
 			str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
 			str(num_full_hits_db), str(counts["full_above_ga"]), str(counts["full_below_ga"]), 
 			str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), 
 			str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), 
-			str(int(review_family))]))
+			str(int(review_family)), str(is_miRNA)]))
+	
+	else:
+		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
+                        str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
+                        str(num_full_hits_db), str(counts["full_above_ga"]), str(counts["full_below_ga"]),
+                        str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score),
+                        str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)),
+                        str(int(review_family))]))
 
 # ----------------------------------------------------------------------------------
 
@@ -648,14 +659,14 @@ if __name__ == '__main__':
 		# print report header
 		print ("RFAM_ACC\tseed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),		
 		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tfull_below_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
-		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family\n".upper()),
+		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family\tis_miRNA\n".upper()),
 
 		if args.acc:
 			# check if searches where validated 
 			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
 				sys.exit("WARNING: This search may be invalid. Run validation and try again!")
 			family_dir = os.path.join(args.dest_dir, args.acc)
-			generate_search_stats(family_dir, scores_file = 'species')	
+			generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True)	
 	
 		elif args.all:
 	
@@ -671,7 +682,7 @@ if __name__ == '__main__':
 				# remove the database on 
 				if family not in exclude_accs and family not in family_exceptions:
 					family_dir = os.path.join(args.dest_dir, family)
-					generate_search_stats(family_dir, scores_file = 'species')
+					generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True)
 
     elif args.rfmake:
 	if args.all:

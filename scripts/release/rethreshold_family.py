@@ -329,6 +329,28 @@ def count_hits(scores_file):
 
 # ----------------------------------------------------------------------------------
 
+def extract_unique_seeds_from_seedoutlist(seedoutlist):
+	"""
+	Extracts all unique SEED accessions in the form of rfamseq_acc/start-end. 
+	Ignores duplicated hits. 
+	"""
+
+	seeds_found = {}
+	
+	fp = open(seedoutlist, 'r')
+
+	for line in fp:
+		if line[0] != '#':
+			line = [x for x in line.strip().split(' ') if x != '']
+			if line[3] not in seeds_found:
+				seeds_found[line[3]] = float(line[0])
+	
+	fp.close()
+
+	return seeds_found
+			
+# ----------------------------------------------------------------------------------
+
 def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	"""
 	Function to generate useful search stats per family

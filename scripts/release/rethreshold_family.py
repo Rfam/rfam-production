@@ -378,7 +378,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	is_miRNA = 0
 
 	last_seed_above_ga = 0.0
-	last_seed_seen = 0.0
+	last_seed_seen = None
 	seq_count = 0
 	last_seed_pos = 0
 
@@ -487,6 +487,12 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# if between GA and REV count sequences
 			if ((flag_curr == 1 and flag_rev == 0) or (flag_curr == 0 and flag_rev == 1)):
 				ga_rev_seq_gap += 1
+
+			# always stores the last seed up to the current iteration point
+			# at the end of the file, last_seed_seen will be holding the last SEED sequence
+			# seen in the outlist file
+			if elements[2] == "SEED":
+				last_seed_seen = elements
 
 		prev_line = line
 		

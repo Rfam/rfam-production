@@ -379,7 +379,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
 	last_seed_above_ga = 0.0
 	last_seed_seen = None
-	seq_count = 0
+	seq_position = 0
 	last_seed_pos = 0
 
 	review_family = False
@@ -446,7 +446,10 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                         continue
 
 		if line[0] != '#':
-                        elements = [x for x in line.strip().split(' ') if x!= '']
+			# increase sequence position
+                	seq_position += 1
+                        
+			elements = [x for x in line.strip().split(' ') if x!= '']
 			
 			# first line after hitting REV line 
 			if flag_rev == 1 and rev_bit_score == 0.0: 
@@ -493,9 +496,11 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# seen in the outlist file
 			if elements[2] == "SEED":
 				last_seed_seen = elements
-
+				# sets position
+				last_seed_pos = seq_position
+		# current line becomes previous at the end of each iteration 
 		prev_line = line
-		
+	
         scores_fp.close()
 
 	# computes the number of any missing SEED sequences. That is SEEDs that do not appear in the outlist

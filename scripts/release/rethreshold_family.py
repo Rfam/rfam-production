@@ -381,7 +381,9 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	last_seed_seen = None
 	seq_position = 0
 	last_seed_pos = 0
-
+	ga_position = 0
+	rev_position = 0
+	position = 1 		# keeps hold of the index position with respect to the entire outlist
 	review_family = False
 	full_check = False
 
@@ -423,13 +425,13 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	ncbi_ids_from_hits = set()
 	# generate stats
         for line in scores_fp:
-		
+		position += 1 	# starts from 1 because we read the 1st line out of the loop
 		# make flag_curr = 1 when we reach that line
                 if line.find("CURRENT GA THRESHOLD") != -1:
                         flag_curr = 1
 			# if we reached this point, it means we saw GA
 			seen_ga = True
-     
+     			ga_position = position
 			# get GA threshold
 			elements = line.split(' ')
 			ga_bit_score = float(elements[-3])
@@ -438,7 +440,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                 # when we reach the reversed sequence line set the flag to 1
                 if line.find("BEST REVERSED") != -1:
                         flag_rev = 1
-			
+			rev_position = position
 			# check if GA is false at this point. If yes, this means we saw REV first.
 			# setting flag to True
 			if seen_ga is False:
@@ -498,6 +500,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 				last_seed_seen = elements
 				# sets position
 				last_seed_pos = seq_position
+		
 		# current line becomes previous at the end of each iteration 
 		prev_line = line
 	

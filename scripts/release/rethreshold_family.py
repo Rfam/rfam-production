@@ -394,6 +394,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                 "full_below_rev": 0,
 		"not_above_ga": 0,
 		"not_below_ga": 0,
+		"other_below_ga": 0
 		}
 	
 	# fetch miRNA accessions from the database
@@ -428,7 +429,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                         flag_curr = 1
 			# if we reached this point, it means we saw GA
 			seen_ga = True
-                       	
+     
 			# get GA threshold
 			elements = line.split(' ')
 			ga_bit_score = float(elements[-3])
@@ -486,6 +487,8 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# if between GA and REV count sequences
 			if ((flag_curr == 1 and flag_rev == 0) or (flag_curr == 0 and flag_rev == 1)):
 				ga_rev_seq_gap += 1
+
+		prev_line = line
 		
         scores_fp.close()
 

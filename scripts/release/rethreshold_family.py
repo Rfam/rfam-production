@@ -533,7 +533,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	if tag_miRNA is True:
 		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
 			str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-			str(num_full_hits_db), str(counts["full_above_ga"]), str(counts["full_below_ga"]), 
+			str(num_full_hits_db), str(counts["full_above_ga"]), 
 			str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), 
 			str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), 
 			str(int(review_family)), str(is_miRNA)]))
@@ -541,7 +541,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	else:
 		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
                         str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-                        str(num_full_hits_db), str(counts["full_above_ga"]), str(counts["full_below_ga"]),
+                        str(num_full_hits_db), str(counts["full_above_ga"]),
                         str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score),
                         str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)),
                         str(int(review_family))]))
@@ -702,7 +702,7 @@ if __name__ == '__main__':
     elif args.report:
 		# print report header
 		print ("RFAM_ACC\tseed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),		
-		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tfull_below_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
+		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
 		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tReview_family\tis_miRNA\n".upper()),
 
 		if args.acc:

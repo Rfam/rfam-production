@@ -233,16 +233,10 @@ def get_missing_seeds_seedoutlist(num_seed_db, seedoutlist):
 
 	return (boolean): True if the number is consistent, False otherwise. 
 	"""
+
+	unique_seeds = extract_unique_seeds_from_seedoutlist(seedoutlist)
+	seed_count = len(unique_seeds.keys())	
 	
-	seed_count = 0
-	seed_fp = open(seedoutlist, 'r')
-
-	for line in seed_fp:
-		if line[0] != '#':
-			seed_count += 1
-
-	seed_fp.close()
-		
 	return num_seed_db - seed_count
 	
 # ----------------------------------------------------------------------------------

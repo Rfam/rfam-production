@@ -469,7 +469,9 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# we are above the GA
                 	if flag_curr == 0 and flag_rev == 0:
                         	if elements[2] == "SEED":
-                                	counts["seed_above_ga"] += 1
+					# make sure the sequences is not in the dictionary and that it starts from 1
+					if elements[3] not in unique_seeds and elements[5] > 1:
+                                		counts["seed_above_ga"] += 1
 
                         	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_above_ga"] += 1

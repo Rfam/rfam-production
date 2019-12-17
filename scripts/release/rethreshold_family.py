@@ -383,6 +383,8 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	review_family = False
 	full_check = False
 
+	unique_seeds = {}
+
 	# initialization of counts
         counts = {"seed_above_ga": 0,
                 "full_above_ga": 0,
@@ -390,8 +392,6 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                 "seed_below_ga": 0,
                 "seed_below_rev": 0,
                 "full_below_rev": 0,
-		"not_above_ga": 0,
-		"not_below_ga": 0,
 		"other_below_ga": 0
 		}
 	
@@ -419,6 +419,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	prev_line = line
 
 	ncbi_ids_from_hits = set()
+	
 	# generate stats
         for line in scores_fp:
 		position += 1 	# starts from 1 because we read the 1st line out of the loop
@@ -450,10 +451,14 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
 		if line[0] != '#':
 			# increase sequence position
-                	#seq_position += 1
-                        
+                	#seq_position += 1                        
+
 			elements = [x for x in line.strip().split(' ') if x!= '']
 			
+			if elements[2] == "SEED":
+				if elements[3] not in unique_seeds:
+					unique_seeds[elements[3]] = (elements[8], elements[9])
+
 			# first line after hitting REV line 
 			if flag_rev == 1 and rev_bit_score == 0.0: 
 				rev_bit_score = float(elements[0])
@@ -472,17 +477,15 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# we are somewhere in between current threshold and reversed cutoff
                 	elif flag_curr == 1 and flag_rev == 0:
 				if elements[2] == "SEED":
-                                	counts["seed_below_ga"] += 1
-
-                        	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
-                                	counts["full_below_ga"] += 1
+					if elements[3] not in unique_seeds:
+                                		counts["seed_below_ga"] += 1
+						unique_seeds[elements[3]] = (elements[8], elements[9])
 
                 	elif flag_curr == 1 and flag_rev == 1:
                         	if elements[2] == "SEED":
-                                	counts["seed_below_rev"] += 1
-
-                      		elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
-                                	counts["full_below_rev"] += 1
+					if elements[3] not in unique_seeds:
+                                		counts["seed_below_rev"] += 1
+						unique_seeds[elements[3]] = (elements[8], elements[9])
 
 			# if between GA and REV count sequences
 			if ((flag_curr == 1 and flag_rev == 0) or (flag_curr == 0 and flag_rev == 1)):
@@ -493,9 +496,9 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# seen in the outlist file
 			if elements[2] == "SEED":
 				last_seed_seen = elements
-					# sets position
+				# sets position
 				last_seed_pos = position
-		
+						
 		# current line becomes previous at the end of each iteration 
 		prev_line = line
 	

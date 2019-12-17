@@ -456,7 +456,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
 		if line[0] != '#':
 			# increase sequence position
-                	seq_position += 1
+                	#seq_position += 1
                         
 			elements = [x for x in line.strip().split(' ') if x!= '']
 			
@@ -506,7 +506,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			if elements[2] == "SEED":
 				last_seed_seen = elements
 					# sets position
-				last_seed_pos = seq_position
+				last_seed_pos = position
 		
 		# current line becomes previous at the end of each iteration 
 		prev_line = line

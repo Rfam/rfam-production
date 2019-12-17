@@ -469,9 +469,6 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
                         	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_above_ga"] += 1
         			
-				#elif elements[2] == "NOT":
-				#	counts["not_above_ga"] += 1         
-
 			# we are somewhere in between current threshold and reversed cutoff
                 	elif flag_curr == 1 and flag_rev == 0:
 				if elements[2] == "SEED":
@@ -479,9 +476,6 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
                         	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
                                 	counts["full_below_ga"] += 1
-
-				#elif elements[2] == "NOT": 
-                                #        counts["not_below_ga"] += 1
 
                 	elif flag_curr == 1 and flag_rev == 1:
                         	if elements[2] == "SEED":

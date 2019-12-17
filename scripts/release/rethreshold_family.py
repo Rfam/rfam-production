@@ -21,6 +21,7 @@ import argparse
 from subprocess import Popen, PIPE
 
 from utils import db_utils as db
+
 # ------------------------------------- GLOBALS ------------------------------------
 # this group only allows 10 rfsearch jobs to run concurrently
 # this means 10*100 = 1000 jobs running concurrently which is the lsf limit
@@ -377,10 +378,11 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	ga_rev_seq_gap = 0	# gap in sequences between GA/REV thresholds
 	is_miRNA = 0
 
-	last_seed_above_ga = 0.0
+	seed_above_ga = None
 	last_seed_seen = None
 	seq_position = 0
 	last_seed_pos = 0
+	seed_above_ga_pos = 0
 	ga_position = 0
 	rev_position = 0
 	position = 1 		# keeps hold of the index position with respect to the entire outlist
@@ -432,6 +434,10 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# if we reached this point, it means we saw GA
 			seen_ga = True
      			ga_position = position
+
+			# get all the elements of the last score line above the GA threshold
+			seed_above_ga = [x for x in prev_line.strip().split(' ') if x != '']
+			seed_above_ga_pos = ga_position - 1
 			# get GA threshold
 			elements = line.split(' ')
 			ga_bit_score = float(elements[-3])
@@ -498,7 +504,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			# seen in the outlist file
 			if elements[2] == "SEED":
 				last_seed_seen = elements
-				# sets position
+					# sets position
 				last_seed_pos = seq_position
 		
 		# current line becomes previous at the end of each iteration 
@@ -530,21 +536,19 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 		or (counts["seed_below_rev"] > 0) or full_check or missing_seed_seqs_so):
 		review_family = True  
 
-	if tag_miRNA is True:
-		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]), 
-			str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-			str(num_full_hits_db), str(counts["full_above_ga"]), 
-			str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), 
-			str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), 
-			str(int(review_family)), str(is_miRNA)]))
-	
-	else:
-		print ('\t'.join([rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
+	fields = [rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
                         str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-                        str(num_full_hits_db), str(counts["full_above_ga"]),
-                        str(len(unique_ncbi_ids_db)), str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score),
-                        str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), str(int(seen_rev_before_ga)),
-                        str(int(review_family))]))
+                        str(num_full_hits_db), str(counts["full_above_ga"]), str(len(unique_ncbi_ids_db)),
+                        str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff),
+                        str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
+                        str(rev_position), last_seed_seen[0], str(last_seed_pos), str(int(review_family))]
+
+	if tag_miRNA is True:
+		fields.append(str(is_miRNA))
+	
+
+	print '\t'.join(fields)
+
 
 # ----------------------------------------------------------------------------------
 

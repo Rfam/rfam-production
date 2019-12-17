@@ -436,8 +436,9 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
      			ga_position = position
 
 			# get all the elements of the last score line above the GA threshold
-			seed_above_ga = [x for x in prev_line.strip().split(' ') if x != '']
-			seed_above_ga_pos = ga_position - 1
+			seed_above_ga = last_seed_seen
+			seed_above_ga_pos = seq_position
+
 			# get GA threshold
 			elements = line.split(' ')
 			ga_bit_score = float(elements[-3])

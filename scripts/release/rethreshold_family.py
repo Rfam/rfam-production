@@ -455,10 +455,6 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
 			elements = [x for x in line.strip().split(' ') if x!= '']
 			
-			if elements[2] == "SEED":
-				if elements[3] not in unique_seeds:
-					unique_seeds[elements[3]] = (elements[8], elements[9])
-
 			# first line after hitting REV line 
 			if flag_rev == 1 and rev_bit_score == 0.0: 
 				rev_bit_score = float(elements[0])
@@ -510,32 +506,38 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	missing_seed_seqs_o = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
 	
 	# compute the total number of ncbi_ids including 
-	total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
+	#total_ncbi_ids_found = len(list(set(unique_ncbi_ids_db).union(ncbi_ids_from_hits)))
 
 	# calulates the number of new ncbi ids added to the full region after a new search
-	new_ncbi_ids_found = abs(total_ncbi_ids_found - len(unique_ncbi_ids_db))
+	#new_ncbi_ids_found = abs(total_ncbi_ids_found - len(unique_ncbi_ids_db))
 	
 	# ABS(NFULL_OLD-NFULL_NEW) > 0.1 * NFULL_OLD
-	full_diff = abs(num_full_hits_db - (counts["full_above_ga"] + counts["full_below_ga"]))
+	#full_diff = abs(num_full_hits_db - (counts["full_above_ga"] + counts["full_below_ga"]))
 
 	# compute GA/REV bit score difference
 	ga_rev_bitscore_diff = abs(ga_bit_score - rev_bit_score)
 	
-	
-	if full_diff > (0.1 * num_full_hits_db):
-		full_check = True
+	#if full_diff > (0.1 * num_full_hits_db):
+	#	full_check = True
 
 	# constraints to be met for reviewing families	
-	if ((missing_seed_seqs_o > 0) or seen_rev_before_ga or (counts["seed_below_ga"] > 0) 
-		or (counts["seed_below_rev"] > 0) or full_check or missing_seed_seqs_so):
-		review_family = True  
+	if (seen_rev_before_ga or (counts["seed_below_ga"] > 0) or (counts["seed_below_rev"] > 0)):
+		review_family = True
 
+	fields = [rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
+                        str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
+                        str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
+			str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
+                        str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), 
+			str(int(review_family))]
+	"""
 	fields = [rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
                         str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
                         str(num_full_hits_db), str(counts["full_above_ga"]), str(len(unique_ncbi_ids_db)),
                         str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff),
                         str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
                         str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), str(int(review_family))]
+	"""
 
 	if tag_miRNA is True:
 		fields.append(str(is_miRNA))
@@ -602,6 +604,30 @@ def write_family_report_file(family_dir, scores_file = "species"):
 	report_fp.close()
 	
 	return priority
+
+# ----------------------------------------------------------------------------------
+
+def print_report_header(extended=True):
+	"""
+	Prints the report header
+	
+	extended (boolean): If true, prints all the columns, otherwise just the 
+			    short version
+
+	returns: void 
+	"""
+
+	if extended is True:
+		print ("RFAM_ACC\tnum_seed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),
+                print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
+                print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tseed_above_ga_score\t".upper()),
+                print ("seed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\tlast_seed_pos\treview_family\tis_miRNA\n".upper()),
+
+	else:
+		print ("RFAM_ACC\tnum_seed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),
+                print ("missing_seeds_seedoutlist\tga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\t".upper()),
+                print ("REV_before_GA\tseed_above_ga_score\tseed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\t".upper()),
+                print ("last_seed_pos\treview_family\tis_miRNA\n".upper()),
 
 # ----------------------------------------------------------------------------------
 
@@ -698,12 +724,9 @@ if __name__ == '__main__':
 			print "Validation process completed! Check validation.log for erroneous searches!"
 
     elif args.report:
-		# print report header
 
-		print ("RFAM_ACC\tnum_seed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),		
-		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
-		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tseed_above_ga_score\t".upper()),
-		print ("seed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\tlast_seed_pos\treview_family\tis_miRNA\n".upper()),
+		# print report header
+		print_report_header(extended=False)
 
 		if args.acc:
 			# check if searches where validated 

@@ -44,7 +44,7 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 	family_dir = os.path.join(dest_dir, dirname)
 	os.mkdir(family_dir)
 	
-	shutil.copy(seed_alignment, os.path.join(family_dir, SEED))
+	shutil.copy(seed_alignment, os.path.join(family_dir, "SEED"))
 	
 # --------------------------------------------------------------------------------
 

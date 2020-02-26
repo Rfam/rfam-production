@@ -56,7 +56,7 @@ def launch_new_rfsearch(family_dir):
 	"""
 
 	lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
-    	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
+	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
 	# LSF command to be executed
 	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh74 "
@@ -66,7 +66,7 @@ def launch_new_rfsearch(family_dir):
 	subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                          CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
 	
-	
+
 # --------------------------------------------------------------------------------
 
 def parse_arguments():
@@ -79,8 +79,8 @@ def parse_arguments():
 	parser = argparse.ArgumentParser(description='Rfam family Auro-Builder')
 	# group required arguments together
 
-    	req_args = parser.add_argument_group("required arguments")
-    	req_args.add_argument('--input', help='a directory with multiple SEEDs or a single SEED')
+	req_args = parser.add_argument_group("required arguments")
+	req_args.add_argument('--input', help='a directory with multiple SEEDs or a single SEED')
 	req_args.add_argument('--dest-dir', help='destination directory where create new \
 				family directories', type=str, required=True)
 

@@ -33,7 +33,7 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 	dest_dir: The base directory where the new family directory will be 
 	created
 
-	return: void
+	return: The path to the family directory, None otherwise
 	"""
 	
 	# check if destination directory existis
@@ -44,8 +44,13 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 	family_dir = os.path.join(dest_dir, dirname)
 	os.mkdir(family_dir)
 	
-	shutil.copy(seed_alignment, os.path.join(family_dir, "SEED"))
+	# check if the family directory was created successfully
+        if os.path.exists(family_dir):
+		# copy SEED to family dir
+		shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
+		return family_dir	
 	
+	return None
 # --------------------------------------------------------------------------------
 
 def launch_new_rfsearch(family_dir):
@@ -95,13 +100,16 @@ if __name__ == '__main__':
 	parser = parse_arguments()
 	args = parser.parse_args()
 	
+	source_path = ""
 	if (os.path.isdir(args.input)):
-
 		seeds = os.listdir(args.input)
+		source_path = args.input
 	else:
 		seeds = [args.input]
+		source_path = os.path.split(args.input)[0]
 	
 	for seed in seeds:
 		dirname = seed.partition('.')[0]
-		create_family_directory(dirname, seed, args.dest_dir) 
-
+		seed_path = os.path.join(source_path, seed)
+		family_dir = create_family_directory(dirname, seed_path, args.dest_dir) 
+		launch_new_rfsearch(family_dir)

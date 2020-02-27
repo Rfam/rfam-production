@@ -95,7 +95,8 @@ if __name__ == '__main__':
 	parser = parse_arguments()
 	args = parser.parse_args()
 	
-	if (args.input is dir):
+	if (os.path.isdir(args.input)):
+
 		seeds = os.listdir(args.input)
 	else:
 		seeds = [args.input]

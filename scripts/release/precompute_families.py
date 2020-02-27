@@ -66,7 +66,7 @@ def launch_new_rfsearch(family_dir):
 	job_name = os.path.basename(family_dir)
 	# LSF command to be executed
 	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh74 "
-          "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax\"")
+          "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax -nodesc\"")
 
 	# call command
 	subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,

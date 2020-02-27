@@ -80,11 +80,13 @@ def parse_arguments():
 	# group required arguments together
 
 	req_args = parser.add_argument_group("required arguments")
-	req_args.add_argument('--input', help='a directory with multiple SEEDs or a single SEED')
+	req_args.add_argument('--input', help='a directory with multiple SEEDs or a single SEED',
+				type=str, required=True)
 	req_args.add_argument('--dest-dir', help='destination directory where create new \
 				family directories', type=str, required=True)
 
 	return parser
+
 # --------------------------------------------------------------------------------	
 
 
@@ -92,7 +94,7 @@ if __name__ == '__main__':
 
 	parser = parse_arguments()
 	args = parser.parse_args()
-
+	
 	if (args.input is dir):
 		seeds = os.listdir(args.input)
 	else:

@@ -42,7 +42,8 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 
 	# go on with creating a new family directory
 	family_dir = os.path.join(dest_dir, dirname)
-	os.mkdir(family_dir)
+	if not os.path.exists(family_dir):
+		os.mkdir(family_dir)
 	
 	# check if the family directory was created successfully
 	if os.path.exists(family_dir):
@@ -51,6 +52,7 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 		return family_dir	
 	
 	return None
+
 # --------------------------------------------------------------------------------
 
 def launch_new_rfsearch(family_dir):
@@ -113,4 +115,7 @@ if __name__ == '__main__':
 		dirname = seed.partition('.')[0]
 		seed_path = os.path.join(source_path, seed)
 		family_dir = create_family_directory(dirname, seed_path, args.dest_dir) 
-		launch_new_rfsearch(family_dir)
+		
+		if family_dir is not None:
+			launch_new_rfsearch(family_dir)
+

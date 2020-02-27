@@ -45,7 +45,7 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 	os.mkdir(family_dir)
 	
 	# check if the family directory was created successfully
-        if os.path.exists(family_dir):
+	if os.path.exists(family_dir):
 		# copy SEED to family dir
 		shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
 		return family_dir	
@@ -63,13 +63,14 @@ def launch_new_rfsearch(family_dir):
 	lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
 	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
+	job_name = os.path.basename(family_dir)
 	# LSF command to be executed
 	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh74 "
           "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax\"")
 
 	# call command
 	subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                         CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
+                         CPU, LSF_GROUP, job_name, family_dir), shell=True)
 	
 
 # --------------------------------------------------------------------------------

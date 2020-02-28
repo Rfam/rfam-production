@@ -97,7 +97,6 @@ def parse_arguments():
 
 # --------------------------------------------------------------------------------	
 
-
 if __name__ == '__main__':
 
 	parser = parse_arguments()
@@ -110,7 +109,7 @@ if __name__ == '__main__':
 	else:
 		seeds = [args.input]
 		source_path = os.path.split(args.input)[0]
-	
+
 	for seed in seeds:
 		dirname = seed.partition('.')[0]
 		seed_path = os.path.join(source_path, seed)

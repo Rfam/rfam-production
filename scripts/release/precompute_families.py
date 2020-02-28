@@ -9,7 +9,7 @@ import subprocess
 MEMORY = 2000
 CPU = 8
 LSF_GROUP = "/family_srch"
-
+REQUIRED_FILES = ["SEED", "DESC", "species", "outlist", "seedoutlist"]
 # --------------------------------------------------------------------------------
 
 def check_seed_format(seed_alignment, format="stockholm"):
@@ -96,6 +96,24 @@ def parse_arguments():
 	return parser
 
 # --------------------------------------------------------------------------------	
+
+def check_required_files_exist(family_dir):
+	"""
+	Checks if all required family files were produced.
+
+	return: True if all files exist, False otherwise
+	"""
+
+	rfam_files = dict.fromkeys(os.listdir(family_dir))
+
+	for file_type in REQUIRED_FILES:
+		 if file_type not in rfam_files:
+			return False
+
+	# if it passes the check then all required files exists
+	return True
+
+# --------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 

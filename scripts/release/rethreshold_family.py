@@ -644,7 +644,7 @@ if __name__ == '__main__':
 
 	elif args.f and not args.v:
 		if not os.path.isfile(args.f):
-			print "The file location you provided does not exist!\n"
+			print ("The file location you provided does not exist!\n")
 			sys.exit()
 
 		# move to destination directory
@@ -691,7 +691,7 @@ if __name__ == '__main__':
 		# validate a single family
 		if args.acc:
 			if not is_valid_family(args.dest_dir, args.acc):
-				print "The family %s does not validate!" % args.acc
+				print ("The family %s does not validate!" % args.acc)
 		
 		# validate runs for all accessions in the input file
 		elif args.f:
@@ -707,10 +707,10 @@ if __name__ == '__main__':
 			fp.close()
 
 			if os.path.getsize(validation_file) == 0:
-				print "Validation process completed! All searches completed successfully!"
+				print ("Validation process completed! All searches completed successfully!")
 			
 			else:
-				print "Validation process completed! Check validation.log for erroneous searches!"
+				print ("Validation process completed! Check validation.log for erroneous searches!")
 
 		# validate all families in the directory, but don't generate any reports
 		elif args.all and not args.report:
@@ -726,10 +726,10 @@ if __name__ == '__main__':
 			fp.close()
 
 			if os.path.getsize(validation_file) == 0:
-				print "Validation process completed! All searches completed successfully!"
+				print ("Validation process completed! All searches completed successfully!")
 			
 			else:
-				print "Validation process completed! Check validation.log for erroneous searches!"
+				print ("Validation process completed! Check validation.log for erroneous searches!")
 
 	# generate reports
 	elif args.report:

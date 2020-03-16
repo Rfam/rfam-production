@@ -541,7 +541,7 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 		fields.append(str(is_miRNA))
 
 
-	print '\t'.join(fields)
+	print ('\t'.join(fields))
 
 
 # ----------------------------------------------------------------------------------

@@ -25,108 +25,106 @@ from utils import db_utils as db
 # ------------------------------------- GLOBALS ------------------------------------
 # this group only allows 10 rfsearch jobs to run concurrently
 # this means 10*100 = 1000 jobs running concurrently which is the lsf limit
- 
+
 LSF_GROUP = "/family_srch"
 MEMORY = 2000 
 CPU = 8
 MAX_JOB_COUNT = 1000
 family_exceptions = {'RF02924': '', 'RF03064': '', 'RF02913': '', 
-		   'RF02543': '', 'RF00017': '', 'RF02540': ''}
+					'RF02543': '', 'RF00017': '', 'RF02540': ''}
 
 # ----------------------------------------------------------------------------------
 
 
 def checkout_family(rfam_acc):
-    """
-    Checks out a family from Rfam based on a valid Rfam accession.
+	"""
+	Checks out a family from Rfam based on a valid Rfam accession.
 
-    rfam_acc: A valid Rfam accession
+	rfam_acc: A valid Rfam accession
+	return: None
+	"""
+	cmd = "rfco.pl %s" % rfam_acc
+	subprocess.call(cmd, shell=True)
 
-    return: None
-    """
-
-    cmd = "rfco.pl %s" % rfam_acc
-
-    subprocess.call(cmd, shell=True)
-
-    # add some checks here
+	# add some checks here
 
 # ----------------------------------------------------------------------------------
 
 
 def submit_new_rfsearch_job(family_dir, rfmake=False):
-    """
-    Submits a new lsf job that runs rfsearch to update SCORES for a new release.
-    If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
+	"""
+	Submits a new lsf job that runs rfsearch to update SCORES for a new release.
+	If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
 
-    family_dir: The physical location of the family directory
-    rfmake: If True, run rfmake after rfsearch completes. Default False
- 
-    return: None
-    """
-    # use the pre-process command to change directory to family_dir
+	family_dir: The physical location of the family directory
+	rfmake: If True, run rfmake after rfsearch completes. Default False
+	
+	return: None
+	"""
+	# use the pre-process command to change directory to family_dir
 
-    rfam_acc = os.path.basename(family_dir)
+	rfam_acc = os.path.basename(family_dir)
+	
+	lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
+	lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
-    lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
-    lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
-
-    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax\"")
-
-    # If rfmake is set to True, runs rfmake following rfsearch, otherwise run rfsearch
-    # only by default
-    if rfmake is True:
 	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax && rfmake.pl\"")
+		"-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax\"")
 
-    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                         CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
+	# If rfmake is set to True, runs rfmake following rfsearch, otherwise run rfsearch
+	# only by default
+
+	if rfmake is True:
+		cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
+			"-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax && rfmake.pl\"")
+
+	subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+							CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
 
 # ----------------------------------------------------------------------------------
 
 
 def submit_new_rfmake_job(family_dir):
-    """
-    Submits a new lsf job that runs rfsearch to update SCORES for a new release.
-    If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
+	"""
+	Submits a new lsf job that runs rfsearch to update SCORES for a new release.
+	If no threshold is set with rfsearch.pl, it uses existing thresholds by default.
 
-    family_dir: The physical location of the family directory
-    rfmake: If True, run rfmake after rfsearch completes. Default False
- 
-    return: None
-    """
-    # use the pre-process command to change directory to family_dir
+	family_dir: The physical location of the family directory
+	rfmake: If True, run rfmake after rfsearch completes. Default False
 
-    rfam_acc = os.path.basename(family_dir)
+	return: None
+	"""
+	# use the pre-process command to change directory to family_dir
 
-    lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
-    lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
+	rfam_acc = os.path.basename(family_dir)
+	
+	lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
+	lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
 
-    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-          "-J %s \"cd %s && rfmake.pl\"")
+	cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
+		"-J %s \"cd %s && rfmake.pl\"")
 
-    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                         CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
+	subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+				CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)
 
 # ----------------------------------------------------------------------------------
 
 
 def load_rfam_accessions_from_file(accession_list):
-    """
-    This function parses a .txt file containing Rfam accessions and returns those
-    accession_list: This is a .txt file containing a list of Rfam accessions
+	"""
+	This function parses a .txt file containing Rfam accessions and returns those
+	accession_list: This is a .txt file containing a list of Rfam accessions
 
-    return: list of Rfam family accessions
-    """
-    
-    fp = open(accession_list, 'r')
-    
-    accessions = [x.strip() for x in fp]
+	return: list of Rfam family accessions
+	"""
 
-    fp.close()
+	fp = open(accession_list, 'r')
 
-    return accessions
+	accessions = [x.strip() for x in fp]
+	
+	fp.close()
+
+	return accessions
 
 # ----------------------------------------------------------------------------------
 
@@ -147,10 +145,10 @@ def checkout_and_search_family(rfam_acc, dest_dir, rfmake=False):
 	# get family directory
 	family_dir = os.path.join(dest_dir, rfam_acc)
 	# checkout family if not done already
-        if not os.path.exists(family_dir):
+	if not os.path.exists(family_dir):
 		os.chdir(dest_dir)
-        	checkout_family(rfam_acc)
-	
+		checkout_family(rfam_acc)
+
 	submit_new_rfsearch_job(family_dir, rfmake)
 
 # ----------------------------------------------------------------------------------
@@ -164,21 +162,20 @@ def parse_arguments():
 	"""
 
 	# create a new argument parser object
-    	parser = argparse.ArgumentParser(description='Update scores for new release')
+	parser = argparse.ArgumentParser(description='Update scores for new release')
 
-    	# group required arguments together
-    	req_args = parser.add_argument_group("required arguments")
-    	req_args.add_argument('--dest-dir', help='destination directory where to checkout families',
-                        type=str, required=True)
+	# group required arguments together
+	req_args = parser.add_argument_group("required arguments")
+	req_args.add_argument('--dest-dir', help='destination directory where to checkout families',
+		type=str, required=True)
 
 	mutually_exclusive_args=parser.add_mutually_exclusive_group()
-    	mutually_exclusive_args.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
-    	mutually_exclusive_args.add_argument('--all', help='runs rfsearch on all families', action="store_true")
-    	mutually_exclusive_args.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
-                        type=str, default=None)
+	mutually_exclusive_args.add_argument('-f', help='a file containing a list of Rfam family accessions', type=str)
+	mutually_exclusive_args.add_argument('--all', help='runs rfsearch on all families', action="store_true")
+	mutually_exclusive_args.add_argument('--acc', help="a valid rfam family accession RFXXXXX",
+		type=str, default=None)
 	
-	parser.add_argument('--rfmake', help='run rfmake after rfsearch completion', 
-			   action="store_true")
+	parser.add_argument('--rfmake', help='run rfmake after rfsearch completion', action="store_true")
 	parser.add_argument('-v', help='runs validation checks', action="store_true")
 	
 	parser.add_argument('--report', help='generates search reports', action="store_true")
@@ -204,7 +201,7 @@ def is_valid_family(dest_dir, rfam_acc):
 	# If log file does not exist rfsearch did not run for some reason
 	if not os.path.exists(os.path.join(family_dir, "rfsearch.log")):
 		return False
-	
+
 	# check if lsf .err file is empty 
 	if not os.path.getsize(os.path.join(family_dir, "auto_rfsearch.err")) == 0:
 		return check_rfsearch_log_success(family_dir)
@@ -218,7 +215,7 @@ def is_valid_family(dest_dir, rfam_acc):
 
 	if output.find("Successfully completed.") == -1:
 		return False
-	
+
 	return True
 
 # ----------------------------------------------------------------------------------
@@ -249,11 +246,11 @@ def check_rfsearch_log_success(family_dir):
 
 	rfsearch_log_file = os.path.join(family_dir, "rfsearch.log")
 	process = Popen(['tail', '-1', rfsearch_log_file], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output, err = process.communicate()
+	output, err = process.communicate()
 
 	if output.find("# [ok]") == -1:
 		return False
-	
+
 	return True	
 
 # ----------------------------------------------------------------------------------
@@ -274,15 +271,15 @@ def count_hits(scores_file):
 	flag_rev = 0
 
 	# initialization of counts
-	counts = {"seed_above_ga": 0,
-		"full_above_ga": 0,
-		"full_below_ga": 0,
-		"seed_below_ga": 0,
-		"seed_below_rev": 0,
-		"full_below_rev": 0 }
+	counts = {	"seed_above_ga": 0,
+				"full_above_ga": 0,
+				"full_below_ga": 0,
+				"seed_below_ga": 0,
+				"seed_below_rev": 0,
+				"full_below_rev": 0 }
 
 	# load file for easy parsing
-        fp = open(scores_file, 'r')
+	fp = open(scores_file, 'r')
 
 	# generate stats
 	for line in fp:
@@ -300,26 +297,26 @@ def count_hits(scores_file):
 		if flag_curr == 0 and flag_rev == 0:
 			if line.find("SEED") != -1:
 				counts["seed_above_ga"] += 1
-		
+
 			elif line.find("FULL") != -1:
 				counts["full_above_ga"] += 1
 		# we are somewhere in between current threshold and reversed cutoff
 		elif flag_curr == 1 and flag_rev == 0:
 			if line.find("SEED") != -1:
 				counts["seed_below_ga"] += 1
-		
+
 			elif line.find("FULL") != -1:
 				counts["full_below_ga"] += 1
 
 		elif flag_curr == 1 and flag_rev == 1:
 			if line.find("SEED") != -1:
 				counts["seed_below_rev"] += 1
-		
+
 			elif line.find("FULL") != -1:
 				counts["full_below_rev"] += 1
-		
+
 	fp.close()
-	
+
 	return counts
 
 # ----------------------------------------------------------------------------------
@@ -339,11 +336,11 @@ def extract_unique_seeds_from_seedoutlist(seedoutlist):
 			line = [x for x in line.strip().split(' ') if x != '']
 			if line[3] not in seeds_found:
 				seeds_found[line[3]] = float(line[0])
-	
+
 	fp.close()
 
 	return seeds_found
-			
+
 # ----------------------------------------------------------------------------------
 
 def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
@@ -360,8 +357,8 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	rfam_acc = os.path.basename(family_dir)
 	
 	# check point flags
-        flag_curr = 0
-        flag_rev = 0
+	flag_curr = 0
+	flag_rev = 0
 	elements = None
 	prev_line = None
 	
@@ -386,14 +383,13 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	unique_seeds = {}
 
 	# initialization of counts
-        counts = {"seed_above_ga": 0,
-                "full_above_ga": 0,
-                "full_below_ga": 0,
-                "seed_below_ga": 0,
-                "seed_below_rev": 0,
-                "full_below_rev": 0,
-		"other_below_ga": 0
-		}
+	counts = {	"seed_above_ga": 0,
+				"full_above_ga": 0,
+				"full_below_ga": 0,
+				"seed_below_ga": 0,
+				"seed_below_rev": 0,
+				"full_below_rev": 0,
+				"other_below_ga": 0	}
 	
 	# fetch miRNA accessions from the database
 	miRNAs = {}
@@ -402,10 +398,10 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 
 	if rfam_acc in miRNAs:
 		is_miRNA = 1
-	
+
 
 	# get some useful numbers from the database
-        num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
+	num_seed_seqs_db = db.get_number_of_seed_sequences(rfam_acc)
 	num_full_hits_db = db.get_number_of_full_hits(rfam_acc)
 	unique_ncbi_ids_db = db.get_family_unique_ncbi_ids(rfam_acc)
 
@@ -421,14 +417,15 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 	ncbi_ids_from_hits = set()
 	
 	# generate stats
-        for line in scores_fp:
+	for line in scores_fp:
 		position += 1 	# starts from 1 because we read the 1st line out of the loop
+		
 		# make flag_curr = 1 when we reach that line
-                if line.find("CURRENT GA THRESHOLD") != -1:
-                        flag_curr = 1
+		if line.find("CURRENT GA THRESHOLD") != -1:
+			flag_curr = 1
 			# if we reached this point, it means we saw GA
 			seen_ga = True
-     			ga_position = position
+			ga_position = position
 
 			# get all the elements of the last score line above the GA threshold
 			seed_above_ga = last_seed_seen
@@ -439,51 +436,50 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 			ga_bit_score = float(elements[-3])
 			continue
 
-                # when we reach the reversed sequence line set the flag to 1
-                if line.find("BEST REVERSED") != -1:
-                        flag_rev = 1
+		# when we reach the reversed sequence line set the flag to 1
+		if line.find("BEST REVERSED") != -1:
+			flag_rev = 1
 			rev_position = position
 			# check if GA is false at this point. If yes, this means we saw REV first.
 			# setting flag to True
 			if seen_ga is False:
 				seen_rev_before_ga = True
-                        continue
+				continue
 
 		if line[0] != '#':
 			# increase sequence position
-                	#seq_position += 1                        
-
+			#seq_position += 1
 			elements = [x for x in line.strip().split(' ') if x!= '']
-			
+
 			# first line after hitting REV line 
 			if flag_rev == 1 and rev_bit_score == 0.0: 
 				rev_bit_score = float(elements[0])
-			
+
 			# add id to ncbi_ids
 			ncbi_ids_from_hits.add(elements[5])
 			
 			# we are above the GA
-                	if flag_curr == 0 and flag_rev == 0:
-                        	if elements[2] == "SEED":
+			if flag_curr == 0 and flag_rev == 0:
+				if elements[2] == "SEED":
 					# make sure the sequences is not in the dictionary and that it starts from 1
 					if elements[3] not in unique_seeds:
-                                		counts["seed_above_ga"] += 1
+						counts["seed_above_ga"] += 1
 						unique_seeds[elements[3]] = (elements[8], elements[9])
 
-                        	elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
-                                	counts["full_above_ga"] += 1
-        			
+				elif elements[2] == "FULL" or elements[2] == "FULL-SEED":
+					counts["full_above_ga"] += 1
+
 			# we are somewhere in between current threshold and reversed cutoff
-                	elif flag_curr == 1 and flag_rev == 0:
+			elif flag_curr == 1 and flag_rev == 0:
 				if elements[2] == "SEED":
 					if elements[3] not in unique_seeds:
-                                		counts["seed_below_ga"] += 1
+						counts["seed_below_ga"] += 1
 						unique_seeds[elements[3]] = (elements[8], elements[9])
 
-                	elif flag_curr == 1 and flag_rev == 1:
-                        	if elements[2] == "SEED":
+			elif flag_curr == 1 and flag_rev == 1:
+				if elements[2] == "SEED":
 					if elements[3] not in unique_seeds:
-                                		counts["seed_below_rev"] += 1
+						counts["seed_below_rev"] += 1
 						unique_seeds[elements[3]] = (elements[8], elements[9])
 
 			# if between GA and REV count sequences
@@ -497,11 +493,11 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 				last_seed_seen = elements
 				# sets position
 				last_seed_pos = position
-						
+
 		# current line becomes previous at the end of each iteration 
 		prev_line = line
-	
-        scores_fp.close()
+
+	scores_fp.close()
 
 	# computes the number of any missing SEED sequences. That is SEEDs that do not appear in the outlist
 	missing_seed_seqs_o = abs(num_seed_seqs_db - (counts["seed_above_ga"] + counts["seed_below_ga"] + counts["seed_below_rev"]))
@@ -526,23 +522,24 @@ def generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True):
 		review_family = True
 
 	fields = [rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
-                        str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-                        str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
-			str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
-                        str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), 
-			str(int(review_family))]
+	str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
+	str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff), str(ga_rev_seq_gap), 
+	str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
+	str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), 
+	str(int(review_family))]
+
 	"""
 	fields = [rfam_acc, str(num_seed_seqs_db), str(counts["seed_above_ga"]), str(counts["seed_below_ga"]),
-                        str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
-                        str(num_full_hits_db), str(counts["full_above_ga"]), str(len(unique_ncbi_ids_db)),
-                        str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff),
-                        str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
-                        str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), str(int(review_family))]
+	str(counts["seed_below_rev"]), str(missing_seed_seqs_o), str(missing_seed_seqs_so),
+	str(num_full_hits_db), str(counts["full_above_ga"]), str(len(unique_ncbi_ids_db)),
+	str(new_ncbi_ids_found), str(ga_bit_score), str(rev_bit_score), str(ga_rev_bitscore_diff),
+	str(ga_rev_seq_gap), str(int(seen_rev_before_ga)), seed_above_ga[0], str(seed_above_ga_pos),
+	str(ga_position), str(rev_position), last_seed_seen[0], str(last_seed_pos), str(int(review_family))]
 	"""
 
 	if tag_miRNA is True:
 		fields.append(str(is_miRNA))
-	
+
 
 	print '\t'.join(fields)
 
@@ -583,16 +580,16 @@ def write_family_report_file(family_dir, scores_file = "species"):
 	if counts["seed_below_ga"] > counts["seed_above_ga"]:
 		percentage = float(counts["seed_below_ga"] * 100) / float(no_seed_seqs)
 		report_fp.write("CRITICAL: More SEED sequences below GA than above. %s\n" % percentage)
-		
+
 		if priority < 2:
 			priority = 2
-	
+
 	if counted_seed_seqs != no_seed_seqs:
 		report_fp.write("WARNING: The number of SEED sequences in the database does not match the number in the alignment\n\n")			
 		priority = 3
 
 	# TODO - Develop code to check taxonomic distribution
-        # TODO - Use information from FULL hits too	
+	# TODO - Use information from FULL hits too	
 
 	# some useful information
 	report_fp.write("Total number of SEED sequences in DB: %s\n" % no_seed_seqs)
@@ -613,138 +610,152 @@ def print_report_header(extended=True):
 	Prints the report header
 	
 	extended (boolean): If true, prints all the columns, otherwise just the 
-			    short version
+	short version
 
 	returns: void 
 	"""
 
 	if extended is True:
 		print ("RFAM_ACC\tnum_seed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),
-                print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
-                print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tseed_above_ga_score\t".upper()),
-                print ("seed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\tlast_seed_pos\treview_family\tis_miRNA\n".upper()),
+		print ("missing_seeds_seedoutlist\tnum_full_DB\tfull_above_ga\tUNIQUE_NCBI_ID_DB\tNOVEL_NCBI_IDs\t".upper()),
+		print ("ga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\tREV_before_GA\tseed_above_ga_score\t".upper()),
+		print ("seed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\tlast_seed_pos\treview_family\tis_miRNA\n".upper()),
 
 	else:
 		print ("RFAM_ACC\tnum_seed_seqs\tseed_above_GA\tseed_below_ga\tseed_below_rev\tmissing_seeds_outlist\t".upper()),
-                print ("missing_seeds_seedoutlist\tga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\t".upper()),
-                print ("REV_before_GA\tseed_above_ga_score\tseed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\t".upper()),
-                print ("last_seed_pos\treview_family\tis_miRNA\n".upper()),
+		print ("missing_seeds_seedoutlist\tga_bit_SCORE\trev_bit_score\tGA_REV_SCORE_diff\tga_rev_seq_gap\t".upper()),
+		print ("REV_before_GA\tseed_above_ga_score\tseed_above_ga_pos\tga_pos\trev_pos\tlast_seed_score\t".upper()),
+		print ("last_seed_pos\treview_family\tis_miRNA\n".upper()),
 
 # ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    # create a new argument parser object
-    parser = parse_arguments()
-    args = parser.parse_args()
+	# create a new argument parser object
+	parser = parse_arguments()
+	args = parser.parse_args()
 
-    if args.acc and not args.v and not args.report:
-	# check accession provided is valid 
-        if args.acc[0:2] == 'RF' and len(args.acc) == 7:
-            os.chdir(args.dest_dir)
-	    
-  	    checkout_and_search_family(args.acc, args.dest_dir, rfmake=args.rfmake)
-    
-    elif args.f and not args.v:
-	if not os.path.isfile(args.f):
-		print "The file location you provided does not exist!\n"
-		sys.exit()
-	
-	# move to destination directory
-	os.chdir(args.dest_dir)
-	accessions = load_rfam_accessions_from_file(args.f)
-	
-	"""
-	# get number of job batches we need to submit
-        # casting to int chops off decimals and ceil rounds up to nearest int
-	if len(accessions) > MAX_JOB_COUNT:
-		no_batches = int(math.ceil(len(accessions)/MAX_JOB_COUNT))
-	
-	i = 0
-	while i < no_batches:
-		lidx = i * MAX_JOB_COUNT     # left index
-		ridx = (i+1) * MAX_JOB_COUNT # right index
-		
-		# get exactly MAX_JOB_COUNT items
-		if i < no_batches - 1:
-			new_batch = accessions[lidx:ridx]
-		# get remaining accessions for last batch
-		else:
-			new_batch = accessions[lidx:]		
+	if args.acc and not args.v and not args.report:
+		# check accession provided is valid 
+		if args.acc[0:2] == 'RF' and len(args.acc) == 7:
+			os.chdir(args.dest_dir)
 
-		# call function to submit batch
-		# while monitoring is True:
-		# cluster monitoring function to be called here	
-		i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
-	"""
-	for rfam_acc in accessions:
-		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
-    
-    # run rfsearch on all families in the database
-    elif args.all and not args.v and not args.report and not args.rfmake:
-	# fetch Rfam family accessions from the database
-	# call checkout_and_search_family for every family in the list
-	# fetches all rfam accessions from the database in DESC order based on the number of sequences in SEEDs
-	rfam_acc_list = db.fetch_rfam_accs_sorted(order='DESC')
-	for rfam_acc in rfam_acc_list:
-		checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)
-    
-    elif args.v:
-	if args.acc:
-		if not is_valid_family(args.dest_dir, args.acc):
-			print "The family %s does not validate!" % args.acc
-	elif args.f:
-		validation_file = os.path.join(args.dest_dir, "validation.log")
-		fp = open(validation_file, 'w')
+			checkout_and_search_family(args.acc, args.dest_dir, rfmake=args.rfmake)
+
+	elif args.f and not args.v:
+		if not os.path.isfile(args.f):
+			print "The file location you provided does not exist!\n"
+			sys.exit()
+
+		# move to destination directory
+		os.chdir(args.dest_dir)
 		accessions = load_rfam_accessions_from_file(args.f)
-		for rfam_acc in accessions:
-			if not is_valid_family(args.dest_dir, rfam_acc):
-				fp.write(rfam_acc + '\n')
+	
+		"""
+		# get number of job batches we need to submit
+		# casting to int chops off decimals and ceil rounds up to nearest int
+		if len(accessions) > MAX_JOB_COUNT:
+			no_batches = int(math.ceil(len(accessions)/MAX_JOB_COUNT))
 		
-		fp.close()
+		i = 0
+		while i < no_batches:
+			lidx = i * MAX_JOB_COUNT     # left index
+			ridx = (i+1) * MAX_JOB_COUNT # right index
+			
+			# get exactly MAX_JOB_COUNT items
+			if i < no_batches - 1:
+				new_batch = accessions[lidx:ridx]
+			# get remaining accessions for last batch
+			else:
+				new_batch = accessions[lidx:]		
 
-		if os.path.getsize(validation_file) == 0:
-                        print "Validation process completed! All searches completed successfully!"
-                else:
-                        print "Validation process completed! Check validation.log for erroneous searches!"
+			# call function to submit batch
+			# while monitoring is True:
+			# cluster monitoring function to be called here	
+			i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
+			"""
+			for rfam_acc in accessions:
+				checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
 
-	elif args.all and not args.report:
-		validation_file = os.path.join(args.dest_dir, "validation.log")
-		fp = open(validation_file, 'w')
-		accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+	# run rfsearch on all families in the database
+	elif args.all and not args.v and not args.report and not args.rfmake:
+		# fetch Rfam family accessions from the database
+		# call checkout_and_search_family for every family in the list
+		# fetches all rfam accessions from the database in DESC order based on the number of sequences in SEEDs
+		rfam_acc_list = db.fetch_rfam_accs_sorted(order='DESC')
+		for rfam_acc in rfam_acc_list:
+			checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)
+
+	# validate rfsearch runs
+	elif args.v:
+		# validate a single family
+		if args.acc:
+			if not is_valid_family(args.dest_dir, args.acc):
+				print "The family %s does not validate!" % args.acc
 		
-		for rfam_acc in accessions:
-			if not is_valid_family(args.dest_dir, rfam_acc):
-				fp.write(rfam_acc + '\n')
-		
-		fp.close()
+		# validate runs for all accessions in the input file
+		elif args.f:
+			validation_file = os.path.join(args.dest_dir, "validation.log")
+			fp = open(validation_file, 'w')
+			
+			accessions = load_rfam_accessions_from_file(args.f)
+			
+			for rfam_acc in accessions:
+				if not is_valid_family(args.dest_dir, rfam_acc):
+					fp.write(rfam_acc + '\n')
 
-		if os.path.getsize(validation_file) == 0:
-			print "Validation process completed! All searches completed successfully!"
-		else:
-			print "Validation process completed! Check validation.log for erroneous searches!"
+			fp.close()
 
-    elif args.report:
+			if os.path.getsize(validation_file) == 0:
+				print "Validation process completed! All searches completed successfully!"
+			
+			else:
+				print "Validation process completed! Check validation.log for erroneous searches!"
+
+		# validate all families in the directory, but don't generate any reports
+		elif args.all and not args.report:
+			
+			validation_file = os.path.join(args.dest_dir, "validation.log")
+			fp = open(validation_file, 'w')
+			accessions = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+
+			for rfam_acc in accessions:
+				if not is_valid_family(args.dest_dir, rfam_acc):
+					fp.write(rfam_acc + '\n')
+
+			fp.close()
+
+			if os.path.getsize(validation_file) == 0:
+				print "Validation process completed! All searches completed successfully!"
+			
+			else:
+				print "Validation process completed! Check validation.log for erroneous searches!"
+
+	# generate reports
+	elif args.report:
 
 		# print report header
 		print_report_header(extended=False)
 
+		# generate report for a specific family
 		if args.acc:
 			# check if searches where validated 
 			if not os.path.exists(os.path.join(args.dest_dir, "validation.log")):
 				sys.exit("WARNING: This search may be invalid. Run validation and try again!")
+
 			family_dir = os.path.join(args.dest_dir, args.acc)
 			generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True)	
-	
+
+		# generate reports for all families in the destination directory
 		elif args.all:
-	
+
 			families  = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
-			
+
 			# fetch Rfam family accessions to exclude if defined
 			exclude_accs = {}
 			if args.exclude_type:
 				exclude_accs = db.fetch_type_specific_rfam_accessions(args.exclude_type, return_type="dict")	
-			
+
 			for family in families:
 				# families of which searches did not complete
 				# remove the database on 
@@ -752,22 +763,28 @@ if __name__ == '__main__':
 					family_dir = os.path.join(args.dest_dir, family)
 					generate_search_stats(family_dir, scores_file = 'species', tag_miRNA=True)
 
-    elif args.rfmake:
-	if args.all:
-		families = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
-		
-		for family in families:
-			family_dir = os.path.join(args.dest_dir, family)
-			submit_new_rfmake_job(family_dir)
-	elif args.acc:
-		family_dir = os.path.join(args.dest_dir, args.acc)
-		submit_new_rfmake_job(family_dir)
-	
-	elif args.f: 
-		fp = open(args.f, r)
-		families = [x.strip() for x in fp]
-		fp.close()
+		# run rfmake
+		elif args.rfmake:
+			# run rfmake on all families
+			if args.all:
 
-		for family in families:
-                        family_dir = os.path.join(args.dest_dir, family)
-                        submit_new_rfmake_job(family_dir) 
+				families = [x for x in os.listdir(args.dest_dir) if os.path.isdir(os.path.join(args.dest_dir, x))]
+
+				for family in families:
+					family_dir = os.path.join(args.dest_dir, family)
+					submit_new_rfmake_job(family_dir)
+
+			# run rfmake for a specific family 
+			elif args.acc:
+				family_dir = os.path.join(args.dest_dir, args.acc)
+				submit_new_rfmake_job(family_dir)
+
+			# run rfmake for all accessions in the file
+			elif args.f: 
+				fp = open(args.f, r)
+				families = [x.strip() for x in fp]
+				fp.close()
+
+				for family in families:
+					family_dir = os.path.join(args.dest_dir, family)
+					submit_new_rfmake_job(family_dir) 

@@ -4,6 +4,7 @@ import argparse
 import shutil
 import subprocess
 
+import rethreshold_family as rf
 # ---------------------------- Variable initialization ---------------------------
 
 MEMORY = 2000
@@ -107,7 +108,7 @@ def check_required_files_exist(family_dir):
 	rfam_files = dict.fromkeys(os.listdir(family_dir))
 
 	for file_type in REQUIRED_FILES:
-		 if file_type not in rfam_files:
+		if file_type not in rfam_files:
 			return False
 
 	# if it passes the check then all required files exists

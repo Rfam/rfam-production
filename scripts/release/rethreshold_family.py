@@ -674,8 +674,8 @@ if __name__ == '__main__':
 			# cluster monitoring function to be called here	
 			i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
 			"""
-			for rfam_acc in accessions:
-				checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
+		for rfam_acc in accessions:
+			checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)		
 
 	# run rfsearch on all families in the database
 	elif args.all and not args.v and not args.report and not args.rfmake:

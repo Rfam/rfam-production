@@ -266,7 +266,7 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
         cnx.commit()
 
     except:
-        print "MySQL Update Error. Rolling back..."
+        print ("MySQL Update Error. Rolling back...")
         cnx.rollback()
         cursor.close()
         RfamDB.disconnect(cnx)
@@ -326,7 +326,7 @@ def reset_is_significant(clan_comp_type='FULL'):
         u_cursor.executemany(update_query, seq_regs)
         cnx.commit()
     except:
-        print "MySQL Update Error. Rolling back..."
+        print ("MySQL Update Error. Rolling back...")
         cnx.rollback()
         u_cursor.close()
         RfamDB.disconnect(cnx)
@@ -373,7 +373,7 @@ def update_post_process(jobs_file):
 
     except:
         # rollback to previous state
-        print "MySQL Update Error. Rollback..."
+        print ("MySQL Update Error. Rollback...")
         cnx.rollback()
         cursor.close()
         RfamDB.disconnect(cnx)
@@ -431,7 +431,7 @@ def set_number_of_species():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print "Done"
+    print ("Done")
 
 # ----------------------------------------------------------------------------
 
@@ -486,7 +486,7 @@ def set_num_full_sig_seqs():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print "Done"
+    print ("Done")
 
 # ----------------------------------------------------------------------------
 
@@ -541,7 +541,7 @@ def update_family_ncbi():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print "Done updating family_ncbi."
+    print ("Done updating family_ncbi.")
 
 # ----------------------------------------------------------------------------
 
@@ -621,7 +621,7 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
         cnx.commit()
 
     except:
-        print "MySQL Update Error. Rolling back..."
+        print ("MySQL Update Error. Rolling back...")
         cnx.rollback()
         cursor.close()
         RfamDB.disconnect(cnx)
@@ -993,8 +993,6 @@ def update_chromosome_info_in_genseq():
         upid_gca_dict[pair["upid"]] = pair["assembly_acc"]
 
     for upid in upid_gca_dict.keys():
-        # print assembly_acc
-        #print upid_gca_dict[upid]
 
         upid_gca_dict[upid]
 

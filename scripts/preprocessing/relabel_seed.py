@@ -27,7 +27,7 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
     if start != -1:
         return (start, end)
 
-    return (None, None)
+    return (0, 0)
 
 # ---------------------------------------------------------------
 
@@ -121,7 +121,7 @@ def pfam_to_stockholm_format(pfam_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def parse_and_rewrite_seed_alignment(seed, dest_dir = None):
+def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
     """
 
     :param seed:
@@ -135,17 +135,16 @@ def parse_and_rewrite_seed_alignment(seed, dest_dir = None):
     sequence_label = 0
     new_line = ''
 
+    new_seed_loc = os.path.join(dest_dir, "new_seed")
     seed_fp = open(seed, 'r')
-    new_seed_fp = open(os.path.join(dest_dir, "new_seed"), 'w')
+    new_seed_fp = open(new_seed_loc, 'w')
 
     for line in seed_fp:
         # check if this is an actual sequence line
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line_elements = [x for x in line.strip().split(' ') if x != '']
 
-            (start, end) = fetch_seed_sequence_coordinates(line_elements[0])
-
-            sequence_label = line_elements[0] + '/' + str(start) + '-' + str(end)
+            sequence_label = line_elements[0] + '/' + accession_coords[line_elements[0]]
 
             new_line = "\t".join([sequence_label, line_elements[1], '\n'])
         else:
@@ -154,6 +153,8 @@ def parse_and_rewrite_seed_alignment(seed, dest_dir = None):
         new_seed_fp.write(new_line)
 
     seed_fp.close()
+
+    return new_seed_loc
 
 # ---------------------------------------------------------------
 
@@ -216,21 +217,32 @@ if __name__ == '__main__':
     seed = sys.argv[1]
 
     # e.g. gammacov_genomes.fa
-    #all_fasta = sys.argv[2]
+    full_seqs = sys.argv[2]
 
-    #seed_seqs = load_fasta_file_to_dict(seed)
-    #all_seqs = load_fasta_file_to_dict(all_fasta)
+    # convert seed to fasta
+    seed_fasta = seed_to_fasta(seed, dest_dir=None)
 
-    seed_to_fasta(seed, dest_dir=None)
+    # load sequences to dict
+    seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
+    full_seq_dict = load_fasta_file_to_dict(full_seqs)
 
-    """
-    for accession in seed_seqs.keys():
-        (start, end) = fetch_seed_sequence_coordinates(seed_seqs[accession], all_seqs[accession])
+    # constract accession coords dictionary
+    accession_coords = {}
+    for accession in seed_seq_dict.keys():
+        (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
 
-        # check if coordinates extracted
-        if start is not None:
-            new_pfam_msa = stockhom_to_pfam_format(seed)
-            parse_and_rewrite_seed_alignment(new_pfam_msa, dest_dir=None)
+        # if coordinates were extracted successfully,
+        if end != 0:
+            accession_coords[accession] = '-'.join((start, end))
+        else:
+            sys.exit("Unable to extract coordinates for accession: %s" % accession)
 
-    """
-    #parse_and_rewrite_seed_alignment(new_pfam_msa)
+        # if it reached this point then it means that coordinate extraction
+        # worked fine
+
+    # convert stockholm to pfam
+    new_pfam_seed = stockhom_to_pfam_format(seed)
+    # now rewrite the seed labels
+    reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=None)
+    # reformat to stockholm
+    reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=None)

@@ -20,12 +20,17 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
     end = 0
 
     # use accession to fetch the coordinates - sequence might be needed
-    start = full_seq.index(seed_seq)
+    start = full_seq.find(seed_seq)
     end = start + len(seed_seq) - 1
 
-    return (start, end)
+    # return start and end coordinates if subsequence was found
+    if start != -1:
+        return (start, end)
+
+    return (None, None)
 
 # ---------------------------------------------------------------
+
 
 def load_fasta_file_to_dict(fasta):
     """
@@ -63,6 +68,7 @@ def load_fasta_file_to_dict(fasta):
     return fasta_dict
 
 # ---------------------------------------------------------------
+
 
 def stockhom_to_pfam_format(stk_msa, dest_dir=None):
     """
@@ -151,21 +157,80 @@ def parse_and_rewrite_seed_alignment(seed, dest_dir = None):
 
 # ---------------------------------------------------------------
 
+
+def seed_to_fasta(seed_msa, dest_dir=None):
+    """
+
+    :param seed_msa:
+    :return:
+    """
+
+    filename = ""
+
+    path_elements = os.path.split(seed_msa)
+
+    if dest_dir is None:
+        dest_dir = path_elements[0]
+
+    if "." in path_elements[1]:
+        filename = path_elements[1].partition('.')[0]
+    else:
+        filename = path_elements[1]
+
+    cmd = "esl-sfetch -o %s -f %s %s"
+
+    seed_fp = open(seed_msa, 'r')
+    tmp_acc_list = os.path.join("/tmp", filename + "_acc_list.txt")
+    tmp_acc_fp = open(tmp_acc_list, 'w')
+
+    for line in seed_fp:
+        line = line.strip()
+
+        if line != '' and line[0] != "#":
+            accession = line.split(' ')[0]
+
+            if accession.find('//') == -1:
+                tmp_acc_fp.write(accession+'\n')
+
+    seed_fp.close()
+    tmp_acc_fp.close()
+
+    seed_fasta_path = os.path.join(dest_dir, filename + '.fa')
+    subprocess.call(cmd % (seed_fasta_path, seed_msa, tmp_acc_list), shell=True)
+
+    # clean temp file
+    os.remove(tmp_acc_list)
+
+    # return None if the fasta file was not created
+    if not os.path.exists:
+        return None
+
+    return seed_fasta_path
+
+# ---------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     # e.g. gammacov_3utr.fa
-    seed_fasta = sys.argv[1]
+    seed = sys.argv[1]
 
     # e.g. gammacov_genomes.fa
-    all_fasta = sys.argv[2]
+    #all_fasta = sys.argv[2]
 
-    seed_seqs = load_fasta_file_to_dict(seed_fasta)
-    all_seqs = load_fasta_file_to_dict(all_fasta)
+    #seed_seqs = load_fasta_file_to_dict(seed)
+    #all_seqs = load_fasta_file_to_dict(all_fasta)
 
+    seed_to_fasta(seed, dest_dir=None)
+
+    """
     for accession in seed_seqs.keys():
         (start, end) = fetch_seed_sequence_coordinates(seed_seqs[accession], all_seqs[accession])
-      
-    #new_pfam_msa = stockhom_to_pfam_format(seed, dest_dir="/Users/ikalvari/Desktop/SARS-CoV-2/release_data/corona_genomes_from_kevin/families")
 
+        # check if coordinates extracted
+        if start is not None:
+            new_pfam_msa = stockhom_to_pfam_format(seed)
+            parse_and_rewrite_seed_alignment(new_pfam_msa, dest_dir=None)
 
+    """
     #parse_and_rewrite_seed_alignment(new_pfam_msa)

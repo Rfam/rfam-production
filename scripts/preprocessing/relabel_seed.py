@@ -60,7 +60,8 @@ def load_fasta_file_to_dict(fasta):
 
         # keep building the sequence
         else:
-            line = line.strip()
+            # replace Us in sequences (SEED) with Ts
+            line = line.strip().replace('U', 'T')
             fasta_dict[accession] += line
 
     fasta_fp.close()
@@ -216,6 +217,9 @@ if __name__ == '__main__':
     # e.g. gammacov_3utr.fa
     seed = sys.argv[1]
 
+    # temporarily use seed source dir
+    dest_dir = os.path.split(seed)[0]
+
     # e.g. gammacov_genomes.fa
     full_seqs = sys.argv[2]
 
@@ -229,20 +233,18 @@ if __name__ == '__main__':
     # constract accession coords dictionary
     accession_coords = {}
     for accession in seed_seq_dict.keys():
+
         (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
 
-        # if coordinates were extracted successfully,
+        # check if coordinates were extracted successfully,
         if end != 0:
-            accession_coords[accession] = '-'.join((start, end))
+            accession_coords[accession] = '-'.join((str(start), str(end)))
         else:
-            sys.exit("Unable to extract coordinates for accession: %s" % accession)
-
-        # if it reached this point then it means that coordinate extraction
-        # worked fine
+            print "Unable to extract coordinates for accession: %s" % accession
 
     # convert stockholm to pfam
-    new_pfam_seed = stockhom_to_pfam_format(seed)
+    new_pfam_seed = stockhom_to_pfam_format(seed, dest_dir=dest_dir)
     # now rewrite the seed labels
-    reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=None)
+    reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
     # reformat to stockholm
-    reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=None)
+    reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)

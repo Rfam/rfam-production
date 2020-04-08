@@ -20,7 +20,7 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
     end = 0
 
     # use accession to fetch the coordinates - sequence might be needed
-    start = full_seq.find(seed_seq)
+    start = full_seq.find(seed_seq) + 1
     end = start + len(seed_seq) - 1
 
     # return start and end coordinates if subsequence was found

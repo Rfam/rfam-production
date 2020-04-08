@@ -20,8 +20,8 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
     end = 0
 
     # use accession to fetch the coordinates - sequence might be needed
-    start = full_seq.find(seed_seq) + 1
-    end = start + len(seed_seq) - 1
+    start = full_seq.find(seed_seq)
+    end = start + len(seed_seq)
 
     # return start and end coordinates if subsequence was found
     if start != -1:
@@ -160,6 +160,22 @@ def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
 # ---------------------------------------------------------------
 
 
+def validate_sequences(seed_sequence, extracted_full_seq):
+    """
+
+    :param seed_sequence:
+    :param extracted_full:
+    :return:
+    """
+
+    new_seed_sequence = seed_sequence.replace('U', 'T')
+    if extracted_full_seq.find(new_seed_sequence)!= -1:
+        return True
+
+    return False
+# ---------------------------------------------------------------
+
+
 def seed_to_fasta(seed_msa, dest_dir=None):
     """
 
@@ -214,6 +230,7 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 
 if __name__ == '__main__':
 
+
     # e.g. gammacov_3utr.fa
     seed = sys.argv[1]
 
@@ -236,8 +253,11 @@ if __name__ == '__main__':
 
         (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
 
+        # validate sequences
+        check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
+
         # check if coordinates were extracted successfully,
-        if end != 0:
+        if end != 0 and check is True:
             accession_coords[accession] = '-'.join((str(start), str(end)))
         else:
             print "Unable to extract coordinates for accession: %s" % accession

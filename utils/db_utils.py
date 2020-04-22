@@ -29,7 +29,7 @@ Description: A set of database functions to ease processing and data
        *Perhaps include this module within an RfamLive class as all of the
         functions are database specific.
         Convert the code to use python mysql transactions
-"""
+        """
 
 # ---------------------------------IMPORTS---------------------------------
 
@@ -72,7 +72,7 @@ def set_is_significant_to_zero(rfam_acc, rfamseq_acc):
 
     # update is_significant field to 0
     query = ("UPDATE full_region SET is_significant=0 "
-             "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\'") % (rfam_acc, rfamseq_acc)
+       "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\'") % (rfam_acc, rfamseq_acc)
 
     cursor.execute(query)
 
@@ -103,9 +103,7 @@ def set_is_significant_to_zero_adv(rfam_acc, rfamseq_acc, region):
 
     # update is_significant field to 0
     query = ("UPDATE full_region SET is_significant=0 "
-             "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\' AND seq_start=%d") % (rfam_acc,
-                                                                                 rfamseq_acc,
-                                                                                 region)
+             "WHERE rfam_acc=\'%s\' AND rfamseq_acc=\'%s\' AND seq_start=%d") % (rfam_acc, rfamseq_acc, region)
 
     cursor.execute(query)
 
@@ -138,10 +136,10 @@ def load_clan_seqs_from_db(clan_acc):  # tested
 
     # Fetch clan specific family full_region data
     query = ("SELECT full_region.rfam_acc, full_region.rfamseq_acc, \
-            full_region.seq_start, full_region.seq_end, full_region.evalue_score\n"
-             "FROM full_region\n"
-             "JOIN (SELECT rfam_acc FROM clan_membership WHERE clan_acc=\'%s\') as CLAN_FAMS\n"
-             "ON CLAN_FAMS.rfam_acc=full_region.rfam_acc") % (clan_acc)
+      full_region.seq_start, full_region.seq_end, full_region.evalue_score\n"
+      "FROM full_region\n"
+      "JOIN (SELECT rfam_acc FROM clan_membership WHERE clan_acc=\'%s\') as CLAN_FAMS\n"
+      "ON CLAN_FAMS.rfam_acc=full_region.rfam_acc") % (clan_acc)
 
     # execute the query
     cursor.execute(query)
@@ -149,18 +147,18 @@ def load_clan_seqs_from_db(clan_acc):  # tested
     # build family dictionary of sequences
     for row in cursor:
 
-        if str(row[RFAM_ACC]) in fam_seqs.keys():
+      if str(row[RFAM_ACC]) in fam_seqs.keys():
 
-            if str(row[SEQ_ACC]) in fam_seqs[str(row[RFAM_ACC])].keys():
+        if str(row[SEQ_ACC]) in fam_seqs[str(row[RFAM_ACC])].keys():
 
-                fam_seqs[str(row[RFAM_ACC])][str(row[SEQ_ACC])].append(
-                    (int(row[START]), int(row[END]), float(row[EVAL])))
-            else:
-                fam_seqs[str(row[RFAM_ACC])][str(row[SEQ_ACC])] = [(int(row[START]),
-                                                                    int(row[END]), float(row[EVAL]))]
+          fam_seqs[str(row[RFAM_ACC])][str(row[SEQ_ACC])].append(
+            (int(row[START]), int(row[END]), float(row[EVAL])))
         else:
-            fam_seqs[str(row[RFAM_ACC])] = {
-                str(row[SEQ_ACC]): [(int(row[START]), int(row[END]), float(row[EVAL]))]}
+            fam_seqs[str(row[RFAM_ACC])][str(row[SEQ_ACC])] = [(int(row[START]),
+            int(row[END]), float(row[EVAL]))]
+      else:
+          fam_seqs[str(row[RFAM_ACC])] = {
+          str(row[SEQ_ACC]): [(int(row[START]), int(row[END]), float(row[EVAL]))]}
 
     # close cursor and DB connection
     cursor.close()
@@ -185,7 +183,7 @@ def load_clan_members_from_db(clan_acc):
     cursor = cnx.cursor(raw=True)
 
     query = ("SELECT rfam_acc FROM clan_membership "
-             "WHERE clan_acc=\'%s\'") % (clan_acc)
+       "WHERE clan_acc=\'%s\'") % (clan_acc)
 
     cursor.execute(query)
 
@@ -195,9 +193,9 @@ def load_clan_members_from_db(clan_acc):
     RfamDB.disconnect(cnx)
 
     for fam in rows:
-        clan_members.append(str(fam[0]))
+      clan_members.append(str(fam[0]))
 
-    return clan_members
+      return clan_members
 
 # -------------------------------------------------------------------------
 
@@ -228,12 +226,12 @@ def load_clans_from_db():
 
     # create the dictionary
     for row in rows:
-        if str(row[0]) not in clans.keys():
-            clans[str(row[0])] = [str(row[1])]
-        else:
-            clans[str(row[0])].append(str(row[1]))
+      if str(row[0]) not in clans.keys():
+        clans[str(row[0])] = [str(row[1])]
+    else:
+        clans[str(row[0])].append(str(row[1]))
 
-    return clans
+        return clans
 
 # -------------------------------------------------------------------------
 
@@ -248,7 +246,7 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
     non_sig_seqs: A list of the non significant regions to be set to zero.
                   The list is product of clan competition.
 
-    """
+                  """
 
     # connect to db
     cnx = RfamDB.connect()
@@ -258,7 +256,7 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
 
     # query to update is_significant field to 0
     query = ("UPDATE full_region SET is_significant=0 "
-             "WHERE rfam_acc=%s AND rfamseq_acc=%s AND seq_start=%s")
+       "WHERE rfam_acc=%s AND rfamseq_acc=%s AND seq_start=%s")
 
     try:
         # execute query batched
@@ -271,8 +269,8 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
         cursor.close()
         RfamDB.disconnect(cnx)
 
-    cursor.close()
-    RfamDB.disconnect(cnx)
+        cursor.close()
+        RfamDB.disconnect(cnx)
 
 # -------------------------------------------------------------------------
 
@@ -306,7 +304,7 @@ def reset_is_significant(clan_comp_type='FULL'):
         update_query = ("UPDATE pdb_full_region SET is_significant=1 "
                         "WHERE rfam_acc=%s AND pdb_id=%s AND chain=%s AND pdb_start=%s")
 
-    d_cursor.execute(select_query)
+        d_cursor.execute(select_query)
 
     # construct region list here
     for row in d_cursor:
@@ -352,15 +350,15 @@ def update_post_process(jobs_file):
     jobs_file_fp = open(jobs_file, 'r')
 
     query = ("UPDATE _post_process SET lsf_id=%s "
-             "WHERE rfam_acc=%s AND uuid=%s")
+       "WHERE rfam_acc=%s AND uuid=%s")
 
     # get lsf ids from file
     for line in jobs_file_fp:
-        line = line.strip()
-        line = string.split(line, '\t')
-        job_ids.append((line[2], line[0], line[1]))
+      line = line.strip()
+      line = string.split(line, '\t')
+      job_ids.append((line[2], line[0], line[1]))
 
-    jobs_file_fp.close()
+      jobs_file_fp.close()
 
     # connect to db
     cnx = RfamDB.connect()
@@ -401,9 +399,9 @@ def set_number_of_species():
     cursor.close()
 
     count_query = ("select count(distinct ncbi_id)\n"
-                   "from full_region f, rfamseq r\n"
-                   "where r.rfamseq_acc=f.rfamseq_acc\n"
-                   "and is_significant=1 and rfam_acc=\'%s\'")
+       "from full_region f, rfamseq r\n"
+       "where r.rfamseq_acc=f.rfamseq_acc\n"
+       "and is_significant=1 and rfam_acc=\'%s\'")
 
     # counts list
     counts = []
@@ -419,12 +417,12 @@ def set_number_of_species():
     c_cursor = cnx.cursor(buffered=True)
 
     # query to update number_of_species in the family table
-    update_query = (
-        "update family set number_of_species=%s where rfam_acc=%s")
+    update_query = ("update family set number_of_species=%s where rfam_acc=%s")
 
     try:
         c_cursor.executemany(update_query, counts)
         cnx.commit()
+
     except:
         cnx.rollback()
 
@@ -456,10 +454,10 @@ def set_num_full_sig_seqs():
     # query to count all significant sequences of a family
 
     count_query = ("select count(*)\n"
-                   "from full_region f\n"
-                   "where is_significant=1\n"
-                   "and type=\'full\'\n"
-                   "and rfam_acc=\'%s\'")
+       "from full_region f\n"
+       "where is_significant=1\n"
+       "and type=\'full\'\n"
+       "and rfam_acc=\'%s\'")
 
     # counts list
     counts = []
@@ -474,12 +472,12 @@ def set_num_full_sig_seqs():
     c_cursor.close()
     c_cursor = cnx.cursor(buffered=True)
 
-    update_query = (
-        "update family set num_full=%s where rfam_acc=%s")
+    update_query = ("update family set num_full=%s where rfam_acc=%s")
 
     try:
         c_cursor.executemany(update_query, counts)
         cnx.commit()
+
     except:
         cnx.rollback()
 
@@ -511,28 +509,29 @@ def update_family_ncbi():
 
     # family_ncbi query
     get_ncbi_ids = ("select distinct rs.ncbi_id, f.rfam_id, "
-                    "f.rfam_acc from full_region fr, rfamseq rs, family f "
-                    "where fr.rfamseq_acc=rs.rfamseq_acc "
-                    "and f.rfam_acc=fr.rfam_acc "
-                    "and fr.rfam_acc=\'%s\' "
-                    "and fr.is_significant=1")
+      "f.rfam_acc from full_region fr, rfamseq rs, family f "
+      "where fr.rfamseq_acc=rs.rfamseq_acc "
+      "and f.rfam_acc=fr.rfam_acc "
+      "and fr.rfam_acc=\'%s\' "
+      "and fr.is_significant=1")
 
     insert_query = "insert into family_ncbi (ncbi_id, rfam_id, rfam_acc) values (%s,%s,%s)"
 
     family_ncbi_entries = []
     cursor = cnx.cursor(buffered=True)
+
     for rfam_acc in rfam_accs:
         c_cursor.execute(get_ncbi_ids % rfam_acc[0])
         family_ncbi_entries = list(c_cursor.fetchall())
         entries_reformatted = [(str(x[0]), str(x[1]), str(x[2])) for x in family_ncbi_entries]
 
-        try:
-            cursor.executemany(insert_query, entries_reformatted)
-            cnx.commit()
+    try:
+        cursor.executemany(insert_query, entries_reformatted)
+        cnx.commit()
 
-        except:
-            cnx.rollback()
-            sys.exit("\nError updating family_ncbi table for family %s." % rfam_acc[0])
+    except:
+        cnx.rollback()
+        sys.exit("\nError updating family_ncbi table for family %s." % rfam_acc[0])
 
         family_ncbi_entries = []
         entries_reformatted = []
@@ -559,8 +558,8 @@ def fetch_clanin_data():
     cursor = cnx.cursor(buffered=True)
 
     cursor.execute("select cm.clan_acc, f.rfam_id from clan_membership cm, family f "
-                   "where f.rfam_acc=cm.rfam_acc "
-                   "order by cm.clan_acc")
+       "where f.rfam_acc=cm.rfam_acc "
+       "order by cm.clan_acc")
 
     clan_pairs = cursor.fetchall()
 
@@ -603,7 +602,7 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
         # pdb_id: pdb_id_chain_pairs[0] and chain: pdb_id_chain_pairs[2]
         pdb_id_chain_pairs = competed_region[1].partition('_')
         pdb_reformatted_regions.append((str(competed_region[0]), str(pdb_id_chain_pairs[0]),
-                                        str(pdb_id_chain_pairs[2]), int(competed_region[2])))
+          str(pdb_id_chain_pairs[2]), int(competed_region[2])))
 
     # connect to db
     cnx = RfamDB.connect()
@@ -623,8 +622,9 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
     except:
         print ("MySQL Update Error. Rolling back...")
         cnx.rollback()
-        cursor.close()
-        RfamDB.disconnect(cnx)
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
 
     cursor.close()
     RfamDB.disconnect(cnx)
@@ -669,7 +669,7 @@ def fetch_clan_full_region_records(clan_acc):
     clan_cursor = cnx.cursor(buffered=True)
 
     clan_region_query = ("SELECT * FROM full_region\n"
-                         "JOIN (SELECT rfam_acc FROM clan_membership WHERE clan_acc=\'%s\') as CLAN_FAMS\n"
+       "JOIN (SELECT rfam_acc FROM clan_membership WHERE clan_acc=\'%s\') as CLAN_FAMS\n"
                          "ON CLAN_FAMS.rfam_acc=full_region.rfam_acc")  # % (clan_acc)
 
     clan_cursor.execute(clan_region_query % clan_acc)
@@ -697,11 +697,11 @@ def fetch_clan_pdb_full_region_records(clan_acc):
     clan_cursor = cnx.cursor(buffered=True)
 
     clan_pdb_region_query = ("select pfr.rfam_acc, concat(pfr.pdb_id,'_',pfr.chain) as seq_acc, "
-                             "pfr.pdb_start, pfr.pdb_end, pfr.bit_score, pfr.evalue_score "
-                             "from pdb_full_region pfr, clan_membership cm "
-                             "where cm.rfam_acc=pfr.rfam_acc "
-                             "and cm.clan_acc=\'%s\' "
-                             "order by seq_acc")
+       "pfr.pdb_start, pfr.pdb_end, pfr.bit_score, pfr.evalue_score "
+       "from pdb_full_region pfr, clan_membership cm "
+       "where cm.rfam_acc=pfr.rfam_acc "
+       "and cm.clan_acc=\'%s\' "
+       "order by seq_acc")
 
     clan_cursor.execute(clan_pdb_region_query % clan_acc)
 
@@ -731,8 +731,8 @@ def fetch_rfam_accs_sorted(order='DESC'):
 
     # update is_significant field to 0
     query = ("select rfam_acc from seed_region\n"
-             "group by rfam_acc\n"
-             "order by count(*) %s" % order)
+       "group by rfam_acc\n"
+       "order by count(*) %s" % order)
 
     cursor.execute(query)
 
@@ -850,9 +850,9 @@ def set_number_of_distinct_families_in_genome(upid):
 
     else:
         select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
-                        "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                        "and gs.upid=\'%s\'\n"
-                        "and gs.version=\'%s\'")
+                         "where fr.rfamseq_acc=gs.rfamseq_acc\n"
+                         "and gs.upid=\'%s\'\n"
+                         "and gs.version=\'%s\'")
 
         cursor.execute(select_query % (upid, version))
         count = cursor.fetchone()[0]
@@ -918,7 +918,6 @@ def set_number_of_genomic_significant_hits(upid):
                        "and gs.upid=\'%s\'\n"
                        "and gs.version=\'%s\'")
 
-
         cursor.execute(count_query % (upid, version))
         count = cursor.fetchone()[0]
 
@@ -949,19 +948,19 @@ def fetch_author_orcid(author_name):
     cursor = cnx.cursor(buffered=True)
 
     query = """
-            Select orcid from author
-            where name like '%s%s%s' or synonyms like '%s%s%s'
-            """
+    Select orcid from author
+    where name like '%s%s%s' or synonyms like '%s%s%s'
+    """
 
     cursor.execute(query % (chr(37), author_name, chr(37),
-                            chr(37), author_name, chr(37)))
+      chr(37), author_name, chr(37)))
 
     result = cursor.fetchone()
     if result is not None:
         orcid = result[0]
 
-    cursor.close()
-    RfamDB.disconnect(cnx)
+        cursor.close()
+        RfamDB.disconnect(cnx)
 
     # This will return none if there's no ORCiD available
     return orcid
@@ -977,9 +976,9 @@ def update_chromosome_info_in_genseq():
     genome_query = "select upid, assembly_acc from genome where assembly_acc is not NULL"
 
     update_query = """
-                   update genseq set chromosome_type=\'%s\', chromosome_name=\'%s\'
-                   where upid=\'%s\' and rfamseq_acc=\'%s\' and version=14.0
-                   """
+    update genseq set chromosome_type=\'%s\', chromosome_name=\'%s\'
+    where upid=\'%s\' and rfamseq_acc=\'%s\' and version=14.0
+    """
 
     cursor.execute(genome_query)
     accessions = cursor.fetchall()
@@ -992,21 +991,21 @@ def update_chromosome_info_in_genseq():
     for pair in accessions:
         upid_gca_dict[pair["upid"]] = pair["assembly_acc"]
 
-    for upid in upid_gca_dict.keys():
+        for upid in upid_gca_dict.keys():
 
-        upid_gca_dict[upid]
+            upid_gca_dict[upid]
 
-        if upid_gca_dict[upid][0:3] == 'GCF' or upid_gca_dict[upid] == '':
-            continue
+            if upid_gca_dict[upid][0:3] == 'GCF' or upid_gca_dict[upid] == '':
+                continue
 
-        data = fgm.fetch_gca_data(upid, upid_gca_dict[upid], 'kingdom')
+            data = fgm.fetch_gca_data(upid, upid_gca_dict[upid], 'kingdom')
 
-        if "fields" in data:
-            fields = data["fields"]
-            if "chromosomes" in fields:
-                for chromosome in fields["chromosomes"]:
-                    cursor.execute(update_query % (str(chromosome["type"]), str(chromosome["name"]),
-                                                   str(upid), str(chromosome["accession"])))
+            if "fields" in data:
+                fields = data["fields"]
+                if "chromosomes" in fields:
+                    for chromosome in fields["chromosomes"]:
+                        cursor.execute(update_query % (str(chromosome["type"]), str(chromosome["name"]),
+                        str(upid), str(chromosome["accession"])))
 
     cnx.commit()
     cursor.close()
@@ -1055,60 +1054,60 @@ def update_assembly_names(upid_gca_file):
 # ----------------------------------------------------------------------------
 
 def get_number_of_seed_sequences(rfam_acc):
-	"""
-	Gets the number of SEED sequences for a specific Rfam family from the
-	database.
+    """
+    Gets the number of SEED sequences for a specific Rfam family from the
+    database.
 
-	rfam_acc: A valid Rfam family accession
+    rfam_acc: A valid Rfam family accession
 
-	return (int): Number of SEED sequences
-	"""
-	
-	# connect to db
-    	cnx = RfamDB.connect()
+    return (int): Number of SEED sequences
+    """
 
-	 # get a new buffered cursor
-    	cursor = cnx.cursor(buffered=True)
+    # connect to db
+    cnx = RfamDB.connect()
 
-	query = "Select count(*) from seed_region where rfam_acc=\'%s\'" % rfam_acc
+     # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
 
-	cursor.execute(query)
+    query = "Select count(*) from seed_region where rfam_acc=\'%s\'" % rfam_acc
 
-	number_seed_seqs = int(cursor.fetchone()[0])
+    cursor.execute(query)
 
-	cursor.close()
-	RfamDB.disconnect(cnx)
+    number_seed_seqs = int(cursor.fetchone()[0])
 
-	return number_seed_seqs
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return number_seed_seqs
 
 # ----------------------------------------------------------------------------
 
 def get_number_of_full_hits(rfam_acc):
-        """
-        Gets the number of FULL hits from the full_region table for a specific 
-	Rfam family.
+    """
+    Gets the number of FULL hits from the full_region table for a specific
+    Rfam family.
 
-        rfam_acc: A valid Rfam family accession
+    rfam_acc: A valid Rfam family accession
 
-        return (int): Number of FULL hits from full_region table
-        """
+    return (int): Number of FULL hits from full_region table
+    """
 
-        # connect to db
-        cnx = RfamDB.connect()
+    # connect to db
+    cnx = RfamDB.connect()
 
-         # get a new buffered cursor
-        cursor = cnx.cursor(buffered=True)
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
 
-        query = "Select count(*) from full_region where rfam_acc=\'%s\' and type=\'full\' and is_significant=1" % rfam_acc
+    query = "Select count(*) from full_region where rfam_acc=\'%s\' and type=\'full\' and is_significant=1" % rfam_acc
 
-        cursor.execute(query)
+    cursor.execute(query)
 
-        number_full_hits = int(cursor.fetchone()[0])
+    number_full_hits = int(cursor.fetchone()[0])
 
-        cursor.close()
-        RfamDB.disconnect(cnx)
+    cursor.close()
+    RfamDB.disconnect(cnx)
 
-        return number_full_hits
+    return number_full_hits
 
 # ----------------------------------------------------------------------------
 
@@ -1124,29 +1123,29 @@ def get_family_unique_ncbi_ids(rfam_acc):
     """
 
     seed_query = """
-select distinct rs.ncbi_id 
-from seed_region sr, rfamseq rs
-where sr.rfamseq_acc=rs.rfamseq_acc
-and sr.rfam_acc = '%s'
-"""
+    select distinct rs.ncbi_id 
+    from seed_region sr, rfamseq rs
+    where sr.rfamseq_acc=rs.rfamseq_acc
+    and sr.rfam_acc = '%s'
+    """
 
     full_query = """
-select distinct rs.ncbi_id 
-from full_region fr, rfamseq rs
-where fr.rfamseq_acc=rs.rfamseq_acc
-and fr.rfam_acc = '%s'
-and fr.type = 'full'
-"""
+    select distinct rs.ncbi_id 
+    from full_region fr, rfamseq rs
+    where fr.rfamseq_acc=rs.rfamseq_acc
+    and fr.rfam_acc = '%s'
+    and fr.type = 'full'
+    """
 
     cnx = RfamDB.connect()
 
     cursor_seed = cnx.cursor(buffered=True)
     cursor_full = cnx.cursor(buffered=True)
-    
+
     cursor_seed.execute(seed_query % rfam_acc)
 
     seed_ncbi_ids = [x[0] for x in cursor_seed.fetchall()]
-    
+
     cursor_full.execute(full_query % rfam_acc)
     full_ncbi_ids = [x[0] for x in cursor_full.fetchall()]
 
@@ -1161,39 +1160,39 @@ and fr.type = 'full'
 # ----------------------------------------------------------------------------
 
 def fetch_type_specific_rfam_accessions(rna_type, return_type = "list"):
-	"""
-	Fetches all Rfam family accessions from the database matching the
-	rna_type parameter
+    """
+    Fetches all Rfam family accessions from the database matching the
+    rna_type parameter
 
-	rna_type: A string specifying a valid type of ncRNAs to extract
-	from the database 
-	return_type: The python type the data will be return 
-	"""
+    rna_type: A string specifying a valid type of ncRNAs to extract
+    from the database
+    return_type: The python type the data will be return
+    """
 
-	query = """
-select rfam_acc from family
-where type like '%s%s%s'
-"""
+    query = """
+    select rfam_acc from family
+    where type like '%s%s%s'
+    """
 
-	cnx = RfamDB.connect()
-    	cursor = cnx.cursor(buffered=True)
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(buffered=True)
 
-	cursor.execute(query % (chr(37), rna_type, chr(37)))
+    cursor.execute(query % (chr(37), rna_type, chr(37)))
 
-	rfam_accs = {}
+    rfam_accs = {}
 
-	# process accessions
-	if return_type == "list":
-		rfam_accs = [x[0] for x in cursor.fetchall()]
-	elif return_type == "dict":
-		for rfam_acc in [x[0] for x in cursor.fetchall()]:	
-			rfam_accs[rfam_acc] = ''
+    # process accessions
+    if return_type == "list":
+        rfam_accs = [x[0] for x in cursor.fetchall()]
+    elif return_type == "dict":
+        for rfam_acc in [x[0] for x in cursor.fetchall()]:
+            rfam_accs[rfam_acc] = ''
 
-	cursor.close()
-	RfamDB.disconnect(cnx)
+    cursor.close()
+    RfamDB.disconnect(cnx)
 
-	
-	return rfam_accs
+
+    return rfam_accs
 
 # ----------------------------------------------------------------------------
 
@@ -1203,6 +1202,6 @@ if __name__ == "__main__":
     TO DO: Develop a script to call all of these functions after running the view
     processes
     """
-  
+
     pass
 

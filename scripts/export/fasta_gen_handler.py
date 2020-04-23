@@ -115,7 +115,7 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
     output_fp = open(file_path, 'w')
 
     output_fp.write("#!/bin/csh\n")
-    output_fp.write("#BSUB -q research-rh7\n")
+    output_fp.write("#BSUB -q research-rh74\n")
     output_fp.write("#BSUB -M 8000\n")
     output_fp.write("#BSUB -R \"rusage[mem=8000,tmp=1000]\"\n")
     output_fp.write("#BSUB -o \"/tmp/%J.out\"\n")

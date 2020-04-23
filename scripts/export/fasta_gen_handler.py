@@ -171,7 +171,7 @@ if __name__ == '__main__':
     elif len(sys.argv) == 4:
         sequence_file = sys.argv[1]
         output_dir = sys.argv[2]
-        rfam_accs = sys.argvp[3]  # a list of rfam accessions
+        rfam_accs = sys.argv[3]  # a list of rfam accessions
 
         if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
             fasta_gen_handler(sequence_file, output_dir, rfam_accs)

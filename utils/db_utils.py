@@ -509,11 +509,11 @@ def update_family_ncbi():
 
     # family_ncbi query
     get_ncbi_ids = ("select distinct rs.ncbi_id, f.rfam_id, "
-      "f.rfam_acc from full_region fr, rfamseq rs, family f "
-      "where fr.rfamseq_acc=rs.rfamseq_acc "
-      "and f.rfam_acc=fr.rfam_acc "
-      "and fr.rfam_acc=\'%s\' "
-      "and fr.is_significant=1")
+                    "f.rfam_acc from full_region fr, rfamseq rs, family f "
+                    "where fr.rfamseq_acc=rs.rfamseq_acc "
+                    "and f.rfam_acc=fr.rfam_acc "
+                    "and fr.rfam_acc=\'%s\' "
+                    "and fr.is_significant=1")
 
     insert_query = "insert into family_ncbi (ncbi_id, rfam_id, rfam_acc) values (%s,%s,%s)"
 
@@ -525,13 +525,13 @@ def update_family_ncbi():
         family_ncbi_entries = list(c_cursor.fetchall())
         entries_reformatted = [(str(x[0]), str(x[1]), str(x[2])) for x in family_ncbi_entries]
 
-    try:
-        cursor.executemany(insert_query, entries_reformatted)
-        cnx.commit()
+        try:
+            cursor.executemany(insert_query, entries_reformatted)
+            cnx.commit()
 
-    except:
-        cnx.rollback()
-        sys.exit("\nError updating family_ncbi table for family %s." % rfam_acc[0])
+        except:
+            cnx.rollback()
+            sys.exit("\nError updating family_ncbi table for family %s." % rfam_acc[0])
 
         family_ncbi_entries = []
         entries_reformatted = []
@@ -1159,6 +1159,7 @@ def get_family_unique_ncbi_ids(rfam_acc):
 
 # ----------------------------------------------------------------------------
 
+
 def fetch_type_specific_rfam_accessions(rna_type, return_type = "list"):
     """
     Fetches all Rfam family accessions from the database matching the
@@ -1196,6 +1197,30 @@ def fetch_type_specific_rfam_accessions(rna_type, return_type = "list"):
 
 # ----------------------------------------------------------------------------
 
+
+def fetch_taxonomy_fields(tax_id):
+    """
+    Fetches all fields from RfamLive taxonomy table based on
+    the tax id provided
+
+    tax_id: A valid tax id
+
+    return: A dictionary with all taxonomy fields
+    """
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    query = "Select * from taxonomy where ncbi_id=%s"
+
+    cursor.execute(query % tax_id)
+
+    fields = cursor.fetchall()
+
+    return fields
+
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
 
     """
@@ -1204,4 +1229,3 @@ if __name__ == "__main__":
     """
 
     pass
-

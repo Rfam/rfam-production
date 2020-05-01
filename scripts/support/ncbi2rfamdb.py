@@ -2,10 +2,15 @@ import xml.etree.ElementTree as ET
 
 import requests
 
+# ------------------------------------------------------------------------------
+
 
 def fetch_taxid_from_ncbi(accession):
     """
+    Uses a NCBI sequence accession and to extract its
+    corresponding tax id from NCBI
 
+    returns: Tax id if available, None otherwise
     """
 
     cmd = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=nuccore&id=%s"
@@ -31,7 +36,6 @@ def fetch_taxid_from_ncbi(accession):
                             return item.text
 
     return None
-
 
 # ------------------------------------------------------------------------------
 

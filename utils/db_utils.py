@@ -1221,11 +1221,34 @@ def fetch_taxonomy_fields(tax_id):
 
 # ----------------------------------------------------------------------------
 
+def fetch_max_RG_accession_from_genome():
+    """
+    Fetches the maximum RFXXXXXXXXX accession from the RfamLive
+    genome table. To be used for assigning accessions to genomes
+    not found in Uniprot proteomes.
+
+    return: Returns the maximum RGXXXXXXXXX id found in the genome
+    table
+    """
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(buffered=True)
+
+    query = "Select max(upid) from genome where upid like \'RG%\'"
+
+    cursor.execute(query)
+
+    rfam_genome_id = cursor.fetchone()[0]
+
+    return rfam_genome_id
+
+# ----------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
 
     """
     TO DO: Develop a script to call all of these functions after running the view
     processes
     """
-
     pass

@@ -28,6 +28,7 @@ import os
 import sys
 import subprocess
 import time
+import argparse
 from config import rfam_config as rfc
 
 # -----------------------------------------------------------------------------
@@ -169,6 +170,23 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
 # -----------------------------------------------------------------------------
 
 
+def parse_arguments():
+    """
+    Basic argument parsing
+
+    return: Python's argparse parser object
+    """
+
+    parser = argparse.ArgumentParser(description="View process dequeuer")
+
+    parser.add_argument("--view-list", help="A list of rfam_acc\tuuids to run View plugins on", type=str)
+    parser.add_argument("--dest-dir", help="An existing destination directory to store logs", type=str)
+
+    return parser
+
+# -----------------------------------------------------------------------------
+
+
 def usage():
     """
     Displays information on how to use job_dequeuer
@@ -185,19 +203,14 @@ if __name__ == '__main__':
 
     # minor input checks
     # LSF - rfamprod
-    if (len(sys.argv) == 2):
-        if sys.argv[1] == "-h":
-            usage()
-            sys.exit()
 
-    elif(len(sys.argv) == 3):
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-        # need to check input provided are in valid format
-        lsf_fam_jobs = sys.argv[1]
-        lsf_outdir = sys.argv[2]
 
-        job_dequeue_from_file(lsf_fam_jobs, lsf_outdir)
+    # need to check input provided are in valid format
+    lsf_fam_jobs = args.view_list
+    lsf_outdir = args.dest_dir
 
-    else:
-        usage()
-        sys.exit()
+    job_dequeue_from_file(lsf_fam_jobs, lsf_outdir)
+

@@ -187,18 +187,6 @@ def parse_arguments():
 # -----------------------------------------------------------------------------
 
 
-def usage():
-    """
-    Displays information on how to use job_dequeuer
-    """
-
-    print "\nUsage:\n------"
-    print "\npython job_dequeuer.py /path/to/pending/view/list.txt /path/to/outdir"
-    print "\nlist.txt: A list of all rfam pending jobs"
-    print "outdir: The path to an output directory\n"
-
-# -----------------------------------------------------------------------------
-
 if __name__ == '__main__':
 
     # minor input checks
@@ -206,7 +194,6 @@ if __name__ == '__main__':
 
     parser = parse_arguments()
     args = parser.parse_args()
-
 
     # need to check input provided are in valid format
     lsf_fam_jobs = args.view_list

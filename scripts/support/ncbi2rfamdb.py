@@ -1,6 +1,8 @@
+import os
 import xml.etree.ElementTree as ET
 import requests
 import datetime
+import argparse
 
 from utils import db_utils as db
 
@@ -180,49 +182,52 @@ def generate_genome_table_entry(accession, previous_rg_acc = None):
 
 # ------------------------------------------------------------------------------
 
+
+def parse_arguments():
+    """
+    Basic function to parse arguments
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser(description="Tool converting NCBI data to RfamDB")
+
+    parser.add_argument("--input",
+                        help="This can be a valid NCBI accession or a file with an accession list",
+                        type=str)
+    mutually_exclusive_args = parser.add_mutually_exclusive_group()
+    mutually_exclusive_args.add_argument("--taxid-list",
+                        help="Generates a taxid list based on the input accession provided",
+                        action='store_true')
+    mutually_exclusive_args.add_argument("--genome", help="Generates genome table metadata",
+                                         action='store_true')
+
+    return parser
+
+# ------------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
 
-    fp = open("/Users/ikalvari/Desktop/SARS-CoV-2/release_data/corona_genomes_from_kevin/sars_accessions.txt", 'r')
+    parser = parse_arguments()
 
-    for line in fp:
-        line = line.strip()
-        tax_id = fetch_taxid_from_ncbi(line)
+    args = parser.parse_args()
 
-        print "%s\t%s" % (line, tax_id)
+    # generate a new list of tax ids
+    if args.taxid_list:
+        if not os.path.isfile(args.input):
+            print(fetch_taxid_from_ncbi(args.input))
+        else:
+            fp = open(args.input, 'r')
+            for line in fp:
+                line = line.strip()
+                tax_id = fetch_taxid_from_ncbi(line)
+                print ("%s\t%s" % (line, tax_id))
 
-"""
-
-	fp = open(sys.argv[1], 'r')
-	rfam_taxids = [x.strip() for x in fp]
-	fp.close()
-
-	fp = open(sys.argv[2], 'r')
-	accessions = [x.strip() for x in fp]
-	fp.close()
-
-	new_taxids = []
-	taxid_seqacc_mappings = {}
-	
-	# fetch all available taxids from ncbi 
-	for accession in accessions:
-
-		taxid = fetch_taxid_from_ncbi(accession)	
-		
-		if taxid is not None:
-			new_taxids.append(taxid)
-			print taxid
-			taxid_seqacc_mappings[taxid] = accession
-	
-	# fetch all novel taxids
-	novel_taxids = list(set(new_taxids).difference(set(rfam_taxids)))
-
-	fp = open("ncbi_novel_corona_taxids.txt", 'w')
-	fp1 = open("ncbi_novel_corona_seqaccs.txt", 'w')
-
-	for taxid in novel_tax_ids:
-		fp.write(taxid+'\t')
-		fp1.write(taxid_seqacc_mappings[taxid]+'\n')
-
-	fp.close()
-	fp1.close()
-"""
+    elif args.genome:
+        # case in which the input is a NCBI accession
+        if not os.path.isfile(args.input):
+            generate_genome_table_entry(args.input, previous_rg_acc=None)
+        # this is a list of accessions
+        else:
+            pass

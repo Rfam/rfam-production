@@ -164,7 +164,6 @@ def generate_genome_table_entry(accession, previous_rg_acc = None):
             break
 
     kingdom = rfam_tax_data["tax_string"].split(";")[0].strip()
-    created_date =
 
     new_genome_accession = generate_new_rfam_genome_accession(previous_rg_acc)
 
@@ -227,7 +226,7 @@ if __name__ == "__main__":
     elif args.genome:
         # case in which the input is a NCBI accession
         if not os.path.isfile(args.input):
-            generate_genome_table_entry(args.input, previous_rg_acc=None)
+            new_entry = generate_genome_table_entry(args.input, previous_rg_acc=None)
         # this is a list of accessions
         else:
             pass

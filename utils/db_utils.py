@@ -1215,7 +1215,7 @@ def fetch_taxonomy_fields(tax_id):
 
     cursor.execute(query % tax_id)
 
-    fields = cursor.fetchall()
+    fields = cursor.fetchall()[0]
 
     return fields
 
@@ -1287,4 +1287,5 @@ if __name__ == "__main__":
     TO DO: Develop a script to call all of these functions after running the view
     processes
     """
+
     pass

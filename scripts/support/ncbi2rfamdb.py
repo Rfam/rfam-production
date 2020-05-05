@@ -209,7 +209,6 @@ def parse_arguments():
 if __name__ == "__main__":
 
     parser = parse_arguments()
-
     args = parser.parse_args()
 
     # generate a new list of tax ids
@@ -229,4 +228,13 @@ if __name__ == "__main__":
             new_entry = generate_genome_table_entry(args.input, previous_rg_acc=None)
         # this is a list of accessions
         else:
-            pass
+            fp = open(args.input, 'r')
+            accessions = [x.strip() for x in fp]
+            fp.close()
+
+            previous_rg_acc = None
+            entry_list = []
+            for accession in accessions:
+                new_entry = generate_genome_table_entry(accession, previous_rg_acc=previous_rg_acc)
+                entry_list.append(new_entry)
+                previous_rg_acc = new_entry[0] # fetch current RG entry because it's not

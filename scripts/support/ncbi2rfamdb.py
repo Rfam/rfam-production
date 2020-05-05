@@ -226,7 +226,8 @@ if __name__ == "__main__":
         # case in which the input is a NCBI accession
         if not os.path.isfile(args.input):
             new_entry = generate_genome_table_entry(args.input, previous_rg_acc=None)
-        # this is a list of accessions
+
+        # this works on a list of accessions
         else:
             fp = open(args.input, 'r')
             accessions = [x.strip() for x in fp]
@@ -238,3 +239,7 @@ if __name__ == "__main__":
                 new_entry = generate_genome_table_entry(accession, previous_rg_acc=previous_rg_acc)
                 entry_list.append(new_entry)
                 previous_rg_acc = new_entry[0] # fetch current RG entry because it's not
+
+            # temporarily print entries in tabular format and import manually
+            for entry in entry_list:
+                print ("\t".join(list(entry)))

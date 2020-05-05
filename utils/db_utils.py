@@ -1221,6 +1221,7 @@ def fetch_taxonomy_fields(tax_id):
 
 # ----------------------------------------------------------------------------
 
+
 def fetch_max_RG_accession_from_genome():
     """
     Fetches the maximum RFXXXXXXXXX accession from the RfamLive
@@ -1244,6 +1245,41 @@ def fetch_max_RG_accession_from_genome():
 
 # ----------------------------------------------------------------------------
 
+
+def populate_genome_table(data):
+    """
+    Populates the RfamLive genome table with the data provided as input
+
+    data: A list of tuples with the new genome table entries
+
+    return: Void
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(raw=True)
+
+    # query to update is_significant field to 0
+    query = (" ")
+
+    try:
+        # execute query batched
+        cursor.executemany(query, data)
+        cnx.commit()
+
+    except:
+        print ("MySQL Update Error. Rolling back...")
+        cnx.rollback()
+        cursor.close()
+        RfamDB.disconnect(cnx)
+
+        cursor.close()
+        RfamDB.disconnect(cnx)
+
+
+# ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
 

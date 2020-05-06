@@ -2,7 +2,6 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 import requests
-import datetime
 import argparse
 
 from utils import db_utils as db

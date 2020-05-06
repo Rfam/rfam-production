@@ -168,8 +168,9 @@ def generate_genome_table_entry(accession, previous_rg_acc = None):
     kingdom = rfam_tax_data["tax_string"].split(";")[0].strip()
 
     new_genome_accession = generate_new_rfam_genome_accession(previous_rg_acc)
+    version = int(accession.partition('.')[2])
 
-    genome_table_fields = (new_genome_accession, None, None,
+    genome_table_fields = (new_genome_accession, accession, version,
                            None, None, None, level, None,
                            ncbi_genome_metadata["description"],
                            ncbi_genome_metadata["length"],

@@ -1262,7 +1262,12 @@ def populate_genome_table(data):
     cursor = cnx.cursor(raw=True)
 
     # query to update is_significant field to 0
-    query = (" ")
+    query = ("INSERT INTO genome (upid, assembly_acc, assembly_version, wgs_acc,"
+             "wgs_version, assembly_name, assembly_level, study_ref, description,"
+             "total_length, ungapped_length, circular, ncbi_id, scientific_name,"
+             "common_name, kingdom, num_rfam_regions, num_families, is_reference,"
+             "is_representative) VALUES (%s,%s,%s, %s, %s, %s, %s, %s, %s, %s,"
+             "%s,%s,%s, %s, %s, %s, %s, %s, %s, %s)")
 
     try:
         # execute query batched
@@ -1277,7 +1282,6 @@ def populate_genome_table(data):
 
         cursor.close()
         RfamDB.disconnect(cnx)
-
 
 # ----------------------------------------------------------------------------
 

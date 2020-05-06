@@ -241,9 +241,9 @@ if __name__ == "__main__":
             for accession in accessions:
                 new_entry = generate_genome_table_entry(accession, previous_rg_acc=previous_rg_acc)
                 entry_list.append(new_entry)
-                previous_rg_acc = new_entry[0] # fetch current RG entry because it's not
-
-            # temporarily print entries in tabular format and import manually
+                # when populating genome table with multiple entries we need to keep track of
+                # the current/previous RG accessions to generate unique UPIDs for new genomes
+                previous_rg_acc = new_entry[0]
 
             try:
                 db.populate_genome_table(entry_list)

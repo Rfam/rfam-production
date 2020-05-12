@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 """
 Copyright [2009-2017] EMBL-European Bioinformatics Institute
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1196,7 +1197,7 @@ if __name__ == '__main__':
             wrong_input = True
         elif args.type == 'C' and args.acc[0:2] != "CL":
             wrong_input = True
-        elif args.type == 'G' and (args.acc[0:2] != "UP" or args.acc[0:2] != "RG"):
+        elif args.type == 'G' and (args.acc[0:2] != "UP" and args.acc[0:2] != "RG"):
             wrong_input = True
 
     if wrong_input is True:

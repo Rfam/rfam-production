@@ -1,8 +1,8 @@
 import os
-import sys
 import requests
 import subprocess
 import argparse
+import hashlib
 
 # ---------------------------------------------------------------
 
@@ -163,6 +163,32 @@ def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
 # ---------------------------------------------------------------
 
 
+def relabel_sequence_with_RNAcentral_accessions(sequence):
+    """
+
+    :param sequence:
+    :return:
+    """
+
+    pass
+
+# ---------------------------------------------------------------
+
+
+def sequence_to_md5(sequence):
+    """
+
+    :param sequence:
+    :return:
+    """
+
+    md5_converter = hashlib.md5()
+    sequence_md5 = md5_converter.hexdigest()
+
+    return sequence_md5
+
+# ---------------------------------------------------------------
+
 def validate_sequences(seed_sequence, extracted_full_seq):
     """
 
@@ -176,6 +202,7 @@ def validate_sequences(seed_sequence, extracted_full_seq):
         return True
 
     return False
+
 # ---------------------------------------------------------------
 
 
@@ -276,7 +303,7 @@ if __name__ == '__main__':
             start += 1
             accession_coords[accession] = '-'.join((str(start), str(end)))
         else:
-            print "Unable to extract coordinates for accession: %s" % accession
+            print ("Unable to extract coordinates for accession: %s" % accession)
 
     # convert stockholm to pfam
     new_pfam_seed = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)

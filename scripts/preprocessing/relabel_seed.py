@@ -163,26 +163,44 @@ def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
 # ---------------------------------------------------------------
 
 
-def relabel_sequence_with_RNAcentral_accessions(sequence):
+def fetch_RNAcentral_id(sequence):
+    """
+    Looks for a sequence match in RNAcentral based on sequence md5
+    and fetches the corresponding RNAcentral accession
+
+    :param sequence: A valid DNA/RNA sequence
+
+    :return: Returns RNAcentral id, otherwise returns None
     """
 
-    :param sequence:
-    :return:
-    """
+    sequence_md5 = sequence_to_md5(sequence)
+    rnacentral_url = 'https://rnacentral.org/api/v1/rna'
+    response = requests.get(rnacentral_url, params={'md5': sequence_md5})
 
-    pass
+    data = response.json()
+
+    if data['count'] > 0:
+        return data['results'][0]['rnacentral_id']
+
+    return None
 
 # ---------------------------------------------------------------
 
 
 def sequence_to_md5(sequence):
     """
+    Converts a sequence to an md5 hash after replacing Us with
+    Ts
 
-    :param sequence:
-    :return:
+    :param sequence: A valid RNA/DNA sequence
+
+    :return: MD5 hash of the sequence
     """
 
     md5_converter = hashlib.md5()
+    # convert to DNA
+    sequence = sequence.replace('U', 'T')
+    md5_converter.update(sequence.encode('utf-8'))
     sequence_md5 = md5_converter.hexdigest()
 
     return sequence_md5

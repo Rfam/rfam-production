@@ -45,14 +45,14 @@ def convert_tblout_2_pdb_full_region(tblout_file, dest_dir=None):
     fp_in = open(tblout_file, 'r')
 
     # create a new pdb_full_region output file and mark the date it has been generated
-    fp_out = open(os.path.join(dest_dir, "pdb_full_region" + datetime.date + ".txt"), 'w')
+    fp_out = open(os.path.join(dest_dir, "pdb_full_region_" + str(datetime.date.today()) + ".txt"), 'w')
 
     new_line = ''
 
     for line in fp_in:
         # skips comment lines
         if line[0] != '#':
-            print line
+
             columns = [x for x in line.strip().split(' ') if x != '']
 
             pdb_info = columns[2].partition('_')

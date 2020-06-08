@@ -320,7 +320,12 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Script to relabel SEED alignments')
 
     parser.add_argument("--seed", help="SEED alignment in stockholm format to relabel", type=str)
-    parser.add_argument("--seqdb", help="Sequence file in fasta format from where to extract coordinates", type=str)
+
+    mutually_exclusive_arguments = parser.add_mutually_exclusive_group()
+    mutually_exclusive_arguments.add_argument("--seqdb",
+                                              help="Sequence file in fasta format from where to extract coordinates", type=str)
+    mutually_exclusive_arguments.add_argument("--rnac",
+                                              help="Sets RNAcentral as the source sequence database", action="store_true")
 
     return parser
 
@@ -341,7 +346,7 @@ if __name__ == '__main__':
     seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
     full_seq_dict = load_fasta_file_to_dict(args.seqdb)
 
-    # constract accession coords dictionary
+    # construct accession coords dictionary
     accession_coords = {}
     for accession in seed_seq_dict.keys():
 

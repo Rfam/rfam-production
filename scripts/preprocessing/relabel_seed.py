@@ -349,8 +349,8 @@ def relabel_seeds_from_rnacentral(seed, dest_dir=None):
             sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq.upper())
 
             new_line = "\t".join([sequence_label, miRNA_seq.upper(), '\n'])
-        
-	else:
+
+        else:
             new_line = line
 
         new_seed_fp.write(new_line)

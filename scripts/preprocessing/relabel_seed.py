@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import subprocess
 import argparse
@@ -393,3 +394,6 @@ if __name__ == '__main__':
 
     # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
+
+    if reformatted_stk is None:
+        sys.exit("\nReformatted stockholm could not be generated!")

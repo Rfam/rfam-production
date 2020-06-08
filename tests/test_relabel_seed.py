@@ -3,11 +3,11 @@ import scripts.preprocessing.relabel_seed as rs
 
 # -----------------------------------------------------------------------
 
+
 class TestRelabelSeedFunctions(unittest.TestCase):
 
     def test_load_fasta_file_to_dict(self):
         pass
-
 
     def test_sequence_to_md5(self):
 
@@ -20,13 +20,21 @@ class TestRelabelSeedFunctions(unittest.TestCase):
 
         self.assertEqual(md5_hash, "e25b1f5967d21e39e394edb4d3054d0e")
 
-
     def test_fetch_RNAcentral_id(self):
         sequence = "UCAAUAAUGAAAUCUUCUGAUUUGGUGAGAAAUAAUGCCUUAAAAUUACACUCAAUAGGAUUAUGCUGAGG"
 
         rnacentral_id = rs.fetch_RNAcentral_id(sequence)
 
         self.assertEqual(rnacentral_id, "URS0000677DD8")
+
+    def test_generate_RNAcentral_seed_id(self):
+
+        sequence = "UCAAUAAUGAAAUCUUCUGAUUUGGUGAGAAAUAAUGCCUUAAAAUUACACUCAAUAGGAUUAUGCUGAGG"
+
+        seed_id = rs.generate_RNAcentral_seed_id(sequence)
+
+        self.assertEqual(seed_id, "URS0000677DD8/1-71")
+
 
 # -----------------------------------------------------------------------
 

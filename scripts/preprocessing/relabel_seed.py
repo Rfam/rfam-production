@@ -187,6 +187,29 @@ def fetch_RNAcentral_id(sequence):
 # ---------------------------------------------------------------
 
 
+def generate_RNAcentral_seed_id(sequence):
+    """
+    Generates a seed accession based on a sequence mad5 match in RNAcentral
+
+    :param sequence: A valid DNA/RNA sequence
+
+    :return: Returns RNAcentral id, otherwise returns None
+    """
+
+    sequence_md5 = sequence_to_md5(sequence)
+    rnacentral_url = 'https://rnacentral.org/api/v1/rna'
+    response = requests.get(rnacentral_url, params={'md5': sequence_md5})
+
+    data = response.json()
+
+    if data['count'] > 0:
+        return data['results'][0]['rnacentral_id'] + "/1-" + str(data['results'][0]['length'])
+
+    return None
+
+# ---------------------------------------------------------------
+
+
 def sequence_to_md5(sequence):
     """
     Converts a sequence to an md5 hash after replacing Us with

@@ -310,6 +310,18 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def relabel_seeds_from_rnacentral(new_pfam_seed):
+    """
+
+    new_pfam_seed:
+    return:
+    """
+
+    pass
+
+# ---------------------------------------------------------------
+
+
 def parse_arguments():
     """
     Basic argument parsing
@@ -339,33 +351,45 @@ if __name__ == '__main__':
     # temporarily use seed source dir
     dest_dir = os.path.split(args.seed)[0]
 
+    # declaring a variable to store the path to the reformatted SEED alignment
+    reformatted_pfam_seed = None
+
     # convert seed to fasta
     seed_fasta = seed_to_fasta(args.seed, dest_dir=None)
 
-    # load sequences to dict
-    seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
-    full_seq_dict = load_fasta_file_to_dict(args.seqdb)
-
-    # construct accession coords dictionary
-    accession_coords = {}
-    for accession in seed_seq_dict.keys():
-
-        (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
-
-        # validate sequences
-        check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
-
-        # check if coordinates were extracted successfully,
-        if end != 0 and check is True:
-            # start point is one position shifted to the right on actual sequence
-            start += 1
-            accession_coords[accession] = '-'.join((str(start), str(end)))
-        else:
-            print ("Unable to extract coordinates for accession: %s" % accession)
-
     # convert stockholm to pfam
     new_pfam_seed = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
-    # now rewrite the seed labels
-    reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
+
+    if not args.rnac:
+        # load sequences to dict
+        seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
+        full_seq_dict = load_fasta_file_to_dict(args.seqdb)
+
+        # construct accession coords dictionary
+        accession_coords = {}
+        for accession in seed_seq_dict.keys():
+
+            (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
+
+            # validate sequences
+            check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
+
+            # check if coordinates were extracted successfully,
+            if end != 0 and check is True:
+                # start point is one position shifted to the right on actual sequence
+                start += 1
+                accession_coords[accession] = '-'.join((str(start), str(end)))
+            else:
+                print ("Unable to extract coordinates for accession: %s" % accession)
+
+
+        # now rewrite the seed labels
+        reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
+
+    # relabel SEED accessions using RNAcentral identifiers
+    else:
+        reformatted_pfam_seed = relabel_seeds_from_rnacentral(new_pfam_seed)
+
+
     # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)

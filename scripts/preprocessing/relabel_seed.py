@@ -194,7 +194,7 @@ def fetch_RNAcentral_id(sequence):
 # ---------------------------------------------------------------
 
 
-def generate_RNAcentral_seed_id(sequence):
+def generate_seed_id_from_RNAcentral(sequence):
     """
     Generates a seed accession based on a sequence mad5 match in RNAcentral
 
@@ -236,6 +236,7 @@ def sequence_to_md5(sequence):
     return sequence_md5
 
 # ---------------------------------------------------------------
+
 
 def validate_sequences(seed_sequence, extracted_full_seq):
     """
@@ -311,14 +312,47 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def relabel_seeds_from_rnacentral(new_pfam_seed):
+def relabel_seeds_from_rnacentral(seed, dest_dir=None):
+    """
+    Relabels the accessions of a SEED alignment using RNAcentral
+    identifiers. This is done by matching the seed sequences, with
+    sequences existing in RNAcentral using md5 hashing.
+
+    seed: A reformatted seed in Pfam format
+    dest_dir: The path to the destination directory. None by default
+
+    return: The path to the relabelled SEED alignement
     """
 
-    new_pfam_seed:
-    return:
-    """
+    if dest_dir is None:
+        # fetch path of seed alignment
+        dest_dir = os.path.split(seed)[0]
 
-    pass
+    sequence_label = 0
+    new_line = ''
+
+    filename = os.path.split(seed)[1].partition('.')[0]
+
+    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled')
+    seed_fp = open(seed, 'r')
+    new_seed_fp = open(new_seed_loc, 'w')
+
+    for line in seed_fp:
+        # check if this is an actual sequence line
+        if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
+            line_elements = [x for x in line.strip().split(' ') if x != '']
+
+            sequence_label = generate_seed_id_from_RNAcentral(line_elements[1])
+
+            new_line = "\t".join([sequence_label, line_elements[1], '\n'])
+        else:
+            new_line = line
+
+        new_seed_fp.write(new_line)
+
+    seed_fp.close()
+
+    return new_seed_loc
 
 # ---------------------------------------------------------------
 

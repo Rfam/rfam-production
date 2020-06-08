@@ -12,9 +12,9 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
     Returns seed sequence start and end coordinates based on the
     accession provided as input
 
-    :param accession: A valid GenBank|ENA\RNAcentral accession
+    accession: A valid GenBank|ENA\RNAcentral accession
 
-    :return: A tuple with start and end coordinates in this order
+    return: A tuple with start and end coordinates in this order
     """
     start = 0
     end = 0
@@ -35,9 +35,12 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
 
 def load_fasta_file_to_dict(fasta):
     """
+    Loads a fasta file (seqdb) into a dictionary with the sequence
+    accession used as a key and the sequence as a value
 
-    :param fasta:
-    :return:
+    fasta: A valid sequence file in fasta format
+
+    return: A python dictionary with accession:sequence pairs
     """
 
     fasta_dict = {}
@@ -76,11 +79,11 @@ def stockhom_to_pfam_format(stk_msa, dest_dir=None):
     """
     Converts a stockholm MSA to the Pfam format
 
-    :param stk_msa: A valid MSA in strockholm format
-    :param dest_dir: The destination directory where the new MSA
+    stk_msa: A valid MSA in strockholm format
+    dest_dir: The destination directory where the new MSA
     will be generated
 
-    :return: The output MSA in Pfam format, None otherwise
+    return: The output MSA in Pfam format, None otherwise
     """
     filename = os.path.basename(stk_msa).partition('.')[0]
     output_pfam_msa = os.path.join(dest_dir, filename + ".pfam")
@@ -101,11 +104,11 @@ def pfam_to_stockholm_format(pfam_msa, dest_dir=None):
     """
     Converts a Pfam MSA to the stockholm format
 
-    :param pfam_msa: A valid MSA in Pfam format
-    :param dest_dir: The destination directory where the new MSA
+    pfam_msa: A valid MSA in Pfam format
+    dest_dir: The destination directory where the new MSA
     will be generated
 
-    :return: The output MSA in Stockholm format, None otherwise
+    return: The output MSA in Stockholm format, None otherwise
     """
 
     filename = os.path.basename(pfam_msa).partition('.')[0]
@@ -125,9 +128,12 @@ def pfam_to_stockholm_format(pfam_msa, dest_dir=None):
 
 def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
     """
+    Re-writes a seed file with the sequence coordinates appended to the
+    sequence accessions
 
-    :param seed:
-    :return:
+    seed: A seed file with no star-end sequence coordinates
+
+    return: The path to the newly relabelled SEED alignment
     """
 
     if dest_dir is None:
@@ -168,9 +174,9 @@ def fetch_RNAcentral_id(sequence):
     Looks for a sequence match in RNAcentral based on sequence md5
     and fetches the corresponding RNAcentral accession
 
-    :param sequence: A valid DNA/RNA sequence
+    sequence: A valid DNA/RNA sequence
 
-    :return: Returns RNAcentral id, otherwise returns None
+    return: Returns RNAcentral id, otherwise returns None
     """
 
     sequence_md5 = sequence_to_md5(sequence)
@@ -191,9 +197,9 @@ def generate_RNAcentral_seed_id(sequence):
     """
     Generates a seed accession based on a sequence mad5 match in RNAcentral
 
-    :param sequence: A valid DNA/RNA sequence
+    sequence: A valid DNA/RNA sequence
 
-    :return: Returns RNAcentral id, otherwise returns None
+    return: Returns RNAcentral id, otherwise returns None
     """
 
     sequence_md5 = sequence_to_md5(sequence)
@@ -215,9 +221,9 @@ def sequence_to_md5(sequence):
     Converts a sequence to an md5 hash after replacing Us with
     Ts
 
-    :param sequence: A valid RNA/DNA sequence
+    sequence: A valid RNA/DNA sequence
 
-    :return: MD5 hash of the sequence
+    return: MD5 hash of the sequence
     """
 
     md5_converter = hashlib.md5()
@@ -232,10 +238,13 @@ def sequence_to_md5(sequence):
 
 def validate_sequences(seed_sequence, extracted_full_seq):
     """
+    Validates whether the SEED sequence matches the sequence
+    extracted at specific coordinates
 
-    :param seed_sequence:
-    :param extracted_full:
-    :return:
+    seed_sequence: A DNA/RNA sequecne extracted from the SEED alignment
+    extracted_full: A DNA/RNA subsequence extracted at specific locations
+
+    return: True if the sequences match, False otherwise. Returns False by default
     """
 
     new_seed_sequence = seed_sequence.replace('U', 'T')
@@ -249,9 +258,11 @@ def validate_sequences(seed_sequence, extracted_full_seq):
 
 def seed_to_fasta(seed_msa, dest_dir=None):
     """
+    Converts a multiple sequence alignment (MSA) to fasta
 
-    :param seed_msa:
-    :return:
+    param seed_msa: A valid Rfam SEED file in stockholm format to convert to fasta
+
+    return: Path to updated seed file
     """
 
     filename = ""
@@ -301,8 +312,9 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 
 def parse_arguments():
     """
+    Basic argument parsing
 
-    :return:
+    return: Argparse parser object
     """
 
     parser = argparse.ArgumentParser(description='Script to relabel SEED alignments')

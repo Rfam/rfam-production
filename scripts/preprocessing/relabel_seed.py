@@ -344,7 +344,7 @@ def relabel_seeds_from_rnacentral(seed, dest_dir=None):
 
             # replace alignment characters
             miRNA_seq = line_elements[1].replace('.', '')
-            miRNA_seq = line_elements[1].replace('-', '')
+            miRNA_seq = miRNA_seq.replace('-', '').replace('T','U')
 
             sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq)
 

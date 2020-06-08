@@ -344,12 +344,13 @@ def relabel_seeds_from_rnacentral(seed, dest_dir=None):
 
             # replace alignment characters
             miRNA_seq = line_elements[1].replace('.', '')
-            miRNA_seq = miRNA_seq.replace('-', '').replace('T','U')
+            miRNA_seq = miRNA_seq.replace('-', '').replace('T','U').replace('t','u')
 
-            sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq)
+            sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq.upper())
 
-            new_line = "\t".join([sequence_label, miRNA_seq, '\n'])
-        else:
+            new_line = "\t".join([sequence_label, miRNA_seq.upper(), '\n'])
+        
+	else:
             new_line = line
 
         new_seed_fp.write(new_line)

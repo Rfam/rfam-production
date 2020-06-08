@@ -342,9 +342,13 @@ def relabel_seeds_from_rnacentral(seed, dest_dir=None):
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line_elements = [x for x in line.strip().split(' ') if x != '']
 
-            sequence_label = generate_seed_id_from_RNAcentral(line_elements[1])
+            # replace alignment characters
+            miRNA_seq = line_elements[1].replace('.', '')
+            miRNA_seq = line_elements[1].replace('-', '')
 
-            new_line = "\t".join([sequence_label, line_elements[1], '\n'])
+            sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq)
+
+            new_line = "\t".join([sequence_label, miRNA_seq, '\n'])
         else:
             new_line = line
 

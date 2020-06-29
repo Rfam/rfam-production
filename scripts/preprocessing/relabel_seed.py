@@ -2,10 +2,8 @@ import os
 import sys
 import requests
 import subprocess
-import urllib
 import argparse
 import hashlib
-import xmltodict
 
 import xml.etree.ElementTree as ET
 
@@ -470,4 +468,3 @@ if __name__ == '__main__':
 
     if reformatted_stk is None:
         sys.exit("\nReformatted stockholm could not be generated!")
-    

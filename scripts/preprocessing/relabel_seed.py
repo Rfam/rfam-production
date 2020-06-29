@@ -2,8 +2,12 @@ import os
 import sys
 import requests
 import subprocess
+import urllib
 import argparse
 import hashlib
+import xmltodict
+
+import xml.etree.ElementTree as ET
 
 # ---------------------------------------------------------------
 
@@ -204,6 +208,7 @@ def generate_seed_id_from_RNAcentral(sequence):
     """
 
     sequence_md5 = sequence_to_md5(sequence)
+
     rnacentral_url = 'https://rnacentral.org/api/v1/rna'
     response = requests.get(rnacentral_url, params={'md5': sequence_md5})
 
@@ -312,6 +317,34 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def map_rnacentral_urs_wirh_db_accessions(db_accession):
+    """
+    Maps a database accession with a URS accession assigned by
+    RNAcentral. The limitation
+
+    db_accession: A valid member database accession already imported
+    to RNAcentral
+
+    return: The corresponding RNAcentral accession (URS)
+    """
+
+    rnacentral_url = "http://wwwdev.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"mirbase\" AND rna_type:\"precursor RNA\""
+
+    response = requests.get(rnacentral_url % db_accession)
+
+    rnacentral_id = None
+
+    if response.status_code == 200:
+        xml_root = ET.fromstring(response.text)
+        hit_count = int(xml_root.find("hitCount").text)
+
+        if hit_count == 1:
+            rnacentral_id = xml_root.find("entries").find("entry").get("id")
+
+    return rnacentral_id
+
+# ---------------------------------------------------------------
+
 def relabel_seeds_from_rnacentral(seed, dest_dir=None):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
@@ -385,6 +418,7 @@ def parse_arguments():
 
 if __name__ == '__main__':
 
+
     parser = parse_arguments()
     args = parser.parse_args()
 
@@ -436,3 +470,4 @@ if __name__ == '__main__':
 
     if reformatted_stk is None:
         sys.exit("\nReformatted stockholm could not be generated!")
+    

@@ -343,7 +343,7 @@ def map_rnacentral_urs_wirh_db_accessions(db_accession):
 
 # ---------------------------------------------------------------
 
-def relabel_seeds_from_rnacentral(seed, dest_dir=None):
+def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
     identifiers. This is done by matching the seed sequences, with
@@ -375,7 +375,7 @@ def relabel_seeds_from_rnacentral(seed, dest_dir=None):
 
             # replace alignment characters
             miRNA_seq = line_elements[1].replace('.', '')
-            miRNA_seq = miRNA_seq.replace('-', '').replace('T','U').replace('t','u')
+            miRNA_seq = miRNA_seq.replace('-', '').replace('T', 'U').replace('t', 'u')
 
             sequence_label = generate_seed_id_from_RNAcentral(miRNA_seq.upper())
 
@@ -454,13 +454,12 @@ if __name__ == '__main__':
             else:
                 print ("Unable to extract coordinates for accession: %s" % accession)
 
-
         # now rewrite the seed labels
         reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
 
     # relabel SEED accessions using RNAcentral identifiers
     else:
-        reformatted_pfam_seed = relabel_seeds_from_rnacentral(new_pfam_seed)
+        reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
 
 
     # reformat to stockholm

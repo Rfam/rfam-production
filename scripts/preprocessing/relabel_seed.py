@@ -7,6 +7,7 @@ import hashlib
 
 import xml.etree.ElementTree as ET
 
+DB_RNA_TYPES = {"mirbase": "precursor RNA"}
 # ---------------------------------------------------------------
 
 
@@ -315,20 +316,21 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def map_rnacentral_urs_wirh_db_accessions(db_accession):
+def map_rnacentral_urs_wirh_db_accessions(db_accession, expert_db):
     """
     Maps a database accession with a URS accession assigned by
     RNAcentral. The limitation
 
     db_accession: A valid member database accession already imported
     to RNAcentral
+    expert_db: RNAcentral expert database to map the SEED accessions to
 
     return: The corresponding RNAcentral accession (URS)
     """
 
-    rnacentral_url = "http://wwwdev.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"mirbase\" AND rna_type:\"precursor RNA\""
+    rnacentral_url = "http://wwwdev.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"%s\" AND rna_type:\"%s\""
 
-    response = requests.get(rnacentral_url % db_accession)
+    response = requests.get(rnacentral_url % (db_accession, expert_db, DB_RNA_TYPES[expert_db.lower()]))
 
     rnacentral_id = None
 
@@ -423,7 +425,7 @@ def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def relabel_seeds_from_rnacentral_urs_mapping(seed, dest_dir=None):
+def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
     identifiers. This is done by matching the seed sequences, with
@@ -454,20 +456,20 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, dest_dir=None):
             line_elements = [x for x in line.strip().split(' ') if x != '']
 
             # replace alignment characters
-            miRBase_id = line_elements[0].split('/')[0]
-            miRNA_seq = line_elements[1].replace('.', '')
-            miRNA_seq = miRNA_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
+            seed_seq_id = line_elements[0].split('/')[0]
+            seed_seq = line_elements[1].replace('.', '')
+            seed_seq = seed_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
 
-            rnacentral_id = map_rnacentral_urs_wirh_db_accessions(miRBase_id)
+            rnacentral_id = map_rnacentral_urs_wirh_db_accessions(seed_seq_id, expert_db)
             rnacentral_sequence = fetch_sequence_from_rnacentral(rnacentral_id)
-            coordinates = fetch_seed_sequence_coordinates(miRNA_seq, rnacentral_sequence)
+            coordinates = fetch_seed_sequence_coordinates(seed_seq, rnacentral_sequence)
             new_label = ''
 
             # make sure subsequence was found
             if ((coordinates[0] != 0) and (coordinates[1] != 0)):
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
 
-            new_line = "\t".join([new_label, miRNA_seq.upper(), '\n'])
+            new_line = "\t".join([new_label, seed_seq.upper(), '\n'])
 
         else:
             new_line = line
@@ -490,14 +492,29 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(description='Script to relabel SEED alignments')
 
-    parser.add_argument("--seed", help="SEED alignment in stockholm format to relabel", type=str)
+    required_arguments = parser.add_argument_group("required arguments")
+    required_arguments.add_argument("--seed", help="SEED alignment in stockholm format to relabel", type=str)
 
+    # mutually exclusive arguments
     mutually_exclusive_arguments = parser.add_mutually_exclusive_group()
     mutually_exclusive_arguments.add_argument("--seqdb",
                                               help="Sequence file in fasta format from where to extract coordinates", type=str)
-    mutually_exclusive_arguments.add_argument("--rnac",
-                                              help="Sets RNAcentral as the source sequence database", action="store_true")
+    #mutually_exclusive_arguments.add_argument("--rnac",
+    #                                         help="Sets RNAcentral as the source sequence database", action="store_true")
 
+    # group together related arguments
+    rnac_option_group = parser.add_argument_group("rnacentral options")
+    rnac_option_group.add_argument("--rnac", help="Sets RNAcentral as the source sequence database", action="store_true")
+    rnac_option_group.add_argument("--expert-db", help="Name of experct RNAcentral database", action="store")
+    rnac_option_group.add_argument("--md5", help="Map sequences based on md5 hashes", action="store_true")
+
+    """
+    # rnacentral mutually exclusive options
+    rnac_mutually_exclusive = parser.add_mutually_exclusive_group("me2")
+
+    rnac_mutually_exclusive.add_argument("--expert-db")
+    rnac_mutually_exclusive.add_argument("--md5")
+    """
     return parser
 
 # ---------------------------------------------------------------
@@ -546,7 +563,11 @@ if __name__ == '__main__':
 
     # relabel SEED accessions using RNAcentral identifiers
     else:
-        reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
+        if args.md5:
+            reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
+        else:
+            reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
+                                                                              dest_dir=dest_dir)
 
     # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)

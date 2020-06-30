@@ -343,6 +343,36 @@ def map_rnacentral_urs_wirh_db_accessions(db_accession):
 
 # ---------------------------------------------------------------
 
+
+def fetch_sequence_from_rnacentral(rnacentral_id):
+    """
+    Uses RNAcentral's API to fetch corresponding sequence based on
+    RNAcentral URS id
+
+    rnacentral_id: A valid RNAcentral URS identifier e.g.
+
+    return: Corresponding sequence if available, none otherwise
+    """
+
+    # isolate URS if necessary
+    if rnacentral_id.find('_') != -1:
+        rnacentral_id = rnacentral_id.partition('_')[0]
+
+    rnacentral_url = "https://rnacentral.org/api/v1/rna/%s.fasta"
+
+    response = requests.get(rnacentral_url % rnacentral_id)
+
+    sequence = None
+
+    # if request status is OK - remove header and merge sequence
+    # segments
+    if response.status_code == 200:
+        sequence = ''.join(response.text.strip().split('\n')[1:])
+
+    return sequence
+# ---------------------------------------------------------------
+
+
 def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
@@ -416,7 +446,6 @@ def parse_arguments():
 
 if __name__ == '__main__':
 
-
     parser = parse_arguments()
     args = parser.parse_args()
 
@@ -460,7 +489,6 @@ if __name__ == '__main__':
     # relabel SEED accessions using RNAcentral identifiers
     else:
         reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
-
 
     # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)

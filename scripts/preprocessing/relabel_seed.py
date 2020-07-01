@@ -149,7 +149,7 @@ def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
 
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled')
+    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled.stk')
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
 
@@ -444,11 +444,14 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     sequence_label = 0
     new_line = ''
 
+    write_log = False
+
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled.stk')
+    new_seed_loc = os.path.join(dest_dir, filename + '_relabelled.stk')
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
+    log_fp = None
 
     for line in seed_fp:
         # check if this is an actual sequence line
@@ -461,15 +464,26 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             seed_seq = seed_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
 
             rnacentral_id = map_rnacentral_urs_wirh_db_accessions(seed_seq_id, expert_db)
+
+            # if any of the sequences isn't found prepare to log missing accessions
+            if rnacentral_id is None and write_log is False:
+                seed_filename = os.path.basename(seed)
+                log_fp = open(os.path.join(dest_dir, seed_filename)+'.log', 'w')
+                write_log = True
+
+            # write log file if one exists
+            if rnacentral_id is None:
+                log_fp.write(seed_seq_id + '\n')
+
             rnacentral_sequence = fetch_sequence_from_rnacentral(rnacentral_id)
             coordinates = fetch_seed_sequence_coordinates(seed_seq, rnacentral_sequence)
             new_label = ''
 
             # make sure subsequence was found
-            if ((coordinates[0] != 0) and (coordinates[1] != 0)):
+            if (coordinates[0] != 0 and coordinates[1] != 0):
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
 
-            new_line = "\t".join([new_label, seed_seq.upper(), '\n'])
+            new_line = "\t".join([new_label, line_elements[1], '\n'])
 
         else:
             new_line = line
@@ -477,6 +491,10 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         new_seed_fp.write(new_line)
 
     seed_fp.close()
+
+    # close log file if one exists
+    if write_log is True:
+        log_fp.close()
 
     return new_seed_loc
 

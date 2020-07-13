@@ -494,6 +494,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             # make sure subsequence was found
             if (coordinates[0] != 0 or coordinates[1] != 0):
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
+
                 if new_label not in unique_seed_accs:
                     unique_seed_accs[new_label] = ''
 
@@ -509,15 +510,23 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
             # if we reached this point, it means there was an id match, but no exact sequence match
             else:
-                if write_log is False:
-                    seed_filename = os.path.basename(seed).partition('.')[0]
-                    log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
-                    write_log = True
 
-                log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
-                #print ("SEED seq: ", seed_seq)
-                #print ("RNAcentral seq: ", rnacentral_sequence)
-                continue
+                # try mapping SEED sequences in smaller segments
+                sequence = map_sequence_segments(seed_seq, rnacentral_sequence, no_segments=4)
+
+                if sequence is None:
+                    if write_log is False:
+                        seed_filename = os.path.basename(seed).partition('.')[0]
+                        log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
+                        write_log = True
+
+                    log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
+                    #print ("SEED seq: ", seed_seq)
+                    #print ("RNAcentral seq: ", rnacentral_sequence)
+                    continue
+                else:
+                    # here we need to generate the new label with coords and
+                    print (sequence)
 
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
@@ -537,6 +546,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
 # ---------------------------------------------------------------
 
+
 def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     """
     Splits a seed sequence into smaller segments and maps the
@@ -549,36 +559,41 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     """
 
     segment_hits = {}
+    output = {}
     seq_match_score = 0
-    seed_length = len(seed_seq.decode('Utf-8'))
+    seed_length = len(seed_seq)
+
     reference_start = None
 
-    remainder = seed_length % 4
+    # calculate number of remaining nts the last segment will be extended by
+    remainder = seed_length % no_segments
 
-    seg1_size = (seed_length - remainder) / 4
+    # calculate even segment sizes based on no_segments
+    segment_size = int((seed_length - remainder) / no_segments)
+
 
     # initialize all segment hits to 0
-
     index = 0
     start = 0
-    end = seg1_size
+    end = segment_size
 
     # initialize
-    while (index < no_segments):
-
-        if index != 1:
-            segment_hits[index + 1] = (seed_seq[start:end], 0)
+    while index < no_segments:
+        # check if segment is not the last
+        if index != no_segments:
+            segment_hits[index + 1] = [seed_seq[start:end], 0]
         else:
-            segment_hits[index + 1] = (seed_seq[start:], 0)
+            segment_hits[index + 1] = [seed_seq[start:], 0]
 
         start = end
-        end = end + seg1_size
+        end = end + segment_size
 
         index += 1
 
     # Now map the segments to the original sequence
     for position in sorted(segment_hits.keys()):
         segment = segment_hits[position][0]
+
         coords = fetch_seed_sequence_coordinates(segment, rnac_seq)
 
         # set mapping score to 1 - the segment matches
@@ -596,10 +611,12 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     # check if at least 75% of the sequence segments
     # match the target sequence
     if percentage >= 75:
+        # need to split this to more cases
         return rnac_seq[reference_start: reference_start + seed_length]
 
     return None
 # ---------------------------------------------------------------
+
 
 def parse_arguments():
     """

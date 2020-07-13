@@ -494,6 +494,19 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             # make sure subsequence was found
             if (coordinates[0] != 0 or coordinates[1] != 0):
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
+                if new_label not in unique_seed_accs:
+                    unique_seed_accs[new_label] = ''
+
+                # if we found a duplicated id, write log and skip this sequence
+                else:
+                    if write_log is False:
+                        seed_filename = os.path.basename(seed).partition('.')[0]
+                        log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
+                        write_log = True
+
+                    log_fp.write("RNACENTRAL DUPLICATED ID: %s\n" % new_label)
+                    continue
+
             # if we reached this point, it means there was an id match, but no exact sequence match
             else:
                 if write_log is False:

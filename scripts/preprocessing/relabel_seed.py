@@ -149,7 +149,7 @@ def relabel_seed_accessions(seed, accession_coords, dest_dir = None):
 
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled.stk')
+    new_seed_loc = os.path.join(dest_dir, filename+'_relabelled')
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
 
@@ -425,14 +425,16 @@ def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None):
+def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None, clean=False):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
     identifiers. This is done by matching the seed sequences, with
     sequences existing in RNAcentral using md5 hashing.
 
     seed: A reformatted seed in Pfam format
+    expert_db: An existing RNAcentral expert database
     dest_dir: The path to the destination directory. None by default
+    clean: Specifies whether to clean seeds by ommitting sequences not found in RNAcentral
 
     return: The path to the relabelled SEED alignement
     """
@@ -448,10 +450,14 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename + '_relabelled.stk')
+    new_seed_loc = os.path.join(dest_dir, filename + '_relabelled')
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
     log_fp = None
+
+    seed_seq_id = ''
+
+    unique_seed_accs = {}
 
     for line in seed_fp:
         # check if this is an actual sequence line
@@ -460,28 +466,45 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
+            #print ("raw seed seq: ", line_elements[1])
             seed_seq = line_elements[1].replace('.', '')
             seed_seq = seed_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
 
             rnacentral_id = map_rnacentral_urs_wirh_db_accessions(seed_seq_id, expert_db)
 
             # if any of the sequences isn't found prepare to log missing accessions
+            # sets write_log to only open the file once
             if rnacentral_id is None and write_log is False:
-                seed_filename = os.path.basename(seed)
+                seed_filename = os.path.basename(seed).partition('.')[0]
                 log_fp = open(os.path.join(dest_dir, seed_filename)+'.log', 'w')
                 write_log = True
 
-            # write log file if one exists
+            # write log file if one exists and jump to next iteration
             if rnacentral_id is None:
-                log_fp.write(seed_seq_id + '\n')
+                log_fp.write("RNACENTRAL ID MISMATCH: %s\n" % seed_seq_id)
+                continue
 
             rnacentral_sequence = fetch_sequence_from_rnacentral(rnacentral_id)
+            #print ("seed seq: %s\t%s" % (seed_seq_id, seed_seq))
+            #print ("rnac seq: %s\t%s" % (rnacentral_id, rnacentral_sequence))
             coordinates = fetch_seed_sequence_coordinates(seed_seq, rnacentral_sequence)
+            #print (coordinates)
             new_label = ''
 
             # make sure subsequence was found
-            if (coordinates[0] != 0 and coordinates[1] != 0):
+            if (coordinates[0] != 0 or coordinates[1] != 0):
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
+            # if we reached this point, it means there was an id match, but no exact sequence match
+            else:
+                if write_log is False:
+                    seed_filename = os.path.basename(seed).partition('.')[0]
+                    log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
+                    write_log = True
+
+                log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
+                #print ("SEED seq: ", seed_seq)
+                #print ("RNAcentral seq: ", rnacentral_sequence)
+                continue
 
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
@@ -491,6 +514,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         new_seed_fp.write(new_line)
 
     seed_fp.close()
+    new_seed_fp.close()
 
     # close log file if one exists
     if write_log is True:
@@ -500,6 +524,69 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
 # ---------------------------------------------------------------
 
+def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
+    """
+    Splits a seed sequence into smaller segments and maps the
+    individual segments to the RNAcentral sequence
+    param seed_seq:
+    param rnac_seq:
+    no_segments:
+
+    return: RNAcentral subsequence if segments match by 75%, None otherwise
+    """
+
+    segment_hits = {}
+    seq_match_score = 0
+    seed_length = len(seed_seq.decode('Utf-8'))
+    reference_start = None
+
+    remainder = seed_length % 4
+
+    seg1_size = (seed_length - remainder) / 4
+
+    # initialize all segment hits to 0
+
+    index = 0
+    start = 0
+    end = seg1_size
+
+    # initialize
+    while (index < no_segments):
+
+        if index != 1:
+            segment_hits[index + 1] = (seed_seq[start:end], 0)
+        else:
+            segment_hits[index + 1] = (seed_seq[start:], 0)
+
+        start = end
+        end = end + seg1_size
+
+        index += 1
+
+    # Now map the segments to the original sequence
+    for position in sorted(segment_hits.keys()):
+        segment = segment_hits[position][0]
+        coords = fetch_seed_sequence_coordinates(segment, rnac_seq)
+
+        # set mapping score to 1 - the segment matches
+        if coords[0] != 0 or coords[1] != 0:
+            segment_hits[position][1] = 1
+            seq_match_score += 1
+
+        # set reference_start
+        if position == 1:
+            reference_start = coords[0]
+
+    # get percentage of matches
+    percentage = seq_match_score * no_segments / 100
+
+    # check if at least 75% of the sequence segments
+    # match the target sequence
+    if percentage >= 75:
+        return rnac_seq[reference_start: reference_start + seed_length]
+
+    return None
+# ---------------------------------------------------------------
 
 def parse_arguments():
     """
@@ -516,23 +603,22 @@ def parse_arguments():
     # mutually exclusive arguments
     mutually_exclusive_arguments = parser.add_mutually_exclusive_group()
     mutually_exclusive_arguments.add_argument("--seqdb",
-                                              help="Sequence file in fasta format from where to extract coordinates", type=str)
+                                              help="Sequence file in fasta format from where to extract coordinates",
+                                              type=str)
     #mutually_exclusive_arguments.add_argument("--rnac",
     #                                         help="Sets RNAcentral as the source sequence database", action="store_true")
 
     # group together related arguments
     rnac_option_group = parser.add_argument_group("rnacentral options")
-    rnac_option_group.add_argument("--rnac", help="Sets RNAcentral as the source sequence database", action="store_true")
-    rnac_option_group.add_argument("--expert-db", help="Name of experct RNAcentral database", action="store")
-    rnac_option_group.add_argument("--md5", help="Map sequences based on md5 hashes", action="store_true")
+    rnac_option_group.add_argument("--rnac", help="Sets RNAcentral as the source sequence database",
+                                   action="store_true")
+    rnac_option_group.add_argument("--expert-db", help="Name of experct RNAcentral database",
+                                   action="store")
+    rnac_option_group.add_argument("--md5", help="Map sequences based on md5 hashes",
+                                   action="store_true")
+    rnac_option_group.add_argument("--clean-seed", help="Ommit any SEED sequences not matching RNAcentral ones",
+                                   action="store_true")
 
-    """
-    # rnacentral mutually exclusive options
-    rnac_mutually_exclusive = parser.add_mutually_exclusive_group("me2")
-
-    rnac_mutually_exclusive.add_argument("--expert-db")
-    rnac_mutually_exclusive.add_argument("--md5")
-    """
     return parser
 
 # ---------------------------------------------------------------
@@ -585,7 +671,7 @@ if __name__ == '__main__':
             reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
         else:
             reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
-                                                                              dest_dir=dest_dir)
+                                                                              dest_dir=dest_dir, clean=args.clean_seed)
 
     # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)

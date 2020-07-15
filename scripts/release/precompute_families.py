@@ -49,7 +49,9 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
             shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
             return family_dir
 
-        return None  # --------------------------------------------------------------------------------
+    return None  
+
+# --------------------------------------------------------------------------------
 
 def launch_new_rfsearch(family_dir):
     """
@@ -67,7 +69,7 @@ def launch_new_rfsearch(family_dir):
            "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax -nodesc\"")
 
     # call command
-    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+    subprocess.run(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                            CPU, LSF_GROUP, job_name, family_dir), shell=True)
 
 

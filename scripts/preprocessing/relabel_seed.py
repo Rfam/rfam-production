@@ -582,6 +582,9 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         # write sequence file for cmalign
         fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
 
+        # align fasta file to covariance model
+        aligned_sequences = align_sequences_to_cm(cmfile, fasta_filename, dest_dir)
+
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
@@ -735,6 +738,7 @@ def build_temporary_cm_from_seed(seed_file, dest_dir=None):
     return None
 
 # ---------------------------------------------------------------
+
 
 def parse_arguments():
     """

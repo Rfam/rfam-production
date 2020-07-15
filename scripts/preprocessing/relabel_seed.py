@@ -373,8 +373,8 @@ def fetch_sequence_from_rnacentral(rnacentral_id):
         sequence = ''.join(response.text.strip().split('\n')[1:])
 
     return sequence
-# ---------------------------------------------------------------
 
+# ---------------------------------------------------------------
 
 def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
     """
@@ -612,8 +612,41 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
         pass
 
     return None
+
 # ---------------------------------------------------------------
 
+
+def build_temporary_cm_from_seed(seed_file, dest_dir=None):
+    """
+    Build a temporary covariance model based on the seed_file,
+    which is provided as input using cmbuild.
+
+    seed_file: Seed alignment in Stockhold format to be used as
+    input to cmbuild
+
+    dest_dir: Destination directory where the output will be
+    generated
+
+    return: True if the covariance model exists, False otherwise
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(seed_file)[0]
+
+    filename = os.path.basename(seed_file).partition('.')[0]
+
+    cm_file = os.path.join(dest_dir, filename+'.cm')
+
+    cmd = "cmbuild -F %s %s" % (cm_file, seed_file)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(cm_file):
+        return True
+
+    return False
+
+# ---------------------------------------------------------------
 
 def parse_arguments():
     """

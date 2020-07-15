@@ -70,7 +70,7 @@ def launch_new_rfsearch(family_dir):
            "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax -nodesc\"")
 
     # call command
-    subprocess.run(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
+    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                            CPU, LSF_GROUP, job_name, family_dir), shell=True)
 
 # --------------------------------------------------------------------------------

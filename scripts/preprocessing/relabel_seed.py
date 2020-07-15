@@ -519,8 +519,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
                     write_log = True
 
                 log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
-
-                sequence_mismatches[seed_seq_id] = rnacentral_sequence
+                sequence_mismatches[rnacentral_id] = rnacentral_sequence
 
                 continue
                 #else:
@@ -539,14 +538,16 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
-        seed_filename = os.path.split(seed)[0].partition('.')[0]
+        # set rnacentral tag to distinguish between initial fasta and rnacentral
+        # recovery fasta
+        fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
         # generate CM file from original seed
         cmfile = build_temporary_cm_from_seed(seed, dest_dir)
         if cmfile is None:
             sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
         # write sequence file for cmalign
-        fasta_file = write_fasta_file(sequence_mismatches, seed_filename, dest_dir)
+        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
 
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
@@ -568,6 +569,7 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
 
     sequence_collection: A python dictionary with the candidate
     sequences
+    filename: A string specifying the sequence file name
     dest_dir: Destination directory where to generate output
 
     return: Returns fasta file if it exists, None otherwise

@@ -1192,7 +1192,6 @@ def fetch_type_specific_rfam_accessions(rna_type, return_type = "list"):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-
     return rfam_accs
 
 # ----------------------------------------------------------------------------

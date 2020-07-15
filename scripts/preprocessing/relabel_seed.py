@@ -317,6 +317,39 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
+    """
+    Aligns a fasta to a covariance model using cmalign
+
+    cmfile: A valid covariance model
+    fasta_file: A valid nucleotide fasta file
+
+    dest_dir: Destination directory where to generate any output
+
+    return: Returns path to the aligned sequences, otherwise
+    returns None if file does not exist
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(fasta_file)[0]
+
+    out_filename = os.path.split(fasta_file)[1].partition('.')[0]
+    out_filename = out_filename + "_aln.fa"
+
+    aligned_fasta = os.path.join(dest_dir, out_filename)
+
+    cmd = "cmalign -o %s %s %s" % (aligned_fasta, cmfile, fasta_file)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(aligned_fasta):
+        return aligned_fasta
+
+    return None
+
+# ---------------------------------------------------------------
+
+
 def map_rnacentral_urs_wirh_db_accessions(db_accession, expert_db):
     """
     Maps a database accession with a URS accession assigned by

@@ -39,15 +39,16 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
     # check if destination directory existis
     if not os.path.exists(dest_dir):
         sys.exit("\nDestination directory does not exist!\n")  # go on with creating a new family directory
-        family_dir = os.path.join(dest_dir, dirname)
-        if not os.path.exists(family_dir):
-            os.mkdir(family_dir)
+    
+    family_dir = os.path.join(dest_dir, dirname)
+    if not os.path.exists(family_dir):
+        os.mkdir(family_dir)
 
-        # check if the family directory was created successfully
-        if os.path.exists(family_dir):
-            # copy SEED to family dir
-            shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
-            return family_dir
+    # check if the family directory was created successfully
+    if os.path.exists(family_dir):
+    # copy SEED to family dir
+        shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
+        return family_dir
 
     return None  
 
@@ -71,7 +72,6 @@ def launch_new_rfsearch(family_dir):
     # call command
     subprocess.run(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                            CPU, LSF_GROUP, job_name, family_dir), shell=True)
-
 
 # --------------------------------------------------------------------------------
 

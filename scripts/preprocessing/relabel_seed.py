@@ -459,6 +459,8 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     seed_seq_id = ''
 
     unique_seed_accs = {}
+    # dictionary to keep track of sequence mismatches
+    sequence_mismatches = {}
 
     for line in seed_fp:
         # check if this is an actual sequence line
@@ -517,6 +519,8 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
                 log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
 
+                sequence_mismatches[seed_seq_id] = rnacentral_sequence
+
                 continue
                 #else:
                     # here we need to generate the new label with coords and
@@ -531,6 +535,12 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     seed_fp.close()
     new_seed_fp.close()
+
+    # checks if dictionary isn't empty
+    if not bool(sequence_mismatches) is False:
+        cmfile = build_temporary_cm_from_seed(seed, dest_dir)
+        # write sequence file for cmalign
+
 
     # close log file if one exists
     if write_log is True:
@@ -642,9 +652,9 @@ def build_temporary_cm_from_seed(seed_file, dest_dir=None):
     subprocess.call(cmd, shell=True)
 
     if os.path.exists(cm_file):
-        return True
+        return cm_file
 
-    return False
+    return None
 
 # ---------------------------------------------------------------
 

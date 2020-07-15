@@ -376,6 +376,7 @@ def fetch_sequence_from_rnacentral(rnacentral_id):
 
 # ---------------------------------------------------------------
 
+
 def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
@@ -551,6 +552,41 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 # ---------------------------------------------------------------
 
 
+def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
+    """
+    Writes a fasta file in destination directory based on a
+    dictionary of sequence_accession : sequence pairs to be
+    used to generate a fasta file
+
+    sequence_collection: A python dictionary with the candidate
+    sequences
+    dest_dir: Destination directory where to generate output
+
+    return: Returns fasta file if it exists, None otherwise
+    """
+
+    if dest_dir is None:
+        sys.exit("\nNo destination directory was provided for fasta generation!\n")
+
+    fasta_file = os.path.join(dest_dir, filename+'.fa')
+
+    fasta_fp = open(fasta_file, 'w')
+
+    for seq_acc in sequence_collection.keys():
+        # write fasta header
+        fasta_fp.write(">%s\n" % seq_acc)
+        # write sequence
+        fasta_fp.write("%s\n" % sequence_collection[seq_acc])
+
+    fasta_fp.close()
+
+    if os.path.exist(fasta_file):
+        return fasta_file
+
+    return None
+# ---------------------------------------------------------------
+
+
 def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     """
     Splits a seed sequence into smaller segments and maps the
@@ -574,7 +610,6 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
 
     # calculate even segment sizes based on no_segments
     segment_size = int((seed_length - remainder) / no_segments)
-
 
     # initialize all segment hits to 0
     index = 0

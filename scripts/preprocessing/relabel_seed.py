@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 import requests
@@ -466,7 +467,6 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
-            #print ("raw seed seq: ", line_elements[1])
             seed_seq = line_elements[1].replace('.', '')
             seed_seq = seed_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
 
@@ -485,10 +485,8 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
                 continue
 
             rnacentral_sequence = fetch_sequence_from_rnacentral(rnacentral_id)
-            #print ("seed seq: %s\t%s" % (seed_seq_id, seed_seq))
-            #print ("rnac seq: %s\t%s" % (rnacentral_id, rnacentral_sequence))
             coordinates = fetch_seed_sequence_coordinates(seed_seq, rnacentral_sequence)
-            #print (coordinates)
+
             new_label = ''
 
             # make sure subsequence was found
@@ -512,21 +510,17 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             else:
 
                 # try mapping SEED sequences in smaller segments
-                sequence = map_sequence_segments(seed_seq, rnacentral_sequence, no_segments=4)
+                if write_log is False:
+                    seed_filename = os.path.basename(seed).partition('.')[0]
+                    log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
+                    write_log = True
 
-                if sequence is None:
-                    if write_log is False:
-                        seed_filename = os.path.basename(seed).partition('.')[0]
-                        log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
-                        write_log = True
+                log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
 
-                    log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
-                    #print ("SEED seq: ", seed_seq)
-                    #print ("RNAcentral seq: ", rnacentral_sequence)
-                    continue
-                else:
+                continue
+                #else:
                     # here we need to generate the new label with coords and
-                    print (sequence)
+                #   print (sequence)
 
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
@@ -602,8 +596,8 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
             seq_match_score += 1
 
         # set reference_start
-        if position == 1:
-            reference_start = coords[0]
+        #if position == 1:
+            #reference_start = coords[0]
 
     # get percentage of matches
     percentage = seq_match_score * no_segments / 100
@@ -611,8 +605,11 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     # check if at least 75% of the sequence segments
     # match the target sequence
     if percentage >= 75:
+        """
         # need to split this to more cases
         return rnac_seq[reference_start: reference_start + seed_length]
+        """
+        pass
 
     return None
 # ---------------------------------------------------------------

@@ -539,9 +539,17 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
+        seed_filename = os.path.split(seed)[0].partition('.')[0]
+        # generate CM file from original seed
         cmfile = build_temporary_cm_from_seed(seed, dest_dir)
-        # write sequence file for cmalign
+        if cmfile is None:
+            sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
+        # write sequence file for cmalign
+        fasta_file = write_fasta_file(sequence_mismatches, seed_filename, dest_dir)
+
+        if fasta_file is None:
+            sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
     # close log file if one exists
     if write_log is True:
@@ -580,7 +588,7 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
 
     fasta_fp.close()
 
-    if os.path.exist(fasta_file):
+    if os.path.exists(fasta_file):
         return fasta_file
 
     return None

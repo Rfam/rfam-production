@@ -334,7 +334,7 @@ def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
         dest_dir = os.path.split(fasta_file)[0]
 
     out_filename = os.path.basename(fasta_file).partition('.')[0]
-    out_filename = out_filename + "_aln.stk"
+    out_filename += "_aln.stk"
 
     aligned_fasta = os.path.join(dest_dir, out_filename)
 

@@ -477,7 +477,7 @@ def rewrite_seed_with_sscons(input_seed, ss_cons, dest_dir=None):
 
     filename = os.path.basename(input_seed).partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename+"ss_cons.stk")
+    new_seed_loc = os.path.join(dest_dir, filename + "ss_cons.stk")
 
     new_seed_fp = open(new_seed_loc, 'w')
 
@@ -742,13 +742,15 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
     if dest_dir is None:
         sys.exit("\nNo destination directory was provided for fasta generation!\n")
 
-    fasta_file = os.path.join(dest_dir, filename+'.fa')
+    fasta_file = os.path.join(dest_dir, filename + '.fa')
 
     fasta_fp = open(fasta_file, 'w')
 
     for seq_acc in sequence_collection.keys():
+        start = 0
+        end = len(sequence_collection[seq_acc])
         # write fasta header
-        fasta_fp.write(">%s\n" % seq_acc)
+        fasta_fp.write(">%s\n" % seq_acc + '/' + str(start) + '-' + str(end))
         # write sequence
         fasta_fp.write("%s\n" % sequence_collection[seq_acc])
 

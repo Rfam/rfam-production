@@ -498,6 +498,37 @@ def rewrite_seed_with_sscons(input_seed, ss_cons, dest_dir=None):
         return new_seed_loc
 
     return None
+
+# ---------------------------------------------------------------
+
+
+def merge_seeds(seed1, seed2, filename=None, dest_dir=None):
+    """
+    Merges two alignments into one using esl-alimerge
+
+    seed1: The path to SEED alignment 1
+    seed2: The path to SEED alignment 2
+    filename: A string specifying the filename of the merged alignment
+    dest_dir: The path to the destination directory. If None uses current
+    working directory
+
+    return: The path to the merged SEED if it exists, None otherwise
+    """
+
+    if dest_dir is None:
+        dest_dir = os.getcwd()
+
+    merged_seed_loc = os.path.join(dest_dir, filename+'_merged.stk')
+
+    cmd = "esl-alimerge -o %s %s %s" % (merged_seed_loc, seed1, seed2)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(merged_seed_loc) and os.path.getsize(merged_seed_loc) > 0:
+        return merged_seed_loc
+
+    return None
+
 # ---------------------------------------------------------------
 
 
@@ -620,6 +651,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
+        if sequence_count != len(sequence_mismatches.keys()):
         # set rnacentral tag to distinguish between initial fasta and rnacentral
         # recovery fasta
         fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
@@ -636,6 +668,8 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
+
+        merge_seeds(new_seed_loc, aligned_sequences)
 
     # close log file if one exists
     if write_log is True:

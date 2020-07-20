@@ -532,6 +532,38 @@ def merge_seeds(seed1, seed2, filename=None, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def remove_all_gap_columns(seed, filename, dest_dir=None):
+    """
+    Uses esl-reformat to remove all-gap columns from a SEED
+    alignment
+
+    seed: A valid SEED alignment in stockholm format
+    filename: A string specifying the modified SEED name
+    dest_dir: The path to the destination directory where
+    the output will be generated
+
+    return: Returns the path to the updated SEED if it exists,
+    otherwise it returns None
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(os.path.abspath(seed))[0]
+
+    new_seed_loc = os.path.join(dest_dir, filename+'_nogaps.stk')
+
+    # esl-reformat --mingap stockholm SEED > new.SEED
+    cmd = "esl-reformat -o %s --mingap stockholm %s" % (new_seed_loc, seed)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(new_seed_loc):
+        return new_seed_loc
+
+    return None
+
+# ---------------------------------------------------------------
+
+
 def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None, clean=False):
     """
     Relabels the accessions of a SEED alignment using RNAcentral

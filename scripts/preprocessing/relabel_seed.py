@@ -651,25 +651,31 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
-        if sequence_count != len(sequence_mismatches.keys()):
-        # set rnacentral tag to distinguish between initial fasta and rnacentral
-        # recovery fasta
-        fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
-        # generate CM file from original seed
-        cmfile = build_temporary_cm_from_seed(seed, dest_dir)
-        if cmfile is None:
-                sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
-        # write sequence file for cmalign
-        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
+            # set rnacentral tag to distinguish between initial fasta and rnacentral
+            # recovery fasta
+            fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
+            # generate CM file from original seed
+            cmfile = build_temporary_cm_from_seed(seed, dest_dir)
+            if cmfile is None:
+                    sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
-        # align fasta file to covariance model
-        aligned_sequences = align_sequences_to_cm(cmfile, fasta_file, dest_dir)
+            # write sequence file for cmalign
+            fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
 
-        if fasta_file is None:
-            sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
+            # align fasta file to covariance model
+            aligned_sequences = align_sequences_to_cm(cmfile, fasta_file, dest_dir)
 
-        merge_seeds(new_seed_loc, aligned_sequences)
+            if fasta_file is None:
+                sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
+
+        if sequence_count > 0 and sequence_count < len(sequence_mismatches.keys()):
+            filename = os.path.split(seed)[1].partition(".")[0]
+            merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
+
+        # in this case we need to rewrite the SEED
+        elif sequence_count == len(sequence_mismatches.keys()):
+            new_seed_loc = rewrite_seed_with_sscons(aligned_sequences, ss_cons, dest_dir)
 
     # close log file if one exists
     if write_log is True:

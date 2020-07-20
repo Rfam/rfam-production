@@ -552,7 +552,7 @@ def remove_all_gap_columns(seed, filename, dest_dir=None):
     new_seed_loc = os.path.join(dest_dir, filename + '_nogaps.stk')
 
     # esl-reformat --mingap stockholm SEED > new.SEED
-    cmd = "esl-reformat -o %s --mingap stockholm %s" % (new_seed_loc, seed)
+    cmd = "esl-reformat -o %s --mingap --wussify stockholm %s" % (new_seed_loc, seed)
 
     subprocess.call(cmd, shell=True)
 
@@ -608,6 +608,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line_elements = [x for x in line.strip().split(' ') if x != '']
             sequence_count += 1
+
 
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
@@ -702,7 +703,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
-        if sequence_count < len(sequence_mismatches.keys()):
+        if sequence_count > len(sequence_mismatches.keys()):
             filename = os.path.split(seed)[1].partition(".")[0]
             new_seed_loc = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
 
@@ -949,8 +950,7 @@ if __name__ == '__main__':
         else:
             reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
                                                                               dest_dir=dest_dir, clean=args.clean_seed)
-
-    # reformat to stockholm
+    # reformat to stockholm - redundant?
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
 
     if reformatted_stk is None:

@@ -549,7 +549,7 @@ def remove_all_gap_columns(seed, filename, dest_dir=None):
     if dest_dir is None:
         dest_dir = os.path.split(os.path.abspath(seed))[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename+'_nogaps.stk')
+    new_seed_loc = os.path.join(dest_dir, filename + '_nogaps.stk')
 
     # esl-reformat --mingap stockholm SEED > new.SEED
     cmd = "esl-reformat -o %s --mingap stockholm %s" % (new_seed_loc, seed)
@@ -684,6 +684,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
 
+        new_seed_loc = ''
         # set rnacentral tag to distinguish between initial fasta and rnacentral
         # recovery fasta
         fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
@@ -701,9 +702,9 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
-        if sequence_count > 0 and sequence_count < len(sequence_mismatches.keys()):
+        if sequence_count < len(sequence_mismatches.keys()):
             filename = os.path.split(seed)[1].partition(".")[0]
-            merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
+            new_seed_loc = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
 
         # in this case we need to rewrite the SEED
         elif sequence_count == len(sequence_mismatches.keys()):

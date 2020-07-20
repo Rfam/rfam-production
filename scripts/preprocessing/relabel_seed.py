@@ -669,13 +669,13 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             if fasta_file is None:
                 sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
-        if sequence_count > 0 and sequence_count < len(sequence_mismatches.keys()):
-            filename = os.path.split(seed)[1].partition(".")[0]
-            merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
+            if sequence_count > 0 and sequence_count < len(sequence_mismatches.keys()):
+                filename = os.path.split(seed)[1].partition(".")[0]
+                merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
 
-        # in this case we need to rewrite the SEED
-        elif sequence_count == len(sequence_mismatches.keys()):
-            new_seed_loc = rewrite_seed_with_sscons(aligned_sequences, ss_cons, dest_dir)
+            # in this case we need to rewrite the SEED
+            elif sequence_count == len(sequence_mismatches.keys()):
+                new_seed_loc = rewrite_seed_with_sscons(aligned_sequences, ss_cons, dest_dir)
 
     # close log file if one exists
     if write_log is True:

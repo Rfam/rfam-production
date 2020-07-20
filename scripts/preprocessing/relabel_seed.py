@@ -682,10 +682,10 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     seed_fp.close()
     new_seed_fp.close()
 
+    sequence_count = len(unique_seed_accs)
+
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
-
-        new_seed_loc = ''
         # set rnacentral tag to distinguish between initial fasta and rnacentral
         # recovery fasta
         fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'

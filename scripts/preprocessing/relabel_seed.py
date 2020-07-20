@@ -460,6 +460,47 @@ def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def rewrite_seed_with_sscons(input_seed, ss_cons, dest_dir=None):
+    """
+    Rewrites a SEED alignment in stockholm format with a ss_cons
+
+    param input_seed: Initial seed to rewrite and add ss_cons to.
+    The seed alignment needs to be in stockholm format
+
+    param ss_cons: Consensus secondary structure to add to the alignment
+
+    return: The path to the new SEED is successful, otherwise None
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(input_seed)[0]
+
+    filename = os.path.basename(input_seed).partition('.')[0]
+
+    new_seed_loc = os.path.join(dest_dir, filename+"ss_cons.stk")
+
+    new_seed_fp = open(new_seed_loc, 'w')
+
+    old_seed_fp = open(input_seed, 'r')
+
+    for line in old_seed_fp:
+        # write all lines in new file
+        if line.find("//") == -1:
+            new_seed_fp.write(line)
+        else:
+            # now we are going to write the ss_cons
+            new_seed_fp.write(ss_cons + '\n' + "\\" + '\n')
+
+    old_seed_fp.close()
+    new_seed_fp.close()
+
+    if os.path.exists(new_seed_fp) and os.path.getsize(new_seed_fp) > 0:
+        return new_seed_loc
+
+    return None
+# ---------------------------------------------------------------
+
+
 def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None, clean=False):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
@@ -489,6 +530,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
     log_fp = None
+    sequence_count = 0
 
     seed_seq_id = ''
 
@@ -496,10 +538,13 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     # dictionary to keep track of sequence mismatches
     sequence_mismatches = {}
 
+    ss_cons = ''
+
     for line in seed_fp:
         # check if this is an actual sequence line
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line_elements = [x for x in line.strip().split(' ') if x != '']
+            sequence_count += 1
 
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
@@ -562,6 +607,10 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
         else:
+            # save consensus secondary structure for use in the new alignment
+            if line.find("SS_cons") != -1:
+                ss_cons = line
+
             new_line = line
 
         new_seed_fp.write(new_line)
@@ -577,7 +626,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         # generate CM file from original seed
         cmfile = build_temporary_cm_from_seed(seed, dest_dir)
         if cmfile is None:
-            sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
+                sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
         # write sequence file for cmalign
         fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)

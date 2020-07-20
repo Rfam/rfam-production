@@ -883,8 +883,6 @@ def parse_arguments():
     mutually_exclusive_arguments.add_argument("--seqdb",
                                               help="Sequence file in fasta format from where to extract coordinates",
                                               type=str)
-    #mutually_exclusive_arguments.add_argument("--rnac",
-    #                                         help="Sets RNAcentral as the source sequence database", action="store_true")
 
     # group together related arguments
     rnac_option_group = parser.add_argument_group("rnacentral options")

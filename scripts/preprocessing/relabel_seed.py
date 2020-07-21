@@ -338,8 +338,7 @@ def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
 
     new_seed = os.path.join(dest_dir, out_filename)
 
-    cmd = "cmalign -o %s %s %s" % (new_seed, cmfile, fasta_file)
-
+    cmd = "cmalign %s %s | grep -Ev '^(#=GR)' > %s" % (cmfile, fasta_file, new_seed)
     subprocess.call(cmd, shell=True)
 
     if os.path.exists(new_seed):
@@ -697,7 +696,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
         # align fasta file to covariance model
-        cmaligned_sequences = align_sequences_to_cm(cmfile, seed, fasta_file, dest_dir)
+        cmaligned_sequences = align_sequences_to_cm(cmfile, fasta_file, dest_dir)
 
         if cmaligned_sequences is None:
             sys.exit("FILE ERROR: New cmaligned SEED for family %s could not be generated\n" % seed_filename)

@@ -714,10 +714,11 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
         # renames files
         os.rename(new_seed_loc, os.path.join(dest_dir, new_seed_filename))
-        final_seed = remove_all_gap_columns(new_seed_loc, filename, dest_dir)
+        new_seed_loc = os.path.join(dest_dir, new_seed_filename)
+        #final_seed = remove_all_gap_columns(new_seed_loc, filename, dest_dir)
 
-        if final_seed is None:
-            sys.exit("FILE ERROR: SEED reformatting failed\n")
+        #if final_seed is None:
+        #    sys.exit("FILE ERROR: SEED reformatting failed\n")
 
     # close log file if one exists
     if write_log is True:

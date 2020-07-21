@@ -317,11 +317,12 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def align_sequences_to_cm(cmfile, fasta_file, outformat='pfam',dest_dir=None):
+def align_sequences_to_cm(cmfile, seed, fasta_file, outformat='pfam',dest_dir=None):
     """
     Aligns a fasta to a covariance model using cmalign
 
     cmfile: A valid covariance model
+    seed: The original seed the CM was built from
     fasta_file: A valid nucleotide fasta file
     outformat: A string specifying the format of the alignment
 
@@ -337,14 +338,14 @@ def align_sequences_to_cm(cmfile, fasta_file, outformat='pfam',dest_dir=None):
     out_filename = os.path.basename(fasta_file).partition('.')[0]
     out_filename += "_aln.stk"
 
-    aligned_fasta = os.path.join(dest_dir, out_filename)
+    new_seed = os.path.join(dest_dir, out_filename)
 
-    cmd = "cmalign --mapali -o %s %s %s" % (aligned_fasta, cmfile, fasta_file)
+    cmd = "cmalign --mapali %s -o %s %s %s" % (seed, new_seed, cmfile, fasta_file)
 
     subprocess.call(cmd, shell=True)
 
-    if os.path.exists(aligned_fasta):
-        return aligned_fasta
+    if os.path.exists(new_seed):
+        return new_seed
 
     return None
 

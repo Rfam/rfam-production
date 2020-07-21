@@ -603,8 +603,6 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     # dictionary to keep track of sequence mismatches
     sequence_mismatches = {}
 
-    ss_cons = ''
-
     for line in seed_fp:
         # check if this is an actual sequence line
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
@@ -672,10 +670,6 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
         else:
-            # save consensus secondary structure for use in the new alignment
-            if line.find("SS_cons") != -1:
-                ss_cons = line
-
             new_line = line
 
         new_seed_fp.write(new_line)
@@ -699,18 +693,15 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
 
         # align fasta file to covariance model
-        aligned_sequences = align_sequences_to_cm(cmfile, fasta_file, dest_dir)
+        aligned_sequences = align_sequences_to_cm(cmfile, seed, fasta_file, dest_dir)
 
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
         if sequence_count > len(sequence_mismatches.keys()):
             filename = os.path.split(seed)[1].partition(".")[0]
-            new_seed_loc = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
-
-        # empty SEED so we need to rewrite it with SS_cons
-        elif sequence_count == len(sequence_mismatches.keys()):
-            new_seed_loc = rewrite_seed_with_sscons(aligned_sequences, ss_cons, dest_dir)
+            merged_seed = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
+            new_seed_loc = merged_seed
 
         final_seed = remove_all_gap_columns(new_seed_loc, filename, dest_dir)
 

@@ -317,12 +317,13 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
+def align_sequences_to_cm(cmfile, fasta_file, outformat='pfam',dest_dir=None):
     """
     Aligns a fasta to a covariance model using cmalign
 
     cmfile: A valid covariance model
     fasta_file: A valid nucleotide fasta file
+    outformat: A string specifying the format of the alignment
 
     dest_dir: Destination directory where to generate any output
 
@@ -338,7 +339,7 @@ def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
 
     aligned_fasta = os.path.join(dest_dir, out_filename)
 
-    cmd = "cmalign -o %s %s %s" % (aligned_fasta, cmfile, fasta_file)
+    cmd = "cmalign --mapali -o %s %s %s" % (aligned_fasta, cmfile, fasta_file)
 
     subprocess.call(cmd, shell=True)
 
@@ -609,7 +610,6 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             line_elements = [x for x in line.strip().split(' ') if x != '']
             sequence_count += 1
 
-
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
             seed_seq = line_elements[1].replace('.', '')
@@ -707,7 +707,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             filename = os.path.split(seed)[1].partition(".")[0]
             new_seed_loc = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
 
-        # in this case we need to rewrite the SEED
+        # empty SEED so we need to rewrite it with SS_cons
         elif sequence_count == len(sequence_mismatches.keys()):
             new_seed_loc = rewrite_seed_with_sscons(aligned_sequences, ss_cons, dest_dir)
 
@@ -747,10 +747,10 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
     fasta_fp = open(fasta_file, 'w')
 
     for seq_acc in sequence_collection.keys():
-        start = 0
+        start = 1
         end = len(sequence_collection[seq_acc])
         # write fasta header
-        fasta_fp.write(">%s\n" % seq_acc + '/' + str(start) + '-' + str(end))
+        fasta_fp.write(">%s\n" % (seq_acc + '/' + str(start) + '-' + str(end)))
         # write sequence
         fasta_fp.write("%s\n" % sequence_collection[seq_acc])
 
@@ -760,6 +760,7 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
         return fasta_file
 
     return None
+
 # ---------------------------------------------------------------
 
 
@@ -902,6 +903,7 @@ def parse_arguments():
     return parser
 
 # ---------------------------------------------------------------
+
 
 if __name__ == '__main__':
 

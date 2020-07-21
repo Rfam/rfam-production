@@ -591,7 +591,9 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename + '_relabelled')
+    new_seed_filename = filename + '_relabelled'
+
+    new_seed_loc = os.path.join(dest_dir, new_seed_filename)
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
     log_fp = None
@@ -681,28 +683,40 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     # checks if dictionary isn't empty
     if not bool(sequence_mismatches) is False:
-        # set rnacentral tag to distinguish between initial fasta and rnacentral
-        # recovery fasta
-        fasta_filename = os.path.split(seed)[1].partition(".")[0] + '_rnac'
+
+        # write RNAcentral sequences to fasta file to be used with cmalign
+        fasta_filename = filename + '_rnac'
+
+        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
+
+        if fasta_file is None:
+            sys.exit("FILE ERROR: Fasta file %s could not be generated\n" % fasta_filename)
+
         # generate CM file from original seed
         cmfile = build_temporary_cm_from_seed(seed, dest_dir)
+
         if cmfile is None:
             sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
 
-        # write sequence file for cmalign
-        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
-
         # align fasta file to covariance model
-        aligned_sequences = align_sequences_to_cm(cmfile, seed, fasta_file, dest_dir)
+        cmaligned_sequences = align_sequences_to_cm(cmfile, seed, fasta_file, dest_dir)
 
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file for seed %s could not be generated\n" % seed_filename)
 
+        # if the number of sequences in the original SEED is larger than the sequence mismatches
+        # this means we have two smaller MSAs that need to be merged
         if sequence_count > len(sequence_mismatches.keys()):
             filename = os.path.split(seed)[1].partition(".")[0]
-            merged_seed = merge_seeds(new_seed_loc, aligned_sequences, filename, dest_dir)
+            merged_seed = merge_seeds(new_seed_loc, cmaligned_sequences, filename, dest_dir)
             new_seed_loc = merged_seed
 
+        else:
+            os.remove(new_seed_loc)
+            new_seed_loc = cmaligned_sequences
+
+        # renames files
+        os.rename(new_seed_loc, os.path.join(dest_dir, new_seed_filename))
         final_seed = remove_all_gap_columns(new_seed_loc, filename, dest_dir)
 
         if final_seed is None:
@@ -946,7 +960,7 @@ if __name__ == '__main__':
         else:
             reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
                                                                               dest_dir=dest_dir, clean=args.clean_seed)
-    # reformat to stockholm - redundant?
+
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
 
     if reformatted_stk is None:

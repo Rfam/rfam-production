@@ -317,14 +317,13 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
-def align_sequences_to_cm(cmfile, seed, fasta_file, outformat='pfam',dest_dir=None):
+def align_sequences_to_cm(cmfile, seed, fasta_file, dest_dir=None):
     """
     Aligns a fasta to a covariance model using cmalign
 
     cmfile: A valid covariance model
     seed: The original seed the CM was built from
     fasta_file: A valid nucleotide fasta file
-    outformat: A string specifying the format of the alignment
 
     dest_dir: Destination directory where to generate any output
 

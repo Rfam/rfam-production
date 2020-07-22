@@ -31,7 +31,7 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
 
     # return start and end coordinates if subsequence was found
     if start != -1:
-        return (start, end)
+        return (start+1, end)
 
     return (0, 0)
 
@@ -633,7 +633,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             new_label = ''
 
             # make sure subsequence was found
-            if (coordinates[0] != 0 or coordinates[1] != 0):
+            if coordinates[1] != 0:
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
 
                 if new_label not in unique_seed_accs:
@@ -946,8 +946,6 @@ if __name__ == '__main__':
 
             # check if coordinates were extracted successfully,
             if end != 0 and check is True:
-                # start point is one position shifted to the right on actual sequence
-                start += 1
                 accession_coords[accession] = '-'.join((str(start), str(end)))
             else:
                 print ("Unable to extract coordinates for accession: %s" % accession)

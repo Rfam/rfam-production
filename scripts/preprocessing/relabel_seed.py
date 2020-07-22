@@ -517,7 +517,7 @@ def merge_seeds(seed1, seed2, filename=None, dest_dir=None):
     if dest_dir is None:
         dest_dir = os.getcwd()
 
-    merged_seed_loc = os.path.join(dest_dir, filename+'_merged.stk')
+    merged_seed_loc = os.path.join(dest_dir, filename + '_merged.stk')
 
     cmd = "esl-alimerge -o %s %s %s" % (merged_seed_loc, seed1, seed2)
 
@@ -705,7 +705,9 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         # this means we have two smaller MSAs that need to be merged
         if sequence_count > len(sequence_mismatches.keys()):
             filename = os.path.split(seed)[1].partition(".")[0]
-            merged_seed = merge_seeds(new_seed_loc, cmaligned_sequences, filename, dest_dir)
+
+            cmaligned_relabelled_seed = align_sequences_to_cm(cmfile, new_seed_loc)
+            merged_seed = merge_seeds(cmaligned_relabelled_seed, cmaligned_sequences, filename, dest_dir)
             new_seed_loc = merged_seed
 
         else:
@@ -960,6 +962,10 @@ if __name__ == '__main__':
                                                                               dest_dir=dest_dir, clean=args.clean_seed)
 
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
+
+    reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
+    #os.remove(reformatted_stk)
+    #os.rename(reformatted_stk_no_gap, reformatted_stk)
 
     if reformatted_stk is None:
         sys.exit("\nReformatted stockholm could not be generated!")

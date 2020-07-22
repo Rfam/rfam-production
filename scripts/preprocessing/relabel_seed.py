@@ -906,6 +906,8 @@ def parse_arguments():
     rnac_option_group.add_argument("--clean-seed", help="Ommit any SEED sequences not matching RNAcentral ones",
                                    action="store_true")
 
+    parser.add_argument('--no-gaps', help='Remove all gap columns from the alignment', action="store_true")
+
     return parser
 
 # ---------------------------------------------------------------
@@ -963,9 +965,12 @@ if __name__ == '__main__':
 
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
 
-    reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
-    #os.remove(reformatted_stk)
-    #os.rename(reformatted_stk_no_gap, reformatted_stk)
-
     if reformatted_stk is None:
         sys.exit("\nReformatted stockholm could not be generated!")
+
+    reformatted_stk_no_gap = ''
+    if args.no_gaps:
+        reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
+
+    if reformatted_stk_no_gap is None:
+        sys.exit("\nError removing all gap columns!")

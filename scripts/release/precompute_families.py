@@ -46,7 +46,8 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 
     # check if the family directory was created successfully
     if os.path.exists(family_dir):
-    # copy SEED to family dir
+
+        # copy SEED to family dir
         shutil.copyfile(seed_alignment, os.path.join(family_dir, "SEED"))
         return family_dir
 
@@ -54,9 +55,13 @@ def create_family_directory(dirname, seed_alignment, dest_dir):
 
 # --------------------------------------------------------------------------------
 
-def launch_new_rfsearch(family_dir):
+
+def launch_new_rfsearch(family_dir, cpu=4):
     """
+    Launches a new LSF job
+
     family_dir: The location of a valid family directory
+    cpus: Number of CPUs to use per thread
 
     return: void
     """
@@ -71,9 +76,10 @@ def launch_new_rfsearch(family_dir):
 
     # call command
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                           CPU, LSF_GROUP, job_name, family_dir), shell=True)
+                           cpu, LSF_GROUP, job_name, family_dir), shell=True)
 
 # --------------------------------------------------------------------------------
+
 
 def parse_arguments():
     """
@@ -90,6 +96,8 @@ def parse_arguments():
                           type=str, required=True)
     req_args.add_argument('--dest-dir', help='destination directory where create new \
                     family directories', type=str, required=True)
+
+    parser.add_argument('--cpu', help='number of CPUs to use per thread', type=int, action='store')
 
     return parser
 
@@ -134,4 +142,4 @@ if __name__ == '__main__':
         family_dir = create_family_directory(dirname, seed_path, args.dest_dir)
 
         if family_dir is not None:
-            launch_new_rfsearch(family_dir)
+            launch_new_rfsearch(family_dir, args.cpu)

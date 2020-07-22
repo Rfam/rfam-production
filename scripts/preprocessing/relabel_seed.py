@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 import requests
@@ -30,7 +31,7 @@ def fetch_seed_sequence_coordinates(seed_seq, full_seq):
 
     # return start and end coordinates if subsequence was found
     if start != -1:
-        return (start, end)
+        return (start+1, end)
 
     return (0, 0)
 
@@ -316,6 +317,38 @@ def seed_to_fasta(seed_msa, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def align_sequences_to_cm(cmfile, fasta_file, dest_dir=None):
+    """
+    Aligns a fasta to a covariance model using cmalign
+
+    cmfile: A valid covariance model
+    fasta_file: A valid nucleotide fasta file
+
+    dest_dir: Destination directory where to generate any output
+
+    return: Returns path to the aligned sequences, otherwise
+    returns None if file does not exist
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(fasta_file)[0]
+
+    out_filename = os.path.basename(fasta_file).partition('.')[0]
+    out_filename += "_aln.stk"
+
+    new_seed = os.path.join(dest_dir, out_filename)
+
+    cmd = "cmalign %s %s | grep -Ev '^(#=GR)' > %s" % (cmfile, fasta_file, new_seed)
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(new_seed):
+        return new_seed
+
+    return None
+
+# ---------------------------------------------------------------
+
+
 def map_rnacentral_urs_wirh_db_accessions(db_accession, expert_db):
     """
     Maps a database accession with a URS accession assigned by
@@ -372,6 +405,7 @@ def fetch_sequence_from_rnacentral(rnacentral_id):
         sequence = ''.join(response.text.strip().split('\n')[1:])
 
     return sequence
+
 # ---------------------------------------------------------------
 
 
@@ -425,6 +459,110 @@ def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
 # ---------------------------------------------------------------
 
 
+def rewrite_seed_with_sscons(input_seed, ss_cons, dest_dir=None):
+    """
+    Rewrites a SEED alignment in stockholm format with a ss_cons
+
+    param input_seed: Initial seed to rewrite and add ss_cons to.
+    The seed alignment needs to be in stockholm format
+
+    param ss_cons: Consensus secondary structure to add to the alignment
+
+    return: The path to the new SEED is successful, otherwise None
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(input_seed)[0]
+
+    filename = os.path.basename(input_seed).partition('.')[0]
+
+    new_seed_loc = os.path.join(dest_dir, filename + "ss_cons.stk")
+
+    new_seed_fp = open(new_seed_loc, 'w')
+
+    old_seed_fp = open(input_seed, 'r')
+
+    for line in old_seed_fp:
+        # write all lines in new file
+        if line.find("//") == -1:
+            new_seed_fp.write(line)
+        else:
+            # now we are going to write the ss_cons
+            new_seed_fp.write(ss_cons + '\n' + "\\" + '\n')
+
+    old_seed_fp.close()
+    new_seed_fp.close()
+
+    if os.path.exists(new_seed_fp) and os.path.getsize(new_seed_fp) > 0:
+        return new_seed_loc
+
+    return None
+
+# ---------------------------------------------------------------
+
+
+def merge_seeds(seed1, seed2, filename=None, dest_dir=None):
+    """
+    Merges two alignments into one using esl-alimerge
+
+    seed1: The path to SEED alignment 1
+    seed2: The path to SEED alignment 2
+    filename: A string specifying the filename of the merged alignment
+    dest_dir: The path to the destination directory. If None uses current
+    working directory
+
+    return: The path to the merged SEED if it exists, None otherwise
+    """
+
+    if dest_dir is None:
+        dest_dir = os.getcwd()
+
+    merged_seed_loc = os.path.join(dest_dir, filename + '_merged.stk')
+
+    cmd = "esl-alimerge -o %s %s %s" % (merged_seed_loc, seed1, seed2)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(merged_seed_loc) and os.path.getsize(merged_seed_loc) > 0:
+        return merged_seed_loc
+
+    return None
+
+# ---------------------------------------------------------------
+
+
+def remove_all_gap_columns(seed, filename, dest_dir=None):
+    """
+    Uses esl-reformat to remove all-gap columns from a SEED
+    alignment
+
+    seed: A valid SEED alignment in stockholm format
+    filename: A string specifying the modified SEED name
+    dest_dir: The path to the destination directory where
+    the output will be generated
+
+    return: Returns the path to the updated SEED if it exists,
+    otherwise it returns None
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(os.path.abspath(seed))[0]
+
+    new_seed_loc = os.path.join(dest_dir, filename + '_nogaps.stk')
+
+    # esl-reformat --mingap stockholm SEED > new.SEED
+    cmd = "esl-reformat -o %s --mingap --wussify stockholm %s" % (new_seed_loc, seed)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(new_seed_loc):
+        return new_seed_loc
+
+    return None
+
+# ---------------------------------------------------------------
+
+
 def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=None, clean=False):
     """
     Relabels the accessions of a SEED alignment using RNAcentral
@@ -450,23 +588,28 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 
     filename = os.path.split(seed)[1].partition('.')[0]
 
-    new_seed_loc = os.path.join(dest_dir, filename + '_relabelled')
+    new_seed_filename = filename + '_relabelled'
+
+    new_seed_loc = os.path.join(dest_dir, new_seed_filename)
     seed_fp = open(seed, 'r')
     new_seed_fp = open(new_seed_loc, 'w')
     log_fp = None
+    sequence_count = 0
 
     seed_seq_id = ''
 
     unique_seed_accs = {}
+    # dictionary to keep track of sequence mismatches
+    sequence_mismatches = {}
 
     for line in seed_fp:
         # check if this is an actual sequence line
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line_elements = [x for x in line.strip().split(' ') if x != '']
+            sequence_count += 1
 
             # replace alignment characters
             seed_seq_id = line_elements[0].split('/')[0]
-            #print ("raw seed seq: ", line_elements[1])
             seed_seq = line_elements[1].replace('.', '')
             seed_seq = seed_seq.replace('-', '').replace('T', 'U').replace('t', 'u').upper()
 
@@ -485,14 +628,12 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
                 continue
 
             rnacentral_sequence = fetch_sequence_from_rnacentral(rnacentral_id)
-            #print ("seed seq: %s\t%s" % (seed_seq_id, seed_seq))
-            #print ("rnac seq: %s\t%s" % (rnacentral_id, rnacentral_sequence))
             coordinates = fetch_seed_sequence_coordinates(seed_seq, rnacentral_sequence)
-            #print (coordinates)
+
             new_label = ''
 
             # make sure subsequence was found
-            if (coordinates[0] != 0 or coordinates[1] != 0):
+            if coordinates[1] != 0:
                 new_label = rnacentral_id + '/' + str(coordinates[0]) + '-' + str(coordinates[1])
 
                 if new_label not in unique_seed_accs:
@@ -512,21 +653,18 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
             else:
 
                 # try mapping SEED sequences in smaller segments
-                sequence = map_sequence_segments(seed_seq, rnacentral_sequence, no_segments=4)
+                if write_log is False:
+                    seed_filename = os.path.basename(seed).partition('.')[0]
+                    log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
+                    write_log = True
 
-                if sequence is None:
-                    if write_log is False:
-                        seed_filename = os.path.basename(seed).partition('.')[0]
-                        log_fp = open(os.path.join(dest_dir, seed_filename) + '.log', 'w')
-                        write_log = True
+                log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
+                sequence_mismatches[rnacentral_id] = rnacentral_sequence
 
-                    log_fp.write("RNACENTRAL SEQ MISMATCH: %s\n" % seed_seq_id)
-                    #print ("SEED seq: ", seed_seq)
-                    #print ("RNAcentral seq: ", rnacentral_sequence)
-                    continue
-                else:
+                continue
+                #else:
                     # here we need to generate the new label with coords and
-                    print (sequence)
+                #   print (sequence)
 
             new_line = "\t".join([new_label, line_elements[1], '\n'])
 
@@ -538,11 +676,96 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
     seed_fp.close()
     new_seed_fp.close()
 
+    sequence_count = len(unique_seed_accs)
+
+    # checks if dictionary isn't empty
+    if not bool(sequence_mismatches) is False:
+
+        # write RNAcentral sequences to fasta file to be used with cmalign
+        fasta_filename = filename + '_rnac'
+
+        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
+
+        if fasta_file is None:
+            sys.exit("FILE ERROR: Fasta file %s could not be generated\n" % fasta_filename)
+
+        # generate CM file from original seed
+        cmfile = build_temporary_cm_from_seed(seed, dest_dir)
+
+        if cmfile is None:
+            sys.exit("FILE ERROR: CM file for seed %s could not be generated\n" % seed_filename)
+
+        # align fasta file to covariance model
+        cmaligned_sequences = align_sequences_to_cm(cmfile, fasta_file, dest_dir)
+
+        if cmaligned_sequences is None:
+            sys.exit("FILE ERROR: New cmaligned SEED for family %s could not be generated\n" % seed_filename)
+
+        # if the number of sequences in the original SEED is larger than the sequence mismatches
+        # this means we have two smaller MSAs that need to be merged
+        if sequence_count > len(sequence_mismatches.keys()):
+            filename = os.path.split(seed)[1].partition(".")[0]
+
+            cmaligned_relabelled_seed = align_sequences_to_cm(cmfile, new_seed_loc)
+            merged_seed = merge_seeds(cmaligned_relabelled_seed, cmaligned_sequences, filename, dest_dir)
+            new_seed_loc = merged_seed
+
+        else:
+            os.remove(new_seed_loc)
+            new_seed_loc = cmaligned_sequences
+
+        # renames files
+        os.rename(new_seed_loc, os.path.join(dest_dir, new_seed_filename))
+        new_seed_loc = os.path.join(dest_dir, new_seed_filename)
+        #final_seed = remove_all_gap_columns(new_seed_loc, filename, dest_dir)
+
+        #if final_seed is None:
+        #    sys.exit("FILE ERROR: SEED reformatting failed\n")
+
     # close log file if one exists
     if write_log is True:
         log_fp.close()
 
     return new_seed_loc
+
+# ---------------------------------------------------------------
+
+
+def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
+    """
+    Writes a fasta file in destination directory based on a
+    dictionary of sequence_accession : sequence pairs to be
+    used to generate a fasta file
+
+    sequence_collection: A python dictionary with the candidate
+    sequences
+    filename: A string specifying the sequence file name
+    dest_dir: Destination directory where to generate output
+
+    return: Returns fasta file if it exists, None otherwise
+    """
+
+    if dest_dir is None:
+        sys.exit("\nNo destination directory was provided for fasta generation!\n")
+
+    fasta_file = os.path.join(dest_dir, filename + '.fa')
+
+    fasta_fp = open(fasta_file, 'w')
+
+    for seq_acc in sequence_collection.keys():
+        start = 1
+        end = len(sequence_collection[seq_acc])
+        # write fasta header
+        fasta_fp.write(">%s\n" % (seq_acc + '/' + str(start) + '-' + str(end)))
+        # write sequence
+        fasta_fp.write("%s\n" % sequence_collection[seq_acc])
+
+    fasta_fp.close()
+
+    if os.path.exists(fasta_file):
+        return fasta_file
+
+    return None
 
 # ---------------------------------------------------------------
 
@@ -570,7 +793,6 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
 
     # calculate even segment sizes based on no_segments
     segment_size = int((seed_length - remainder) / no_segments)
-
 
     # initialize all segment hits to 0
     index = 0
@@ -602,8 +824,8 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
             seq_match_score += 1
 
         # set reference_start
-        if position == 1:
-            reference_start = coords[0]
+        #if position == 1:
+            #reference_start = coords[0]
 
     # get percentage of matches
     percentage = seq_match_score * no_segments / 100
@@ -611,10 +833,47 @@ def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     # check if at least 75% of the sequence segments
     # match the target sequence
     if percentage >= 75:
+        """
         # need to split this to more cases
         return rnac_seq[reference_start: reference_start + seed_length]
+        """
+        pass
 
     return None
+
+# ---------------------------------------------------------------
+
+
+def build_temporary_cm_from_seed(seed_file, dest_dir=None):
+    """
+    Build a temporary covariance model based on the seed_file,
+    which is provided as input using cmbuild.
+
+    seed_file: Seed alignment in Stockhold format to be used as
+    input to cmbuild
+
+    dest_dir: Destination directory where the output will be
+    generated
+
+    return: True if the covariance model exists, False otherwise
+    """
+
+    if dest_dir is None:
+        dest_dir = os.path.split(seed_file)[0]
+
+    filename = os.path.basename(seed_file).partition('.')[0]
+
+    cm_file = os.path.join(dest_dir, filename+'.cm')
+
+    cmd = "cmbuild -F %s %s" % (cm_file, seed_file)
+
+    subprocess.call(cmd, shell=True)
+
+    if os.path.exists(cm_file):
+        return cm_file
+
+    return None
+
 # ---------------------------------------------------------------
 
 
@@ -635,8 +894,6 @@ def parse_arguments():
     mutually_exclusive_arguments.add_argument("--seqdb",
                                               help="Sequence file in fasta format from where to extract coordinates",
                                               type=str)
-    #mutually_exclusive_arguments.add_argument("--rnac",
-    #                                         help="Sets RNAcentral as the source sequence database", action="store_true")
 
     # group together related arguments
     rnac_option_group = parser.add_argument_group("rnacentral options")
@@ -649,9 +906,12 @@ def parse_arguments():
     rnac_option_group.add_argument("--clean-seed", help="Ommit any SEED sequences not matching RNAcentral ones",
                                    action="store_true")
 
+    parser.add_argument('--no-gaps', help='Remove all gap columns from the alignment', action="store_true")
+
     return parser
 
 # ---------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
@@ -686,8 +946,6 @@ if __name__ == '__main__':
 
             # check if coordinates were extracted successfully,
             if end != 0 and check is True:
-                # start point is one position shifted to the right on actual sequence
-                start += 1
                 accession_coords[accession] = '-'.join((str(start), str(end)))
             else:
                 print ("Unable to extract coordinates for accession: %s" % accession)
@@ -703,8 +961,14 @@ if __name__ == '__main__':
             reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
                                                                               dest_dir=dest_dir, clean=args.clean_seed)
 
-    # reformat to stockholm
     reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
 
     if reformatted_stk is None:
         sys.exit("\nReformatted stockholm could not be generated!")
+
+    reformatted_stk_no_gap = ''
+    if args.no_gaps:
+        reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
+
+    if reformatted_stk_no_gap is None:
+        sys.exit("\nError removing all gap columns!")

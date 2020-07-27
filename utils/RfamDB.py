@@ -59,13 +59,13 @@ def connect():
     except mysql.connector.Error as err:
 
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print "Wrong username or password"
+            print ("Wrong username or password")
 
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print "Database does not exist"
+            print ("Database does not exist")
 
         else:
-            print err
+            print (err)
 
     return cnx
 
@@ -83,6 +83,6 @@ def disconnect(cnx):
         cnx.close()
 
     except:
-        print "Error closing database connection"
+        print ("Error closing database connection")
 
 # -----------------------------------------------------------------------------

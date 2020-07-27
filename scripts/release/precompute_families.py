@@ -7,6 +7,7 @@ import sys
 # ---------------------------- Variable initialization ---------------------------
 
 MEMORY = 2000
+CPU = 4
 LSF_GROUP = "/family_srch"
 REQUIRED_FILES = ["SEED", "DESC", "species", "outlist", "seedoutlist"]
 

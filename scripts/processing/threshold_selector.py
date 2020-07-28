@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import subprocess
 import statistics
 
 # ---------------------------------------------------------------------
@@ -172,6 +173,40 @@ def get_hits_coverage(all_scores, threshold):
     coverage = rev_scores_list.index(threshold)*100/len(all_scores)
 
     return coverage
+
+# ---------------------------------------------------------------------
+
+
+def threshold_family_with_rfmake(family_dir, gathering_threshold, full_align=True):
+    """
+    Calls rfmake.pl to set the gathering threshold of a family
+
+    family_dir: The path to an Rfam family directory
+    gathering_threshold: A float value specifying the gathering threshold for the
+    family
+
+    return: Full alignment path if it exists or None if not. True upon completion
+    and full_align=False
+    """
+
+    # change to family directory
+    os.chdir(family_dir)
+
+    cmd = "rfmake.pl -t %f"
+
+    if full_align is True:
+        cmd = "rfmake.pl -t %f -a"
+
+    subprocess.call(cmd % gathering_threshold, shell=True)
+
+    if full_align is True:
+        full_align_path = os.path.join(family_dir, "align")
+        if os.path.exists(full_align_path):
+            return full_align_path
+        else:
+            return None
+
+    return True
 
 # ---------------------------------------------------------------------
 

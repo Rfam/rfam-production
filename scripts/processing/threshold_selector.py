@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import argparse
 import subprocess
+from subprocess import PIPE, Popen
 import statistics
 
 # ---------------------------------------------------------------------
@@ -210,6 +213,37 @@ def threshold_family_with_rfmake(family_dir, gathering_threshold, full_align=Tru
 
 # ---------------------------------------------------------------------
 
+
+def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
+    """
+
+    family_dir:
+    file_type: The type of the alignment SEED/FULL
+
+    return:
+    """
+
+    alignment_path = os.path.join(family_dir, file_type)
+
+    if file_type == "FULL":
+        alignment_path = os.path.join(family_dir, file_type.lower())
+
+    outdir = os.path.join(family_dir, "rscape-" + file_type.lower())
+
+    # create outdir if it does not exist
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
+    cmd = "R-scape --outdir %s -s --fold %s" % (outdir, alignment_path)
+
+    process = Popen(["R-scape", "--outdir", outdir,
+                     "-s", "--fold", alignment_path], stdout=PIPE)
+
+    rscape_out = process.communicate().decode("Utf-8")
+
+    return rscape_out
+
+# ---------------------------------------------------------------------
 
 def parse_arguments():
     """

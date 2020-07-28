@@ -239,9 +239,11 @@ def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
     process = Popen(["R-scape", "--outdir", outdir,
                      "-s", "--fold", alignment_path], stdout=PIPE)
 
-    rscape_out = process.communicate().decode("Utf-8")
+    rscape_out = process.communicate()[0].decode('Utf-8').split('\n')
 
-    return rscape_out
+    covarying_bp = rscape_out[-3].split(' ')[-1]
+    
+    return covarying_bp
 
 # ---------------------------------------------------------------------
 
@@ -277,6 +279,5 @@ if __name__ == '__main__':
     scores = extract_scores_dict_from_outlist_file(outlist)
 
     threshold_list = compute_possible_gathering_thresholds(scores, chunks=6)
-
 
 

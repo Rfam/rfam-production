@@ -224,9 +224,9 @@ def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
     """
 
     alignment_path = os.path.join(family_dir, file_type)
-
+    
     if file_type == "FULL":
-        alignment_path = os.path.join(family_dir, file_type.lower())
+        alignment_path = os.path.join(family_dir, "align")
 
     outdir = os.path.join(family_dir, "rscape-" + file_type.lower())
 
@@ -243,7 +243,7 @@ def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
 
     covarying_bp = rscape_out[-3].split(' ')[-1]
     
-    return covarying_bp
+    return int(covarying_bp)
 
 # ---------------------------------------------------------------------
 
@@ -289,7 +289,7 @@ if __name__ == '__main__':
         if not os.path.exists(full_path):
             sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.family_dir))
 
-        covarying_bp = int(generate_family_ss_with_rscape(args.family_dir, file_type='FULL'))
+        covarying_bp = generate_family_ss_with_rscape(args.family_dir, file_type='FULL')
         best_threshold = (-1, -1)
 
         if covarying_bp > max_covariation:

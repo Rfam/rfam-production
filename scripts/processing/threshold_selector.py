@@ -289,7 +289,7 @@ if __name__ == '__main__':
         if not os.path.exists(full_path):
             sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.family_dir))
 
-        covarying_bp = int(generate_family_ss_with_rscape(full_path, file_type='FULL'))
+        covarying_bp = int(generate_family_ss_with_rscape(args.family_dir, file_type='FULL'))
         best_threshold = (-1, -1)
 
         if covarying_bp > max_covariation:

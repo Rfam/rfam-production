@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 import statistics
 
 # ---------------------------------------------------------------------
@@ -156,6 +157,14 @@ def compute_possible_gathering_thresholds(scores, chunks=4):
 
 
 def get_hits_coverage(all_scores, threshold):
+    """
+
+    all_scores:
+
+    threshold:
+
+    return:
+    """
 
     # sort scores in descending order
     rev_scores_list = list(reversed(sorted(all_scores)))
@@ -163,6 +172,26 @@ def get_hits_coverage(all_scores, threshold):
     coverage = rev_scores_list.index(threshold)*100/len(all_scores)
 
     return coverage
+
+# ---------------------------------------------------------------------
+
+
+def parse_arguments():
+    """
+    Basic argument parsing using Python's argparse
+
+    return: A valid argpase parser object
+    """
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--family-dir", help='The path to an Rfam family directory',
+                        action='store')
+
+    parser.add_argument("--multi", help='Specifies a directory with multiple Rfam family directories',
+                        action='store_true')
+
+    return parser
 
 # ---------------------------------------------------------------------
 

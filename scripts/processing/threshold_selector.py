@@ -245,6 +245,7 @@ def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
 
 # ---------------------------------------------------------------------
 
+
 def parse_arguments():
     """
     Basic argument parsing using Python's argparse
@@ -267,50 +268,15 @@ def parse_arguments():
 
 if __name__ == '__main__':
 
-    outlist = "../../data/outlist"
+    parser = parse_arguments()
 
-    scores = extract_scores_dict_from_outlist_file(outlist)
-    all_scores = scores['SEED'] + scores['FULL']
+    args = parser.parse_args()
 
-    rev_scores_list = list(reversed(sorted(all_scores)))
-    print (rev_scores_list)
-
-    print (compute_possible_gathering_thresholds(scores, chunks=6))
-
-    """
-    search_dir = sys.argv[1]
-
-    family_dirs = os.listdir(search_dir)
-
-    for dir in family_dirs:
-        dir_loc = os.path.join(search_dir, dir)
-        outlist_loc = os.path.join(dir_loc, )
-
-    if is_seed_below_reversed(outlist) is True:
-        sys.exit("ERROR: SEED sequences below reversed!!")
+    outlist = os.path.join(args.family_dir, "outlist")
 
     scores = extract_scores_dict_from_outlist_file(outlist)
 
-    all_scores = []
-    all_scores = scores['SEED'] + scores['FULL']
-
-    #print ("SEEDs: ", scores['SEED'])
-    #print ("FULLs: ", scores['FULL'])
-    #print ("all_scores: ", sorted(all_scores))
-    min_seed = sorted(scores['SEED'])[0]
-    median = statistics.median(all_scores)
-    num_scores = len(all_scores)
+    threshold_list = compute_possible_gathering_thresholds(scores, chunks=6)
 
 
-    print ("median: ", statistics.median(all_scores))
-    print ("avg: ", statistics.mean(all_scores))
-    print ("stdev: ", statistics.stdev(all_scores))
-    print ("#scores: ", len(all_scores))
-    print ("index: ", sorted(all_scores).index(52.5))
-
-    rev_scores = list(reversed(sorted(all_scores)))
-    print ("rev_scores: ", rev_scores)
-    print ("threshold coverage: ", rev_scores.index(52.5)*100/len(all_scores))
-
-    """
 

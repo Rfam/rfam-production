@@ -155,6 +155,9 @@ def compute_possible_gathering_thresholds(scores, chunks=4):
         scores_chunk = scores_chunk[index:]
         chunks -= 2
 
+    # always consider last hit above reversed
+    ga_thresholds.append(rev_scores[-1])
+
     return ga_thresholds
 
 # ---------------------------------------------------------------------
@@ -280,7 +283,7 @@ if __name__ == '__main__':
 
     scores = extract_scores_dict_from_outlist_file(outlist)
 
-    threshold_list = compute_possible_gathering_thresholds(scores, chunks=6)
+    threshold_list = compute_possible_gathering_thresholds(scores, chunks=8)
 
     best_threshold = (-1, -1)
     

@@ -282,6 +282,8 @@ if __name__ == '__main__':
 
     threshold_list = compute_possible_gathering_thresholds(scores, chunks=6)
 
+    best_threshold = (-1, -1)
+    
     for bit_score in threshold_list:
         full_path = threshold_family_with_rfmake(args.family_dir, bit_score, full_align=True)
 
@@ -289,8 +291,10 @@ if __name__ == '__main__':
             sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.family_dir))
 
         covarying_bp = generate_family_ss_with_rscape(args.family_dir, file_type='FULL')
-        best_threshold = (-1, -1)
 
         if covarying_bp > max_covariation:
             max_covariation = covarying_bp
             best_threshold = (bit_score, covarying_bp)
+
+    full_path = threshold_family_with_rfmake(args.family_dir, best_threshold[0], full_align=True)
+

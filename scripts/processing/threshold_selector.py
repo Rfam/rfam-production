@@ -136,7 +136,7 @@ def compute_possible_gathering_thresholds(scores, chunks=4):
             ga_thresholds.append(median)
         else:
             # a bit conservative, always chooses the highest value
-            index = (len(rev_scores)/2)-1
+            index = int(len(rev_scores)/2)
             ga_thresholds.append(rev_scores[index])
 
     scores_chunk = rev_scores[index:]
@@ -149,7 +149,7 @@ def compute_possible_gathering_thresholds(scores, chunks=4):
             ga_thresholds.append(median)
         else:
             # a bit conservative, always chooses the highest value
-            index = (len(rev_scores) / 2) - 1
+            index = int(len(rev_scores)/2)
             ga_thresholds.append(rev_scores[index])
 
         scores_chunk = scores_chunk[index:]
@@ -283,8 +283,7 @@ if __name__ == '__main__':
     max_covariation = 0
 
     for bit_score in threshold_list:
-
-        full_path = threshold_family_with_rfmake(args.family_dir, bit_score, full_align=True)
+	full_path = threshold_family_with_rfmake(args.family_dir, bit_score, full_align=True)
 
         if not os.path.exists(full_path):
             sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.family_dir))
@@ -295,3 +294,4 @@ if __name__ == '__main__':
         if covarying_bp > max_covariation:
             max_covariation = covarying_bp
             best_threshold = (bit_score, covarying_bp)
+        

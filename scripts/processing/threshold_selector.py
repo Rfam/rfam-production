@@ -20,20 +20,21 @@ def extract_scores_dict_from_outlist_file(scores_file):
     return: A list of all bit scores above REVERSED
     """
 
-    scores = {'SEED': [], 'FULL': [], 'OTHER': []}
-
+    scores = {'SEED': [], 'FULL': [], 'OTHER': [], "REV": -1}
+    
     outlist_fp = open(scores_file, 'r')
 
     for line in outlist_fp:
         if line[0] != '#':
             line = [x for x in line.strip().split(' ') if x!='']
             scores[line[2]].append(float(line[0]))
-
         else:
             # if we reached REVERSED line, we treat everything as TNs
             # break and return
             if line.find("BEST REVERSED") != -1:
-                break
+                br_evalue = line.strip().split(' ')[-2]
+                scores["REV"] = br_evalue
+	        break
 
     outlist_fp.close()
 

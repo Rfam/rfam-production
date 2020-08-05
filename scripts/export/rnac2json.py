@@ -291,7 +291,16 @@ def build_json_dict(entry, sequence):
     edict["references"] = references
 
     ontology = map(lambda x: x.strip(), entry[DBXREFS].split(','))
-    edict["ontology"] = ontology
+    ontology_dict = {}
+
+    if len(ontology) > 0:
+        for ontology_element in ontology_dict:
+            elements = ontology_element.partition(':')
+            ontology_dict[elements[0]] = elements[2]
+        edict["ontology"] = ontology_dict
+
+    else:
+        edict["ontology"] = ontology
 
     return edict
 

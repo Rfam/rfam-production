@@ -13,17 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+"""
+Requires esl-fetch to be added to PATH
+"""
+
 import json
 import logging
 import os
 import re
 import string
 import subprocess
-import sys
 import argparse
 import urllib2
 
-from config import config_local as cl
 from config import rfam_config as rfc
 
 LSF_MODE = False
@@ -46,24 +48,11 @@ VERSION = 13
 SPECIES = 14
 TAX_STR = 15
 
-ESL_LOCAL = cl.ESL_PATH
-ESL_FSEQ_PATH = rfc.ESL_PATH
-FSR_PATH = rfc.FSR_PATH
-FSR_LOCAL = cl.FSR_LOCAL
 ENA_URL = rfc.ENA_URL
 TMP_PATH = rfc.TMP_PATH
 
-ESL_PATH = None
-
-if LSF_MODE is False:
-    ESL_PATH = ESL_LOCAL
-elif LSF_MODE is True:
-    ESL_PATH = ESL_FSEQ_PATH
-else:
-    sys.exit("\nLSF_MODE has not been set properly.")
-
-
 # -------------------------------------------------------------------------
+
 
 def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
     """
@@ -109,7 +98,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             seq_id = entry[SEQACC] + '/' + \
                      entry[SEQ_START] + '-' + entry[SEQ_END]
 
-            cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
+            cmd = "esl-sfetch %s %s" % (fam_fa_path, seq_id)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
             seq = proc.communicate()[0]
@@ -205,7 +194,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
                 seq_id = entry[SEQACC] + '/' + \
                          entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                cmd = "%s %s %s" % (ESL_PATH, seq_file_path, seq_id)
+                cmd = "esl-sfetch %s %s" % (seq_file_path, seq_id)
 
                 proc = subprocess.Popen(
                     cmd, shell=True, stdout=subprocess.PIPE)
@@ -413,8 +402,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                 f_temp.write(seq_id)
                 f_temp.close()
 
-                cmd = "%s %s %s %s" % (
-                    FSR_LOCAL, fam_fa_path, lfile_path, ofile_path)
+                cmd = "esl-sfetch %s %s %s" % (fam_fa_path, lfile_path, ofile_path)
 
                 # call faSomeRecords to retrieve sequence
                 subprocess.call(cmd, shell=True)

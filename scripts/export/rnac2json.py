@@ -20,6 +20,7 @@ import re
 import string
 import subprocess
 import sys
+import argparse
 import urllib2
 
 from config import config_local as cl
@@ -464,42 +465,34 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
 
 # -----------------------------------------------------------------------------
 
-def usage():
+def parse_arguments():
     """
-    Prints out guidelines on how to run rnac2json script.
+    Basic argument parsing using Python's argparse
+
+    return: Argparse parser object
     """
 
-    print "\nUsage:\n-----"
+    parser = argparse.ArgumentParser("Tool to convert rnacentral export to json")
 
-    print "\nrnac2json.py seq_dir fasta_files [out_dir]"
+    parser.add_argument("--input",
+                        help="A directory of multiple (Rfam2RNAcentral.pl) dump files",
+                        action="store")
+    parser.add_argument("--rfam-fasta",
+                        help="The directory of fasta_files of the current Rfam release",
+                        action="store")
+    parser.add_argument("--outdir", help='Output directory', action="store", default=None)
 
-    print "\nseq_dir: A directory of multiple (Rfam2RNAcentral.pl) db \
-            dump files"
-
-    print "fasta_files: The directory of fasta_files of the current RFAM release"
-
-    print "\nrnac2json.py -h for help\n"
-
+    return parser
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    if sys.argv[1] == '-h':
-        usage()
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-    elif len(sys.argv) >= 3:
-        seq_dir = sys.argv[1]  # directory of rfam2rnac dump files
-        fasta_dir = sys.argv[2]  # directory of fasta_files
-        out_dir = None  # output directory
+    seq_dir = args.input
+    fasta_dir = args.rfam_fasta
+    outdir = args.outdir
 
-        if len(sys.argv) == 4:
-            out_dir = sys.argv[3]
-
-        rnac_to_json_multi(seq_dir, fasta_dir, out_dir)
-
-    else:
-        usage()
-
-        # NOTE: when the out_dir is None the output is generated within the input
-        # directory
+    rnac_to_json_multi(seq_dir, fasta_dir, outdir)

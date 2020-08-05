@@ -166,7 +166,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
-    seq_files = filter(lambda x: string.find(x, ".out") != -1, seq_files)
+    seq_files = filter(lambda x: string.find(x, ".txt") != -1, seq_files)
 
     # open a new log file and keep track of the sequences not found in the
     logging.basicConfig(filename=os.path.join(out_dir, "obsolete_seqs.log"),

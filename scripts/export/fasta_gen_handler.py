@@ -24,6 +24,7 @@ Comments:       It is a prerequisite that the sequence file is indexed using
 import os
 import sys
 import subprocess
+import argparse
 from utils import RfamDB
 from config import rfam_config
 
@@ -139,46 +140,35 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
 # -----------------------------------------------------------------------------
 
 
-def usage():
+def parse_arguments():
     """
-    Displays information on how to run fasta_gen_handler
+    Basic argument parsing using python's argparse
+
+    return: Argparse parser object
     """
 
-    print "\nUsage:\n------"
+    parser = argparse.ArgumentParser("Rfam fasta file generation handler")
 
-    print "\npython fasta_gen_handler.py seq_file out_dir"
+    parser.add_argument('--seq-db', help="Sequence database in fasta format",
+                        action="store", default=None)
+    parser.add_argument('--outdir', help="Output directory", action="store")
 
-    print "\nseq_file: Path to sequence for sequence export (e.g. rfamseq11.fa)"
-    print "out_dir: The path to the output directory"
-    print "\n-h option to display usage\n"
+    parser.add_argument('-f', help='A file with a list of Rfam family accessions',
+                        action="store", default=None)
+
+    return parser
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    # minor input checks
-    if sys.argv[1] == "-h":
-        usage()
-        sys.exit()
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-    elif len(sys.argv) == 3:
-        sequence_file = sys.argv[1]
-        output_dir = sys.argv[2]
+    seq_db = args.seq_db
+    outdir = args.outdir
 
-        if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
-            fasta_gen_handler(sequence_file, output_dir, None)
+    if os.path.isfile(seq_db) and os.path.isdir(outdir):
+        fasta_gen_handler(seq_db, outdir, args.f)
 
-    elif len(sys.argv) == 4:
-        sequence_file = sys.argv[1]
-        output_dir = sys.argv[2]
-        rfam_accs = sys.argv[3]  # a list of rfam accessions
 
-        if os.path.isfile(sequence_file) and os.path.isdir(output_dir):
-            fasta_gen_handler(sequence_file, output_dir, rfam_accs)
-
-        else:
-            print "\nIncorrect Input."
-            usage()
-
-    else:
-        usage()

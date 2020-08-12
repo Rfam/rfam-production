@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import sys
 import requests
@@ -871,6 +872,57 @@ def build_temporary_cm_from_seed(seed_file, dest_dir=None):
 
     if os.path.exists(cm_file):
         return cm_file
+
+    return None
+
+# ---------------------------------------------------------------
+
+
+def fix_coordinates(seed_file, dest_dir=None):
+    """
+    Replaces 0 starting points with 1s in SEED sequences
+
+    seed_file: Seed alignment in Stockhold format
+
+    dest_dir: dest_dir: Destination directory where the output will be
+    generated
+
+    return: The path to the updated SEED
+    """
+
+    filename = os.path.basename(seed_file).partition('.')[0]
+
+    pfam_aln = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
+
+    if pfam_aln is None:
+        sys.exit("Unsuccessul ttockhold to pfam conversion!")
+
+    fp = open(pfam_aln, 'r')
+    outfile = os.path.join(dest_dir, filename+'_corrected.pfam')
+    fp_out = open(outfile, 'w')
+
+    new_line = ''
+    for line in fp:
+        line = [x for x in line.strip().split(' ') if x!='']
+        if line[0] != '#':
+            label_elements = line[0].split('/')
+            coords = label_elements[1].split('-')
+            new_label = ''
+            if coords[0] == '0':
+                new_label = label_elements[0] + '/' + '1-' + coords[1]
+            elements = [new_label]
+            elements.extend(line[1:])
+            new_line = "\t".join(elements)
+        else:
+            new_line = "\t".join(line)
+
+        fp_out.write(new_line)
+
+    fp.close()
+    fp_out.close()
+
+    if os.path.exists(outfile):
+        return outfile
 
     return None
 

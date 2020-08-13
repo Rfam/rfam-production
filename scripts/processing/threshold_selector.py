@@ -34,7 +34,7 @@ def extract_scores_dict_from_outlist_file(scores_file):
             if line.find("BEST REVERSED") != -1:
                 br_evalue = line.strip().split(' ')[-2]
                 scores["REV"] = br_evalue
-	        break
+            break
 
     outlist_fp.close()
 
@@ -251,6 +251,28 @@ def generate_family_ss_with_rscape(family_dir, file_type='SEED'):
 
 # ---------------------------------------------------------------------
 
+def bsub_rfmake(family_dir, threshhold, align=False):
+    """
+
+    family_dir:
+    threshhold:
+    align:
+    return:
+    """
+
+    rfmake_out = os.path.join(family_dir, "rfmake.out")
+    rfmake_err = os.path.join(family_dir, "rfmake.err")
+
+    bsub_cmd = "bsub -M 8000 -o %s -e %s cd %s && rfmake.pl -t %s"
+
+    if align is True:
+        bsub_cmd += " -a"
+
+    subprocess.call(bsub_cmd % (rfmake_out, rfmake_err, family_dir, threshhold),
+                    shell=True)
+
+# ---------------------------------------------------------------------
+
 
 def parse_arguments():
     """
@@ -261,11 +283,14 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--family-dir", help='The path to an Rfam family directory',
+    parser.add_argument("--input", help='The path to an Rfam family directory or a multi searches directory',
                         action='store')
 
-    parser.add_argument("--multi", help='Specifies a directory with multiple Rfam family directories',
+    mutually_exclusive = parser.add_mutually_exclusive_group()
+    mutually_exclusive.add_argument("--multi", help='Specifies a directory with multiple Rfam family directories',
                         action='store_true')
+
+    mutually_exclusive.add_argument("-f", help="Sets the threshold from a file", action='store')
 
     return parser
 
@@ -275,30 +300,44 @@ def parse_arguments():
 if __name__ == '__main__':
 
     parser = parse_arguments()
-
     args = parser.parse_args()
 
-    max_covariation = 0
+    if not args.f:
+        if not args.multi:
+            max_covariation = 0
 
-    outlist = os.path.join(args.family_dir, "outlist")
+            outlist = os.path.join(args.input, "outlist")
 
-    scores = extract_scores_dict_from_outlist_file(outlist)
+            scores = extract_scores_dict_from_outlist_file(outlist)
 
-    threshold_list = compute_possible_gathering_thresholds(scores, chunks=8)
+            threshold_list = compute_possible_gathering_thresholds(scores, chunks=8)
 
-    best_threshold = (-1, -1)
-    
-    for bit_score in threshold_list:
-        full_path = threshold_family_with_rfmake(args.family_dir, bit_score, full_align=True)
+            best_threshold = (-1, -1)
 
-        if not os.path.exists(full_path):
-            sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.family_dir))
+            for bit_score in threshold_list:
+                full_path = threshold_family_with_rfmake(args.input, bit_score, full_align=True)
 
-        covarying_bp = generate_family_ss_with_rscape(args.family_dir, file_type='FULL')
+                if not os.path.exists(full_path):
+                    sys.exit("Error generating FULL alignment for family %s" % os.path.basename(args.input))
 
-        if covarying_bp > max_covariation:
-            max_covariation = covarying_bp
-            best_threshold = (bit_score, covarying_bp)
+                covarying_bp = generate_family_ss_with_rscape(args.input, file_type='FULL')
 
-    full_path = threshold_family_with_rfmake(args.family_dir, best_threshold[0], full_align=True)
+                if covarying_bp > max_covariation:
+                    max_covariation = covarying_bp
+                    best_threshold = (bit_score, covarying_bp)
 
+            full_path = threshold_family_with_rfmake(args.input, best_threshold[0], full_align=True)
+
+    else:
+        source_dir = args.input
+        threshold_fp = open(args.f, 'r')
+
+        for line in threshold_fp:
+            line = line.strip().split('\t')
+
+            family_dir = os.path.join(source_dir, line[0])
+            threshold = line[1]
+
+            bsub_rfmake(family_dir, threshold, align=True)
+
+        threshold_fp.close()

@@ -1,13 +1,10 @@
 import os
 import argparse
 
-authors
-
-
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, second_author = None, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, second_author=None, dest_dir=None):
     """
 
     desc_file:
@@ -49,7 +46,7 @@ def desc_template_generator(desc_file, mirna_name, family_id, second_author = No
     author = "Griffiths-Jones SR; 0000-0001-6043-807X"
 
     if second_author is not None:
-        author = author + ' ' + second_author
+        author = author + '; ' + second_author
 
     desc_template = """ID   %s
 DE   %s microRNA precursor family
@@ -101,7 +98,7 @@ def parse_arguments():
                       action="store", default=None)
     parser.add_argument("--outdir", help="Path to the output directory", action="store",
                       default=None)
-    parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author",
+    parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author (e.g. Edwards BA; ORCID)",
                         action="store", default=None)
 
     return parser
@@ -119,4 +116,5 @@ if __name__ == '__main__':
     mirna_family_id = mirna_labels[0]
     mirna_name = mirna_labels[1]
 
-    desc_template_generator(desc_file, mirna_name, mirna_family_id, dest_dir=args.outdir)
+    desc_template_generator(desc_file, mirna_name, mirna_family_id, args.ga_author,
+                            dest_dir=args.outdir)

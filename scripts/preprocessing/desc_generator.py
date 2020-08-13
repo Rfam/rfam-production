@@ -1,11 +1,13 @@
 import os
 import argparse
 
+authors
+
 
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, second_author = None, dest_dir=None):
     """
 
     desc_file:
@@ -44,9 +46,14 @@ def desc_template_generator(desc_file, mirna_name, family_id, dest_dir=None):
 
     os.rename(desc_file, os.path.join(dest_dir, "DESC_old"))
 
+    author = "Griffiths-Jones SR; 0000-0001-6043-807X"
+
+    if second_author is not None:
+        author = author + ' ' + second_author
+
     desc_template = """ID   %s
 DE   %s microRNA precursor family
-AU   Griffiths-Jones SR; 0000-0001-6043-807X
+AU   %s
 SE   Griffiths-Jones SR
 SS   Predicted; PFOLD
 GA   %s
@@ -66,7 +73,7 @@ WK   MicroRNA
 
     fp_out = open(os.path.join(dest_dir, "DESC"), 'w')
 
-    fp_out.write(desc_template % (mirna_name, mirna_name, essential_desc_lines["GA"],
+    fp_out.write(desc_template % (mirna_name, mirna_name, author, essential_desc_lines["GA"],
                                   essential_desc_lines["TC"], essential_desc_lines["NC"],
                                   essential_desc_lines["BM"], essential_desc_lines["CB"],
                                   essential_desc_lines["SM"], family_id, mirna_name))
@@ -94,6 +101,8 @@ def parse_arguments():
                       action="store", default=None)
     parser.add_argument("--outdir", help="Path to the output directory", action="store",
                       default=None)
+    parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author",
+                        action="store", default=None)
 
     return parser
 
@@ -106,7 +115,7 @@ if __name__ == '__main__':
 
     desc_file = os.path.join(args.input, "DESC")
 
-    mirna_labels = [x for x in os.path.basename(args.input).split("_") if x!='']
+    mirna_labels = [x for x in os.path.basename(args.input).split("_") if x != '']
     mirna_family_id = mirna_labels[0]
     mirna_name = mirna_labels[1]
 

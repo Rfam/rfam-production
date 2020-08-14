@@ -18,6 +18,7 @@ import sys
 import httplib
 import xml.etree.ElementTree as ET
 import requests
+import argparse
 
 # -----------------------------------------------------------------------------
 
@@ -121,15 +122,33 @@ def get_taxonomy_entries_from_ncbi(tax_ids):
             align_display_name = tree_display_name + "[%s]" % str(tax_id)
             tax_entry_list.append(align_display_name)
 
-            print '\t'.join(tax_entry_list)
+            print ('\t'.join(tax_entry_list))
 
             tax_entry_list = []
 
 # -----------------------------------------------------------------------------
 
 
+def parse_arguments():
+    """
+    Basic argument parsing with Python's argparse
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser("Script to generate taxonomy data for genome import")
+
+    parser.add_argument("-f", help="A file containing a list of valid taxids", action="store")
+
+    return parser
+
+# -----------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
-    taxon_ids = sys.argv[1]
-    get_taxonomy_entries_from_ncbi(taxon_ids)
+    parser = parse_arguments()
+    args = parser.parse_args()
+
+    get_taxonomy_entries_from_ncbi(args.f)
 

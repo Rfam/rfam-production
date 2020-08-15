@@ -65,8 +65,8 @@ SM   %s
 DR   MIPF; %s;
 DR   URL; http://www.mirbase.org;
 DR   SO; 0001244; pre_miRNA;
-CC   This family represents the microRNA (miRNA) precursor %s, family
-CC   imported from miRBase
+CC   This family represents the microRNA (miRNA) precursor %s
+CC   imported from miRBase.
 WK   MicroRNA
 """
 

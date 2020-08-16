@@ -70,13 +70,14 @@ def launch_new_rfsearch(family_dir, cpu=4):
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
 
     job_name = os.path.basename(family_dir)
+    
     # LSF command to be executed
-    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh74 "
+    cmd = ("bsub -M %s -o %s -e %s -n %s -g %s -q production-rh74 "
            "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax -nodesc\"")
 
     # call command
-    subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                           cpu, LSF_GROUP, job_name, family_dir), shell=True)
+    subprocess.call(cmd % (MEMORY, lsf_out_file, lsf_err_file,
+                          cpu, LSF_GROUP, job_name, family_dir), shell=True)
 
 # --------------------------------------------------------------------------------
 
@@ -130,16 +131,19 @@ if __name__ == '__main__':
 
     source_path = ""
     if os.path.isdir(args.input):
-        seeds = os.listdir(args.input)
+        seeds = [x for x in os.listdir(args.input) if x[0]!='.']
         source_path = args.input
     else:
         seeds = [args.input]
         source_path = os.path.split(args.input)[0]
-
+    
     for seed in seeds:
         dirname = seed.partition('.')[0]
         seed_path = os.path.join(source_path, seed)
-        family_dir = create_family_directory(dirname, seed_path, args.dest_dir)
+    
+        family_dir = os.path.join(args.dest_dir, dirname)
+        if not os.path.exists(family_dir):
+        	family_dir = create_family_directory(dirname, seed_path, args.dest_dir)
 
         if family_dir is not None:
             launch_new_rfsearch(family_dir, args.cpu)

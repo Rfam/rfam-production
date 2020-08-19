@@ -8,6 +8,7 @@ import argparse
 import hashlib
 
 import xml.etree.ElementTree as ET
+from subprocess import PIPE, Popen
 
 DB_RNA_TYPES = {"mirbase": "precursor RNA"}
 # ---------------------------------------------------------------
@@ -244,7 +245,7 @@ def sequence_to_md5(sequence):
 # ---------------------------------------------------------------
 
 
-def validate_sequences(seed_sequence, extracted_full_seq):
+def validate_sequences(seed_sequence, extracted_full_seq, rnac=True):
     """
     Validates whether the SEED sequence matches the sequence
     extracted at specific coordinates
@@ -255,14 +256,17 @@ def validate_sequences(seed_sequence, extracted_full_seq):
     return: True if the sequences match, False otherwise. Returns False by default
     """
 
-    new_seed_sequence = seed_sequence.replace('U', 'T')
+    new_seed_sequence = seed_sequence
+
+    if rnac is False:
+        new_seed_sequence = seed_sequence.replace('U', 'T')
+
     if extracted_full_seq.find(new_seed_sequence) != -1:
         return True
 
     return False
 
 # ---------------------------------------------------------------
-
 
 def seed_to_fasta(seed_msa, dest_dir=None):
     """
@@ -456,6 +460,25 @@ def relabel_seeds_from_rnacentral_md5_mapping(seed, dest_dir=None):
     seed_fp.close()
 
     return new_seed_loc
+
+# ---------------------------------------------------------------
+
+
+def fetch_sequence_from_file(seq_file, accession, coords):
+    """
+
+    seq_file:
+    sequence_id:
+    coords:
+    return:
+    """
+    # index file
+    subprocess.call("esl-sfetch --index %s" % seq_file, shell=True)
+
+    process = Popen(["esl-sfetch", "-c", coords, seq_file, accession], stdout=PIPE)
+    subsequence = [x for x in process.communicate()[0].decode('Utf-8').split('\n') if x!='']
+
+    return ''.join(subsequence[1:])
 
 # ---------------------------------------------------------------
 
@@ -685,7 +708,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
         # write RNAcentral sequences to fasta file to be used with cmalign
         fasta_filename = filename + '_rnac'
 
-        fasta_file = write_fasta_file(sequence_mismatches, fasta_filename, dest_dir)
+        fasta_file = write_fasta_seed_file(sequence_mismatches, fasta_filename, dest_dir)
 
         if fasta_file is None:
             sys.exit("FILE ERROR: Fasta file %s could not be generated\n" % fasta_filename)
@@ -732,7 +755,7 @@ def relabel_seeds_from_rnacentral_urs_mapping(seed, expert_db=None, dest_dir=Non
 # ---------------------------------------------------------------
 
 
-def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
+def write_fasta_seed_file(sequence_collection, filename="sequences", dest_dir=None):
     """
     Writes a fasta file in destination directory based on a
     dictionary of sequence_accession : sequence pairs to be
@@ -770,6 +793,42 @@ def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
 
 # ---------------------------------------------------------------
 
+
+def write_fasta_file(sequence_collection, filename="sequences", dest_dir=None):
+    """
+    Writes a fasta file in destination directory based on a
+    dictionary of sequence_accession : sequence pairs to be
+    used to generate a fasta file
+
+    sequence_collection: A python dictionary with the candidate
+    sequences
+    filename: A string specifying the sequence file name
+    dest_dir: Destination directory where to generate output
+
+    return: Returns fasta file if it exists, None otherwise
+    """
+
+    if dest_dir is None:
+        sys.exit("\nNo destination directory was provided for fasta generation!\n")
+
+    fasta_file = os.path.join(dest_dir, filename + '.fa')
+
+    fasta_fp = open(fasta_file, 'w')
+
+    for seq_acc in sequence_collection.keys():
+        # write fasta header
+        fasta_fp.write(">%s\n" % (seq_acc))
+        # write sequence
+        fasta_fp.write("%s\n" % sequence_collection[seq_acc])
+
+    fasta_fp.close()
+
+    if os.path.exists(fasta_file):
+        return fasta_file
+
+    return None
+
+# ---------------------------------------------------------------
 
 def map_sequence_segments(seed_seq, rnac_seq, no_segments=4):
     """
@@ -895,24 +954,38 @@ def fix_coordinates(seed_file, dest_dir=None):
     pfam_aln = stockhom_to_pfam_format(seed_file, dest_dir=dest_dir)
 
     if pfam_aln is None:
-        sys.exit("Unsuccessul ttockhold to pfam conversion!")
+        sys.exit("Unsuccessul stockholm to pfam conversion!")
 
     fp = open(pfam_aln, 'r')
-    outfile = os.path.join(dest_dir, filename+'_corrected.pfam')
+    outfile = os.path.join(dest_dir, filename + '_corrected.pfam')
     fp_out = open(outfile, 'w')
 
     new_line = ''
     for line in fp:
+        seq_dict = {}
 
         if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
             line = [x for x in line.strip().split(' ') if x != '']
+            seed_seq = line[1].replace('.', '').replace('-', '').replace('T', 'U').replace('t', 'u').upper()
             label_elements = line[0].split('/')
             coords = label_elements[1].split('-')
             new_label = ''
             new_label = label_elements[0] + '/' + str(int(coords[0])+1) + '-' + coords[1]
+            seq_dict[label_elements[0]] = fetch_sequence_from_rnacentral(label_elements[0])
+            temp_fasta = write_fasta_file(seq_dict, "temp", dest_dir)
+
+            test_seq = fetch_sequence_from_file(temp_fasta, label_elements[0], str(int(coords[0])+1) + '-' + coords[1])
+            check = validate_sequences(seed_seq, test_seq)
+
+            if check is False:
+                fp_out.close()
+                print ("Incorrect coordinates for seequence %s" % label_elements[0])
+                return None
+
             elements = [new_label]
             elements.extend(line[1:])
             new_line = "\t".join(elements) + '\n'
+
         else:
             new_line = line
 

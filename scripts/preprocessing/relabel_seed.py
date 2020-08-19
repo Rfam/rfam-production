@@ -892,7 +892,7 @@ def fix_coordinates(seed_file, dest_dir=None):
 
     filename = os.path.basename(seed_file).partition('.')[0]
 
-    pfam_aln = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
+    pfam_aln = stockhom_to_pfam_format(seed_file, dest_dir=dest_dir)
 
     if pfam_aln is None:
         sys.exit("Unsuccessul ttockhold to pfam conversion!")
@@ -903,18 +903,18 @@ def fix_coordinates(seed_file, dest_dir=None):
 
     new_line = ''
     for line in fp:
-        line = [x for x in line.strip().split(' ') if x!='']
-        if line[0] != '#':
+
+        if line[0] != '#' and len(line) > 1 and line[0:2] != '//':
+            line = [x for x in line.strip().split(' ') if x != '']
             label_elements = line[0].split('/')
             coords = label_elements[1].split('-')
             new_label = ''
-            if coords[0] == '0':
-                new_label = label_elements[0] + '/' + '1-' + coords[1]
+            new_label = label_elements[0] + '/' + str(int(coords[0])+1) + '-' + coords[1]
             elements = [new_label]
             elements.extend(line[1:])
-            new_line = "\t".join(elements)
+            new_line = "\t".join(elements) + '\n'
         else:
-            new_line = "\t".join(line)
+            new_line = line
 
         fp_out.write(new_line)
 
@@ -959,6 +959,7 @@ def parse_arguments():
                                    action="store_true")
 
     parser.add_argument('--no-gaps', help='Remove all gap columns from the alignment', action="store_true")
+    parser.add_argument('--fix-zeros', help='Replaces all 0 starts with 1s', action="store_true")
 
     return parser
 
@@ -970,57 +971,76 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
-    # temporarily use seed source dir
-    dest_dir = os.path.split(args.seed)[0]
+    if args.fix_zeros is False:
+        # temporarily use seed source dir
+        dest_dir = os.path.split(args.seed)[0]
 
-    # declaring a variable to store the path to the reformatted SEED alignment
-    reformatted_pfam_seed = None
+        # declaring a variable to store the path to the reformatted SEED alignment
+        reformatted_pfam_seed = None
 
-    # convert seed to fasta
-    seed_fasta = seed_to_fasta(args.seed, dest_dir=None)
+        # convert seed to fasta
+        seed_fasta = seed_to_fasta(args.seed, dest_dir=None)
 
-    # convert stockholm to pfam
-    new_pfam_seed = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
+        # convert stockholm to pfam
+        new_pfam_seed = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
 
-    if not args.rnac:
-        # load sequences to dict
-        seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
-        full_seq_dict = load_fasta_file_to_dict(args.seqdb)
+        if not args.rnac:
+            # load sequences to dict
+            seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
+            full_seq_dict = load_fasta_file_to_dict(args.seqdb)
 
-        # construct accession coords dictionary
-        accession_coords = {}
-        for accession in seed_seq_dict.keys():
+            # construct accession coords dictionary
+            accession_coords = {}
+            for accession in seed_seq_dict.keys():
 
-            (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
+                (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
 
-            # validate sequences
-            check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
+                # validate sequences
+                check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
 
-            # check if coordinates were extracted successfully,
-            if end != 0 and check is True:
-                accession_coords[accession] = '-'.join((str(start), str(end)))
-            else:
-                print ("Unable to extract coordinates for accession: %s" % accession)
+                # check if coordinates were extracted successfully,
+                if end != 0 and check is True:
+                    accession_coords[accession] = '-'.join((str(start), str(end)))
+                else:
+                    print ("Unable to extract coordinates for accession: %s" % accession)
 
-        # now rewrite the seed labels
-        reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
+            # now rewrite the seed labels
+            reformatted_pfam_seed = relabel_seed_accessions(new_pfam_seed, accession_coords, dest_dir=dest_dir)
 
-    # relabel SEED accessions using RNAcentral identifiers
-    else:
-        if args.md5:
-            reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
+        # relabel SEED accessions using RNAcentral identifiers
         else:
-            reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
-                                                                              dest_dir=dest_dir, clean=args.clean_seed)
+            if args.md5:
+                reformatted_pfam_seed = relabel_seeds_from_rnacentral_md5_mapping(new_pfam_seed)
+            else:
+                reformatted_pfam_seed = relabel_seeds_from_rnacentral_urs_mapping(new_pfam_seed, args.expert_db,
+                                                                                  dest_dir=dest_dir, clean=args.clean_seed)
 
-    reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
+        reformatted_stk = pfam_to_stockholm_format(reformatted_pfam_seed, dest_dir=dest_dir)
 
-    if reformatted_stk is None:
-        sys.exit("\nReformatted stockholm could not be generated!")
+        if reformatted_stk is None:
+            sys.exit("\nReformatted stockholm could not be generated!")
 
-    reformatted_stk_no_gap = ''
-    if args.no_gaps:
-        reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
+        reformatted_stk_no_gap = ''
+        if args.no_gaps:
+            reformatted_stk_no_gap = remove_all_gap_columns(reformatted_stk, args.seed.partition('.')[0], dest_dir)
 
-    if reformatted_stk_no_gap is None:
-        sys.exit("\nError removing all gap columns!")
+        if reformatted_stk_no_gap is None:
+            sys.exit("\nError removing all gap columns!")
+
+    else:
+
+        source_dir = args.seed
+        family_dirs = [x for x in os.listdir(source_dir) if os.path.isdir(os.path.join(source_dir, x))]
+
+        for family_dir in family_dirs:
+
+            family_dir_loc = os.path.join(source_dir, family_dir)
+            seed_loc = os.path.join(family_dir_loc, "SEED")
+            renamed_seed = os.path.join(family_dir_loc, "SEED_old")
+
+            os.rename(seed_loc, renamed_seed)
+
+            fixed_seed = fix_coordinates(renamed_seed, dest_dir=family_dir_loc)
+            reformatted_seed = pfam_to_stockholm_format(fixed_seed, dest_dir=family_dir_loc)
+
+            os.rename(reformatted_seed, os.path.join(family_dir_loc, "SEED"))

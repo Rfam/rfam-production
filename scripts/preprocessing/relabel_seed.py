@@ -366,7 +366,7 @@ def map_rnacentral_urs_wirh_db_accessions(db_accession, expert_db):
     return: The corresponding RNAcentral accession (URS)
     """
 
-    rnacentral_url = "http://wwwdev.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"%s\" AND rna_type:\"%s\""
+    rnacentral_url = "http://www.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"%s\" AND rna_type:\"%s\""
 
     response = requests.get(rnacentral_url % (db_accession, expert_db, DB_RNA_TYPES[expert_db.lower()]))
 
@@ -1104,7 +1104,7 @@ if __name__ == '__main__':
 
         source_dir = args.seed
         family_dirs = [x for x in os.listdir(source_dir) if os.path.isdir(os.path.join(source_dir, x))]
-
+        
         for family_dir in family_dirs:
 
             family_dir_loc = os.path.join(source_dir, family_dir)
@@ -1114,6 +1114,7 @@ if __name__ == '__main__':
             os.rename(seed_loc, renamed_seed)
 
             fixed_seed = fix_coordinates(renamed_seed, dest_dir=family_dir_loc)
+
             reformatted_seed = pfam_to_stockholm_format(fixed_seed, dest_dir=family_dir_loc)
 
             os.rename(reformatted_seed, os.path.join(family_dir_loc, "SEED"))

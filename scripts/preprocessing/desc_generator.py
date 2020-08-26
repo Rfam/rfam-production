@@ -6,12 +6,13 @@ import argparse
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, second_author=None, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None ,second_author=None, dest_dir=None):
     """
 
     desc_file:
     mirna_name:
     family_id:
+    wiki_links:
     dest_dir:
     return:
     """
@@ -28,6 +29,8 @@ def desc_template_generator(desc_file, mirna_name, family_id, second_author=None
     CB   cmcalibrate --mpi CM
     SM   cmsearch --cpu 4 --verbose --nohmmonly -T 30.00 -Z 742849.287494 CM SEQDB
     """
+
+    wk_constant = "MicroRNA"
 
     essential_desc_lines = {"GA": "", "TC": "", "NC": "", "BM": "", "CB": "", "SM": ""}
 
@@ -67,15 +70,20 @@ DR   URL; http://www.mirbase.org;
 DR   SO; 0001244; pre_miRNA;
 CC   This family represents the microRNA (miRNA) precursor %s
 CC   imported from miRBase.
-WK   MicroRNA
+WK   %s
 """
 
     fp_out = open(os.path.join(dest_dir, "DESC"), 'w')
 
+    wiki_link = wk_constant
+
+    if family_id in wiki_links:
+        wiki_link = wiki_links[family_id]
+
     fp_out.write(desc_template % (mirna_name, mirna_name, author, essential_desc_lines["GA"],
                                   essential_desc_lines["TC"], essential_desc_lines["NC"],
                                   essential_desc_lines["BM"], essential_desc_lines["CB"],
-                                  essential_desc_lines["SM"], family_id, mirna_name))
+                                  essential_desc_lines["SM"], family_id, mirna_name, wiki_link))
 
     fp_out.close()
 
@@ -102,6 +110,7 @@ def parse_arguments():
                       default=None)
     parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author (e.g. Edwards BA; ORCID)",
                         action="store", default=None)
+    parser.add_argument("--wiki-links", help="File with family/wiki link mappings", action="store", default=None)
 
     return parser
 
@@ -118,5 +127,16 @@ if __name__ == '__main__':
     mirna_family_id = mirna_labels[0]
     mirna_name = mirna_labels[1]
 
-    desc_template_generator(desc_file, mirna_name, mirna_family_id, args.ga_author,
+    wiki_links = None
+
+    if args.wiki_links is not None:
+        wiki_links = {}
+        fp = open(args.wiki_links, 'r')
+        for line in fp:
+            line = line.strip().split('\t')
+            if line[0] not in wiki_links:
+                wiki_links[line[0]] = line[2]
+        fp.close()
+
+    desc_template_generator(desc_file, mirna_name, mirna_family_id, wiki_links, args.ga_author,
                             dest_dir=args.outdir)

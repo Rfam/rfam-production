@@ -2,6 +2,7 @@
 
 import os
 import argparse
+import requests
 
 # --------------------------------------------------------------------
 
@@ -92,9 +93,47 @@ WK   %s
 
     return False
 
+# --------------------------------------------------------------------
+
+
+def extract_sequence_accessions_from_seed(seed_file):
+    """
+    Parses a seed MSA and extracts all sequence
+    accessions in the form of a dictionary
+
+    seed_file: An Rfam seed alignment
+
+    return: A dictionary of seed accessions
+    """
+
+    accessions = {}
+    fp = open(seed_file, 'r')
+
+    for line in fp:
+        line = line.strip()
+        if len(line) > 1 and line[0] != '#' and line != '':
+            line = line.split(' ')
+            accession = line[0].partition('/')[0]
+            if accession != '':
+                accessions[accession] = ""
+
+    fp.close()
+
+    return accessions
 
 # --------------------------------------------------------------------
 
+
+def fetch_go_term_from_rnacentral(rnacentral_id):
+    """
+
+    rnacentral_id:
+    return:
+    """
+
+    pass
+
+# --------------------------------------------------------------------
 
 def parse_arguments():
     """
@@ -111,6 +150,7 @@ def parse_arguments():
     parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author (e.g. Edwards BA; ORCID)",
                         action="store", default=None)
     parser.add_argument("--wiki-links", help="File with family/wiki link mappings", action="store", default=None)
+    parser.add_argument("-f", help="a list of accessions to generate DESC files for", action="store", default=None)
 
     return parser
 

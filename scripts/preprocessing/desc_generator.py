@@ -51,8 +51,9 @@ def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None ,s
 
     author = "Griffiths-Jones SR; 0000-0001-6043-807X"
 
-    if second_author is not None or second_author.find("Griffiths-Jones SR") == -1:
-        author = author + '; ' + second_author
+    if second_author is not None:
+        if second_author.find("Griffiths-Jones SR") == -1:
+            author = author + '; ' + second_author
 
     desc_template = """ID   %s
 DE   %s microRNA precursor family

@@ -69,9 +69,9 @@ CB   %s
 SM   %s
 DR   MIPF; %s;
 DR   URL; http://www.mirbase.org;
-DR   SO; 0001244; pre_miRNA;
-"""
-    desc_bottom_half="""
+DR   SO; 0001244; pre_miRNA;"""
+
+    desc_bottom_half = """
 CC   This family represents the microRNA (miRNA) precursor %s
 CC   imported from miRBase.
 WK   %s

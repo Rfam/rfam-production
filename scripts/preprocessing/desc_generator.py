@@ -92,8 +92,14 @@ WK   %s
 
     # write GO terms if any
     if go_terms is not None:
+        i = len(go_terms.keys())
+
         for go_term_string in go_terms.keys():
-            fp_out.write("DR   %s\n" % go_term_string)
+            if i < len(go_terms.keys()) -1 :
+                fp_out.write("DR   %s\n" % go_term_string)
+            else:
+                fp_out.write("DR   %s" % go_term_string)
+            i += 1
 
     # write DESC bottom half
     fp_out.write(desc_bottom_half % (mirna_name, wiki_link))

@@ -7,7 +7,7 @@ import requests
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, go_terms, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, go_terms=None, dest_dir=None):
     """
 
     desc_file:
@@ -94,7 +94,7 @@ WK   %s
     if go_terms is not None:
         for go_term_string in go_terms.keys():
             fp_out.write("DR   %s\n" % go_term_string)
-            
+
     # write DESC bottom half
     fp_out.write(desc_bottom_half % (mirna_name, wiki_link))
 

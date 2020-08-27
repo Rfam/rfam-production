@@ -7,7 +7,7 @@ import requests
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, go_terms, dest_dir=None):
     """
 
     desc_file:
@@ -70,6 +70,8 @@ SM   %s
 DR   MIPF; %s;
 DR   URL; http://www.mirbase.org;
 DR   SO; 0001244; pre_miRNA;
+"""
+    desc_bottom_half="""
 CC   This family represents the microRNA (miRNA) precursor %s
 CC   imported from miRBase.
 WK   %s
@@ -82,10 +84,19 @@ WK   %s
     if family_id in wiki_links:
         wiki_link = wiki_links[family_id]
 
+    # write DESC upper half
     fp_out.write(desc_template % (mirna_name, mirna_name, author, essential_desc_lines["GA"],
                                   essential_desc_lines["TC"], essential_desc_lines["NC"],
                                   essential_desc_lines["BM"], essential_desc_lines["CB"],
-                                  essential_desc_lines["SM"], family_id, mirna_name, wiki_link))
+                                  essential_desc_lines["SM"], family_id))
+
+    # write GO terms if any
+    if go_terms is not None:
+        for go_term_string in go_terms.keys():
+            fp_out.write("DR   %s\n" % go_term_string)
+            
+    # write DESC bottom half
+    fp_out.write(desc_bottom_half % (mirna_name, wiki_link))
 
     fp_out.close()
 
@@ -210,7 +221,7 @@ if __name__ == '__main__':
         urs_go = fetch_go_terms_from_rnacentral(urs_accession)
         if urs_go is not None:
             for go_id in urs_go.keys():
-                go_term = '; '.join([go_id.replace(':', '; '), urs_go[go_id]])
+                go_term = '; '.join([go_id.replace(':', '; '), urs_go[go_id]+';'])
                 if go_term not in family_go_terms:
                     family_go_terms[go_term] = ""
 

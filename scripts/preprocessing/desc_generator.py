@@ -59,7 +59,7 @@ def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None ,s
 DE   %s microRNA precursor family
 AU   %s
 SE   Griffiths-Jones SR
-SS   Predicted; PFOLD
+SS   Predicted; RNAalifold
 GA   %s
 TC   %s
 NC   %s

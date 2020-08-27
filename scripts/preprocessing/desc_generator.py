@@ -95,8 +95,11 @@ WK   %s
         i = len(go_terms.keys())
 
         for go_term_string in go_terms.keys():
-            if i < len(go_terms.keys()) -1 :
-                fp_out.write("DR   %s\n" % go_term_string)
+            if i < len(go_terms.keys()) -1:
+                if i == 0:
+                    fp_out.write("\nDR   %s\n" % go_term_string)
+                else:
+                    fp_out.write("DR   %s\n" % go_term_string)
             else:
                 fp_out.write("DR   %s" % go_term_string)
             i += 1

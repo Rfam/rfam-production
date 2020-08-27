@@ -7,7 +7,7 @@ import requests
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None ,second_author=None, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, dest_dir=None):
     """
 
     desc_file:
@@ -125,16 +125,36 @@ def extract_sequence_accessions_from_seed(seed_file):
 # --------------------------------------------------------------------
 
 
-def fetch_go_term_from_rnacentral(rnacentral_id):
+def fetch_go_terms_from_rnacentral(rnacentral_id):
     """
 
     rnacentral_id:
     return:
     """
 
-    pass
+    url = "https://rnacentral.org/api/v1/rna/%s/go-annotations/%s"
+
+    id_elements = rnacentral_id.partition("_")
+    upi = id_elements[0]
+    taxid = id_elements[2]
+
+    response = requests.get(url % (upi, taxid))
+
+    go_terms = {}
+
+    if response.status_code == 200:
+        data = response.json()
+        if len(data) == 0:
+            return None
+        else:
+            for item in data:
+                if item["go_term_id"] not in go_terms:
+                    go_terms[item["go_term_id"]] = item["go_term_name"]
+
+    return go_terms
 
 # --------------------------------------------------------------------
+
 
 def parse_arguments():
     """
@@ -179,5 +199,20 @@ if __name__ == '__main__':
                 wiki_links[line[0]] = line[2]
         fp.close()
 
-    desc_template_generator(desc_file, mirna_name, mirna_family_id, wiki_links, args.ga_author,
+
+    seed_file = os.path.join(args.input, "SEED")
+
+    seed_accessions = extract_sequence_accessions_from_seed(seed_file)
+
+    family_go_terms = {}
+
+    for urs_accession in seed_accessions:
+        urs_go = fetch_go_terms_from_rnacentral(urs_accession)
+        if urs_go is not None:
+            for go_id in urs_go.keys():
+                go_term = '; '.join([go_id.replace(':', '; '), urs_go[go_id]])
+                if go_term not in family_go_terms:
+                    family_go_terms[go_term] = ""
+
+    desc_template_generator(desc_file, mirna_name, mirna_family_id, wiki_links, args.ga_author, family_go_terms,
                             dest_dir=args.outdir)

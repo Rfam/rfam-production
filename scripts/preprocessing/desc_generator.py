@@ -92,7 +92,7 @@ WK   %s
 
     # write GO terms if any
     if go_terms is not None:
-        i = len(go_terms.keys())
+        i = 0
 
         for go_term_string in go_terms.keys():
             if i < len(go_terms.keys()) -1:

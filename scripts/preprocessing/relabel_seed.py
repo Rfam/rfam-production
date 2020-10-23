@@ -10,7 +10,7 @@ import hashlib
 import xml.etree.ElementTree as ET
 from subprocess import PIPE, Popen
 
-DB_RNA_TYPES = {"mirbase": "precursor RNA"}
+DB_RNA_TYPES = {"mirbase": "Pre_miRNA"}
 # ---------------------------------------------------------------
 
 
@@ -366,7 +366,7 @@ def map_rnacentral_urs_wirh_db_accessions(db_accession, expert_db):
     return: The corresponding RNAcentral accession (URS)
     """
 
-    rnacentral_url = "http://www.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"%s\" AND rna_type:\"%s\""
+    rnacentral_url = "http://www.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query=\"%s\" AND expert_db:\"%s\" AND so_rna_type_name:\"%s\""
 
     response = requests.get(rnacentral_url % (db_accession, expert_db, DB_RNA_TYPES[expert_db.lower()]))
 
@@ -1058,10 +1058,9 @@ if __name__ == '__main__':
         new_pfam_seed = stockhom_to_pfam_format(args.seed, dest_dir=dest_dir)
 
         if not args.rnac:
-            # load sequences to dict
+	   # load sequences to dict
             seed_seq_dict = load_fasta_file_to_dict(seed_fasta)
             full_seq_dict = load_fasta_file_to_dict(args.seqdb)
-
             # construct accession coords dictionary
             accession_coords = {}
             for accession in seed_seq_dict.keys():
@@ -1072,7 +1071,7 @@ if __name__ == '__main__':
                 check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
 
                 # check if coordinates were extracted successfully,
-                if end != 0 and check is True:
+                if check is True:
                     accession_coords[accession] = '-'.join((str(start), str(end)))
                 else:
                     print ("Unable to extract coordinates for accession: %s" % accession)

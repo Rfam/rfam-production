@@ -235,6 +235,17 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 # -----------------------------------------------------------------------------
 
 
+def extract_full_region_hits():
+    """
+
+    return:
+    """
+
+    pass
+
+# -----------------------------------------------------------------------------
+
+
 def seq_validator(sequence):
     """
     Checks if the sequence provided is valid fasta sequence. Returns True
@@ -249,7 +260,7 @@ def seq_validator(sequence):
     if seq_val.search(sequence) is None:
         return True
 
-    False
+    return False
 
 # -----------------------------------------------------------------------------
 

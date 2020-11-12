@@ -235,13 +235,102 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 # -----------------------------------------------------------------------------
 
 
-def extract_full_region_hits():
+def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     """
 
     return:
     """
 
-    pass
+    sequence = ''
+    fp_out = None
+    seq_bits = None
+    seq_types = ["FULL", "SEED"]
+
+    # logging sequences not exported
+    # rename this to family log
+    log_file = os.path.join(outdir, rfam_acc + ".log")
+    logging.basicConfig(
+        filename=log_file, filemode='w', level=logging.INFO)
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(raw=True)
+
+    query = None
+
+    # open a new fasta output file
+    fp_out = gzip.open(
+        os.path.join(outdir, str(rfam_acc) + ".fa.gz"), 'w')
+
+    for seq_type in seq_types:
+
+        if type == "FULL":
+            # fetch sequence accessions for specific family - significant only!!
+            query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
+                          "FROM full_region fr JOIN rfamseq rf\n"
+                          "ON fr.rfamseq_acc=rf.rfamseq_acc\n"
+                          "WHERE fr.is_significant=1\n"
+                          "AND fr.type=\'full\'"
+                          "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
+        elif type == "SEED":
+            query = ("SELECT sr.rfam_acc, sr.rfamseq_acc, sr.seq_start, sr.seq_end, rf.description\n"
+                     "FROM seed_region sr JOIN rfamseq rf\n"
+                     "ON sr.rfamseq_acc=rf.rfamseq_acc\n"
+                     "WHERE sr.rfam_acc=\'%s\'") % (rfam_acc)
+
+        # execute the query
+        cursor.execute(query)
+
+        for region in cursor:
+
+            cmd = ""
+            if seq_type == "FULL":
+                cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
+                                                 seq_db, str(region[SEQ_ACC]))
+
+            elif seq_type == "SEED":
+                # command to extract sequences from Rfam.seed
+                pass
+
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+
+            seq = proc.communicate()[0]
+
+            # get sequence
+            sequence = ''
+            seq_bits = seq.split('\n')[1:]
+            sequence = sequence.join(seq_bits)
+
+            # print sequence
+
+            if sequence != '' and seq_validator(sequence) is True:
+                # write header
+                fp_out.write(">%s/%s-%s %s\n" % (str(region[SEQ_ACC]),
+                                                 str(region[START]),
+                                                 str(region[END]),
+                                                 str(region[DESC])))
+
+                # write sequence
+                fp_out.write(sequence + '\n')
+
+            else:
+                # logging sequences that have not been exported
+                logging.info(str(region[SEQ_ACC]))
+
+    # close output file
+    fp_out.close()
+
+    # disconnect from DB
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    if os.path.exists(fp_out):
+        if os.path.getsize(fp_out) > 0:
+            return True
+
+    return False
 
 # -----------------------------------------------------------------------------
 
@@ -275,6 +364,7 @@ def parse_arguments():
 
     parser.add_argument("--seq-db", help="Sequence database to extract sequences from",
                         action="store")
+    parser.add_argument("--rfam-seed", help="Rfam.seed file")
     parser.add_argument("--acc", help="Rfam family accession to extract sequences for",
                         action="store")
     parser.add_argument("--outdir", help="Output directory to store files to",

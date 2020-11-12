@@ -15,6 +15,9 @@ Description:    Script to generate fasta files for all family regions
                 in full_region. For execution on lsf call fasta_gen_handler
                 that generates distinct shell scripts per family to enable
                 recovery.
+
+Requirements:   Easel tools should be installed and added to PATH. Easel tools
+                can be installed along with the Infernal suite
 """
 
 # ---------------------------------IMPORTS-------------------------------------
@@ -105,8 +108,7 @@ def generate_fasta(seq_file, out_dir):
 
         rfam_acc = region[RFAM_ACC]
 
-        cmd = "%s -c %s/%s %s %s" % (ESL_PATH,
-                                     str(region[START]), str(region[END]),
+        cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
                                      seq_file, str(region[SEQ_ACC]))
 
         proc = subprocess.Popen(
@@ -192,9 +194,8 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 
     for region in cursor:
 
-        cmd = "%s -c %s/%s %s %s" % (ESL_PATH,
-                                     str(region[START]), str(region[END]),
-                                     seq_file, str(region[SEQ_ACC]))
+        cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
+                                            seq_file, str(region[SEQ_ACC]))
 
         proc = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE)
@@ -262,6 +263,7 @@ def usage():
 
 
 # -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 

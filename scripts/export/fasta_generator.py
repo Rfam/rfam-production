@@ -28,6 +28,7 @@ import subprocess
 import logging
 import re
 import gzip
+import argparse
 from utils import RfamDB
 from config import rfam_config
 
@@ -233,6 +234,7 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
 
 # -----------------------------------------------------------------------------
 
+
 def seq_validator(sequence):
     """
     Checks if the sequence provided is valid fasta sequence. Returns True
@@ -252,15 +254,22 @@ def seq_validator(sequence):
 # -----------------------------------------------------------------------------
 
 
-def usage():
-    """
-    Displays information on how to run fasta_generator
+def parse_arguments():
     """
 
-    print "\n Usage\n-------"
-    print "\npython fasta_generator.py seq_file rfam_acc out_dir"
-    print "\n-h option for help\n"
+    return:
+    """
 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--seq-db", help="Sequence database to extract sequences from",
+                        action="store")
+    parser.add_argument("--acc", help="Rfam family accession to extract sequences for",
+                        action="store")
+    parser.add_argument("--outdir", help="Output directory to store files to",
+                        action="store")
+
+    return parser
 
 # -----------------------------------------------------------------------------
 
@@ -270,17 +279,13 @@ if __name__ == '__main__':
     # need to add more parameters for local and lsf execution rather that global
     # variable
 
+    parser = parse_arguments()
+    args = parser.parse_args()
+
     # some parameter checking
-    if len(sys.argv) > 3:
-        sequence_file = sys.argv[1]
-        rfam_acc = sys.argv[2]
-        output_dir = sys.argv[3]
 
-        generate_fasta_single(sequence_file, rfam_acc, output_dir)
+    sequence_file = args.seq_db
+    rfam_acc = args.acc
+    output_dir = args.outdir
 
-    else:
-        if sys.argv[1] == "-h":
-            usage()
-        else:
-            print "\nIncorrect Input."
-            usage()
+    generate_fasta_single(sequence_file, rfam_acc, output_dir)

@@ -292,7 +292,8 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
             elif seq_type == "SEED":
                 # command to extract sequences from Rfam.seed
-                pass
+                cmd = "esl-sfetch %s %s/%s-%s" % (rfam_seed,str(region[SEQ_ACC]),
+                                                  str(region[START]), str(region[END]))
 
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 

@@ -48,7 +48,7 @@ def connect():
     Connects to a specific database and returns a mysql connection object
     """
 
-    cnx=None
+    cnx = None
     try:
         cnx = mysql.connector.connect(user=db_conf["user"],
                                       password=db_conf["pwd"],

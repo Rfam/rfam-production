@@ -1065,8 +1065,8 @@ if __name__ == '__main__':
             # construct accession coords dictionary
             accession_coords = {}
             for accession in seed_seq_dict.keys():
-
-                (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[accession])
+                full_acc = accession.partition('/')[0]
+                (start, end) = fetch_seed_sequence_coordinates(seed_seq_dict[accession], full_seq_dict[full_acc])
 
                 # validate sequences
                 check = validate_sequences(seed_seq_dict[accession], full_seq_dict[accession][start:end])
@@ -1104,7 +1104,7 @@ if __name__ == '__main__':
 
         source_dir = args.seed
         family_dirs = [x for x in os.listdir(source_dir) if os.path.isdir(os.path.join(source_dir, x))]
-        
+
         for family_dir in family_dirs:
 
             family_dir_loc = os.path.join(source_dir, family_dir)

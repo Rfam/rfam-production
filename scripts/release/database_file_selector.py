@@ -14,7 +14,7 @@ DATABASE_FILE_NAMES = ["alignment_and_tree", "clan", "clan_database_link",
                        "motif_matches", "motif_pdb", "motif_ss_image", "pdb_full_region",
                        "rfamseq", "secondary_structure_image", "seed_region",
                        "sunburst", "taxonomy", "taxonomy_websearch", "version",
-                       "wikitext"]
+                       "wikitext", "genome", "genseq"]
 
 # -----------------------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ def create_ftp_database_files_folder(source, dest_dir):
     :return:
     """
 
-    file_types = [".txt", ".sql"]
+    file_types = [".txt.gz", ".sql"]
 
     if not os.path.exists(dest_dir):
         os.mkdir(dest_dir)

@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	accession_list = [x.strip() for x in fp]
 
 	for accession in accession_list:
-		cmd = "bsub -M 16384 -g /rfam_xml_dumps -R \"rusage[mem=16384]\" -F 1000000 python %s --type %s --acc %s --out %s" % (path_to_xml_dump, acc_type, accession, dest_dir)
+		cmd = "bsub -M 16384 -q production-rh74 -g /rfam_xml_dumps -R \"rusage[mem=16384]\" -F 1000000 source /nfs/production/xfam/users/rfamprod/code/env2/bin/activate && export DJANGO_SETTINGS_MODULE=\'rfam_schemas.rfam_schemas.settings\' && python %s --type %s --acc %s --out %s" % (path_to_xml_dump, acc_type, accession, dest_dir)
 		subprocess.call(cmd, shell=True)
 		
 	

@@ -154,7 +154,7 @@ def fetch_gca_data(upid, assembly_acc, kingdom):
         genome_entry["fields"] = fields
 
     else:
-        print "GCA xml unavailable for %s" % upid
+        print ("GCA xml unavailable for %s" % upid)
 
     return genome_entry
 
@@ -808,7 +808,7 @@ def import_chromosome_names():
     from rfam_schemas.RfamLive.models import Genome, Genseq
 
     for genome in Genome.objects.exclude(assembly_acc__isnull=True).all():
-        print genome.assembly_acc
+        print (genome.assembly_acc)
         if 'GCF' in genome.assembly_acc:
             continue
         if genome.assembly_acc == '':

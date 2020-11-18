@@ -192,7 +192,7 @@ def parse_arguments():
                         action="store", default=None)
     parser.add_argument("--wiki-links", help="File with family/wiki link mappings", action="store", default=None)
     parser.add_argument("-f", help="a list of accessions to generate DESC files for", action="store", default=None)
-
+    parser.add_argument("--label", help="label to be used for the generation of the DESC file", action='store', default=None)
     return parser
 
 # --------------------------------------------------------------------
@@ -204,7 +204,12 @@ if __name__ == '__main__':
 
     desc_file = os.path.join(args.input, "DESC")
 
-    mirna_labels = [x for x in os.path.basename(args.input).split("_") if x != '']
+    if args.label is None:
+        label = os.path.basename(args.input)    
+    else:
+        label = args.label
+
+    mirna_labels = [x for x in label.split("_") if x != '']
     mirna_family_id = mirna_labels[0]
     mirna_name = mirna_labels[1]
 

@@ -116,7 +116,7 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
     output_fp = open(file_path, 'w')
 
     output_fp.write("#!/bin/csh\n")
-    output_fp.write("#BSUB -q research-rh74\n")
+    output_fp.write("#BSUB -q production-rh74\n")
     output_fp.write("#BSUB -M 8000\n")
     output_fp.write("#BSUB -R \"rusage[mem=8000,tmp=1000]\"\n")
     output_fp.write("#BSUB -o \"/tmp/%J.out\"\n")
@@ -130,7 +130,7 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
 
     output_fp.write("#BSUB -Ep \"rm /tmp/$LSB_JOBID.*\"\n")
     output_fp.write("#BSUB -g %s \n\n" % (LSF_GROUP))
-    output_fp.write("python %s %s %s %s \n" % (rfam_config.FA_GEN, seq_file,
+    output_fp.write("python %s %s %s %s \n" % (os.path.join(os.getcwd(),"fasta_generator.py"), seq_file,
                                                rfam_acc, fa_outdir))
 
     output_fp.close()

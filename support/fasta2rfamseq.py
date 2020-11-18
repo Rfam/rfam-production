@@ -27,10 +27,11 @@ def extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_fil
     if to_file is True:
         if filename is None:
             filename = os.path.basename(fasta_file).partition('.')[0]
+        
         destination = os.path.split(fasta_file)[0]
-        output_fp = open(os.path.join(destination, filename+".rfamseq"), 'w')
+        output_fp = open(os.path.join(destination, filename + ".rfamseq"), 'w')
 
-    args = [gf.ESL_SEQSTAT, "-a", "--dna", fasta_file]
+    args = ["esl-seqstat", "-a", "--dna", fasta_file]
     # open a process pipe and run esl-seqstat. Stores the result in process
     process = subprocess.Popen(args, stdout=subprocess.PIPE)
     
@@ -91,47 +92,47 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
 
     if os.path.isfile(upid_list):
     	project_dir = fasta_input
-	fp = open(upid_list, 'r')
+    	fp = open(upid_list, 'r')
     	upids = [x.strip() for x in fp]
     	fp.close()
 
     	for upid in upids:
-        	print upid
-        	subdir = os.path.join(project_dir, upid[-3:])
-        	updir = os.path.join(subdir, upid)
-        	upfasta = os.path.join(updir, upid+'.fa')
+        	#print upid
+            subdir = os.path.join(project_dir, upid[-3:])
+            updir = os.path.join(subdir, upid)
+            upfasta = os.path.join(updir, upid+'.fa')
 
         	# do some sanity checks
-        	if os.path.exists(upfasta):
-            	# defining the source of the sequences according to assembly accession
-            		source = "UNIPROT; ENA"
-            		if upid in upid_gca_tax_dict:
-	    			if upid_gca_tax_dict[upid]["GCA"] != -1:
-                			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
-                    				source = "NIH; NCBI"
-                			else:
-                    				source = "UNIPROT; ENA"
-
-	    	else:
-			print "%s not in the current Uniprot release"%upid
-			continue
+            if os.path.exists(upfasta):
+            # defining the source of the sequences according to assembly accession
+                source = "UNIPROT; ENA"
+                if upid in upid_gca_tax_dict:
+                    if upid_gca_tax_dict[upid]["GCA"] != -1:
+                        if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+                            source = "NIH; NCBI"
+                        else:
+                            source = "UNIPROT; ENA"
+            else:
+                print "%s not in the current Uniprot release" % upid
+                continue
 
 	    	extract_metadata_from_fasta(upfasta, upid_gca_tax_dict[upid]["TAX"],
                                         source, filename=None, to_file=True)
 
     else:
-	project_dir = fasta_input
-	upid = upid_list
-	subdir = os.path.join(project_dir, upid[-3:])
+    	project_dir = fasta_input
+    	upid = upid_list
+    	subdir = os.path.join(project_dir, upid[-3:])
         updir = os.path.join(subdir, upid)
         upfasta = os.path.join(updir, upid+'.fa')
 
-	source = "UNIPROT; ENA"
-	if upid in upid_gca_tax_dict:
-        	if upid_gca_tax_dict[upid]["GCA"] != -1:
-			if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
+    	source = "UNIPROT; ENA"
+	
+    if upid in upid_gca_tax_dict:
+        if upid_gca_tax_dict[upid]["GCA"] != -1:
+            if upid_gca_tax_dict[upid]["GCA"][0:3] == "GCF":
 				source = "NIH; NCBI"
-			else:
+            else:
 				source = "UNIPROT; ENA"
 	else:
 		print "%s not in the current Uniprot release" % upid
@@ -146,8 +147,14 @@ def main(fasta_input, upid_list, upid_gca_tax_file):
 
 if __name__ == '__main__':
 
-    project_dir = sys.argv[1]
-    upid_list = sys.argv[2]
-    upid_gca_tax_file = sys.argv[3]
+    #project_dir = sys.argv[1]
+    #upid_list = sys.argv[2]
+    #upid_gca_tax_file = sys.argv[3]
 
-    main(project_dir, upid_list, upid_gca_tax_file)
+    #main(fasta_input, upid_list, upid_gca_tax_file)
+
+    fasta_file = sys.argv[1]
+    taxid = sys.argv[2]
+    source = sys.argv[3]
+
+    extract_metadata_from_fasta(fasta_file, taxid, source, filename=None, to_file=True)

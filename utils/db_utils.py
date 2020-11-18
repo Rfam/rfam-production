@@ -48,6 +48,7 @@ SEQ_ACC = 1  # full region rfamseq_acc
 START = 2  # full region seq_start
 END = 3  # full region seq_end
 EVAL = 4  # full region evalue
+version = '14.0'
 
 # -------------------------------------------------------------------------
 
@@ -828,16 +829,16 @@ def set_number_of_distinct_families_in_genome(upid):
     # get a new buffered cursor
     cursor = cnx.cursor(buffered=True)
 
-
     if upid is None:
-
         upids = fetch_all_upids()
+
         for upid in upids:
             select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
                             "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                            "and gs.upid=\'%s\'")
+                            "and gs.upid=\'%s\'\n"
+                            "and gs.version=\'%s\'")
 
-            cursor.execute(select_query % upid)
+            cursor.execute(select_query % (upid, version))
             count = cursor.fetchone()[0]
 
             # update is_significant field to 0
@@ -850,9 +851,10 @@ def set_number_of_distinct_families_in_genome(upid):
     else:
         select_query = ("select count(distinct rfam_acc) from full_region fr, genseq gs\n"
                         "where fr.rfamseq_acc=gs.rfamseq_acc\n"
-                        "and gs.upid=\'%s\'")
+                        "and gs.upid=\'%s\'\n"
+                        "and gs.version=\'%s\'")
 
-        cursor.execute(select_query % upid)
+        cursor.execute(select_query % (upid, version))
         count = cursor.fetchone()[0]
 
         # update is_significant field to 0
@@ -892,12 +894,14 @@ def set_number_of_genomic_significant_hits(upid):
         for upid in upids:
 
 
-            count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
+            count_query = ("select count(fr.rfamseq_acc)\n"
+                           "from full_region fr, genseq gs\n"
                            "where fr.rfamseq_acc=gs.rfamseq_acc\n"
                            "and fr.is_significant=1\n"
-                           "and gs.upid=\'%s\'")
+                           "and gs.upid=\'%s\'\n"
+                           "and gs.version=\'%s\'")
 
-            cursor.execute(count_query % upid)
+            cursor.execute(count_query % (upid, version))
             count = cursor.fetchone()[0]
 
             # update is_significant field to 0
@@ -907,12 +911,15 @@ def set_number_of_genomic_significant_hits(upid):
             cursor.execute(update_query % (count, upid))
     else:
 
-        count_query = ("select count(fr.rfamseq_acc) from full_region fr, genseq gs\n"
+        count_query = ("select count(fr.rfamseq_acc)\n"
+                       "from full_region fr, genseq gs\n"
                        "where fr.rfamseq_acc=gs.rfamseq_acc\n"
                        "and fr.is_significant=1\n"
-                       "and gs.upid=\'%s\'")
+                       "and gs.upid=\'%s\'\n"
+                       "and gs.version=\'%s\'")
 
-        cursor.execute(count_query % upid)
+
+        cursor.execute(count_query % (upid, version))
         count = cursor.fetchone()[0]
 
         # update is_significant field to 0
@@ -1104,9 +1111,3 @@ def update_metagenomic_region_md5s(data):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-if __name__ == "__main__":
-
-    """
-    TO DO: Develop a script to call all of these functions after running the view
-    processes
-    """

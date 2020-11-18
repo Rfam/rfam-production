@@ -1,0 +1,18 @@
+FROM python:2-alpine
+
+RUN mkdir /rfam
+RUN mkdir /rfam/local
+
+ENV LOC /rfam/local
+
+# Define container environment variables
+ENV PYTHONPATH=/rfam/rfam-production
+ENV RFAM_PRODUCTION /rfam/rfam-production
+
+ENV DJANGO_SETTINGS_MODULE rfam_schemas.rfam_schemas.settings
+
+RUN mkdir /rfam/rfam-production
+COPY . /rfam/rfam-production
+
+# Install Python requirements
+RUN pip install -r $RFAM_PRODUCTION/cwl-requirements.txt

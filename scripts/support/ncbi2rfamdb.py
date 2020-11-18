@@ -3,6 +3,7 @@ import sys
 import xml.etree.ElementTree as ET
 import requests
 import argparse
+import datetime
 
 from utils import db_utils as db
 
@@ -73,7 +74,6 @@ def fetch_genome_metadata_from_ncbi(accession):
 
             if docsum is not None:
                 items = docsum.findall("Item")
-
                 if items is not None:
                     for item in items:
                         if item.get("Name") == "Title":
@@ -159,26 +159,48 @@ def generate_genome_table_entry(accession, previous_rg_acc = None):
     ncbi_genome_metadata = fetch_genome_metadata_from_ncbi(accession)
     rfam_tax_data = db.fetch_taxonomy_fields(ncbi_genome_metadata["ncbi_id"])
 
+    if ncbi_genome_metadata is None:
+        return None
+
     level = ''
     # try and guess assembly level
     for level in assembly_level:
         if ncbi_genome_metadata["description"].find(level) != -1:
             break
 
-    kingdom = rfam_tax_data["tax_string"].split(";")[0].strip()
+    kingdom = rfam_tax_data["tax_string"].split(";")[0].strip().lower()
+
+    if kingdom != 'viruses':
+        kingdom = 'viruses'
 
     new_genome_accession = generate_new_rfam_genome_accession(previous_rg_acc)
     version = int(accession.partition('.')[2])
 
-    genome_table_fields = (new_genome_accession, accession, version,
+    created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    """
+    genome_table_fields = (new_genome_accession, accession, int(version),
                            None, None, None, level, None,
-                           ncbi_genome_metadata["description"],
-                           ncbi_genome_metadata["length"],
-                           ncbi_genome_metadata["length"], None,
-                           ncbi_genome_metadata["ncbi_id"],
-                           rfam_tax_data["species"],
-                           None, kingdom,
-                           '0', '0', '0', '0')
+                           str(ncbi_genome_metadata["description"]),
+                           int(ncbi_genome_metadata["length"]),
+                           int(ncbi_genome_metadata["length"]), None,
+                           int(ncbi_genome_metadata["ncbi_id"]),
+                           str(rfam_tax_data["species"]),
+                           None, str(kingdom),
+                           0, 0, 0, 0, created_date)
+    """
+
+
+    genome_table_fields = (new_genome_accession, accession, str(version),
+                           '\N', '\N', '\N', level, '\N',
+                           str(ncbi_genome_metadata["description"]),
+                           str(ncbi_genome_metadata["length"]),
+                           str(ncbi_genome_metadata["length"]), '\N',
+                           str(ncbi_genome_metadata["ncbi_id"]),
+                           str(rfam_tax_data["species"]),
+                           '\N', str(kingdom),
+                           '0', '0', '0', '0', str(created_date))
+
 
     return genome_table_fields
 
@@ -238,15 +260,18 @@ if __name__ == "__main__":
 
             previous_rg_acc = None
             entry_list = []
+
             for accession in accessions:
                 new_entry = generate_genome_table_entry(accession, previous_rg_acc=previous_rg_acc)
                 entry_list.append(new_entry)
+                print '\t'.join(list(new_entry))
                 # when populating genome table with multiple entries we need to keep track of
                 # the current/previous RG accessions to generate unique UPIDs for new genomes
                 previous_rg_acc = new_entry[0]
 
             try:
-                db.populate_genome_table(entry_list)
+                pass
+                #db.populate_genome_table(entry_list)
 
             except:
                 sys.exit("ERROR: Unable to populate genome table!")

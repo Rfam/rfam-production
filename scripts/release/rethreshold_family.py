@@ -617,6 +617,33 @@ def write_family_report_file(family_dir, scores_file="species"):
 
 # ----------------------------------------------------------------------------------
 
+def extract_scores_from_outlist_file(outlist):
+    """
+
+    :param outlist:
+    :return:
+    """
+
+    scores = {'SEED': [], 'FULL': [], 'OTHER': []}
+
+    outlist_fp = open(outlist, 'r')
+
+    for line in outlist_fp:
+        if line[0] != '#':
+            line = [x for x in line.strip().split(' ') if x!='']
+            scores[line[2]].append(float(line[0]))
+
+        else:
+            # if we reached REVERSED line, we treat everything as TNs
+            # break and return
+            if line.find("BEST REVERSED") != -1:
+                break
+
+    outlist_fp.close()
+
+    return scores
+
+# --------------------------------------------------------------
 
 def print_report_header(extended=True):
     """
@@ -648,6 +675,10 @@ def print_report_header(extended=True):
 
 if __name__ == '__main__':
 
+    outlist = "../data/../outlist"
+    print (extract_scores_from_outlist_file(outlist))
+
+    """
     # create a new argument parser object
     parser = parse_arguments()
     args = parser.parse_args()
@@ -668,7 +699,7 @@ if __name__ == '__main__':
         os.chdir(args.dest_dir)
         accessions = load_rfam_accessions_from_file(args.f)
 
-        """
+        \"""
         # get number of job batches we need to submit
         # casting to int chops off decimals and ceil rounds up to nearest int
         if len(accessions) > MAX_JOB_COUNT:
@@ -689,7 +720,7 @@ if __name__ == '__main__':
             # while monitoring is True:
             # cluster monitoring function to be called here
             i+1 # this is done when the monitoring loop becomes false which is a signal to submit another batch
-            """
+            \"""
         for rfam_acc in accessions:
             checkout_and_search_family(rfam_acc, args.dest_dir, rfmake=args.rfmake)
 
@@ -803,3 +834,4 @@ if __name__ == '__main__':
                 for family in families:
                     family_dir = os.path.join(args.dest_dir, family)
                     submit_new_rfmake_job(family_dir)
+    """

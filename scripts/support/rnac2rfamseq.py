@@ -1,8 +1,58 @@
 import os
 import sys
 import subprocess
+import requests
+import argparse
+import csv
 
 from config import rfam_config as rc
+
+"""
+Metadata queries:
+
+ZWD
+---
+
+select
+rna.len,
+xref.upi,
+xref.taxid,
+acc.accession,
+acc.description,
+acc.feature_name,
+acc.ncrna_class
+from xref
+join rnc_accessions acc on acc.accession = xref.ac
+join rna on rna.upi = xref.upi
+where
+  acc.database = 'ZWD'
+  and xref.deleted = 'N'
+
+
+PDBe
+----
+
+select
+r.len,
+r.upi,
+pre.taxid,
+'accession' as accession,
+pre.description,
+pre.rna_type as feature_name,
+pre.rna_type
+ from rna r
+ join rnc_rna_precomputed pre on r.upi = pre.upi
+ where
+(pre.databases like '%PDBe%' or  pre.databases like 'PDBe%' or  pre.databases like '%PDBe')
+ and pre.is_active  = true
+ and taxid is not null ;
+"""
+
+INSDC_MOL_TYPES = ['protein', 'genomic DNA', 'DNA', 'ss-DNA', 'RNA', 'genomic RNA',
+                   'ds-RNA', 'ss-cRNA', 'ss-RNA', 'mRNA', 'tRNA', 'rRNA', 'snoRNA',
+                   'snRNA', 'scRNA', 'pre-RNA', 'other RNA', 'other DNA',
+                   'unassigned DNA', 'unassigned RNA', 'viral cRNA', 'cRNA',
+                   'transcribed RNA', 'ncRNA', 'ribozyme', 'antisense_RNA', 'other']
 
 # ----------------------------------------------------------------------------------
 
@@ -148,12 +198,133 @@ def generate_rfamseq_tsv_dump(fasta_file, rnac_metadata_file, to_file = False):
 
         print rfamseq_entry
 
+
+# ----------------------------------------------------------------------------------
+
+
+def fetch_rfamseq_metadata_from_rnacentral(urs_accession):
+    """
+
+    urs_accession:
+    return:
+    """
+
+    rnacentral_url = 'https://rnacentral.org/api/v1/rna'
+    response = requests.get(rnacentral_url, params={'urs': urs_accession})
+
+    data = response.json()
+
+    if data['count'] > 0:
+        return data['results'][0]
+
+
+# ----------------------------------------------------------------------------------
+
+def rnacentral_csv_2_rfamseq(rnac_csv, source, delimiter='\t'):
+    """
+
+    rnac_csv:
+
+    return:
+    """
+
+    # 53,URS0000BFE20F,12908,ZWD:JCVI_SCAF_1096626860522/137-85,unclassified sequences glnA RNA,ncRNA,ncRNA
+    csv_in = open(rnac_csv, 'r')
+
+    for line in csv_in:
+        line = line.strip().split(delimiter)
+        rfamseq_acc = line[1] + '_' + line[2]
+        version = "000000"
+        ncbi_id = line[2]
+
+        mol_type = ''
+        if line[6] not in INSDC_MOL_TYPES:
+            mol_type = "other"
+        else:
+            mol_type = line[6]
+
+        length = line[0]
+        description = line[4].replace('\"', '')
+
+        if line[3] == "accession":
+            prev_acc = ''
+        else:
+            prev_acc = line[3]
+
+        new_entry = '\t'.join([rfamseq_acc, rfamseq_acc, version, ncbi_id, mol_type,
+                           length, description, prev_acc, source])
+
+        print new_entry
+
+    csv_in.close()
+
+# --------------------------------------------------------------------------------
+
+
+def rnacentral_2_rfamseq(fasta_file):
+    """
+
+    fasta_file:
+    return:
+    """
+
+    fasta_fp = open(fasta_file, 'r')
+    rfamseq_entry = []
+
+    for line in fasta_fp:
+        if line[0] == '>':
+            urs_accession = line[1:].strip()
+
+            urs_metadata = fetch_rfamseq_metadata_from_rnacentral(urs_accession)
+
+            rfamseq_entry.append(urs_accession)
+            rfamseq_entry.append(urs_accession)
+            rfamseq_entry.append("000000")
+            rfamseq_entry.append(urs_accession.partition('_')[2])
+            rfamseq_entry.append(urs_metadata["rna_type"])
+            rfamseq_entry.append(str(urs_metadata["length"]))
+            rfamseq_entry.append(urs_metadata["description"])
+            rfamseq_entry.append("ZWD")
+
+            print ('\t'.join(rfamseq_entry))
+
+            rfamseq_entry = []
+
+    fasta_fp.close()
+
+# ----------------------------------------------------------------------------------
+
+
+def parse_arguments():
+    """
+    Basic argument parsing using python's argparse
+
+    return: void
+    """
+
+    parser = argparse.ArgumentParser(description="Script to convert RNAcentral sequence metadata to Rfamseq")
+
+    parser.add_argument("--rnac-csv",
+                        help="A valid csv file with RNAcentral sequence metadata", action="store")
+    parser.add_argument("--source",
+                        help="The source/database the metadata was obtained from (e.g. ZWD)", action="store")
+
+    return parser
+
 # ----------------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
+    parser = parse_arguments()
+    args = parser.parse_args()
+
+    rnacentral_csv_2_rfamseq(args.rnac_csv, args.source)
+
+    """
 
     fasta_file = sys.argv[1]
     rnac_metadata_file = sys.argv[2]
 
     generate_rfamseq_tsv_dump(fasta_file, rnac_metadata_file, to_file=False)
+
+    """

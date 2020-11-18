@@ -33,13 +33,13 @@ Description: A set of database functions to ease processing and data
 
 # ---------------------------------IMPORTS---------------------------------
 
-import os
-import sys
-import string
 import json
+import os
+import string
+import sys
 
-from utils import RfamDB
 from scripts.export.genomes import fetch_gen_metadata as fgm
+from utils import RfamDB
 
 # -------------------------------------------------------------------------
 
@@ -1056,11 +1056,58 @@ def update_assembly_names(upid_gca_file):
 
 # ----------------------------------------------------------------------------
 
+def fetch_metagenomic_regions():
+    """
+    Fetches all seed_region entries
 
-if __name__ == "__main__":
+    return: A list of tuples with all seed_region entries
+    """
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    # update is_significant field to 0
+    query = ("Select rfam_acc, umgseq_acc, seq_start, seq_end "
+             "from meta_full_region")
+
+    cursor.execute(query)
+
+    region_rows = cursor.fetchall()
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+
+    return region_rows
+
+# ----------------------------------------------------------------------------
+
+def update_metagenomic_region_md5s(data):
 
     """
-    TO DO: Develop a script to call all of these functions after running the view
-    processes
+    Updates md5 fields of the seed region table
+
+    data: A list of tuples specifying the entries to populate
+
+    return: void
     """
-    set_number_of_genomic_significant_hits(None)
+
+    # connect to db
+    cnx = RfamDB.connect()
+
+    # get a new buffered cursor
+    cursor = cnx.cursor(buffered=True)
+
+    # update is_significant field to 0
+    query = ("UPDATE meta_full_region SET md5=%s WHERE rfam_acc=%s "
+             "AND rfamseq_acc=%s AND seq_start=%s AND seq_end=%s")
+
+    cursor.executemany(query, data)
+
+    cnx.commit()
+
+    cursor.close()
+    RfamDB.disconnect(cnx)
+

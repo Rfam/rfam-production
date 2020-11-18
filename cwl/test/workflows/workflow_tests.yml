@@ -1,0 +1,18 @@
+# Run with:
+# cwltest --test workflows_tests.yml
+
+# Genome scanner
+- doc: Functional tests for genome scanner
+  job: genome_scanner/test.yml
+  tool: ../../workflows/genome_scanner.cwl
+  should_fail: false
+  output:
+    cmsearch_matches:
+      - basename: RF02567.fa_matches.tbl
+        class: File
+        size: 2258
+    chunked_sequence:
+      - format: http://edamontology.org/format_1929
+        basename: RF02567.fa
+        class: File
+        size: 2431

@@ -1,0 +1,7 @@
+sequences:
+  class: File
+  path: ./RF02567.fa
+  format: http://edamontology.org/format_1929
+covariance_model_database:
+  class: File
+  path: ./RF02567.cm

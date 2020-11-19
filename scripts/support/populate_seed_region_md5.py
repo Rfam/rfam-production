@@ -23,7 +23,7 @@ def fetch_sequence(seq_file, seq_acc, seq_start, seq_end):
     """
     cmd = "%s %s %s/%s-%s" % (ESL_PATH,
                                  seq_file, str(seq_acc),
-				 str(seq_start), str(seq_end))
+                              str(seq_start), str(seq_end))
 
     proc = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE)
@@ -57,24 +57,20 @@ if __name__ == '__main__':
 
         # Replace Us with Ts as done by RNAcentral
         sequence = sequence.replace('U', 'T')
-        
-	if sequence != '' and len(sequence) > 2:
-		# convert sequence to md5
-        	m = hashlib.md5()
-        	m.update(sequence)
-        	seq_md5 = m.hexdigest()
-		# update tuple
-        	rfam_acc = seq_region[0]
-        	extended_tuple = (seq_md5, rfam_acc, seq_acc, seq_start, seq_end)
-        	# add to new list
-        	sql_data_list.append(extended_tuple)
-        	extended_tuple = None
 
-	else:
-		print seq_region
+    if sequence != '' and len(sequence) > 2:
+        # convert sequence to md5
+        m = hashlib.md5()
+        m.update(sequence)
+        seq_md5 = m.hexdigest()
+        # update tuple
+        rfam_acc = seq_region[0]
+        extended_tuple = (seq_md5, rfam_acc, seq_acc, seq_start, seq_end)
+        # add to new list
+        sql_data_list.append(extended_tuple)
+        extended_tuple = None
+
+    else:
+        print seq_region
     # update seed_region md5s
     #sr.update_seed_region_md5s(sql_data_list)
-
-
-
-

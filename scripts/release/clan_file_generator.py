@@ -13,6 +13,7 @@ limitations under the License.
 
 import os
 import sys
+import argparse
 from utils import db_utils as rfamdb
 
 # loop over all files and sort using unix sort command to group duplicate seq_acc
@@ -94,19 +95,37 @@ def clan_file_generator(output_dir, clan_comp_type='FULL', clan_acc=None):
 
 # -----------------------------------------------------------------------------
 
+
+def parse_arguments():
+    """
+    Performs some basic argument parsing
+
+    return: parser object
+    """
+
+    parser = argparse.ArgumentParser(description='Generates required clan competition input files')
+
+    parser.add_argument("--dest-dir", help="Destination directory where to generate the files", type=str)
+    parser.add_argument("--cc-type", help="Specifies clan competition type FULL/PDB", type=str)
+    parser.add_argument("--clan-acc", help="Clan accession", type=str)
+
+    return parser
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     # arg1: path to output directory
     # arg2: clan competition type 'FULL' for full_region 'PDB' for pdb_full_region
     # arg3: clan accession if we only want to generate a file for a single clan
 
-    if len(sys.argv) == 3:
-        clan_file_generator(sys.argv[1], sys.argv[2], None)
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-    elif len(sys.argv) == 4:
-        clan_file_generator(sys.argv[1], sys.argv[2], sys.argv[3])
+    if args.clan_acc:
+        clan_file_generator(args.dest_dir, args.cc_type, args.clan_acc)
 
     else:
-        sys.exit("\nIncorrect number of arguments..")
+        clan_file_generator(args.dest_dir, args.cc_type, None)
 
 

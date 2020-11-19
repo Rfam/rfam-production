@@ -72,7 +72,7 @@ def wet_wgs_genome_entry(upid, domain, gca_acc=''):
 
     # genome length fields
     # entry_value_list.append(str(ena_metadata["total_length"]))
-    entry_value_list.append('N')
+    entry_value_list.append('\N')
     # entry_value_list.append(str(ena_metadata["ungapped_length"]))
     entry_value_list.append('\N')
     # entry_value_list.append(str(ena_metadata["circular"]))

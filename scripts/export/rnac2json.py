@@ -13,16 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+"""
+Requires esl-fetch to be added to PATH
+"""
+
 import json
 import logging
 import os
 import re
 import string
 import subprocess
-import sys
+import argparse
 import urllib2
 
-from config import config_local as cl
 from config import rfam_config as rfc
 
 LSF_MODE = False
@@ -45,24 +48,11 @@ VERSION = 13
 SPECIES = 14
 TAX_STR = 15
 
-ESL_LOCAL = cl.ESL_PATH
-ESL_FSEQ_PATH = rfc.ESL_PATH
-FSR_PATH = rfc.FSR_PATH
-FSR_LOCAL = cl.FSR_LOCAL
 ENA_URL = rfc.ENA_URL
 TMP_PATH = rfc.TMP_PATH
 
-ESL_PATH = None
-
-if LSF_MODE is False:
-    ESL_PATH = ESL_LOCAL
-elif LSF_MODE is True:
-    ESL_PATH = ESL_FSEQ_PATH
-else:
-    sys.exit("\nLSF_MODE has not been set properly.")
-
-
 # -------------------------------------------------------------------------
+
 
 def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
     """
@@ -108,7 +98,7 @@ def rnac_to_json(rfam2rnac_file, fasta_dir, no_seqs=None, out_dir=None):
             seq_id = entry[SEQACC] + '/' + \
                      entry[SEQ_START] + '-' + entry[SEQ_END]
 
-            cmd = "%s %s %s" % (ESL_PATH, fam_fa_path, seq_id)
+            cmd = "esl-sfetch %s %s" % (fam_fa_path, seq_id)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
             seq = proc.communicate()[0]
@@ -176,7 +166,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
         out_dir = seq_dir
 
     seq_files = os.listdir(seq_dir)
-    seq_files = filter(lambda x: string.find(x, ".out") != -1, seq_files)
+    seq_files = filter(lambda x: string.find(x, ".txt") != -1, seq_files)
 
     # open a new log file and keep track of the sequences not found in the
     logging.basicConfig(filename=os.path.join(out_dir, "obsolete_seqs.log"),
@@ -204,7 +194,7 @@ def rnac_to_json_multi(seq_dir, fasta_dir, out_dir=None):
                 seq_id = entry[SEQACC] + '/' + \
                          entry[SEQ_START] + '-' + entry[SEQ_END]
 
-                cmd = "%s %s %s" % (ESL_PATH, seq_file_path, seq_id)
+                cmd = "esl-sfetch %s %s" % (seq_file_path, seq_id)
 
                 proc = subprocess.Popen(
                     cmd, shell=True, stdout=subprocess.PIPE)
@@ -301,7 +291,16 @@ def build_json_dict(entry, sequence):
     edict["references"] = references
 
     ontology = map(lambda x: x.strip(), entry[DBXREFS].split(','))
-    edict["ontology"] = ontology
+    ontology_dict = {}
+
+    if len(ontology) > 0:
+        for ontology_element in ontology:
+            elements = ontology_element.partition(':')
+            ontology_dict[elements[0]] = elements[2]
+    
+        edict["ontology"] = ontology_dict
+    else:
+        edict["ontology"] = ontology
 
     return edict
 
@@ -412,8 +411,7 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
                 f_temp.write(seq_id)
                 f_temp.close()
 
-                cmd = "%s %s %s %s" % (
-                    FSR_LOCAL, fam_fa_path, lfile_path, ofile_path)
+                cmd = "esl-sfetch %s %s %s" % (fam_fa_path, lfile_path, ofile_path)
 
                 # call faSomeRecords to retrieve sequence
                 subprocess.call(cmd, shell=True)
@@ -464,42 +462,34 @@ def fa_some_records_to_json(seq_dir, fasta_dir, out_dir=None):
 
 # -----------------------------------------------------------------------------
 
-def usage():
+def parse_arguments():
     """
-    Prints out guidelines on how to run rnac2json script.
+    Basic argument parsing using Python's argparse
+
+    return: Argparse parser object
     """
 
-    print "\nUsage:\n-----"
+    parser = argparse.ArgumentParser("Tool to convert rnacentral export to json")
 
-    print "\nrnac2json.py seq_dir fasta_files [out_dir]"
+    parser.add_argument("--input",
+                        help="A directory of multiple (Rfam2RNAcentral.pl) dump files",
+                        action="store")
+    parser.add_argument("--rfam-fasta",
+                        help="The directory of fasta_files of the current Rfam release",
+                        action="store")
+    parser.add_argument("--outdir", help='Output directory', action="store", default=None)
 
-    print "\nseq_dir: A directory of multiple (Rfam2RNAcentral.pl) db \
-            dump files"
-
-    print "fasta_files: The directory of fasta_files of the current RFAM release"
-
-    print "\nrnac2json.py -h for help\n"
-
+    return parser
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    if sys.argv[1] == '-h':
-        usage()
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-    elif len(sys.argv) >= 3:
-        seq_dir = sys.argv[1]  # directory of rfam2rnac dump files
-        fasta_dir = sys.argv[2]  # directory of fasta_files
-        out_dir = None  # output directory
+    seq_dir = args.input
+    fasta_dir = args.rfam_fasta
+    outdir = args.outdir
 
-        if len(sys.argv) == 4:
-            out_dir = sys.argv[3]
-
-        rnac_to_json_multi(seq_dir, fasta_dir, out_dir)
-
-    else:
-        usage()
-
-        # NOTE: when the out_dir is None the output is generated within the input
-        # directory
+    rnac_to_json_multi(seq_dir, fasta_dir, outdir)

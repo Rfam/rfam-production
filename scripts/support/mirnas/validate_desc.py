@@ -52,8 +52,8 @@ def parse_arguments():
 def get_mirna_directory_location(mirna_id):
 	
 	
-        if accession.find("_relabelled")==-1:
-		dir_label = accession+"_relabelled"
+        if mirna_id.find("_relabelled")==-1:
+		dir_label = mirna_id+"_relabelled"
 
         for search_dir in search_dirs:
         	family_dir_loc = os.path.join(search_dir, dir_label)

@@ -9,7 +9,7 @@ isodate==0.5.4
 jsonschema==2.5.1
 keepalive==0.5
 lockfile==0.12.2
-luigi==2.2.0
+luigi==2.8.0
 pyparsing==2.1.5
 python-daemon==2.1.1
 rdflib==4.2.1

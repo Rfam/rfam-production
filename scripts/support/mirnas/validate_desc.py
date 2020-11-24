@@ -74,7 +74,7 @@ if __name__=='__main__':
 	fp.close()
 
 	for mirna in mirnas:
-		mirna_dir_loc = get_mirna_directory_location(mirna_id)
+		mirna_dir_loc = get_mirna_directory_location(mirna)
 		if mirna_dir_loc is not None:
 			desc_loc = os.path.join(mirna_dir_loc, "DESC")
 			if os.path.exists(desc_loc):

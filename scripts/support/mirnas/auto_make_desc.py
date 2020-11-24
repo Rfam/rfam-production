@@ -63,7 +63,7 @@ if __name__=='__main__':
 
 
 	parser = parse_arguments()
-	args = parser.parser_args()
+	args = parser.parse_args()
 
 	json_file = args.mirna_ids
 	wiki_links = args.wiki_links

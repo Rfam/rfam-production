@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import argparse
 import subprocess
 
 searchdirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches", 
@@ -46,10 +47,26 @@ def auto_desc_make(family_accession, wiki_links_file):
 # --------------------------------------------------------------------------------------------------
 
 
+def parse_arguments():
+
+	parser = argparse.ArgumentParser()
+	
+	parser.add_argument("--mirna-ids", help="A .json file containing all miRNAs to generate DESC files for", action="store")
+	parser.add_argument("--wiki-links", help="A file listing all possible miRNA wiki links", action="store")
+
+	return parser
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__=='__main__':
 
-	json_file = sys.argv[1]
-	wiki_links = sys.argv[2]
+
+	parser = parse_arguments()
+	args = parser.parser_args()
+
+	json_file = args.mirna_ids
+	wiki_links = args.wiki_links
 	
 	fp = open(json_file, 'r')
 	accessions = json.load(fp)

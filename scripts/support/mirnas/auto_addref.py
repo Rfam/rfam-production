@@ -20,10 +20,10 @@ LSF_GROUP = "/family_srch"
 # ------------------------------------------------------------------------------------
 
 
-def auto_addref(thresholds_file):
+def auto_addref(thresholds_file, reference):
     
     cmd = ("bsub -M %s -o %s -e %s -n %s -g %s -q production-rh74 "
-               "-J %s \"cd %s && add_ref.pl 30423142\"")
+               "-J %s \"cd %s && add_ref.pl %s\"")
 
     fp = open(thresholds_file, 'r')
     thresholds = json.load(fp)
@@ -42,7 +42,7 @@ def auto_addref(thresholds_file):
                 lsf_out_file = os.path.join(family_dir, "auto_add_ref.out")
 		job_name = family
 
-  		subprocess.call(cmd % (MEMORY, lsf_out_file, lsf_err_file, CPU, LSF_GROUP, job_name, family_dir), shell=True)
+  		subprocess.call(cmd % (MEMORY, lsf_out_file, lsf_err_file, CPU, LSF_GROUP, job_name, family_dir, reference), shell=True)
             else:
                 continue
 
@@ -50,12 +50,19 @@ def auto_addref(thresholds_file):
 
 def parse_arguments():
 
-	pass
+	parser = argparse.ArgumentParser()
+	
+	parser.add_argument("--mirna-list", help="A json file with all miRNA candidates", action="store")
+	parser.add_argument("--ref", help="A string indicating the PubMed id to use for reference", action="store", default="30423142")
+
+	return parser
 
 # ------------------------------------------------------------------------------------
 
 if __name__=='__main__':
 
-	json_file = sys.argv[1]
 
-	auto_addref(json_file)
+	parser = parse_arguments()
+	args = parser.parse_args()
+	
+	auto_addref(args.mirna_list, args.ref)

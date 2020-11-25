@@ -51,9 +51,12 @@ def parse_arguments():
 
 	parser = argparse.ArgumentParser()
 	
-	parser.add_argument("--mirna-ids", help="A .json file containing all miRNAs to generate DESC files for", action="store")
-	parser.add_argument("--wiki-links", help="A file listing all possible miRNA wiki links", action="store")
-
+	parser.add_argument("--mirna-ids", help="A .json file containing all miRNAs to generate DESC files for", 
+				action="store")
+	parser.add_argument("--wiki-links", help="A file listing all possible miRNA wiki links", 
+				action="store")
+	parser.add_argument("--no-ref", help="Rewrites the DESC ommitting any reference lines", 
+				action="store_true", default=False)
 	return parser
 
 # --------------------------------------------------------------------------------------------------

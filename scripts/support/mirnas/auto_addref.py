@@ -46,7 +46,34 @@ def auto_addref(thresholds_file, reference):
             else:
                 continue
 
+
 # ------------------------------------------------------------------------------------
+
+
+def add_ref_sequentially(thresholds_file, reference):
+
+	cmd = ("add_ref.pl %s" % reference)
+
+	fp = open(thresholds_file, 'r')
+	thresholds = json.load(fp)
+	fp.close()
+
+	for family in thresholds.keys():
+        	for searchdir in searchdirs:
+            	family_dir = ""
+
+            	if family.find("relabelled") == -1:
+                	family_dir = os.path.join(searchdir, family + "_relabelled")
+            	else:
+                	family_dir = os.path.join(searchdir, family)
+
+            	if os.path.exists(family_dir):
+			# move to family directory
+			os.chdir(family_dir)
+			subprocess.call(cmd, shell=True)
+		
+# ------------------------------------------------------------------------------------
+
 
 def parse_arguments():
 
@@ -58,6 +85,7 @@ def parse_arguments():
 	return parser
 
 # ------------------------------------------------------------------------------------
+
 
 if __name__=='__main__':
 

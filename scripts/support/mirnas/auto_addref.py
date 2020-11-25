@@ -61,17 +61,17 @@ def add_ref_sequentially(thresholds_file, reference):
 
 	for family in thresholds.keys():
         	for searchdir in searchdirs:
-            	family_dir = ""
+        	    	family_dir = ""
 
-            	if family.find("relabelled") == -1:
-                	family_dir = os.path.join(searchdir, family + "_relabelled")
-            	else:
-                	family_dir = os.path.join(searchdir, family)
+            		if family.find("relabelled") == -1:
+                		family_dir = os.path.join(searchdir, family + "_relabelled")
+            		else:
+                		family_dir = os.path.join(searchdir, family)
 
-            	if os.path.exists(family_dir):
-			# move to family directory
-			os.chdir(family_dir)
-			subprocess.call(cmd, shell=True)
+            		if os.path.exists(family_dir):
+				# move to family directory
+				os.chdir(family_dir)
+				subprocess.call(cmd, shell=True)
 		
 # ------------------------------------------------------------------------------------
 

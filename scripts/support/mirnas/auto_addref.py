@@ -80,8 +80,12 @@ def parse_arguments():
 
 	parser = argparse.ArgumentParser()
 	
-	parser.add_argument("--mirna-list", help="A json file with all miRNA candidates", action="store")
-	parser.add_argument("--ref", help="A string indicating the PubMed id to use for reference", action="store", default="30423142")
+	parser.add_argument("--mirna-list", help="A json file with all miRNA candidates", 
+			action="store")
+	parser.add_argument("--ref", help="A string indicating the PubMed id to use for reference", 
+			action="store", default="30423142")
+	parser.add_argument("--sequential", help="Modify DESC files sequentially", 
+			action="store_true", default=False)
 
 	return parser
 
@@ -90,8 +94,10 @@ def parse_arguments():
 
 if __name__=='__main__':
 
-
 	parser = parse_arguments()
 	args = parser.parse_args()
 	
-	auto_addref(args.mirna_list, args.ref)
+	if args.sequential is False:
+		auto_addref(args.mirna_list, args.ref)
+	else:
+		add_ref_sequentially(args.mirna_list, args.ref)

@@ -27,6 +27,7 @@ def auto_addref(thresholds_file, reference):
 
     fp = open(thresholds_file, 'r')
     thresholds = json.load(fp)
+    fp.close()
 
     for family in thresholds.keys():
         for searchdir in searchdirs:

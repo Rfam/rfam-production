@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import subprocess
+import logging
 
 from subprocess import Popen, PIPE
 
@@ -28,14 +29,16 @@ RL   Nucleic Acids Res. 2019;47:D155."""
 
 def check_desc_reference_is_valid(desc_loc, ref_string):
 
-	process = Popen(["grep", ref_string, desc_loc], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output = process.communicate()[1]
+	fp = open(desc_loc, 'r')
+	desc_lines = fp.read()
+	fp.close()
+	
+	# check if we can find the reference lines in DESC
+        if desc_lines.find(REF_STRING) != -1:
+		return True	
 
-        if output.find(ref_string) == -1:
-                return False
-
-	return True
-
+	return False
+	
 # ------------------------------------------------------------------------------------------
 
 def parse_arguments():
@@ -66,12 +69,16 @@ def get_mirna_directory_location(mirna_id):
 
 if __name__=='__main__':
 
+		
 	parser = parse_arguments()
 	args = parser.parse_args()
 
 	fp = open(args.mirna_list, 'r')
 	mirnas = json.load(fp)
 	fp.close()
+
+	
+#	if args.log is True:
 
 	for mirna in mirnas:
 		mirna_dir_loc = get_mirna_directory_location(mirna)
@@ -81,8 +88,8 @@ if __name__=='__main__':
 				check = check_desc_reference_is_valid(desc_loc, REF_STRING)
 				if check is False:
 					print (mirna_dir_loc)
-					
+				
 		
 	
 
-
+	

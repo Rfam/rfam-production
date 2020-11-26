@@ -43,6 +43,7 @@ def parse_arguments():
 	parser = argparse.ArgumentParser()
 	
 	parser.add_argument("--mirna-list", help="A .json file containing all miRNAs to validate", action="store")
+	parser.add_argument("--desc", help="Only perform DESC validation", action="store_true", default=False)
 	parser.add_argument("--log", help="Creates a log file with all validated DESC files", action="store_true", default=False)
 
 	return parser	
@@ -80,11 +81,12 @@ if __name__=='__main__':
 	for mirna in mirnas:
 		mirna_dir_loc = get_mirna_directory_location(mirna)
 		if mirna_dir_loc is not None:
-			desc_loc = os.path.join(mirna_dir_loc, "DESC")
-			if os.path.exists(desc_loc):
-				check = check_desc_reference_is_valid(desc_loc, REF_STRING)
-				if check is False:
-					print (mirna_dir_loc)
+			if args.desc is True:
+				desc_loc = os.path.join(mirna_dir_loc, "DESC")
+				if os.path.exists(desc_loc):
+					check = check_desc_reference_is_valid(desc_loc, REF_STRING)
+					if check is False:
+						print (mirna_dir_loc)
 				
 		
 	

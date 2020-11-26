@@ -33,7 +33,7 @@ def parse_arguments():
 	
 	parser = argparse.ArgumentParser()
 	
-	parser.add_argument("--uuid", 
+	parser.add_argument("--uuids", 
 		help="A tab delimited file listing Rfam uuids and family accessions", 
 		action="store")
 	parser.add_argument("--log-dir", 

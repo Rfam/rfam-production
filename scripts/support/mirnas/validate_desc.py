@@ -1,10 +1,7 @@
 import os
 import json
 import argparse
-import subprocess
 import logging
-
-from subprocess import Popen, PIPE
 
 # ------------------------------------------------------------------------------------------
 

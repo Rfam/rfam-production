@@ -1,10 +1,16 @@
 import os
 import sys
+import argparse
 import subprocess
+
+
+# ---------------------------------------------------------------------------
+
 
 MEMORY = 20000
 CPU = 4
 LSF_GROUP = "/family_srch"
+
 
 # ---------------------------------------------------------------------------
 
@@ -24,10 +30,27 @@ def run_view_processes(rfam_acc, uuid, log_dir):
 # ---------------------------------------------------------------------------
 
 
+def parse_arguments():
+	
+	parser = argparse.ArgumentParser()
+	
+	parser.add_argument("--uuid", 
+		help="A tab delimited file listing Rfam uuids and family accessions", 
+		action="store")
+	parser.add_argument("--log-dir", 
+		help="A destination directory to keep some logs", 
+		action="store")
+
+# ---------------------------------------------------------------------------
+
+
 if __name__=='__main__':
 
-	log_dir = sys.argv[2]
-	id_file = sys.argv[1]
+	parser = parse_arguments()
+	args = parser.parse_args()
+
+	log_dir = args.log_dir
+	id_file = args.uuids
 
 	fp = open(id_file, 'r')
 	

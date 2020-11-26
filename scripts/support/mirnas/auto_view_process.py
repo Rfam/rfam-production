@@ -1,5 +1,4 @@
 import os
-import sys
 import argparse
 import subprocess
 
@@ -40,6 +39,9 @@ def parse_arguments():
 	parser.add_argument("--log-dir", 
 		help="A destination directory to keep some logs", 
 		action="store")
+
+	return parser
+
 
 # ---------------------------------------------------------------------------
 

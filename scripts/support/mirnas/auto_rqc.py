@@ -48,23 +48,29 @@ def check_family_passes_qc(family_dir):
 # ---------------------------------------------------------------------------------------------
 
 
-def parse_rqc_output(rqc_output):
-
-	dir_elements = os.path.split(family_dir)
-        parent_dir = dir_elements[0]
-
-        os.chdir(parent_dir)
+def find_rqc_error(rqc_output):
 
 	error_types = {"CM": 0, "FORMAT": 0, "OVERLAP": 0, "STRUCTURE": 0,
-			}
-	# develop functionality here
+			"MISSING": 0, "SEQUENCE": 0, "NON-CODING": 0}
+	
+	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
+	
+	error_type_count = len(error_types.keys())
+
+	success_string = "--%s check completed with no major errors"
+
+	for error_type in error_types.keys():
+		for rqc_line in rqc_lines:
+			if rqc_line == success_string % error_type:
+				error_types[error_type] = 1
+				break
 
 	return error_types
 
 # ---------------------------------------------------------------------------------------------
 
 
-def fetch_rqc_output(family_dir ):
+def fetch_rqc_output(family_dir):
 
 	dir_elements = os.path.split(family_dir)
         parent_dir = dir_elements[0]
@@ -120,6 +126,6 @@ if __name__=='__main__':
 		for search_dir in search_dirs:
 			family_dir_loc = os.path.join(search_dir, dir_label)
 			if os.path.exists(family_dir_loc):
-				print family_dir_loc
-				print fetch_rqc_output(family_dir_loc)
-				sys.exit()
+				#print family_dir_loc
+				rqc_output = fetch_rqc_output(family_dir_loc)
+				#print find_rqc_error(rqc_output)

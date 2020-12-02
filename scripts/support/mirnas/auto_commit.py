@@ -126,7 +126,7 @@ if __name__=='__main__':
 							check = commit_family(family_dir_loc, mirna_name)
 							if check is True:
 								committed[accession] = ""
-							print "Family %s committed" % (accession)
+								print ("Family %s committed" % (accession))
 							else:
 								fp.write(accession+'\n')
 				else:

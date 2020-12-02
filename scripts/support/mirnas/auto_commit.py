@@ -104,7 +104,7 @@ if __name__=='__main__':
 	#	del(miRNA_accessions[miRNA])
 	
 
-	fp = open(os.path.join(args.log_dir, 'successful_mirna_commits.log'), 'w')
+	fp = open(os.path.join(args.log_dir, 'failed_mirna_commits.log'), 'w')
 
 	for accession in miRNA_accessions.keys():
 		if accession not in committed:
@@ -127,7 +127,8 @@ if __name__=='__main__':
 							if check is True:
 								committed[accession] = ""
 							print "Family %s committed" % (accession)
-							fp.write(accession+'\n')
+							else:
+								fp.write(accession+'\n')
 				else:
 					continue
 

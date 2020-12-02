@@ -131,9 +131,11 @@ if __name__=='__main__':
 								fp.write(accession+'\n')
 				else:
 					continue
-
-	print ("\nDumping committed family list...")
+	# close log file
 	fp.close()
+	
+	# create a json dump with all successful family commits
+	print ("\nDumping committed family list...")
 	fp = open(os.path.join(args.log_dir,"committed_mirnas_"+str(date.today())+".json"), 'w')
 	json.dump(committed, fp)
 	fp.close()

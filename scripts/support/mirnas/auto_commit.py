@@ -1,8 +1,10 @@
 import os
 import sys
+import argparse
 import subprocess
 import json
 
+from datetime import date
 from subprocess import Popen, PIPE
 
 search_dirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
@@ -63,24 +65,46 @@ def commit_family(family_dir, mirna_name):
 # ---------------------------------------------------------------------------------------------
 
 
+def parse_arguments():
+	
+	parser = argparse.ArgumentParser()
+
+	parser.add_argument("--mirna-ids", help="A .json file with miRNAs to commit", action="store")
+	parser.add_argument("--skip", help="A list of miRNA ids to skip", action="store", default=None)
+	parser.add_argument("--log-dir", help="Log file destination", action="store", default=os.getcwd())
+	
+	return parser
+
+# ---------------------------------------------------------------------------------------------
+
+
 if __name__=='__main__':
 
-	fp = open(sys.argv[1], 'r')	
+
+	parser = parse_arguments()
+	args = parser.parse_args()
+
+	fp = open(args.mirna_ids, 'r')	
 	miRNA_accessions = json.load(fp)
 	fp.close()
 
-	fp = open("/hps/nobackup/production/xfam/rfam/RELEASES/14.3/input/existing_mirna_families.json", 'r')
-	existing_fams = json.load(fp)
-	fp.close()
+	existing_fams = {}
+	if args.skip is not None:
+		fp = open("/hps/nobackup/production/xfam/rfam/RELEASES/14.3/input/existing_mirna_families.json", 'r')
+		existing_fams = json.load(fp)
+		fp.close()
 
 	committed = {}
 	
-	skip = ["MIPF0001496__mir-6012", "MIPF0001508__mir-4504", "MIPF0001511__mir-4803"]
 	
-	for miRNA in skip:
-		del(miRNA_accessions[miRNA])
+	#skip = ["MIPF0001496__mir-6012", "MIPF0001508__mir-4504", "MIPF0001511__mir-4803"]
+	#skip = []
+
+	#for miRNA in skip:
+	#	del(miRNA_accessions[miRNA])
 	
-	fp = open(os.path.join(os.getcwd(), 'successful_mirna_commits.log'), 'w')
+
+	fp = open(os.path.join(args.log_dir, 'successful_mirna_commits.log'), 'w')
 
 	for accession in miRNA_accessions.keys():
 		if accession not in committed:
@@ -106,7 +130,10 @@ if __name__=='__main__':
 							fp.write(accession+'\n')
 				else:
 					continue
+
+	print ("\nDumping committed family list...")
 	fp.close()
-	fp = open("/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/support_code/committed_mirnas.json", 'w')
+	fp = open(os.path.join(args.log_dir,"committed_mirnas_"+str(date.today())+".json"), 'w')
 	json.dump(committed, fp)
 	fp.close()
+	print ("\nDone!\n")

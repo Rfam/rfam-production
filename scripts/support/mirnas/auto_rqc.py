@@ -92,7 +92,7 @@ def generate_rqc_report(rqc_error_types):
 
 # ---------------------------------------------------------------------------------------------
 
-def find_2_seed_family(rqc_output):
+def fetch_format_error_lines(rqc_output):
 
 	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
 
@@ -114,6 +114,16 @@ def find_2_seed_family(rqc_output):
 
 # ---------------------------------------------------------------------------------------------
 
+def check_error_is_fatal(error_lines):
+
+	error_string = "\n".join(error_lines)
+	
+	if error_string.find("FATAL") != -1:
+		return True
+
+	return False
+
+# ---------------------------------------------------------------------------------------------
 
 def extract_family_overlaps(rqc_output):
 
@@ -159,6 +169,8 @@ def parse_arguments():
 			action="store", default=os.getcwd())
 	parser.add_argument("--overlaps", help="Displays family overlaps", 
 			action="store_true", default=False)	
+	parser.add_argument("--format", help="Displays families failing FORMAT check", 
+			action="store_true", default=False)
 	
 	return parser
 
@@ -200,5 +212,8 @@ if __name__=='__main__':
 						overlaps = extract_family_overlaps(rqc_output)
 						for family in overlaps:
 							print ("%s\t%s"%(accession, family))
+				elif args.format:
+					if qc_error_dict["FORMAT"] == 1:
+						print (family_dir_loc)
 										
 				#print find_2_seed_family(rqc_output)

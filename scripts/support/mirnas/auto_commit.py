@@ -116,7 +116,7 @@ if __name__=='__main__':
 	#	del(miRNA_accessions[miRNA])
 	
 
-	fp = open(os.path.join(args.log_dir, 'failed_mirna_commits.log'), 'w')
+	fp = open(os.path.join(args.log_dir, 'failed_mirna_commits_'+str(date.today())+'.log'), 'w')
 
 	for accession in miRNA_accessions.keys():
 		if accession not in committed:

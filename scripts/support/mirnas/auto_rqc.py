@@ -50,8 +50,8 @@ def check_family_passes_qc(family_dir):
 
 def find_rqc_error(rqc_output):
 
-	error_types = {"CM": 0, "FORMAT": 0, "OVERLAP": 0, "STRUCTURE": 0,
-			"MISSING": 0, "SEQUENCE": 0, "NON-CODING": 0}
+	error_types = {"CM": 1, "FORMAT": 1, "OVERLAP": 1, "STRUCTURE": 1,
+			"MISSING": 1, "SEQUENCE": 1, "NON-CODING": 1}
 	
 	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
 	
@@ -61,8 +61,8 @@ def find_rqc_error(rqc_output):
 
 	for error_type in error_types.keys():
 		for rqc_line in rqc_lines:
-			if rqc_line == success_string % error_type:
-				error_types[error_type] = 1
+			if rqc_line.find(success_string % error_type) != -1:
+				error_types[error_type] = 0
 				break
 
 	return error_types

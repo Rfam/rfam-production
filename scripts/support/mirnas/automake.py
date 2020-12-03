@@ -41,7 +41,7 @@ def autorfmake(thresholds_file, serial=False):
 
 		if serial is True:
 			os.chdir(family_dir)
-			subprocess.call(serial_cmd % str(thresholds[family])), shell=True)
+			subprocess.call(serial_cmd % str(thresholds[family]), shell=True)
 
 		else:
 			lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")

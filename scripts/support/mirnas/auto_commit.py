@@ -3,6 +3,7 @@ import sys
 import argparse
 import subprocess
 import json
+import time
 
 from datetime import date
 from subprocess import Popen, PIPE
@@ -54,13 +55,21 @@ def commit_family(family_dir, mirna_name):
 	os.chdir(dir_elements[0])
 	family_dir = dir_elements[1]
 
-	process = Popen(['rfnew.pl', '-m', "\"Adding new miRNA family %s \""% (mirna_name), family_dir], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	process = Popen(['rfnew.pl', '-i', "\'spell\'", '-m', "\"Adding new miRNA family %s \""% (mirna_name), family_dir], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     	output = process.communicate()[1]
 
     	if output.find("This family has been asssigned the accession") == -1:
         	return False
 
     	return True
+
+# ---------------------------------------------------------------------------------------------
+
+
+def calculate_progress(num_to_commit, num_processed):
+
+	return num_processed*100/num_to_comit
+
 
 # ---------------------------------------------------------------------------------------------
 
@@ -72,8 +81,10 @@ def parse_arguments():
 	parser.add_argument("--mirna-ids", help="A .json file with miRNAs to commit", action="store")
 	parser.add_argument("--skip", help="A list of miRNA ids to skip", action="store", default=None)
 	parser.add_argument("--log-dir", help="Log file destination", action="store", default=os.getcwd())
+	parser.add_argument("--verbose", help="Display progress messages", action="store_true", default=False)
 	
 	return parser
+
 
 # ---------------------------------------------------------------------------------------------
 
@@ -96,7 +107,8 @@ if __name__=='__main__':
 
 	committed = {}
 	
-	
+	num_to_commit = len(miRNA_accessions.keys())
+	count_processed = 0
 	#skip = ["MIPF0001496__mir-6012", "MIPF0001508__mir-4504", "MIPF0001511__mir-4803"]
 	#skip = []
 
@@ -129,8 +141,12 @@ if __name__=='__main__':
 								print ("Family %s committed" % (accession))
 							else:
 								fp.write(accession+'\n')
+							count_processed += 1
 				else:
 					continue
+				
+				if args.verbose:
+					print ("%s%s families processed"%(calculate_progress(num_to_commit, count_processed)))
 	# close log file
 	fp.close()
 	

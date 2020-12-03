@@ -96,7 +96,7 @@ def find_2_seed_family(rqc_output):
 
 	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
 
-	structure_errors = []
+	error_lines = []
 
 	start = '(2) FORMAT CHECK'
 	end = '(3) OVERLAP CHECK'
@@ -108,9 +108,9 @@ def find_2_seed_family(rqc_output):
 		if line == end:
                         flag = False
 		if flag is True:
-			structure_errors.append(line)
+			error_lines.append(line)
 	
-	return structure_errors
+	return error_lines
 
 # ---------------------------------------------------------------------------------------------
 

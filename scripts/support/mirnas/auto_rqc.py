@@ -118,6 +118,8 @@ def find_2_seed_family(rqc_output):
 def extract_family_overlaps(rqc_output):
 
 	error_lines = []
+	
+	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
 
         start = '(3) OVERLAP CHECK'
         end = '(4) STRUCTURE CHECK'

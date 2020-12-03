@@ -193,7 +193,7 @@ if __name__=='__main__':
 				#if count != 0:
 				#if qc_error_dict["STRUCTURE"] == 1 or qc_error_dict["FORMAT"] == 1: 
 					#	print (family_dir_loc)
-				if args.overlap:	
+				if args.overlaps:	
 					if qc_error_dict["OVERLAP"] == 1:
 						overlaps = extract_family_overlaps(rqc_output)
 						for family in overlaps:

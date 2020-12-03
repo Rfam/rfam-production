@@ -75,4 +75,4 @@ if __name__=='__main__':
 
 	json_file = args.thresholds
 
-	autorfmake(json_file)
+	autorfmake(json_file, args.serial)

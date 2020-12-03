@@ -92,6 +92,60 @@ def generate_rqc_report(rqc_error_types):
 
 # ---------------------------------------------------------------------------------------------
 
+def find_2_seed_family(rqc_output):
+
+	rqc_lines = [x.strip() for x in rqc_output.split("\n") if x!='']
+
+	structure_errors = []
+
+	start = '(2) FORMAT CHECK'
+	end = '(3) OVERLAP CHECK'
+	flag = False
+
+	for line in rqc_lines:
+		if line == start:
+			flag = True
+		if line == end:
+                        flag = False
+		if flag is True:
+			structure_errors.append(line)
+	
+	return structure_errors
+
+# ---------------------------------------------------------------------------------------------
+
+
+def extract_family_overlaps(rqc_output):
+
+	error_lines = []
+
+        start = '(3) OVERLAP CHECK'
+        end = '(4) STRUCTURE CHECK'
+        flag = False
+
+	# read error lines
+        for line in rqc_lines:
+                if line == start:
+                        flag = True
+                if line == end:
+                        flag = False
+                if flag is True:
+                        error_lines.append(line)
+
+	overlap_accessions = {}
+	# process error lines
+	for line in error_lines:
+		rfam_acc = ""
+		if line.find("RF") != -1:
+			rfam_acc = line.split(':')[0][-7:]
+			if rfam_acc not in overlap_accessions:
+				overlap_accessions[rfam_acc] = ''
+	
+        return overlap_accessions.keys()
+
+
+# ---------------------------------------------------------------------------------------------
+
 
 def parse_arguments():
 	
@@ -128,4 +182,11 @@ if __name__=='__main__':
 			if os.path.exists(family_dir_loc):
 				#print family_dir_loc
 				rqc_output = fetch_rqc_output(family_dir_loc)
-				#print find_rqc_error(rqc_output)
+				qc_error_dict = find_rqc_error(rqc_output)
+				count = 0
+				for key in qc_error_dict.keys():
+					count = count + qc_error_dict[key]
+				if count != 0:
+					if qc_error_dict["STRUCTURE"] == 1 or qc_error_dict["FORMAT"] == 1: 
+						print (family_dir_loc)
+				#print find_2_seed_family(rqc_output)

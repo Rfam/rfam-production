@@ -151,8 +151,12 @@ def parse_arguments():
 	
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument("--mirna-ids", help="A .json file with miRNAs to commit", action="store")
-	parser.add_argument("--log-dir", help="Log file destination", action="store", default=os.getcwd())
+	parser.add_argument("--mirna-ids", help="A .json file with miRNAs to commit", 
+			action="store")
+	parser.add_argument("--log-dir", help="Log file destination", 
+			action="store", default=os.getcwd())
+	parser.add_argument("--overlaps", help="Displays family overlaps", 
+			action="store_true", default=False)	
 	
 	return parser
 
@@ -183,10 +187,16 @@ if __name__=='__main__':
 				#print family_dir_loc
 				rqc_output = fetch_rqc_output(family_dir_loc)
 				qc_error_dict = find_rqc_error(rqc_output)
-				count = 0
-				for key in qc_error_dict.keys():
-					count = count + qc_error_dict[key]
-				if count != 0:
-					if qc_error_dict["STRUCTURE"] == 1 or qc_error_dict["FORMAT"] == 1: 
-						print (family_dir_loc)
+				#count = 0
+				#for key in qc_error_dict.keys():
+				#	count = count + qc_error_dict[key]
+				#if count != 0:
+				#if qc_error_dict["STRUCTURE"] == 1 or qc_error_dict["FORMAT"] == 1: 
+					#	print (family_dir_loc)
+				if args.overlap:	
+					if qc_error_dict["OVERLAP"] == 1:
+						overlaps = extract_family_overlaps(rqc_output)
+						for family in overlaps:
+							print ("%s\t%s"%(accession, family))
+										
 				#print find_2_seed_family(rqc_output)

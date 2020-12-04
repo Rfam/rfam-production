@@ -55,7 +55,7 @@ def commit_family(family_dir, mirna_name):
 	os.chdir(dir_elements[0])
 	family_dir = dir_elements[1]
 
-	process = Popen(['rfnew.pl', '-i', "\'spell\'", '-m', "\"Adding new miRNA family %s \""% (mirna_name), family_dir], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	process = Popen(['rfnew.pl', '-m', "\"Adding new miRNA family %s \""% (mirna_name), family_dir], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     	output = process.communicate()[1]
 
     	if output.find("This family has been asssigned the accession") == -1:
@@ -82,6 +82,7 @@ def parse_arguments():
 	parser.add_argument("--skip", help="A list of miRNA ids to skip", action="store", default=None)
 	parser.add_argument("--log-dir", help="Log file destination", action="store", default=os.getcwd())
 	parser.add_argument("--verbose", help="Display progress messages", action="store_true", default=False)
+	parser.add_argument("--no-qc", help="Skips QC step", action="store_true", default=False)
 	
 	return parser
 
@@ -129,24 +130,37 @@ if __name__=='__main__':
 				if os.path.exists(family_dir_loc):
 					desc_file = os.path.join(family_dir_loc, "DESC")
 					if check_desc_ga(desc_file, miRNA_accessions[accession]) is True:
-						if check_family_passes_qc(family_dir_loc) is True:
+						check = False
+						if args.no_qc is True:
 							mirna_name = ""
+                                                        
+							if accession[0:2]=='MI':
+                                                                mirna_name = accession.split("_")[2]
+                                                        else:
+                                                                mirna_name = accession.split("_")[0]
+							
+							check = commit_family(family_dir_loc, mirna_name)
+
+						elif check_family_passes_qc(family_dir_loc) is True:
+							mirna_name = ""
+							
 							if accession[0:2]=='MI':
 								mirna_name = accession.split("_")[2]
 							else:
 								mirna_name = accession.split("_")[0]
 							check = commit_family(family_dir_loc, mirna_name)
-							if check is True:
-								committed[accession] = ""
-								print ("Family %s committed" % (accession))
-							else:
-								fp.write(accession+'\n')
-							count_processed += 1
+							
+						if check is True:
+							committed[accession] = ""
+							print ("Family %s committed" % (accession))
+						else:
+							fp.write(accession+'\n')
+						count_processed += 1
 				else:
 					continue
 				
-				if args.verbose:
-					print ("%s%s families processed"%(calculate_progress(num_to_commit, count_processed)))
+				#if args.verbose:
+				#	print ("%s%s families processed"%(calculate_progress(num_to_commit, count_processed)))
 	# close log file
 	fp.close()
 	

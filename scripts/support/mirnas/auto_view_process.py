@@ -8,7 +8,7 @@ import subprocess
 
 MEMORY = 20000
 CPU = 4
-LSF_GROUP = "/family_srch"
+LSF_GROUP = "/rfam_view"
 
 
 # ---------------------------------------------------------------------------

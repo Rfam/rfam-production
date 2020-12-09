@@ -43,7 +43,7 @@ MAX_JOBS = 50
 
 CREATE_SUBGROUP = "bgadd -L %s %s"
 
-SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+SEARCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
               "-f \"%s < %s\" "
               "-f \"%s < %s\" "
               "-f \"%s < %s\" "
@@ -52,7 +52,7 @@ SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s 
               "-a openmpi mpiexec -mca btl ^openib -np %s "
               "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 
-GROUP_AND_SRCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+GROUP_AND_SRCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
                       "-f %s < /tmp/%J.out "
                       "-f %s < /tmp/%J.inf "
                       "-f %s < /tmp/%J.err "
@@ -62,7 +62,7 @@ GROUP_AND_SRCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -
 
 """
 # unfiltered
-CMD_TEMPLATE_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+CMD_TEMPLATE_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
                     "-a openmpi mpiexec -mca btl ^openib -np %s "
                     "%s -o %s --tblout %s --acc --notextw --nohmmonly -Z %s --mpi %s %s")
 """

@@ -25,9 +25,6 @@ def parse_arguments():
     parser.add_argument("--num-genome-families", help="Sets number of families per genome",
                         action="store_true", default=False)
 
-    parser.add_argument("--num-genome-families", help="Sets number of families per genome",
-                        action="store_true", default=False)
-
     parser.add_argument("--genome-full", help="Sets number of full region hits per genome",
                         action="store_true", default=False)
 

@@ -33,7 +33,7 @@ Description: A set of database functions to ease processing and data
 
 # ---------------------------------IMPORTS---------------------------------
 
-impjson
+import json
 import os
 import string
 import sys

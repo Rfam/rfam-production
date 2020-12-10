@@ -213,7 +213,6 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               	CPU_NO, conf.CMSCAN, inf_out_file,
                                               	inf_tbl_file, size,
                                               	conf.CMFILE, chunk_loc)
-		print cmd	
                 subprocess.call(cmd, shell=True)
         # small enough genomes that don't need splitting
         else:
@@ -252,8 +251,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               CPU_NO, conf.CMSCAN, inf_out_file,
                                               inf_tbl_file, size,
                                               conf.CMFILE, seq_file_loc)
-		print cmd
-            	subprocess.call(cmd, shell=True)
+            	
+		subprocess.call(cmd, shell=True)
         
 	out_idx += 1
         if out_idx == SUB_DIRS:

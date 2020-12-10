@@ -111,7 +111,6 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
     :return:
     """
 
-    print "Here"
     fp = open(os.path.join(dest_dir,"result_locations.txt"),'w')
 
     # initialize output space
@@ -175,9 +174,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
             # list all smaller files
             genome_chunks = [x for x in os.listdir(gen_input_dir) if not x.endswith(".fa") or not x.endswith(".ssi") != -1]
             group_idx = out_idx
-	    print 5
-	    sys.exit()
-            # group_idx = 0
+            
+	    # group_idx = 0
             for genome_chunk in genome_chunks:
                 # index all sequence files
                 chunk_loc = os.path.join(gen_input_dir, genome_chunk)

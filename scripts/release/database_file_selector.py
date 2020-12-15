@@ -1,6 +1,6 @@
 import os
-import sys
 import shutil
+import argparse
 
 # -----------------------------------------------------------------------------------------
 
@@ -40,11 +40,34 @@ def create_ftp_database_files_folder(source, dest_dir):
 
 # -----------------------------------------------------------------------------------------
 
+
+def parse_arguments():
+    """
+    Basic Argument parsing using python's argparse
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--source-dir", help="Source directory containing a mysqldump database dump",
+                        action="store")
+    parser.add_argument("--dest-dir", help="Destination directory to create ftp database_files",
+                        action="store")
+
+    return parser
+
+# -----------------------------------------------------------------------------------------#
+
+
 if __name__ == "__main__":
 
     #TODO: Use argpase for proper argument parsing
 
-    source_dir = sys.argv[1]
-    dest_dir = sys.argv[2]
+    parser = parse_arguments()
+    args = parser.parse_args()
+
+    source_dir = args.source_dir
+    dest_dir = args.dest_dir
 
     create_ftp_database_files_folder(source_dir, dest_dir)

@@ -1,3 +1,4 @@
+import os
 import json
 import argparse
 
@@ -13,8 +14,8 @@ def parse_arguments():
                         action="store_true", default=False)
     parser.add_argument("--novel", help="Fetches all novel miRNA accessions (NOT in Rfam)",
                         action="store_true", default=False)
-
-
+    parser.add_argument("--dest-dir", help="Destination directory to generate output to",
+                        action="store", default=os.getcwd())
 
     return parser
 
@@ -77,4 +78,3 @@ if __name__ == '__main__':
     """
 
     family_accessions = extract_rfam_family_accessions(args.report)
-    

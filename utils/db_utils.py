@@ -1348,3 +1348,29 @@ def update_metagenomic_region_md5s(data):
     RfamDB.disconnect(cnx)
 
 # ----------------------------------------------------------------------------
+
+
+def fetch_family_tax_ids(rfam_acc):
+    """
+    Queries RfamLive and extracts all family taxonomy ids
+
+    rfam_acc: A valid Rfam family accession
+
+    return: A list of taxonomic ids associated with a specific Rfam family
+    """
+
+    query = """select distinct ncbi_id
+    from family_ncbi
+    where rfam_acc=\'%s\'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(buffered=True)
+
+    cursor.execute(query % rfam_acc)
+
+    tax_ids = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return tax_ids

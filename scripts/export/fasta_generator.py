@@ -266,7 +266,7 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
     for seq_type in seq_types:
 
-        if type == "FULL":
+        if seq_type == "FULL":
             # fetch sequence accessions for specific family - significant only!!
             query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
                           "FROM full_region fr JOIN rfamseq rf\n"
@@ -274,7 +274,7 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
                           "WHERE fr.is_significant=1\n"
                           "AND fr.type=\'full\'"
                           "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
-        elif type == "SEED":
+        elif seq_type == "SEED":
             query = ("SELECT sr.rfam_acc, sr.rfamseq_acc, sr.seq_start, sr.seq_end, rf.description\n"
                      "FROM seed_region sr JOIN rfamseq rf\n"
                      "ON sr.rfamseq_acc=rf.rfamseq_acc\n"
@@ -282,9 +282,8 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
         # execute the query
         cursor.execute(query)
-
-        for region in cursor:
-
+        
+	for region in cursor:
             cmd = ""
             if seq_type == "FULL":
                 cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
@@ -327,11 +326,11 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-    if os.path.exists(fp_out):
-        if os.path.getsize(fp_out) > 0:
-            return True
+    #if os.path.exists(fp_out):
+    #    #if os.path.getsize(fp_out) > 0:
+    #    return True
 
-    return False
+    return True
 
 # -----------------------------------------------------------------------------
 

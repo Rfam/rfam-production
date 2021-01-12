@@ -261,8 +261,8 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     query = None
 
     # open a new fasta output file
-    fp_out = gzip.open(
-        os.path.join(outdir, str(rfam_acc) + ".fa.gz"), 'w')
+    filename = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
+    fp_out = gzip.open(filename, 'w')
 
     for seq_type in seq_types:
 
@@ -326,11 +326,11 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-    #if os.path.exists(fp_out):
-    #    #if os.path.getsize(fp_out) > 0:
-    #    return True
+    if os.path.exists(filename):
+       if os.path.getsize(filename) > 0:
+           return True
 
-    return True
+    return False
 
 # -----------------------------------------------------------------------------
 

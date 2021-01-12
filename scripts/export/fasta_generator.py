@@ -390,4 +390,4 @@ if __name__ == '__main__':
     rfam_acc = args.acc
     output_dir = args.outdir
 
-    generate_fasta_single(sequence_file, rfam_acc, output_dir)
+    extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)

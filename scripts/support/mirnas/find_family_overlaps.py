@@ -72,7 +72,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--family-dir", help="Path to family directory")
-
+    # add parameter for family mapping
     return parser
 
 # ----------------------------------------------------------------

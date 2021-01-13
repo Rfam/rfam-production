@@ -261,12 +261,12 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     query = None
 
     # open a new fasta output file
-    fp_out = gzip.open(
-        os.path.join(outdir, str(rfam_acc) + ".fa.gz"), 'w')
+    filename = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
+    fp_out = gzip.open(filename, 'w')
 
     for seq_type in seq_types:
 
-        if type == "FULL":
+        if seq_type == "FULL":
             # fetch sequence accessions for specific family - significant only!!
             query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
                           "FROM full_region fr JOIN rfamseq rf\n"
@@ -274,7 +274,7 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
                           "WHERE fr.is_significant=1\n"
                           "AND fr.type=\'full\'"
                           "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
-        elif type == "SEED":
+        elif seq_type == "SEED":
             query = ("SELECT sr.rfam_acc, sr.rfamseq_acc, sr.seq_start, sr.seq_end, rf.description\n"
                      "FROM seed_region sr JOIN rfamseq rf\n"
                      "ON sr.rfamseq_acc=rf.rfamseq_acc\n"
@@ -282,9 +282,8 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
         # execute the query
         cursor.execute(query)
-
-        for region in cursor:
-
+        
+	for region in cursor:
             cmd = ""
             if seq_type == "FULL":
                 cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
@@ -327,9 +326,9 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-    if os.path.exists(fp_out):
-        if os.path.getsize(fp_out) > 0:
-            return True
+    if os.path.exists(filename):
+       if os.path.getsize(filename) > 0:
+           return True
 
     return False
 
@@ -390,4 +389,4 @@ if __name__ == '__main__':
     rfam_acc = args.acc
     output_dir = args.outdir
 
-    generate_fasta_single(sequence_file, rfam_acc, output_dir)
+    extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)

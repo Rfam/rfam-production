@@ -1374,3 +1374,63 @@ def fetch_family_tax_ids(rfam_acc):
     cnx.close()
 
     return tax_ids
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_family_full_regions(rfam_acc):
+    """
+    Fetches family regions from full_region table
+    :param rfam_acc:
+
+    :return: A dictionary with all FULL regions per accession belonging to a specific
+    family
+    """
+
+    query = """select rfamseq_acc, seq_start, seq_end
+        from full_region
+        where rfam_acc=\'%s\'
+        and is_significant=1"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query % rfam_acc)
+
+    regions = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return regions
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_family_seed_regions(rfam_acc, key_type="acc"):
+    """
+    Fetches family regions from full_region table
+    :param rfam_acc:
+
+    :return: A dictionary with all SEED regions per accession belonging to a specific
+    family
+    """
+
+    query = """select rfamseq_acc, seq_start, seq_end
+        from seed_region
+        where rfam_acc=\'%s\'"""
+
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query % rfam_acc)
+
+    regions = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return regions
+
+# ----------------------------------------------------------------------------

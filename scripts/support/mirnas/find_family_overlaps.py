@@ -1,6 +1,9 @@
 import os
 import argparse
 
+from utils import db_utils as db
+from scripts.processing import clan_competition as cc
+
 # ----------------------------------------------------------------
 
 
@@ -85,5 +88,5 @@ if __name__ == "__main__":
     outlist_info = parse_outlist_file(outlist_file)
     taxids = extract_tax_ids_from_species(species_file)
 
-    
+
 

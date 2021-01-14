@@ -160,21 +160,26 @@ if __name__ == "__main__":
     accessions = json.load(fp)
     fp.close()
 
+    family_overlap_counts = {}
+
     for rfam_acc in accessions.keys():
         # fetch family full region hits
         old_family_full_hits = db.fetch_family_full_regions(rfam_acc)
 
         # now work on the miRNA family
         # 1. Detect family dir location
+        mirna_id = accessions[rfam_acc]["mirna_id"]
         family_dir = get_family_location(accessions[rfam_acc]["mirna_id"])
+
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
         outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
         # 3. Find overlaps between the two families
-
         # only check new family hits
         overlap = 0
+        overlap_count = 0
+
         for accession in outlist_hits:
             old_hits = None
             if accession in old_family_full_hits:
@@ -182,6 +187,13 @@ if __name__ == "__main__":
                     for f_region in old_family_full_hits[accession]:
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
+                        # this ensures each region in the new family is only checked once
+                        # if no overlap found, it iterates over all superfamily hits
+                        if overlap >= 50:
+                            overlap_count += 1
+                            break
+
+        family_overlap_counts[mirna_id] = overlap_count
 
 
 

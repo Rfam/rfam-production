@@ -31,7 +31,8 @@ def parse_outlist_file(outlist_file):
                                                   "accession": line[3],
                                                   "start": int(line[5]),
                                                   "end": int(line[6])}
-        elif line.find("GA")!=-1:
+
+        elif line.find("CURRENT GA THRESHOLD:") != -1:
             seen_ga = True
 
     fp.close()
@@ -42,7 +43,7 @@ def parse_outlist_file(outlist_file):
 # ----------------------------------------------------------------
 
 
-def extract_outlist_hits_to_list(outlist_file):
+def extract_outlist_hits_to_list(outlist_file, sort=True):
     """
 
     :param outlist_file:
@@ -50,7 +51,7 @@ def extract_outlist_hits_to_list(outlist_file):
     :return:
     """
 
-    outlist_info = {}
+    outlist_hits = {}
 
     seen_ga = False
 
@@ -61,17 +62,21 @@ def extract_outlist_hits_to_list(outlist_file):
         if line[0] != '#' and not seen_ga:
             line = line.strip().split()
 
-            if line[3] not in outlist_info:
-                outlist_info[line[3]] = [(int(line[5]), int(line[6]))]
+            if line[3] not in outlist_hits:
+                outlist_hits[line[3]] = [(int(line[5]), int(line[6]))]
             else:
-                outlist_info[line[3]].append((int(line[5]), int(line[6])))
+                outlist_hits[line[3]].append((int(line[5]), int(line[6])))
 
-        elif line.find("GA") != -1:
+        elif line.find("CURRENT GA THRESHOLD:") != -1:
             seen_ga = True
 
     fp.close()
 
-    return outlist_info
+    if sort is True:
+        for accession in outlist_hits:
+            outlist_hits[accession].sort(key=lambda tup: tup[1])
+
+    return outlist_hits
 
 
 # ----------------------------------------------------------------
@@ -145,6 +150,7 @@ def parse_arguments():
 
 if __name__ == "__main__":
 
+
     parser = parse_arguments()
     args = parser.parse_args()
 
@@ -167,7 +173,6 @@ if __name__ == "__main__":
         # 3. Find overlaps between the two families
 
         cc.calc_seq_overlap()
-
 
 
 

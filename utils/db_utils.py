@@ -1378,7 +1378,7 @@ def fetch_family_tax_ids(rfam_acc):
 # ----------------------------------------------------------------------------
 
 
-def fetch_family_full_regions(rfam_acc):
+def fetch_family_full_regions(rfam_acc, sort=True):
     """
     Fetches family regions from full_region table
     :param rfam_acc:
@@ -1408,6 +1408,10 @@ def fetch_family_full_regions(rfam_acc):
 
     cursor.close()
     cnx.close()
+
+    if sort is True:
+        for accession in regions:
+            regions[accession].sort(key=lambda tup: tup[1])
 
     return regions
 

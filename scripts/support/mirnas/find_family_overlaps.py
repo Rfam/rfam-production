@@ -16,11 +16,13 @@ def parse_outlist_file(outlist_file):
     """
     outlist_info = {}
 
+    seen_ga = False
+
     fp = open(outlist_file, 'r')
 
     for line in fp:
         # if not a comment line
-        if line[0] != '#':
+        if line[0] != '#' and not seen_ga:
             line = line.strip().split()
             unique_accession = "_".join([line[3], line[5], line[6]])
             if unique_accession not in outlist_info:
@@ -29,6 +31,8 @@ def parse_outlist_file(outlist_file):
                                                   "accession": line[3],
                                                   "start": int(line[5]),
                                                   "end": int(line[6])}
+        elif line.find("GA")!=-1:
+            seen_ga = True
 
     fp.close()
 
@@ -36,7 +40,6 @@ def parse_outlist_file(outlist_file):
 
 
 # ----------------------------------------------------------------
-
 
 def extract_tax_ids_from_species(species_file):
     """
@@ -114,15 +117,21 @@ if __name__ == "__main__":
     accessions = json.load(fp)
     fp.close()
 
-
-
     for rfam_acc in accessions.keys():
+        # fetch family full region hits
+        full_hits = db.fetch_family_full_regions(rfam_acc)
 
+        # now work on the miRNA family
+        # 1. Detect family dir location
+        family_dir = get_family_location(accessions[rfam_acc]["mirna_id"])
+        # 2. Find outlist path and parse it
+        outlist_file_loc = os.path.join(family_dir, "outlist")
+        outlist_info = parse_outlist_file(outlist_file_loc)
 
-    species_file = os.path.join(args.family_dir, "species")
-    outlist_file = os.path.join(args.family_dir, "outlist")
+        # 3. Find overlaps between the two families
 
-    outlist_info = parse_outlist_file(outlist_file)
+        cc.calc_seq_overlap()
+
 
 
 

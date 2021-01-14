@@ -1414,7 +1414,7 @@ def fetch_family_full_regions(rfam_acc):
 # ----------------------------------------------------------------------------
 
 
-def fetch_family_seed_regions(rfam_acc, key_type="acc"):
+def fetch_family_seed_regions(rfam_acc):
     """
     Fetches family regions from full_region table
     :param rfam_acc:

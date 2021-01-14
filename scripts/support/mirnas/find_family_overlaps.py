@@ -73,6 +73,7 @@ def extract_outlist_hits_to_list(outlist_file, sort=True):
     fp.close()
 
     if sort is True:
+        # sorts hits by starting points
         for accession in outlist_hits:
             outlist_hits[accession].sort(key=lambda tup: tup[1])
 
@@ -161,18 +162,25 @@ if __name__ == "__main__":
 
     for rfam_acc in accessions.keys():
         # fetch family full region hits
-        full_hits = db.fetch_family_full_regions(rfam_acc)
+        old_family_full_hits = db.fetch_family_full_regions(rfam_acc)
 
         # now work on the miRNA family
         # 1. Detect family dir location
         family_dir = get_family_location(accessions[rfam_acc]["mirna_id"])
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
-        outlist_info = parse_outlist_file(outlist_file_loc)
+        outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
         # 3. Find overlaps between the two families
 
-        cc.calc_seq_overlap()
+        # only check new family hits
+        overlap = 0
+        for accession in outlist_hits:
+            old_hits = None
+            if accession in old_family_full_hits:
+                for region in outlist_hits[accession]:
+                    for f_region in old_family_full_hits[accession]:
+                        overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
 
 

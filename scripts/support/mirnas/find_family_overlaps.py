@@ -63,6 +63,31 @@ def extract_tax_ids_from_species(species_file):
 # ----------------------------------------------------------------
 
 
+def get_family_location(accession):
+    """
+
+    :param family_label:
+    :return:
+    """
+
+    search_dirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
+                   "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk2_searches",
+                   "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
+
+
+    dir_label = ''
+    if accession.find("_relabelled") == -1:
+        dir_label = accession + "_relabelled"
+
+    for search_dir in search_dirs:
+        family_dir_loc = os.path.join(search_dir, dir_label)
+        if os.path.exists(family_dir_loc):
+            return family_dir_loc
+
+    return None
+
+# ----------------------------------------------------------------
+
 def parse_arguments():
     """
 
@@ -72,7 +97,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--family-dir", help="Path to family directory")
-    # add parameter for family mapping
+    parser.add_argument("--accessions", help="A json file with old/new family mapppings")
+
     return parser
 
 # ----------------------------------------------------------------
@@ -82,11 +108,18 @@ if __name__ == "__main__":
     parser = parse_arguments()
     args = parser.parse_args()
 
+    # load accessions
+    fp = open(args.accessions, 'r')
+    accessions = json.load(fp)
+    fp.close()
+
     species_file = os.path.join(args.family_dir, "species")
     outlist_file = os.path.join(args.family_dir, "outlist")
 
     outlist_info = parse_outlist_file(outlist_file)
-    taxids = extract_tax_ids_from_species(species_file)
+
+
+
 
 
 

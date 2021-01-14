@@ -40,14 +40,19 @@ def extract_rfam_family_accessions(report_file):
 
     for line in fp:
         line = line.strip().split('\t')
-
+   
         overlap = float(line[4])
         if overlap < 100.0:
             if line[6].upper() != "DONE":
                 accession = line[3]
-                if len(line.split(',')) != 2:
-                    family_accessions[line[3]] = {"mirbase_id": line[0],
-                                                  "threshold": float(line[1]),
+                if accession.find(',') == -1:
+                    threshold = 0.0
+
+                    if line[1] != '':
+                        threshold = float(line[1])
+
+                    family_accessions[accession] = {"mirbase_id": line[0],
+                                                  "threshold": threshold,
                                                   "overlap": float(line[4])}
 
     fp.close()

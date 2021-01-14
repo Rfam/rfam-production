@@ -1398,7 +1398,13 @@ def fetch_family_full_regions(rfam_acc):
 
     cursor.execute(query % rfam_acc)
 
-    regions = cursor.fetchall()
+    regions = {}
+
+    for region in cursor.fetchall():
+        if region["rfamseq_acc"] not in regions:
+            regions[region["rfamseq_acc"]] = [(region["seq_start"], region["seq_end"])]
+        else:
+            regions[region["rfamseq_acc"]].append((region["seq_start"], region["seq_end"]))
 
     cursor.close()
     cnx.close()
@@ -1420,7 +1426,6 @@ def fetch_family_seed_regions(rfam_acc, key_type="acc"):
     query = """select rfamseq_acc, seq_start, seq_end
         from seed_region
         where rfam_acc=\'%s\'"""
-
 
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True)

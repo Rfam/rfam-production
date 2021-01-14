@@ -1402,9 +1402,9 @@ def fetch_family_full_regions(rfam_acc):
 
     for region in cursor.fetchall():
         if region["rfamseq_acc"] not in regions:
-            regions[region["rfamseq_acc"]] = [(region["seq_start"], region["seq_end"])]
+            regions[region["rfamseq_acc"]] = [(int(region["seq_start"]), int(region["seq_end"]))]
         else:
-            regions[region["rfamseq_acc"]].append((region["seq_start"], region["seq_end"]))
+            regions[region["rfamseq_acc"]].append((int(region["seq_start"]), int(region["seq_end"])))
 
     cursor.close()
     cnx.close()

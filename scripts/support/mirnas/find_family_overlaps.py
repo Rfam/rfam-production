@@ -41,6 +41,42 @@ def parse_outlist_file(outlist_file):
 
 # ----------------------------------------------------------------
 
+
+def extract_outlist_hits_to_list(outlist_file):
+    """
+
+    :param outlist_file:
+
+    :return:
+    """
+
+    outlist_info = {}
+
+    seen_ga = False
+
+    fp = open(outlist_file, 'r')
+
+    for line in fp:
+        # if not a comment line
+        if line[0] != '#' and not seen_ga:
+            line = line.strip().split()
+
+            if line[3] not in outlist_info:
+                outlist_info[line[3]] = [(int(line[5]), int(line[6]))]
+            else:
+                outlist_info[line[3]].append((int(line[5]), int(line[6])))
+
+        elif line.find("GA") != -1:
+            seen_ga = True
+
+    fp.close()
+
+    return outlist_info
+
+
+# ----------------------------------------------------------------
+
+
 def extract_tax_ids_from_species(species_file):
     """
 

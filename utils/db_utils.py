@@ -1390,7 +1390,8 @@ def fetch_family_full_regions(rfam_acc):
     query = """select rfamseq_acc, seq_start, seq_end
         from full_region
         where rfam_acc=\'%s\'
-        and is_significant=1"""
+        and is_significant=1
+        and type=\'full\'"""
 
     cnx = RfamDB.connect()
     cursor = cnx.cursor(dictionary=True)

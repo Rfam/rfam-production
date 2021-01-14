@@ -1,4 +1,5 @@
 import os
+import json
 import argparse
 
 from utils import db_utils as db
@@ -112,6 +113,11 @@ if __name__ == "__main__":
     fp = open(args.accessions, 'r')
     accessions = json.load(fp)
     fp.close()
+
+
+
+    for rfam_acc in accessions.keys():
+
 
     species_file = os.path.join(args.family_dir, "species")
     outlist_file = os.path.join(args.family_dir, "outlist")

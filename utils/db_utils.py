@@ -1411,6 +1411,7 @@ def fetch_family_full_regions(rfam_acc, sort=True):
 
     if sort is True:
         for accession in regions:
+            # sorts hits by start points
             regions[accession].sort(key=lambda tup: tup[1])
 
     return regions

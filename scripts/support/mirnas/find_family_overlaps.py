@@ -134,6 +134,17 @@ def get_family_location(accession):
 
 # ----------------------------------------------------------------
 
+def count_total_outlist_hits(outlist_hits):
+
+    num_hits = 0
+
+    for accession in outlist_hits.keys():
+        
+        num_hits += len(outlist_hits[accession])
+
+    return num_hits
+
+# ----------------------------------------------------------------
 def parse_arguments():
     """
 
@@ -194,8 +205,10 @@ if __name__ == "__main__":
                             break
 
         family_overlap_counts[mirna_id] = overlap_count
+        num_hits = count_total_outlist_hits(outlist_hits)
+	overlap_percentage = (family_overlap_counts[mirna_id] * 100) / outlist_hits
 
-
+	print "\t".join(rfam_acc, mirna_id, str(overlap_percentage))
 
 
 

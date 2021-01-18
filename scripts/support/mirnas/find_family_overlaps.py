@@ -134,6 +134,7 @@ def get_family_location(accession):
 
 # ----------------------------------------------------------------
 
+
 def count_total_outlist_hits(outlist_hits):
 
     num_hits = 0
@@ -145,6 +146,8 @@ def count_total_outlist_hits(outlist_hits):
     return num_hits
 
 # ----------------------------------------------------------------
+
+
 def parse_arguments():
     """
 
@@ -162,7 +165,6 @@ def parse_arguments():
 
 if __name__ == "__main__":
 
-
     parser = parse_arguments()
     args = parser.parse_args()
 
@@ -179,8 +181,8 @@ if __name__ == "__main__":
 
         # now work on the miRNA family
         # 1. Detect family dir location
-        mirna_id = accessions[rfam_acc]["mirna_id"]
-        family_dir = get_family_location(accessions[rfam_acc]["mirna_id"])
+        mirna_id = accessions[rfam_acc]["mirbase_id"]
+        family_dir = get_family_location(accessions[rfam_acc]["mirbase_id"])
 
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
@@ -206,9 +208,10 @@ if __name__ == "__main__":
 
         family_overlap_counts[mirna_id] = overlap_count
         num_hits = count_total_outlist_hits(outlist_hits)
-	overlap_percentage = (family_overlap_counts[mirna_id] * 100) / outlist_hits
 
-	print "\t".join(rfam_acc, mirna_id, str(overlap_percentage))
+        # compute family overlap percentage
+        overlap_percentage = (family_overlap_counts[mirna_id] * 100) / outlist_hits
+        print "\t".join(rfam_acc, mirna_id, str(overlap_percentage))
 
 
 

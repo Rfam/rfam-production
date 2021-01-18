@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     for rfam_acc in accessions.keys():
         # fetch family full region hits
-        old_family_full_hits = db.fetch_family_full_regions(rfam_acc)
+        old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
 
         # now work on the miRNA family
         # 1. Detect family dir location

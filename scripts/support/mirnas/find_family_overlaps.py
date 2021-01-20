@@ -217,9 +217,15 @@ if __name__ == "__main__":
 
         family_overlap_counts[mirna_id] = overlap_count
         num_outlist_hits = count_total_num_hits(outlist_hits)
-        # compute family overlap percentage
+        num_old_family_hits = count_total_num_hits(old_family_full_hits)
+	
+	species_file_loc = os.path.join(family_dir, "species")
+	num_new_ncbi_ids = extract_tax_ids_from_species(species_file_loc) 
+	num_old_ncbi_ids = db.fetch_family_tax_ids(rfam_acc)
+
+	# compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
-        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage)])
+        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), num_old_family_hits, num_outlist_hits, num_old_ncbi_ids, num_new_ncbi_ids])
 
 
 

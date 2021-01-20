@@ -104,7 +104,7 @@ def extract_tax_ids_from_species(species_file):
             
             if line[3] not in tax_ids:
                 if line[5] != '-':
-	            tax_ids[line[3]] = int(line[5])
+                    tax_ids[line[3]] = int(line[5])
         
         elif line.find("CURRENT GA THRESHOLD:") != -1:
             seen_ga = True
@@ -127,7 +127,6 @@ def get_family_location(accession):
                    "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk2_searches",
                    "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
 
-
     dir_label = ''
     if accession.find("_relabelled") == -1:
         dir_label = accession + "_relabelled"
@@ -147,7 +146,6 @@ def count_total_num_hits(outlist_hits):
     num_hits = 0
 
     for accession in outlist_hits.keys():
-        
         num_hits += len(outlist_hits[accession])
 
     return num_hits
@@ -165,8 +163,8 @@ def parse_arguments():
 
     #parser.add_argument("--family-dir", help="Path to family directory")
     parser.add_argument("--accessions", help="A json file with old/new family mapppings")
-    parser.add_argument("--add-header", help="Print descriptive header", 
-			action="store_true", default=False)
+    parser.add_argument("--add-header", help="Print descriptive header",
+                        action="store_true", default=False)
     return parser
 
 # ----------------------------------------------------------------
@@ -184,15 +182,14 @@ if __name__ == "__main__":
     family_overlap_counts = {}
 
     for rfam_acc in accessions.keys():
-	
-	# skip iteration if not a valid Rfam family accession
+        # skip iteration if not a valid Rfam family accession
         if rfam_acc[0:2] != "RF":
             continue
 
-	# fetch family full region hits
+        # fetch family full region hits
         old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
-		
-	# now work on the miRNA family
+
+        # now work on the miRNA family
         # 1. Detect family dir location
         mirna_id = accessions[rfam_acc]["mirbase_id"]
         family_dir = get_family_location(accessions[rfam_acc]["mirbase_id"])
@@ -200,10 +197,11 @@ if __name__ == "__main__":
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
         if not os.path.exists(outlist_file_loc):
-		continue
-	outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
-	
-	# 3. Find overlaps between the two families
+            continue
+
+        outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
+
+        # 3. Find overlaps between the two families
         # only check new family hits
         overlap = 0
         overlap_count = 0
@@ -213,9 +211,9 @@ if __name__ == "__main__":
             if accession in old_family_full_hits:
                 for region in outlist_hits[accession]:
                     for f_region in old_family_full_hits[accession]:
-			overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
+                        overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
                         
-			# this ensures each region in the new family is only checked once
+                        # this ensures each region in the new family is only checked once
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 0.5:
                             overlap_count += 1
@@ -224,24 +222,24 @@ if __name__ == "__main__":
         family_overlap_counts[mirna_id] = overlap_count
         num_outlist_hits = count_total_num_hits(outlist_hits)
         num_old_family_hits = count_total_num_hits(old_family_full_hits)
-	
-	species_file_loc = os.path.join(family_dir, "species")
-	species_data = extract_tax_ids_from_species(species_file_loc)
-	num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()]))) 
-	num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
-	num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
-	accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
 
-	# compute family overlap percentage
+        species_file_loc = os.path.join(family_dir, "species")
+        species_data = extract_tax_ids_from_species(species_file_loc)
+        num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()])))
+        num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
+        num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
+        accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
+
+        # compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
 
-	if args.add_header:
-		print "\t".join(["Rfam Acc", "miRBase Id", "FULL Overlap Percentage", "Common Accessions Percentage",
-			"Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
-		args.add_header = False
+        if args.add_header:
+            print "\t".join(["Rfam Acc", "miRBase Id", "FULL Overlap Percentage", "Common Accessions Percentage",
+                "Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
+            args.add_header = False
 
-        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits), 
-			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
+        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits),
+                         str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
 
 
 

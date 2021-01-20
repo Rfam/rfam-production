@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
-        if not os.path.exists(outlist_file):
+        if not os.path.exists(outlist_file_loc):
 		continue
 	outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 

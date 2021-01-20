@@ -188,7 +188,9 @@ if __name__ == "__main__":
 
         # 2. Find outlist path and parse it
         outlist_file_loc = os.path.join(family_dir, "outlist")
-        outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
+        if not os.path.exists(outlist_file):
+		continue
+	outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
         # 3. Find overlaps between the two families
         # only check new family hits

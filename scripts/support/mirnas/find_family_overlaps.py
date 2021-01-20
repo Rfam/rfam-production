@@ -137,7 +137,7 @@ def get_family_location(accession):
 # ----------------------------------------------------------------
 
 
-def count_total_outlist_hits(outlist_hits):
+def count_total_num_hits(outlist_hits):
 
     num_hits = 0
 
@@ -178,10 +178,15 @@ if __name__ == "__main__":
     family_overlap_counts = {}
 
     for rfam_acc in accessions.keys():
-        # fetch family full region hits
-        old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
+	
+	# skip iteration if not a valid Rfam family accession
+        if rfam_acc[0:2] != "RF":
+            continue
 
-        # now work on the miRNA family
+	# fetch family full region hits
+        old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
+		
+	# now work on the miRNA family
         # 1. Detect family dir location
         mirna_id = accessions[rfam_acc]["mirbase_id"]
         family_dir = get_family_location(accessions[rfam_acc]["mirbase_id"])
@@ -191,8 +196,8 @@ if __name__ == "__main__":
         if not os.path.exists(outlist_file_loc):
 		continue
 	outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
-
-        # 3. Find overlaps between the two families
+	
+	# 3. Find overlaps between the two families
         # only check new family hits
         overlap = 0
         overlap_count = 0
@@ -202,17 +207,16 @@ if __name__ == "__main__":
             if accession in old_family_full_hits:
                 for region in outlist_hits[accession]:
                     for f_region in old_family_full_hits[accession]:
-                        overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
-
-                        # this ensures each region in the new family is only checked once
+			overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
+                        
+			# this ensures each region in the new family is only checked once
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 50:
                             overlap_count += 1
                             break
 
         family_overlap_counts[mirna_id] = overlap_count
-        num_hits = count_total_outlist_hits(outlist_hits)
-
+        num_hits = count_total_num_hits(outlist_hits)
         # compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / len(outlist_hits)
         print "\t".join([rfam_acc, mirna_id, str(overlap_percentage)])

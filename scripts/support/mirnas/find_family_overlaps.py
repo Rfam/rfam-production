@@ -225,7 +225,8 @@ if __name__ == "__main__":
 
 	# compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
-        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), num_old_family_hits, num_outlist_hits, num_old_ncbi_ids, num_new_ncbi_ids])
+        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(num_old_family_hits), 
+			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
 
 
 

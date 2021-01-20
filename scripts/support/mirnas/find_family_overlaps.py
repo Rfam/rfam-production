@@ -229,11 +229,12 @@ if __name__ == "__main__":
 	num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()]))) 
 	num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
 	num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
+	accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
 
 	# compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
         print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(num_old_family_hits), 
-			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids), str(num_common_accessions)])
+			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids), str(accession_overlap)])
 
 
 

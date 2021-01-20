@@ -216,7 +216,7 @@ if __name__ == "__main__":
                         
 			# this ensures each region in the new family is only checked once
                         # if no overlap found, it iterates over all superfamily hits
-                        if overlap >= 50:
+                        if overlap >= 0.5:
                             overlap_count += 1
                             break
 

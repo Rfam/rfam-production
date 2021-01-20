@@ -93,16 +93,20 @@ def extract_tax_ids_from_species(species_file):
     """
 
     tax_ids = {}
+    seen_ga = False
 
     fp = open(species_file, 'r')
 
     for line in fp:
         # if not a comment line
-        if line[0] != '#':
+        if line[0] != '#' and not seen_ga:
             line = line.strip().split()
-
+            
             if line[3] not in tax_ids:
                 tax_ids[line[3]] = int(line[5])
+        
+        elif line.find("CURRENT GA THRESHOLD:") != -1:
+            seen_ga = True
 
     fp.close()
 
@@ -221,7 +225,7 @@ if __name__ == "__main__":
 	
 	species_file_loc = os.path.join(family_dir, "species")
 	num_new_ncbi_ids = extract_tax_ids_from_species(species_file_loc) 
-	num_old_ncbi_ids = db.fetch_family_tax_ids(rfam_acc)
+	num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
 
 	# compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits

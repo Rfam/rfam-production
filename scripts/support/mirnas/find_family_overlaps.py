@@ -163,9 +163,10 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--family-dir", help="Path to family directory")
+    #parser.add_argument("--family-dir", help="Path to family directory")
     parser.add_argument("--accessions", help="A json file with old/new family mapppings")
-
+    parser.add_argument("--add-header", help="Print descriptive header", 
+			action="store_true", default=False)
     return parser
 
 # ----------------------------------------------------------------
@@ -233,8 +234,14 @@ if __name__ == "__main__":
 
 	# compute family overlap percentage
         overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
-        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(num_old_family_hits), 
-			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids), str(accession_overlap)])
+
+	if args.add_header:
+		print "\t".join(["Rfam Acc", "miRBase Id", "FULL Overlap Percentage", "Common Accessions Percentage",
+			"Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
+		args.add_header = False
+
+        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits), 
+			str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
 
 
 

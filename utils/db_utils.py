@@ -1368,7 +1368,7 @@ def fetch_family_tax_ids(rfam_acc):
 
     cursor.execute(query % rfam_acc)
 
-    tax_ids = cursor.fetchall()
+    tax_ids = [x[0] for x in cursor.fetchall()]
 
     cursor.close()
     cnx.close()

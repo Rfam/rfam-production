@@ -233,7 +233,7 @@ if __name__ == "__main__":
 	accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
 
 	# compute family overlap percentage
-        overlap_percentage = (family_overlap_counts[mirna_id] * 100) / num_outlist_hits
+        overlap_percentage = (float(family_overlap_counts[mirna_id]) * 100.0) / float(num_outlist_hits)
 
 	if args.add_header:
 		print "\t".join(["Rfam Acc", "miRBase Id", "FULL Overlap Percentage", "Common Accessions Percentage",

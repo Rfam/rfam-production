@@ -209,23 +209,28 @@ if __name__ == "__main__":
 
             outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
+	    new_family_unique_accs = list(set(outlist_hits.keys()).difference(set(old_family_full_hits.keys())))
+	    old_family_unique_accs = list(set(old_family_full_hits.keys()).difference(set(outlist_hits.keys())))
+
+	    common_accs = list(set(old_family_full_hits.keys()).intersection(set(outlist_hits.keys())))
+
+	    
             # 3. Find overlaps between the two families
             # only check new family hits
             overlap = 0
             overlap_count = 0
 
-            for accession in outlist_hits:
+            for accession in common_accs:
                 old_hits = None
-                if accession in old_family_full_hits:
-                    for region in outlist_hits[accession]:
-                        for f_region in old_family_full_hits[accession]:
-                            overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
+                for region in outlist_hits[accession]:
+                    for f_region in old_family_full_hits[accession]:
+                        overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
-                            # this ensures each region in the new family is only checked once
-                            # if no overlap found, it iterates over all superfamily hits
-                            if overlap >= 0.5:
-                                overlap_count += 1
-                                break
+                        # this ensures each region in the new family is only checked once
+                        # if no overlap found, it iterates over all superfamily hits
+                        if overlap >= 0.1:
+                           overlap_count += 1
+                           #break
 
             if mirna_id not in family_overlap_counts:
                 family_overlap_counts[mirna_id] = {rfam_acc: overlap_count}
@@ -234,25 +239,32 @@ if __name__ == "__main__":
                 family_overlap_counts[mirna_id][rfam_acc] = overlap_count
 
             num_outlist_hits = count_total_num_hits(outlist_hits)
-            num_old_family_hits = count_total_num_hits(old_family_full_hits)
+            
+            num_new_family_unique_hits = 0
+            for acc in new_family_unique_accs:
+		num_new_family_unique_hits += len(outlist_hits[acc])
 
-            species_file_loc = os.path.join(family_dir, "species")
-            species_data = extract_tax_ids_from_species(species_file_loc)
-            num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()])))
-            num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
-            num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
-            accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
+	    num_old_family_unique_hits = 0
+	    for acc in old_family_unique_accs:
+		num_old_family_unique_hits += len(old_family_full_hits[acc])
+
+            #num_old_family_hits = count_total_num_hits(old_family_full_hits)
+
+            #species_file_loc = os.path.join(family_dir, "species")
+            #species_data = extract_tax_ids_from_species(species_file_loc)
+            #num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()])))
+            #num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
+            #num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
+            #accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
 
             # compute family overlap percentage
             overlap_percentage = (float(family_overlap_counts[mirna_id][rfam_acc]) * 100.0) / float(num_outlist_hits)
 
             if args.add_header:
-                print "\t".join([ "miRBase Id", "Rfam Acc", "FULL Overlap Percentage", "Common Accessions Percentage",
-                    "Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
+                print "\t".join([ "miRBase Id", "Rfam Acc", "# Old family unique accs", "# New family unique accs", "# common accs (Intersection)", "# intersection overlaps"])
                 args.add_header = False
 
-            print "\t".join([mirna_id, rfam_acc, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits),
-                             str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
+            print "\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits), str(len(common_accs)), str() ])
 
 
 

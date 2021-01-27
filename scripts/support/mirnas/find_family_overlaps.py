@@ -181,65 +181,78 @@ if __name__ == "__main__":
 
     family_overlap_counts = {}
 
-    for rfam_acc in accessions.keys():
-        # skip iteration if not a valid Rfam family accession
-        if rfam_acc[0:2] != "RF":
-            continue
+    # iterate over all miRBase ids
+    for mirna_id in accessions.keys():
 
-        # fetch family full region hits
-        old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
+        rfam_accs = accessions[mirna_id]["rfam_acc"]
 
-        # now work on the miRNA family
-        # 1. Detect family dir location
-        mirna_id = accessions[rfam_acc]["mirbase_id"]
-        family_dir = get_family_location(accessions[rfam_acc]["mirbase_id"])
+        # iterate over all rfam_accs overlapping with new miRBase candidates
+        for rfam_acc in rfam_accs:
 
-        # 2. Find outlist path and parse it
-        outlist_file_loc = os.path.join(family_dir, "outlist")
-        if not os.path.exists(outlist_file_loc):
-            continue
+            # skip iteration if not a valid Rfam family accession
+            if rfam_acc[0:2] != "RF":
+                continue
 
-        outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
+            # fetch family full region hits
+            old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
 
-        # 3. Find overlaps between the two families
-        # only check new family hits
-        overlap = 0
-        overlap_count = 0
+            # now work on the miRNA family
+            # 1. Detect family dir location
+            family_dir = get_family_location(mirna_id)
 
-        for accession in outlist_hits:
-            old_hits = None
-            if accession in old_family_full_hits:
-                for region in outlist_hits[accession]:
-                    for f_region in old_family_full_hits[accession]:
-                        overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
-                        
-                        # this ensures each region in the new family is only checked once
-                        # if no overlap found, it iterates over all superfamily hits
-                        if overlap >= 0.5:
-                            overlap_count += 1
-                            break
+            # 2. Find outlist path and parse it
+            outlist_file_loc = os.path.join(family_dir, "outlist")
 
-        family_overlap_counts[mirna_id] = overlap_count
-        num_outlist_hits = count_total_num_hits(outlist_hits)
-        num_old_family_hits = count_total_num_hits(old_family_full_hits)
-	
-	species_file_loc = os.path.join(family_dir, "species")
-	species_data = extract_tax_ids_from_species(species_file_loc)
-	num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()]))) 
-	num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
-	num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
-	accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
+            # skip family if the outlist does not exist - possible search job crash
+            if not os.path.exists(outlist_file_loc):
+                continue
 
-	# compute family overlap percentage
-        overlap_percentage = (float(family_overlap_counts[mirna_id]) * 100.0) / float(num_outlist_hits)
+            outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
-        if args.add_header:
-            print "\t".join(["Rfam Acc", "miRBase Id", "FULL Overlap Percentage", "Common Accessions Percentage",
-                "Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
-            args.add_header = False
+            # 3. Find overlaps between the two families
+            # only check new family hits
+            overlap = 0
+            overlap_count = 0
 
-        print "\t".join([rfam_acc, mirna_id, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits),
-                         str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
+            for accession in outlist_hits:
+                old_hits = None
+                if accession in old_family_full_hits:
+                    for region in outlist_hits[accession]:
+                        for f_region in old_family_full_hits[accession]:
+                            overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
+
+                            # this ensures each region in the new family is only checked once
+                            # if no overlap found, it iterates over all superfamily hits
+                            if overlap >= 0.5:
+                                overlap_count += 1
+                                break
+
+            if mirna_id not in family_overlap_counts:
+                family_overlap_counts[mirna_id] = {rfam_acc: overlap_count}
+
+            else:
+                family_overlap_counts[mirna_id][rfam_acc] = overlap_count
+
+            num_outlist_hits = count_total_num_hits(outlist_hits)
+            num_old_family_hits = count_total_num_hits(old_family_full_hits)
+
+            species_file_loc = os.path.join(family_dir, "species")
+            species_data = extract_tax_ids_from_species(species_file_loc)
+            num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()])))
+            num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
+            num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
+            accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
+
+            # compute family overlap percentage
+            overlap_percentage = (float(family_overlap_counts[mirna_id]) * 100.0) / float(num_outlist_hits)
+
+            if args.add_header:
+                print "\t".join([ "miRBase Id", "Rfam Acc", "FULL Overlap Percentage", "Common Accessions Percentage",
+                    "Number Rfam hits", "Number New hits", "Number Rfam tax ids", "Number New tax ids"])
+                args.add_header = False
+
+            print "\t".join([mirna_id, rfam_acc, str(overlap_percentage), str(accession_overlap), str(num_old_family_hits),
+                             str(num_outlist_hits), str(num_old_ncbi_ids), str(num_new_ncbi_ids)])
 
 
 

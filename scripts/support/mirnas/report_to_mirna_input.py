@@ -34,30 +34,42 @@ def extract_new_mirnas_from_report(report_tsv, type='new'):
 # -------------------------------------------------------------------------------
 
 def extract_rfam_family_accessions(report_file):
+
     fp = open(report_file, 'r')
 
-    family_accessions = {}
+    accession_map = {}
 
     for line in fp:
         line = line.strip().split('\t')
-   
+
         overlap = float(line[4])
-        if overlap < 100.0:
-            if line[6].upper() != "DONE":
-                accession = line[3]
-                if accession.find(',') == -1:
-                    threshold = 0.0
+        if overlap <= 100.0:
+            # converts to upper to ensure labels match the constant
+            if line[6].strip().upper() == "UPDATE SEED":
 
-                    if line[1] != '':
-                        threshold = float(line[1])
+                rfam_acc = line[3].strip()
 
-                    family_accessions[accession] = {"mirbase_id": line[0],
-                                                  "threshold": threshold,
-                                                  "overlap": float(line[4])}
+                rfam_acc_list = []
+                if rfam_acc.find(',') == -1:
+                    rfam_acc_list = rfam_acc.split(',')
+                else:
+                    rfam_acc_list = [rfam_acc]
 
+                threshold = 0.0
+                if line[1] != '':
+                    threshold = float(line[1])
+
+                # trim any whitespace characters
+                mirbase_id = line[0].strip()
+
+
+                accession_map[mirbase_id] = {"rfam_acc": rfam_acc_list,
+                                              "threshold": threshold,
+                                              "overlap": float(line[4])}
+                
     fp.close()
 
-    return family_accessions
+    return accession_map
 
 
 # -------------------------------------------------------------------------------
@@ -80,8 +92,8 @@ def parse_arguments():
 
 # -------------------------------------------------------------------------------
 
-
 if __name__ == '__main__':
+
     parser = parse_arguments()
     args = parser.parse_args()
 
@@ -95,6 +107,7 @@ if __name__ == '__main__':
 
     if args.create_dump:
         filename = "new_mirnas_"
+
         if args.old_rfam:
             filename = "mirna_families_to_update_"
         fp_out = open(os.path.join(args.dest_dir, filename + str(date.today()) + ".json"), 'w')

@@ -248,15 +248,6 @@ if __name__ == "__main__":
             for acc in old_family_unique_accs:
                 num_old_family_unique_hits += len(old_family_full_hits[acc])
 
-            #num_old_family_hits = count_total_num_hits(old_family_full_hits)
-
-            #species_file_loc = os.path.join(family_dir, "species")
-            #species_data = extract_tax_ids_from_species(species_file_loc)
-            #num_new_ncbi_ids = len(list(set([species_data[x] for x in species_data.keys()])))
-            #num_old_ncbi_ids = len(db.fetch_family_tax_ids(rfam_acc))
-            #num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
-            #accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
-
             total_hits_intersection = 0
             for acc in common_accs:
                 total_hits_intersection += len(outlist_hits[acc])

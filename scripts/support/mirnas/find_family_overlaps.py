@@ -209,12 +209,11 @@ if __name__ == "__main__":
 
             outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
 
-	    new_family_unique_accs = list(set(outlist_hits.keys()).difference(set(old_family_full_hits.keys())))
-	    old_family_unique_accs = list(set(old_family_full_hits.keys()).difference(set(outlist_hits.keys())))
+            new_family_unique_accs = list(set(outlist_hits.keys()).difference(set(old_family_full_hits.keys())))
+            old_family_unique_accs = list(set(old_family_full_hits.keys()).difference(set(outlist_hits.keys())))
 
-	    common_accs = list(set(old_family_full_hits.keys()).intersection(set(outlist_hits.keys())))
+            common_accs = list(set(old_family_full_hits.keys()).intersection(set(outlist_hits.keys())))
 
-	    
             # 3. Find overlaps between the two families
             # only check new family hits
             overlap = 0
@@ -231,22 +230,23 @@ if __name__ == "__main__":
                         if overlap >= 0.1:
                            overlap_count += 1
                            #break
-
+            """
             if mirna_id not in family_overlap_counts:
                 family_overlap_counts[mirna_id] = {rfam_acc: overlap_count}
 
             else:
                 family_overlap_counts[mirna_id][rfam_acc] = overlap_count
+            """
 
             num_outlist_hits = count_total_num_hits(outlist_hits)
             
             num_new_family_unique_hits = 0
             for acc in new_family_unique_accs:
-		num_new_family_unique_hits += len(outlist_hits[acc])
+                num_new_family_unique_hits += len(outlist_hits[acc])
 
-	    num_old_family_unique_hits = 0
-	    for acc in old_family_unique_accs:
-		num_old_family_unique_hits += len(old_family_full_hits[acc])
+            num_old_family_unique_hits = 0
+            for acc in old_family_unique_accs:
+                num_old_family_unique_hits += len(old_family_full_hits[acc])
 
             #num_old_family_hits = count_total_num_hits(old_family_full_hits)
 
@@ -257,14 +257,23 @@ if __name__ == "__main__":
             #num_common_accessions = len(list(set(outlist_hits.keys()).intersection(set(old_family_full_hits.keys()))))
             #accession_overlap = num_common_accessions * 100 / len(outlist_hits.keys())
 
+            total_hits_intersection = 0
+            for acc in common_accs:
+                total_hits_intersection += len(outlist_hits[acc])
+                total_hits_intersection += len(old_family_full_hits[acc])
+
             # compute family overlap percentage
-            overlap_percentage = (float(family_overlap_counts[mirna_id][rfam_acc]) * 100.0) / float(num_outlist_hits)
+            overlap_percentage = (float(overlap_count) * 100.0) / float(total_hits_intersection)
 
             if args.add_header:
-                print "\t".join([ "miRBase Id", "Rfam Acc", "# Old family unique accs", "# New family unique accs", "# common accs (Intersection)", "# intersection overlaps"])
+                print "\t".join(["miRBase Id", "Rfam Acc", "# Old family unique accs",
+                                 "# New family unique accs", "# common accs (Intersection)",
+                                 "# intersection overlaps", "total hits intersection", "overlaps percentage"])
                 args.add_header = False
 
-            print "\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits), str(len(common_accs)), str() ])
+            print "\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits),
+                             str(len(common_accs)), str(overlap_count), str(total_hits_intersection),
+                             str(overlap_percentage)])
 
 
 

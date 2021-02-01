@@ -219,9 +219,14 @@ if __name__ == "__main__":
             overlap = 0
             overlap_count = 0
 
+
+            # count unique counts in intersection
+            new_family_count = 0
+            old_family_count = 0
             for accession in common_accs:
                 old_hits = None
                 for region in outlist_hits[accession]:
+                    overlap = -1
                     for f_region in old_family_full_hits[accession]:
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
@@ -229,7 +234,15 @@ if __name__ == "__main__":
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 0.1:
                            overlap_count += 1
-                           #break
+
+                        # if no overlap detected count old family reqion as unique
+                        else:
+                            old_family_count += 1
+
+                    # if no overlap count new family region as unique
+                    if overlap != -1:
+                        new_family_count += 1
+
             """
             if mirna_id not in family_overlap_counts:
                 family_overlap_counts[mirna_id] = {rfam_acc: overlap_count}
@@ -239,14 +252,22 @@ if __name__ == "__main__":
             """
 
             num_outlist_hits = count_total_num_hits(outlist_hits)
-            
+
+            # calculate old family unique hits
             num_new_family_unique_hits = 0
             for acc in new_family_unique_accs:
                 num_new_family_unique_hits += len(outlist_hits[acc])
 
+            # add unique new family regions from intersection
+            num_new_family_unique_hits = num_new_family_unique_hits + new_family_count
+
+            # calculate old family unique hits
             num_old_family_unique_hits = 0
             for acc in old_family_unique_accs:
                 num_old_family_unique_hits += len(old_family_full_hits[acc])
+
+            # add unique old family regions from intersection
+            num_old_family_unique_hits = num_old_family_unique_hits + old_family_count
 
             total_hits_intersection = 0
             for acc in common_accs:

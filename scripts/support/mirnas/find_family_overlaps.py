@@ -195,6 +195,7 @@ if __name__ == "__main__":
 
             # fetch family full region hits
             old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
+            total_num_old_family_hits = count_total_num_hits(old_family_full_hits)
 
             # now work on the miRNA family
             # 1. Detect family dir location
@@ -218,7 +219,6 @@ if __name__ == "__main__":
             # only check new family hits
             overlap = 0
             overlap_count = 0
-
 
             # count unique counts in intersection
             new_family_count = 0
@@ -269,6 +269,8 @@ if __name__ == "__main__":
             # add unique old family regions from intersection
             num_old_family_unique_hits = num_old_family_unique_hits + old_family_count
 
+
+
             total_hits_intersection = 0
             for acc in common_accs:
                 total_hits_intersection += len(outlist_hits[acc])
@@ -278,14 +280,14 @@ if __name__ == "__main__":
             overlap_percentage = (float(overlap_count) * 100.0) / float(total_hits_intersection)
 
             if args.add_header:
-                print ("\t".join(["miRBase Id", "Rfam Acc", "# Old family unique hits",
-                                 "# New family unique hits", "# common accs (Intersection)",
-                                 "# intersection overlaps", "total hits intersection", "overlaps percentage"]))
+                print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
+                                  "# Overlaps", "Overlaps Percentage",
+                                  "# Old family unique hits", "Total # old family hits", "Rfam Acc"]))
                 args.add_header = False
 
-            print ("\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits),
-                             str(len(common_accs)), str(overlap_count), str(total_hits_intersection),
-                             str(overlap_percentage)]))
+            print ("\t".join([mirna_id, str(num_outlist_hits), str(num_new_family_unique_hits),
+                              str(overlap_count), str(overlap_percentage), str(num_old_family_unique_hits),
+                              total_num_old_family_hits, rfam_acc]))
 
 
 

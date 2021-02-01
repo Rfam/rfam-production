@@ -165,6 +165,8 @@ def parse_arguments():
     parser.add_argument("--accessions", help="A json file with old/new family mapppings")
     parser.add_argument("--add-header", help="Print descriptive header",
                         action="store_true", default=False)
+    parser.add_argument("--add-links", help="Creates hyperlinks to available Rfam html content",
+                        action="store_true", default=False)
     return parser
 
 # ----------------------------------------------------------------
@@ -269,8 +271,6 @@ if __name__ == "__main__":
             # add unique old family regions from intersection
             num_old_family_unique_hits = num_old_family_unique_hits + old_family_count
 
-
-
             total_hits_intersection = 0
             for acc in common_accs:
                 total_hits_intersection += len(outlist_hits[acc])
@@ -284,6 +284,15 @@ if __name__ == "__main__":
                                   "# Overlaps", "Overlaps Percentage",
                                   "# Old family unique hits", "Total # old family hits", "Rfam Acc"]))
                 args.add_header = False
+
+            if args.add_links:
+                mirbase_hyperlink = "=HYPERLINK(\"https://preview.rfam.org/mirbase/%s_relabelled.html\", \"%s\")"
+                mirbase_link = mirbase_hyperlink % (mirna_id, mirna_id)
+                mirna_id = mirbase_link
+
+                rfam_hyperlink = "=HYPERLINK(\"https://rfam.org/family/%s\", \"%s\")"
+                rfam_link = rfam_hyperlink % (rfam_acc, rfam_acc)
+                rfam_acc = rfam_link
 
             print ("\t".join([mirna_id, str(num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(overlap_percentage), str(num_old_family_unique_hits),

@@ -278,14 +278,14 @@ if __name__ == "__main__":
             overlap_percentage = (float(overlap_count) * 100.0) / float(total_hits_intersection)
 
             if args.add_header:
-                print "\t".join(["miRBase Id", "Rfam Acc", "# Old family unique hits",
+                print ("\t".join(["miRBase Id", "Rfam Acc", "# Old family unique hits",
                                  "# New family unique hits", "# common accs (Intersection)",
-                                 "# intersection overlaps", "total hits intersection", "overlaps percentage"])
+                                 "# intersection overlaps", "total hits intersection", "overlaps percentage"]))
                 args.add_header = False
 
-            print "\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits),
+            print ("\t".join([mirna_id, rfam_acc, str(num_old_family_unique_hits), str(num_new_family_unique_hits),
                              str(len(common_accs)), str(overlap_count), str(total_hits_intersection),
-                             str(overlap_percentage)])
+                             str(overlap_percentage)]))
 
 
 

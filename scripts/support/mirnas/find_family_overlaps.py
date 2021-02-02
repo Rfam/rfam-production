@@ -227,7 +227,7 @@ if __name__ == "__main__":
             old_family_count = 0
             for accession in common_accs:
                 old_hits = None
-		new_unique_hit = False
+                new_unique_hit = False
                 for region in outlist_hits[accession]:
                     overlap = -1
                     new_unique_hit = False
@@ -238,12 +238,12 @@ if __name__ == "__main__":
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 0.1:
                            overlap_count += 1
-			   new_unique_hit = True
-				
+                           new_unique_hit = True
+
                         # if no overlap detected count old family reqion as unique
                         else:
                             old_family_count += 1
-		    	
+
                     # if no overlap count new family region as unique
                     if new_unique_hit:
                         new_family_count += 1

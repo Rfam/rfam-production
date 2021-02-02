@@ -87,9 +87,11 @@ def extract_outlist_hits_to_list(outlist_file, sort=True):
 
 def extract_tax_ids_from_species(species_file):
     """
+    Parses family's species file and extracts all distinct tax ids
 
-    :param species_file:
-    :return:
+    :param species_file: The path to a family's species file
+
+    :return: A dictionary of
     """
 
     tax_ids = {}
@@ -116,11 +118,14 @@ def extract_tax_ids_from_species(species_file):
 # ----------------------------------------------------------------
 
 
-def get_family_location(accession):
+def get_family_location(family_label):
     """
+    Finds exact location of a miRNA familly based on the miRBase
+    accession and the destination directory
 
-    :param family_label:
-    :return:
+    :param family_label: Family directory label
+
+    :return: A directory location if it exists, None otherwise
     """
 
     search_dirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
@@ -128,8 +133,8 @@ def get_family_location(accession):
                    "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
 
     dir_label = ''
-    if accession.find("_relabelled") == -1:
-        dir_label = accession + "_relabelled"
+    if family_label.find("_relabelled") == -1:
+        dir_label = family_label + "_relabelled"
 
     for search_dir in search_dirs:
         family_dir_loc = os.path.join(search_dir, dir_label)
@@ -142,26 +147,33 @@ def get_family_location(accession):
 
 
 def count_total_num_hits(outlist_hits):
+    """
+    Counts total number of family hits
 
-    num_hits = 0
+    :param outlist_hits: A dictionary in the form of {rfamseq_acc: [(s1,e1),...]
+
+    :return: Total number of hits found in the dictionary
+    """
+
+    total_num_hits = 0
 
     for accession in outlist_hits.keys():
-        num_hits += len(outlist_hits[accession])
+        total_num_hits += len(outlist_hits[accession])
 
-    return num_hits
+    return total_num_hits
 
 # ----------------------------------------------------------------
 
 
 def parse_arguments():
     """
+    Basic argument parsing using Argparse
 
-    :return:
+    :return: An argparse parser object
     """
 
     parser = argparse.ArgumentParser()
 
-    #parser.add_argument("--family-dir", help="Path to family directory")
     parser.add_argument("--accessions", help="A json file with old/new family mapppings")
     parser.add_argument("--add-header", help="Print descriptive header",
                         action="store_true", default=False)

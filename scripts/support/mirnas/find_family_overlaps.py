@@ -45,7 +45,7 @@ def parse_outlist_file(outlist_file):
 # ----------------------------------------------------------------
 
 
-def extract_outlist_hits_to_list(outlist_file, sort=True):
+def extract_outlist_hits_to_dict(outlist_file, sort=True):
     """
 
     :param outlist_file:
@@ -222,7 +222,7 @@ if __name__ == "__main__":
             if not os.path.exists(outlist_file_loc):
                 continue
 
-            outlist_hits = extract_outlist_hits_to_list(outlist_file_loc)
+            outlist_hits = extract_outlist_hits_to_dict(outlist_file_loc)
 
             new_family_unique_accs = list(set(outlist_hits.keys()).difference(set(old_family_full_hits.keys())))
             old_family_unique_accs = list(set(old_family_full_hits.keys()).difference(set(outlist_hits.keys())))

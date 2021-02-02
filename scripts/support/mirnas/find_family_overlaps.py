@@ -257,14 +257,14 @@ if __name__ == "__main__":
             overlap_count = 0
 
             # count unique counts in intersection
-            new_family_count = 0
-            old_family_count = 0
+            new_unique_intersect = 0
+            old_unique_intersect = 0
             for accession in common_accs:
                 old_hits = None
                 new_unique_hit = False
                 for region in outlist_hits[accession]:
                     overlap = -1
-                    new_unique_hit = False
+                    overlap_flag = False
                     for f_region in old_family_full_hits[accession]:
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
@@ -272,25 +272,22 @@ if __name__ == "__main__":
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 0.1:
                            overlap_count += 1
-                           new_unique_hit = True
+                           overlap_flag = True
 
                         # if no overlap detected count old family reqion as unique
                         else:
-                            old_family_count += 1
+                            old_unique_intersect += 1
 
                     # if no overlap count new family region as unique
-                    if new_unique_hit:
-                        new_family_count += 1
+                    if not overlap_flag:
+                        new_unique_intersect += 1
 
             # Now add the overlap counts
             # add unique new family regions from intersection
-            num_new_family_unique_hits = num_new_family_unique_hits + new_family_count
+            num_new_family_unique_hits = num_new_family_unique_hits + new_unique_intersect
 
             # add unique old family regions from intersection
-            num_old_family_unique_hits = num_old_family_unique_hits + old_family_count
-
-            # compute family overlap percentage
-            overlap_percentage = (float(overlap_count) * 100.0) / float(total_hits_intersection)
+            num_old_family_unique_hits = num_old_family_unique_hits + old_unique_intersect
 
             if args.add_header:
                 print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",

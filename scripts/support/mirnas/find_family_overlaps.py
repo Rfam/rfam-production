@@ -284,8 +284,8 @@ if __name__ == "__main__":
 
             if args.add_header:
                 print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
-                                  "# Overlaps", "Overlaps Percentage",
-                                  "# Old family unique hits", "Total # old family hits", "Rfam Acc"]))
+                                  "# Overlaps", "# Old family unique hits", "Total # old family hits",
+                                  "Rfam Acc"]))
                 args.add_header = False
 
             if args.add_links:
@@ -298,5 +298,5 @@ if __name__ == "__main__":
                 rfam_acc = rfam_link
 
             print ("\t".join([mirna_id, str(num_outlist_hits), str(num_new_family_unique_hits),
-                              str(overlap_count), str(overlap_percentage), str(num_old_family_unique_hits),
+                              str(overlap_count), str(num_old_family_unique_hits),
                               str(total_num_old_family_hits), rfam_acc]))

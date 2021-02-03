@@ -280,7 +280,7 @@ if __name__ == "__main__":
                             found_overlap = True
 
                     # if no overlap count new family region as unique
-                    if not overlap_flag:
+                    if not found_overlap:
                         new_unique_intersect += 1
 
             # Now add the overlap counts

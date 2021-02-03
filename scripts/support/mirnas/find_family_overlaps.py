@@ -264,7 +264,7 @@ if __name__ == "__main__":
                 new_unique_hit = False
                 for region in outlist_hits[accession]:
                     overlap = -1
-                    overlap_flag = False
+                    found_overlap = False
                     for f_region in old_family_full_hits[accession]:
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
 
@@ -272,11 +272,12 @@ if __name__ == "__main__":
                         # if no overlap found, it iterates over all superfamily hits
                         if overlap >= 0:
                            overlap_count += 1
-                           overlap_flag = True
+                           found_overlap = True
 
                         # if no overlap detected count old family reqion as unique
                         else:
                             old_unique_intersect += 1
+                            found_overlap = True
 
                     # if no overlap count new family region as unique
                     if not overlap_flag:

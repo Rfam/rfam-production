@@ -182,6 +182,9 @@ def parse_arguments():
                         action="store_true", default=False)
     parser.add_argument("--add-links", help="Creates hyperlinks to available Rfam html content",
                         action="store_true", default=False)
+    parser.add_argument("--check-taxids", help="Check essential taxonomy ids exist",
+                        action="store_true", default=False)
+
     return parser
 
 # ----------------------------------------------------------------
@@ -307,6 +310,9 @@ if __name__ == "__main__":
                 rfam_hyperlink = "=HYPERLINK(\"https://rfam.org/family/%s\", \"%s\")"
                 rfam_link = rfam_hyperlink % (rfam_acc, rfam_acc)
                 rfam_acc = rfam_link
+
+	    if args.check_taxids:
+		pass
 
             print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(num_old_family_unique_hits),

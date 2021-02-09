@@ -88,7 +88,7 @@ def extract_outlist_hits_to_dict(outlist_file, sort=True):
 # ----------------------------------------------------------------
 
 
-def extract_tax_ids_from_species(species_file):
+def extract_tax_ids_from_species_file(species_file):
     """
     Parses family's species file and extracts all distinct tax ids
 

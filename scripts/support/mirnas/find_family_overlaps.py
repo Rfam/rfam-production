@@ -9,7 +9,10 @@ from scripts.processing import clan_competition as cc
 
 # ----------------------------------------------------------------
 
+# human and mouse tax ids
+ESSENTIAL_TAXIDS = [9606, 10090]
 
+# ----------------------------------------------------------------
 def parse_outlist_file(outlist_file):
     """
 

@@ -311,8 +311,14 @@ if __name__ == "__main__":
                 rfam_link = rfam_hyperlink % (rfam_acc, rfam_acc)
                 rfam_acc = rfam_link
 
+	    # tax id variable declaration
+	    new_family_taxids = None
+            old_family_taxids = None
+	    
 	    if args.check_taxids:
-		pass
+		species_file = os.path.join(family_dir, "species")
+		new_family_taxids = extract_tax_ids_from_species_file(species_file)
+                old_family_taxids = db.fetch_family_tax_ids(rfam_acc)
 
             print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(num_old_family_unique_hits),

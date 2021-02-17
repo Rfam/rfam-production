@@ -296,10 +296,11 @@ if __name__ == "__main__":
             # add unique old family regions from intersection
             num_old_family_unique_hits = num_old_family_unique_hits + old_unique_intersect
 
-            if args.add_header:
+            if args.add_header and not args.check_taxids:
                 print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
                                   "Rfam Acc"]))
+
                 args.add_header = False
 
             if args.add_links:
@@ -317,8 +318,24 @@ if __name__ == "__main__":
 	    
 	    if args.check_taxids:
 		species_file = os.path.join(family_dir, "species")
-		new_family_taxids = dict.fromkeys(extract_tax_ids_from_species_file(species_file),'')
-                old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
+		#new_family_taxids = dict.fromkeys(extract_tax_ids_from_species_file(species_file),'')
+                #old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
+
+		# find which tax id is missing from essential species
+		new_family_taxids = list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file))))
+		old_family_taxids = list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc))))
+
+		print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
+                                  "# Overlaps", "# Old family unique hits", "Total # old family hits",
+                                  "Rfam Acc", "New family essential taxids", "Old family essential taxids"]))
+
+		print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
+                              str(overlap_count), str(num_old_family_unique_hits),
+                              str(total_num_old_family_hits), rfam_acc, new_family_taxids, old_family_taxids]))
+
+		# continue with next iteration to prevent duplicated print statements
+		continue
+
 
             print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(num_old_family_unique_hits),

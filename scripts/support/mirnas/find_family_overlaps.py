@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
 		print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
-                                  "Rfam Acc", "New family essential taxids", "Old family essential taxids"]))
+                                  "Rfam Acc", "New family taxids", "Old family taxids"]))
 
 		print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(num_old_family_unique_hits),

@@ -322,8 +322,8 @@ if __name__ == "__main__":
                 #old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
 
 		# find which tax id is missing from essential species
-		new_family_taxids = ",".join(list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file)))))
-		old_family_taxids = ",".join(list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc)))))
+		new_family_taxids = ",".join(str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file)))))
+		old_family_taxids = ",".join(str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc)))))
 
 		print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",

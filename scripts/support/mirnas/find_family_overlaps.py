@@ -322,8 +322,21 @@ if __name__ == "__main__":
                 #old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
 
 		# find which tax id is missing from essential species
-		new_family_taxids = ",".join(str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file)))))
-		old_family_taxids = ",".join(str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc)))))
+		new_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file))))]
+		old_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc))))]
+
+		new_family_taxids_str = "N/A"
+		old_family_taxids_str = "N/A"
+
+		if len(new_family_taxids) == 1:
+			new_family_taxids_str = new_family_taxids[0]
+		elif len(new_family_taxids) == 2: 
+			new_family_taxids_str = ','.join(new_family_taxids)
+
+		if len(old_family_taxids) == 1:
+			old_family_taxids_str = old_family_taxids[0]
+		elif len(old_family_taxids) == 2:
+			old_family_taxids_str = ','.join(old_family_taxids)
 
 		print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
@@ -331,7 +344,7 @@ if __name__ == "__main__":
 
 		print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
                               str(overlap_count), str(num_old_family_unique_hits),
-                              str(total_num_old_family_hits), rfam_acc, new_family_taxids, old_family_taxids]))
+                              str(total_num_old_family_hits), rfam_acc, new_family_taxids_str, old_family_taxids_str]))
 
 		# continue with next iteration to prevent duplicated print statements
 		continue

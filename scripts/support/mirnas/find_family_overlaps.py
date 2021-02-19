@@ -318,11 +318,10 @@ if __name__ == "__main__":
 	    
 	    if args.check_taxids:
 		species_file = os.path.join(family_dir, "species")
-		#new_family_taxids = dict.fromkeys(extract_tax_ids_from_species_file(species_file),'')
                 #old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
 
 		# find which tax id is missing from essential species
-		new_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file))))]
+		new_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file).values())))]
 		old_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc))))]
 
 		new_family_taxids_str = "N/A"
@@ -338,7 +337,8 @@ if __name__ == "__main__":
 		elif len(old_family_taxids) == 2:
 			old_family_taxids_str = ','.join(old_family_taxids)
 
-		print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
+		if args.add_header:
+			print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
                                   "Rfam Acc", "New family taxids", "Old family taxids"]))
 

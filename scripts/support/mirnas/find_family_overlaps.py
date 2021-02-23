@@ -48,7 +48,7 @@ def parse_outlist_file(outlist_file):
 # ----------------------------------------------------------------
 
 
-def extract_outlist_hits_to_dict(outlist_file, sort=True):
+def extract_outlist_hits_to_dict(outlist_file, skip_seed=True, sort=True):
     """
 
     :param outlist_file:
@@ -63,7 +63,13 @@ def extract_outlist_hits_to_dict(outlist_file, sort=True):
     fp = open(outlist_file, 'r')
 
     for line in fp:
-        # if not a comment line
+
+        # skip SEED sequences if skip_seed option is enabled
+	if skip_seed is True:
+		if line.find("SEED")!=-1:
+			continue
+
+	# if not a comment line
         if line[0] != '#' and not seen_ga:
             line = line.strip().split()
 
@@ -229,8 +235,8 @@ if __name__ == "__main__":
                 continue
 
             # extract new family hits from outlist file
-            outlist_hits = extract_outlist_hits_to_dict(outlist_file_loc)
-            # total number of hits extracted from the outlist file
+            outlist_hits = extract_outlist_hits_to_dict(outlist_file_loc, skip_seed=True)
+            # total number of hits extracted from the outlist filen
             total_num_outlist_hits = count_total_num_hits(outlist_hits)
 
             # calculate new family unique hits

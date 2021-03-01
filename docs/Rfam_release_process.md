@@ -8,8 +8,16 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 1. Generate clan files
 ```
-
+python clan_file_generator.py --dest-dir /path/to/destination directory --clan-acc CL00001 --cc-type FULL
 ```
+`--cc-type:` Clan competition type FULL/PDB
+
+`--clan-acc:` Clan accession to compete
+
+`--all:` Compete all Rfam clans
+
+`-f:` Only compete clans in file
+
 2. Sort clan files on rfamseq_acc (col2) using linux sort command:
 ```
 sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt

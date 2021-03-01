@@ -1,0 +1,39 @@
+# Rfam release process
+
+## Clan competition
+
+Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan. 
+
+### Preparing for clan competition
+
+1. Generate clan files
+```
+
+```
+2. Sort clan files on rfamseq_acc (col2) using linux sort command:
+```
+sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt
+```
+3. 
+
+## Prepare rfam_live for a new release
+ 
+
+## Updating PDB sequence file
+
+## Running view processes
+
+Create a list of tab separated family accessions and their corresponding uuids using the following query:
+
+```
+select rfam_acc, uuid 
+from _post_process 
+where status='PEND';
+```
+
+---
+**NOTE**
+
+---
+
+

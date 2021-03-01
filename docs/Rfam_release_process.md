@@ -6,7 +6,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 ### Preparing for clan competition
 
-1. Generate clan files
+1. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py)
 
 ```
 python clan_file_generator.py --dest-dir /path/to/destination directory --clan-acc CL00001 --cc-type FULL
@@ -25,7 +25,7 @@ python clan_file_generator.py --dest-dir /path/to/destination directory --clan-a
 sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt
 ```
 
-3. Run clan competition using `clan_competition.py`:
+3. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/processing/clan_competition.py):
 
 ```
 clan_competition.py 
@@ -35,7 +35,7 @@ clan_competition.py
 1. Truncate `family_ncbi` table
 
 2. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
-3. Populate `rfam_live` tables:
+3. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/populate_rfamlive_for_release.py):
 
 ```
 python populate_rfamlive_for_release.py --all

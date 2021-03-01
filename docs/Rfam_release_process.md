@@ -48,17 +48,21 @@ make_rfam_keywords_table.pl
 
 ## Updating PDB sequence file
 
-### 
+:information_source: See confluence notes
 
 ## Running view processes
 
+:warning: Requires cluster access
+
 Create a list of tab separated family accessions and their corresponding uuids using the following query:
+
 
 ```
 select rfam_acc, uuid 
 from _post_process 
 where status='PEND';
 ```
+
 
 ---
 **NOTE**

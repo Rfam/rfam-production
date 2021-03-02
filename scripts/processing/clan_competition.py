@@ -27,6 +27,7 @@ import os
 import string
 import logging
 import timeit
+import argparse
 from utils import db_utils
 
 # -----------------------------------------------------------------------------
@@ -345,6 +346,29 @@ def usage():
     print "\nPDB option for pdb clan competition"
     print "\nFULL option for full region clan competition"
 
+
+# -----------------------------------------------------------------------------
+
+
+def parse_arguments():
+    """
+    Basic argument parsing using Python's argparse
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser(prog="clan_competition.py",
+                                     help="A tool to compete PDB and FULL hits of families belonging" \
+                                          "to the same clan")
+
+    parser.add_argument("--input", help="A directory of with clan files to compete")
+    parser.add_argument("-r", help="Reset is_significant field")
+    parser.add_argument("--pdb", help="Clan compete PDB regions",
+                        action="store_true", default=False)
+    parser.add_argument("--full", help="Clan compete FULL regions",
+                        action="store_true", default=False)
+
+    return parser
 
 # -----------------------------------------------------------------------------
 

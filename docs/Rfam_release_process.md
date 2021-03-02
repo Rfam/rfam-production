@@ -1,5 +1,15 @@
 # Rfam release process
 
+## Setup the environment
+
+Use virtualenv to install the [requirements](../requirements.txt) locally. Alternatively, run the following on the cluster:
+
+```
+become rfamprod
+cd_code
+source env2/bin/activate
+```
+
 ## Clan competition
 
 Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan. 

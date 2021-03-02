@@ -82,7 +82,7 @@ make_rfam_keywords_table.pl
 
 :warning: Requires cluster access
 
-Create a list of tab separated family accessions and their corresponding uuids using the following query:
+1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
 
 
 ```
@@ -91,6 +91,19 @@ from _post_process
 where status='PEND';
 ```
 
+2. Launch view processes on the EBI cluster:
+
+```
+python job_dequeuer.py options go here
+```
+
+## Stage RfamLive for a new release
+
+Create a new MySQL dump to replicate the database on REL and PUBLIC servers
+
+```
+mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_relX.sql
+```
 
 ---
 **NOTE**

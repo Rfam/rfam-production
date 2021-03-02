@@ -12,7 +12,7 @@ source env2/bin/activate
 
 ## Clan competition
 
-Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan. 
+Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
 
 ### Preparing for clan competition
 
@@ -86,8 +86,8 @@ make_rfam_keywords_table.pl
 
 
 ```
-select rfam_acc, uuid 
-from _post_process 
+select rfam_acc, uuid
+from _post_process
 where status='PEND';
 ```
 
@@ -109,8 +109,25 @@ Create a new MySQL dump to replicate the database on REL and PUBLIC servers
 mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_relX.sql
 ```
 
----
-**NOTE**
+## Generate FTP files
 
----
+### Generate SEED files using [writeAnnotatedSeed.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl)
+
+```
+perl writeAnnotatedSeed.pl RFXXXXX
+```
+
+### Generate annotated CM files:
+
+1. Generate a plain CM file using [writeAnnotatedCM.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl)
+
+```
+perl writeAnnotatedCM.pl RFXXXXX
+```
+
+2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl)
+
+```
+perl seed-desc-to-cm.pl <SEED file with DESC> <CM file to add DESC to> > RFXXXXX.cm";
+```
 

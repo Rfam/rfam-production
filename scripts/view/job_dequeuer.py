@@ -45,7 +45,7 @@ DEM_FAMS = ["RF00002", "RF00005", "RF00177", "RF02542"]
 # Path to rfam_family_view.pl on lsf
 FAM_VIEW_PL = rfc.FAM_VIEW_PL
 TMP_PATH = rfc.TMP_PATH
-GROUP_NAME = rfc.RFAM_VIEW_GROUP
+GROUP_NAME = "/rfam_view"
 
 # -----------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ def lsf_script_generator(rfam_acc, uuid, out_dir):
     fp.write("#!/bin/csh\n")
 
     #queue
-    fp.write("#BSUB -q %s\n" % (rfc.VIEW_QUEUE))
+    fp.write("#BSUB -q %s\n" % ("production-rh74"))
     # memory allocation
     fp.write("#BSUB -M %d\n" % (mem))
     fp.write("#BSUB -R \"rusage[mem=%d,tmp=%d]\"\n" % (mem, TMP_MEM))

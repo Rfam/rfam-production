@@ -94,8 +94,12 @@ where status='PEND';
 2. Launch view processes on the EBI cluster:
 
 ```
-python job_dequeuer.py options go here
+python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path/to/destination/directory
 ```
+
+`--view-list:` A list with tab separated rfam_acc, uuid pairs to run view processes on
+`--dest-dir:` The path to the destination directory to generate shell scripts and log to
+
 
 ## Stage RfamLive for a new release
 

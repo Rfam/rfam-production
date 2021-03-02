@@ -357,13 +357,12 @@ def parse_arguments():
     return: Argparse parser object
     """
 
-    parser = argparse.ArgumentParser(prog="clan_competition.py",
-                                     help="A tool to compete PDB and FULL hits of families belonging to the same clan")
+    parser = argparse.ArgumentParser(prog="clan_competition.py")
 
     parser.add_argument("--input", help="A directory of with clan files to compete")
     parser.add_argument("-r", help="Reset is_significant field", action="store_true",
                         default=False)
-    mutualy_exclusive = parser.add_mutually_exclusive_group("Clan competition types")
+    mutualy_exclusive = parser.add_mutually_exclusive_group()
     mutualy_exclusive.add_argument("--pdb", help="Clan compete PDB regions",
                         action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",

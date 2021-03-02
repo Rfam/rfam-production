@@ -52,8 +52,12 @@ for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.t
 4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/processing/clan_competition.py):
 
 ```
-clan_competition.py 
+python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
 ```
+
+`--input:` Path to ~/releaseX/clan_competition/sorted
+`--pdb:` Type of hits to compete PDB (pdb_full_region table)
+`--full:` Type of hits to compete FULL (full_region table)
 
 ## Prepare rfam_live for a new release
 1. Truncate `family_ncbi` table

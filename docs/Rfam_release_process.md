@@ -13,7 +13,7 @@ python clan_file_generator.py --dest-dir /path/to/dest/directory --clan-acc CL00
 ```
 `--dest-dir:` Destination directory to generate output to
 
-`--cc-type:` Clan competition type FULL/PDB
+`--cc-type:` Clan competition type **[FULL|PDB]**
 
 `--clan-acc:` Clan accession to compete
 
@@ -42,10 +42,10 @@ clan_competition.py
 ```
 python populate_rfamlive_for_release.py --all
 ```
-4. Make useful keywords by running:
+4. Make useful keywords by running (requires cluster access):
 
 ```
-make_rfam_keywords_table.pl
+perl make_rfam_keywords_table.pl
 ```
 
 ## Updating PDB sequence file
@@ -56,14 +56,21 @@ make_rfam_keywords_table.pl
 
 :warning: Requires cluster access
 
-Create a list of tab separated family accessions and their corresponding uuids using the following query:
-
+1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
 
 ```
 select rfam_acc, uuid 
 from _post_process 
 where status='PEND';
 ```
+
+2. Launch view processes on the cluster:
+
+```
+job_dequeuer.py 
+```
+
+
 
 
 ---

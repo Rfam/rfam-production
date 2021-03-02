@@ -358,8 +358,7 @@ def parse_arguments():
     """
 
     parser = argparse.ArgumentParser(prog="clan_competition.py",
-                                     help="A tool to compete PDB and FULL hits of families belonging" \
-                                          "to the same clan")
+                                     help="A tool to compete PDB and FULL hits of families belonging to the same clan")
 
     parser.add_argument("--input", help="A directory of with clan files to compete")
     parser.add_argument("-r", help="Reset is_significant field", action="store_true",

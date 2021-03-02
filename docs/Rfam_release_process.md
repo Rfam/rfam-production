@@ -16,14 +16,19 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 ### Preparing for clan competition
 
-1. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py)
+1. Create a destination directory for clan competition required files
 
 ```
-python clan_file_generator.py --dest-dir /path/to/dest/directory --clan-acc CL00001 --cc-type FULL
+mkdir ~/releaseX/clan_competition
 ```
-`--dest-dir:` Destination directory to generate output to
 
-`--cc-type:` Clan competition type **[FULL|PDB]**
+
+2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py)
+
+```
+python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
+```
+`--cc-type:` Clan competition type FULL/PDB
 
 `--clan-acc:` Clan accession to compete
 
@@ -31,13 +36,20 @@ python clan_file_generator.py --dest-dir /path/to/dest/directory --clan-acc CL00
 
 `-f:` Only compete clans in file
 
-2. Sort clan files in dest-dir based on rfamseq_acc (col2) using linux sort command:
+
+3. Sort clan files in `dest-dir` based on rfamseq_acc (col2) using linux sort command and store then in the sorted directory:
 
 ```
-sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt
+sort -k2 -t $'\t' clan_file.txt > ~/releaseX/clan_competition/sorted/clan_file_sorted.txt
 ```
 
-3. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/processing/clan_competition.py):
+or for multiple files `cd ~/releaseX/clan_competition` and run:
+
+```
+for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
+```
+
+5. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/processing/clan_competition.py):
 
 ```
 clan_competition.py 
@@ -52,10 +64,10 @@ clan_competition.py
 ```
 python populate_rfamlive_for_release.py --all
 ```
-4. Make useful keywords by running (requires cluster access):
+4. Make useful keywords by running:
 
 ```
-perl make_rfam_keywords_table.pl
+make_rfam_keywords_table.pl
 ```
 
 ## Updating PDB sequence file
@@ -66,7 +78,8 @@ perl make_rfam_keywords_table.pl
 
 :warning: Requires cluster access
 
-1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
+Create a list of tab separated family accessions and their corresponding uuids using the following query:
+
 
 ```
 select rfam_acc, uuid 
@@ -74,18 +87,9 @@ from _post_process
 where status='PEND';
 ```
 
-2. Launch view processes on the cluster:
-
-```
-job_dequeuer.py 
-```
-
-
-
 
 ---
 **NOTE**
 
 ---
-
 

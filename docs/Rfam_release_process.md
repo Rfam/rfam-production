@@ -9,8 +9,10 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 1. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py)
 
 ```
-python clan_file_generator.py --dest-dir /path/to/destination directory --clan-acc CL00001 --cc-type FULL
+python clan_file_generator.py --dest-dir /path/to/dest/directory --clan-acc CL00001 --cc-type FULL
 ```
+`--dest-dir:` Destination directory to generate output to
+
 `--cc-type:` Clan competition type FULL/PDB
 
 `--clan-acc:` Clan accession to compete

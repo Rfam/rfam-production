@@ -74,6 +74,12 @@ python populate_rfamlive_for_release.py --all
 make_rfam_keywords_table.pl
 ```
 
+5. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl):
+
+```
+perl updateTaxonomyWebsearch.pl
+```
+
 ## Updating PDB sequence file
 
 :information_source: See confluence notes

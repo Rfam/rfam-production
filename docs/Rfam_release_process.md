@@ -152,8 +152,9 @@ perl writeAnnotatedTree.pl RFXXXXX
 This enables the SEED and CM download directly from the Rfam website
 
 ```
-
+perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
 ```
+
 
 
 

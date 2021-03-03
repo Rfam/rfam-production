@@ -139,3 +139,22 @@ perl writeAnnotatedCM.pl RFXXXXX
 perl seed-desc-to-cm.pl <SEED file with DESC> <CM file to add DESC to> > RFXXXXX.cm";
 ```
 
+3. Load SEED and CM files to `rfam_live`:
+
+This enables the SEED and CM download directly from the Rfam website
+
+```
+ADD SCRIPT HERE
+```
+
+4. Generate new tree files for the release
+
+```
+ADD SCRIPT HERE
+```
+
+
+
+
+
+

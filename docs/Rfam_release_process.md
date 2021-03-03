@@ -56,7 +56,9 @@ python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
 ```
 
 `--input:` Path to ~/releaseX/clan_competition/sorted
+
 `--pdb:` Type of hits to compete PDB (pdb_full_region table)
+
 `--full:` Type of hits to compete FULL (full_region table)
 
 ## Prepare rfam_live for a new release
@@ -74,7 +76,7 @@ python populate_rfamlive_for_release.py --all
 make_rfam_keywords_table.pl
 ```
 
-5. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl):
+5. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
 
 ```
 perl updateTaxonomyWebsearch.pl

@@ -165,6 +165,12 @@ source rfam_live_relX.sql
 perl writeAnnotatedSeed.pl RFXXXXX
 ```
 
+alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+
+```
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
+```
+
 ### Generate annotated CM files:
 
 1. Generate a plain CM file using [writeAnnotatedCM.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl)
@@ -172,6 +178,13 @@ perl writeAnnotatedSeed.pl RFXXXXX
 ```
 perl writeAnnotatedCM.pl RFXXXXX
 ```
+
+alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+
+```
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
+```
+
 
 2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl)
 
@@ -185,6 +198,12 @@ perl seed-desc-to-cm.pl <SEED file with DESC> <CM file to add DESC to> > RFXXXXX
 
 ```
 perl writeAnnotatedTree.pl RFXXXXX
+```
+
+alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+
+```
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
 ```
 
 ### Load SEED and CM files to `rfam_live`:

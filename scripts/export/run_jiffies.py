@@ -23,13 +23,17 @@ Notes: 1. Call this script as rfamprod
 
 import os
 import sys
+import argparse
 import subprocess
 
+JIFFIES = {"SEED": "writeAnnotatedSEED.pl",
+	"CM": "writeAnnotatedCM.pl",
+	"TREE": "writeAnnotatedTree.pl"}
 
 # -----------------------------------------------------------------------------
 
 
-def call_jiffy(jiffy, fam_file, outdir=None):
+def call_jiffy(jiffy_type, fam_file, outdir=None):
     """
     This function was designed to call the perl script defined by the jiffy
     parameter. Used in Rfam 12.1 with jiffies writeAnnotatedCM.pl,
@@ -50,7 +54,7 @@ def call_jiffy(jiffy, fam_file, outdir=None):
     fp = open(os.path.abspath(fam_file), 'r')
 
     for rfam_acc in fp:
-        cmd = "%s %s" % (jiffy, rfam_acc)
+        cmd = "perl %s %s" % (jiffy, rfam_acc)
         subprocess.call(cmd, shell=True)
 
     fp.close()
@@ -59,10 +63,30 @@ def call_jiffy(jiffy, fam_file, outdir=None):
 # -----------------------------------------------------------------------------
 
 
-def usage():
-    # TO DO
-    pass
+def parse_arguments():
 
+	"""
+	"""
+
+	parser = argparse.ArgumentParser()
+	
+	mutually_exclusive_type = parser.add_mutually_exclusive_group()
+	mutually_exclusive_type.add_argument("--seed", help="Export SEED files from SVN", 
+		action="store_true", default=False)
+	mutually_exclusive_type.add_argument("--cm", help="Export CM files from SVN", 
+                action="store_true", default=False)
+	mutually_exclusive_type.add_argument("--tree", help="Export SEED files from SVN", 
+                action="store_true", default=False)
+
+	mutually_exclusive_input = parser.add_mutually_exclusive_group()
+	mutually_exclusive_input.add_argument("--acc", help="Rfam family accession",
+                action="store",type=str)
+	mutually_exclusive_input.add_argument("-f", help="List of Rfam family accessions (.txt)",
+                action="store",type=str)
+
+	parser.add_argument("--dest-dir", help="Destination directory to generate files to")
+
+	return parser
 
 # -----------------------------------------------------------------------------
 

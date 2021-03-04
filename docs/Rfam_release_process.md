@@ -111,10 +111,50 @@ python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path
 
 ## Stage RfamLive for a new release
 
-Create a new MySQL dump to replicate the database on REL and PUBLIC servers
+### Creating MySQL dumps using `mysqldump`
+
+1. Create a new MySQL dump to replicate the database on REL and PUBLIC servers:
 
 ```
 mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_relX.sql
+```
+
+2. Create a MySQL dump of a single table:
+
+```
+mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G database_name table_name > table_name.sql
+```
+
+### Restore a MySQL database instance on a remote server:
+
+1. Move to the directory where the new MySQL dump is located
+
+```
+cd /path/to/rfam_live_relX.sql
+```
+
+2. Connect to the MySQL server (e.g. PUBLIC)
+
+```
+mysql -u username  -h hostname -P port -p
+```
+
+3. Create a new MySQL Schema
+
+```
+Create schema rfam_X_Y;
+```
+
+4. Select schema to restore MySQL dump to
+
+```
+Use rfam_X_Y;
+```
+
+5. Restore the database in preparation for a new release
+
+```
+source rfam_live_relX.sql
 ```
 
 ## Generate FTP files

@@ -20,7 +20,7 @@ import os
 import subprocess
 import sys
 
-JIFFIES = {"SEED": "writeAnnotatedSEED.pl",
+JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",
            "TREE": "writeAnnotatedTree.pl"}
 
@@ -49,7 +49,7 @@ def export_ftp_file(type, rfam_acc, dest_dir=None):
         jiffy = JIFFIES[type]
 
         # call jiffy
-        cmd = "perl %s %s" % (jiffy, rfam_acc)
+        cmd = "%s %s" % (jiffy, rfam_acc)
         subprocess.call(cmd, shell=True)
 
     except:

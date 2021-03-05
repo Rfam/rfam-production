@@ -159,7 +159,9 @@ source rfam_live_relX.sql
 
 ## Generate FTP files
 
-### Generate SEED files using [writeAnnotatedSeed.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl)
+### Generate SEED files
+
+Export SEED files from SVN using [writeAnnotatedSeed.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
 
 ```
 perl writeAnnotatedSeed.pl RFXXXXX

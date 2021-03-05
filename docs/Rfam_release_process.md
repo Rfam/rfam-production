@@ -109,6 +109,16 @@ python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path
 `--dest-dir:` The path to the destination directory to generate shell scripts and log to
 
 
+### Load SEED and CM files to `rfam_live`:
+
+This enables the SEED and CM download directly from the Rfam website
+
+```
+perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
+```
+
+**Note:** This step requires the SEED and CM FTP files
+
 ## Stage RfamLive for a new release
 
 ### Creating MySQL dumps using `mysqldump`
@@ -208,13 +218,7 @@ alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-productio
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
 ```
 
-### Load SEED and CM files to `rfam_live`:
 
-This enables the SEED and CM download directly from the Rfam website
-
-```
-perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
-```
 
 
 

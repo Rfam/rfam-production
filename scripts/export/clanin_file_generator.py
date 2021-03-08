@@ -61,8 +61,7 @@ def parse_arguments():
     return: Argparse parser object
     """
 
-    parser = argparse.ArgumentParser(prog="clanin_file_generator.py",
-                                     help="Generates Clanin for use in clan competition")
+    parser = argparse.ArgumentParser(prog="clanin_file_generator.py")
     parser.add_argument("--dest-dir", help="Destination directory to store output to")
 
     return parser

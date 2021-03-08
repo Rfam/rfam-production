@@ -235,10 +235,17 @@ python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-d
 
 ### Export rfam2go
 
-Create a new `rfam2go` export by running:
+1. Create a new `rfam2go` export by running [rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/rfam2go.pl):
 
 ```
+rfam2go.pl > /path/to/dest/dir/rfam2go
+```
 
+2. Create `md5` checksum of rfam2go file:
+
+```
+cd rfam2go &&
+md5sum * > md5.txt
 ```
 
 ## Prepare new data dumps to enable Rfam Text Search

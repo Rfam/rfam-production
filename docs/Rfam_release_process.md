@@ -25,6 +25,8 @@ source /path/to/rfam_rh74/rfamrc
 
 **Note:** The `rfamrc` file sets up several env variables including `PATH`
 
+---
+
 ## Clan competition
 
 Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
@@ -36,7 +38,6 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 ```
 mkdir ~/releaseX/clan_competition
 ```
-
 
 2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py):
 
@@ -76,10 +77,14 @@ python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
 
 `--full:` Type of hits to compete FULL (full_region table)
 
+---
+
 ## Prepare rfam_live for a new release
+
 1. Truncate `family_ncbi` table
 
 2. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
+
 3. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/populate_rfamlive_for_release.py):
 
 ```
@@ -97,13 +102,20 @@ make_rfam_keywords_table.pl
 perl updateTaxonomyWebsearch.pl
 ```
 
+---
+
 ## Updating PDB sequence file
 
-:information_source: See confluence notes
+Updating the `pdb_full_region` table on `rfam_live` depends on the PDBe auto-generated fasta file
+and `view` processes.
+
+:information_source: See confluence note
+
+---
 
 ## Running view processes
 
-:warning: Requires cluster access
+:warning: Requires cluster access and updating the PDB fasta file
 
 1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
 
@@ -114,7 +126,9 @@ from _post_process
 where status='PEND';
 ```
 
-2. Launch view processes on the EBI cluster:
+2. Update the PDB sequence file and the path in the [PDB plugin](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Lib/Bio/Rfam/View/Plugin/PDB.pm)
+
+3. Launch view processes on the EBI cluster:
 
 ```
 python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path/to/destination/directory
@@ -122,6 +136,28 @@ python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path
 
 `--view-list:` A list with tab separated rfam_acc, uuid pairs to run view processes on
 `--dest-dir:` The path to the destination directory to generate shell scripts and log to
+
+---
+
+## Launching PDB fasta file scan directly
+
+:information_source: The view processes
+
+1. Scan the PDB fasta file using the newly created `Rfam.cm` on FTP:
+
+```
+cmscan -o /path/to/release/dir/PDB_RFAM_X_Y.out --tblout /path/to/release/dir/PDB_RFAM_X_Y.tbl --cut_ga Rfam.cm /path/to/release/dir/PDB_REL_X_Y.fa
+```
+
+2. Parse the `PDB_RFAM_X_Y.tbl` and generate a `pdb_full_region` dump (`.txt`)
+
+```
+ADD command here
+```
+
+3. Truncate `pdb_full_region` table in `rfam_live` and import the data in the `.txt` dump (see step 2)
+
+4. Clan compete the hits as described under `Clan competition` section (use PDB option)
 
 
 ### Load SEED and CM files to `rfam_live`:
@@ -133,6 +169,8 @@ perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
 ```
 
 **Note:** This step requires the SEED and CM FTP files
+
+---
 
 ## Stage RfamLive for a new release
 
@@ -182,6 +220,8 @@ Use rfam_X_Y;
 source rfam_live_relX.sql
 ```
 
+---
+
 ## Generate FTP files
 
 ### Generate annotated SEED files:
@@ -211,7 +251,6 @@ alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-productio
 ```
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
 ```
-
 
 2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
 
@@ -247,6 +286,8 @@ rfam2go.pl > /path/to/dest/dir/rfam2go
 cd rfam2go &&
 md5sum * > md5.txt
 ```
+
+---
 
 ## Prepare new data dumps to enable Rfam Text Search
 

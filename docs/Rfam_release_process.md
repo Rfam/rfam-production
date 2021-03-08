@@ -1,6 +1,11 @@
 # Rfam release process
 
-## Setup the environment
+The Rfam release process involves using tools from the two main GitHub repos
+
+ 1. Python repo: `rfam-production`
+ 2. Perl repo:  `rfam-family-pipeline`
+
+## Setup the Python environment
 
 Use virtualenv to install the [requirements](../requirements.txt) locally. Alternatively, run the following on the cluster:
 
@@ -9,6 +14,16 @@ become rfamprod
 cd_code
 source env2/bin/activate
 ```
+
+## Setup the Perl environment
+
+Modify the `~/.bashrc` file to include the following command:
+
+```
+source /path/to/rfam_rh74/rfamrc
+```
+
+**Note:** The `rfamrc` file sets up several env variables including `PATH`
 
 ## Clan competition
 
@@ -217,6 +232,17 @@ alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-productio
 ```
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
 ```
+
+### Export rfam2go
+
+Create a new `rfam2go` export by running:
+
+```
+
+```
+
+## Prepare new data dumps to enable Rfam Text Search
+
 
 
 

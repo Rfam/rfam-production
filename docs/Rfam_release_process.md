@@ -149,15 +149,26 @@ python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path
 cmscan -o /path/to/release/dir/PDB_RFAM_X_Y.out --tblout /path/to/release/dir/PDB_RFAM_X_Y.tbl --cut_ga Rfam.cm /path/to/release/dir/PDB_REL_X_Y.fa
 ```
 
-2. Parse the `PDB_RFAM_X_Y.tbl` and generate a `pdb_full_region` dump (`.txt`)
+2. Parse the `PDB_RFAM_X_Y.tbl` and generate a `pdb_full_region` dump (`.txt`) using [infernal_2_pdb_full_region.py](https://github.com/Rfam/rfam-production/blob/master/scripts/processing/infernal_2_pdb_full_region.py):
 
 ```
-ADD command here
+python infernal_2_pdb_full_region.py --tblout /path/to/pdb_full_region.tbl --dest-dir /path/to/dest/dir
+```
+**NOTE:** This script will generate a new `pdb_full_region_date.txt` file for import to `rfam_live`
+
+3. Truncate `pdb_full_region` table by executing the following query:
+
+```
+Truncate table pdb_full_region;
 ```
 
-3. Truncate `pdb_full_region` table in `rfam_live` and import the data in the `.txt` dump (see step 2)
+4. Import the data in the `.txt` dump to `rfam_live` (see step 2)
 
-4. Clan compete the hits as described under `Clan competition` section (use PDB option)
+```
+ADD COMMAND HERE
+```
+
+5. Clan compete the hits as described under `Clan competition` section (use PDB option)
 
 
 ### Load SEED and CM files to `rfam_live`:
@@ -305,10 +316,10 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 ## Create new json dumps for import to RNAcentral
 
-1. Create a new region export from Rfam using [Rfam2RNAcentral.pl]():
+1. Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
 
 ```
-ADD COMMAND HERE
+perl Rfam2RNAcentral.pl
 ```
 
 2. Split regions into smaller chunks using basic linux `split` command:

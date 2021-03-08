@@ -301,6 +301,35 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 ## Prepare new data dumps to enable Rfam Text Search
 
+---
+
+## Create new json dumps for import to RNAcentral
+
+1. Create a new region export from Rfam using [Rfam2RNAcentral.pl]():
+
+```
+ADD COMMAND HERE
+```
+
+2. Split regions into smaller chunks using basic linux `split` command:
+
+```
+ADD COMMAND HERE
+```
+
+3. Launch a new json dump using [rnac2json.py]():
+
+```
+ADD COMMAND HERE
+```
+
+---
+
+
+---
+
+
+
 
 
 

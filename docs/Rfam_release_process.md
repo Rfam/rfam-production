@@ -287,6 +287,16 @@ cd rfam2go &&
 md5sum * > md5.txt
 ```
 
+### Generate `Rfam.clanin` file
+
+Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clanin_file_generator.py):
+
+```
+python clanin_file_generator.py --dest-dir /path/to/destination/directory
+```
+
+**Note:** Only required if new Clans have been added or existing ones updated
+
 ---
 
 ## Prepare new data dumps to enable Rfam Text Search

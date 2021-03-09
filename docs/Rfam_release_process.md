@@ -5,6 +5,8 @@ The Rfam release process involves using tools from the two main GitHub repos
  1. Python repo: `rfam-production`
  2. Perl repo:  `rfam-family-pipeline`
 
+ **Note:** Python code can run locally, but requires EBI VPN connection
+
 ## Setup the Python environment
 
 Use virtualenv to install the [requirements](../requirements.txt) locally. Alternatively, run the following on the cluster:

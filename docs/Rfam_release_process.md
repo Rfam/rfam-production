@@ -27,6 +27,26 @@ source /path/to/rfam_rh74/rfamrc
 
 **Note:** The `rfamrc` file sets up several env variables including `PATH`
 
+## Useful rfamprod aliases to easily move to various locations on the cluster
+
+1. Become `rfamprod` user by executing:
+
+```
+become rfamprod
+```
+
+2. Choose one of the following aliases to move to a specific location:
+
+```
+cd_rel - move to release working directories
+cd_rfamseq - move to Rfamseq location
+cd_rfam - move to rfam-family-pipeline repo
+cd_rh7 - move to Perl libraries
+cd_code - move to rfam-production repo
+```
+
+**Note:** Requires access to the EBI cluster
+
 ---
 
 ## Clan competition

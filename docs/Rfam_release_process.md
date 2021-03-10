@@ -300,6 +300,24 @@ cd rfam2go &&
 md5sum * > md5.txt
 ```
 
+### Generate `Rfam.full_region` file
+
+To generate the `Rfam.full_region` file execute the following query and dump in a `.txt` file:
+
+```
+select rfam_acc, rfamseq_acc, seq_start, seq_end, bit_score, evalue_score, cm_start, cm_end, truncated, type
+from full_region
+where is_significant=1
+order by rfam_acc;
+```
+
+### Generate the `Rfam.pdb` file
+
+To generate the `Rfam.pdb` file execute the following query and dump in a `.txt` file:
+
+```
+```
+
 ### Generate `Rfam.clanin` file
 
 Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clanin_file_generator.py):
@@ -314,6 +332,25 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 ## Prepare new data dumps to enable Rfam Text Search
 
+**Requirements:**
+
+The directory for the Text Search index must have the following structure:
+
+-
+- families
+- clans
+- genomes
+- motifs
+- full_region
+
+
+1. Move to the main `rfam-production` repo and setup the django environment:
+
+```
+source django_settings.sh
+```
+
+2. Create an output directory for a new release index
 ---
 
 ## Create new json dumps for import to RNAcentral

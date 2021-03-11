@@ -43,6 +43,7 @@ cd_rfamseq - move to Rfamseq location
 cd_rfam - move to rfam-family-pipeline repo
 cd_rh7 - move to Perl libraries
 cd_code - move to rfam-production repo
+cd_main - move to the main Rfam production directory
 ```
 
 **Note:** Requires access to the EBI cluster

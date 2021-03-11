@@ -375,7 +375,35 @@ The directory for the Text Search index must have the following structure:
 source django_settings.sh
 ```
 
-2. Create an output directory for a new release index
+2. Create an output directory for a new release index and all required subdirectories:
+
+```
+mkdir -p relX_text_search/families
+```
+
+3. Create a new families XML dump:
+
+```
+python rfam_xml_dumper.py --type F --out /path/to/relX_text_search/families
+```
+
+4. Validate xml dumps:
+
+```
+python xml_validator.py --input /path/to/relX_text_search/families --log
+```
+
+`--input`: Single XML dump or a directory
+ `--log`: Generates a log file with all XMl dumps failing validation
+
+
+Follow the same process to generate  XML dumps for all data types:
+ - families
+ - clans
+ - motifs
+ - genomes
+ - full_region
+
 ---
 
 ## Create new json dumps for import to RNAcentral

@@ -414,19 +414,26 @@ For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper
 
 ## Create new json dumps for import to RNAcentral
 
-1. Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
 
+### Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
+
+1. Extract SEED regions:
 ```
-perl Rfam2RNAcentral.pl
+perl Rfam2RNAcentral.pl SEED > /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
 ```
 
-2. Split regions into smaller chunks using basic linux `split` command:
+2. Extract FULL regions:
+```
+perl Rfam2RNAcentral.pl FULL >> /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
+```
+
+3. Split regions into smaller chunks using basic linux `split` command:
 
 ```
 ADD COMMAND HERE
 ```
 
-3. Launch a new json dump using [rnac2json.py]():
+4. Launch a new json dump using [rnac2json.py]():
 
 ```
 ADD COMMAND HERE
@@ -435,7 +442,6 @@ ADD COMMAND HERE
 ---
 
 
----
 
 
 

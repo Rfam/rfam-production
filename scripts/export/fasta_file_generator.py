@@ -30,6 +30,7 @@ import re
 import gzip
 import argparse
 from utils import RfamDB
+from utils import db_utils as db
 from config import rfam_config
 
 # -----------------------------------------------------------------------------
@@ -365,8 +366,14 @@ def parse_arguments():
     parser.add_argument("--seq-db", help="Sequence database to extract sequences from",
                         action="store")
     parser.add_argument("--rfam-seed", help="Rfam.seed file")
-    parser.add_argument("--acc", help="Rfam family accession to extract sequences for",
-                        action="store")
+    mutually_exclusive = parser.add_mutually_exclusive_group()
+    mutually_exclusive.add_argument("--acc", help="Rfam family accession to extract sequences for",
+                        action="store", default=None)
+    mutually_exclusive.add_argument("-f",
+                                    help="A list of Rfam family accessions to extract sequences for",
+                                    action="store", default=None)
+    mutually_exclusive.add_argument("--all", help="Extract sequences for all Rfam families",
+                                    action="store_true", default=False)
     parser.add_argument("--outdir", help="Output directory to store files to",
                         action="store")
 
@@ -386,7 +393,23 @@ if __name__ == '__main__':
     # some parameter checking
 
     sequence_file = args.seq_db
-    rfam_acc = args.acc
     output_dir = args.outdir
 
-    extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)
+    if args.f is not None:
+        fp = open(args.f, 'r')
+        accs = [x.strip() for x in fp]
+        fp.close()
+
+        for rfam_acc in accs:
+            extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)
+
+    elif args.acc is not None:
+        extract_family_sequences(sequence_file, args.rfam_seed, args.acc, output_dir)
+
+    elif args.all is True:
+        accs = db.fetch_rfam_accs_sorted()
+
+        for rfam_acc in accs:
+            extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)
+    else:
+        sys.exit("Wrong input! Try again!")

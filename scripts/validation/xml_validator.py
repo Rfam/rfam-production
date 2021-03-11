@@ -62,7 +62,7 @@ if __name__ == '__main__':
         if args.log:
             fp = open(os.path.join(args.input, "error.log"), 'w')
 
-        xml_files = [x for x in os.listdir(args.input)]
+        xml_files = [x for x in os.listdir(args.input) if x.endswith(".xml")]
         for xml_file in xml_files:
             if validate_xml_dump(os.path.join(args.input, xml_file)) is False:
                 if args.log:

@@ -361,7 +361,7 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 The directory for the Text Search index must have the following structure:
 
--
+- release_note.txt
 - families
 - clans
 - genomes
@@ -403,6 +403,11 @@ Follow the same process to generate  XML dumps for all data types:
  - motifs
  - genomes
  - full_region
+
+
+For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/lsf_rfam_xml_dumper.sh)
+
+:information_source: More detailed information available on confluence
 
 ---
 

@@ -354,6 +354,19 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 **Note:** Only required if new Clans have been added or existing ones updated
 
+
+### Generate FTP database_files
+
+```
+ADD COMMAND HERE
+```
+
+### Generate FTP fasta_files
+
+```
+ADD COMMAND HERE
+```
+
 ---
 
 ## Prepare new data dumps to enable Rfam Text Search

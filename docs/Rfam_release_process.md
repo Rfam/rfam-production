@@ -430,8 +430,14 @@ perl Rfam2RNAcentral.pl FULL >> /path/to/relX/rnacentral/dir/rfamX_rnac_regions.
 3. Split regions into smaller chunks using basic linux `split` command:
 
 ```
-ADD COMMAND HERE
+mkdir chunks &&
+cd chunks &&
+split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additional-suffix='.txt'
 ```
+
+`-n:` defines the number of chunks to generate (2000 limit on LSF)
+
+**Note:** This command will generate 3000 files named like `rnac_zbss.txt`
 
 4. Launch a new json dump using [rnac2json.py]():
 

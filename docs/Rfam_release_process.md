@@ -441,7 +441,7 @@ split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additi
 - This command will generate 3000 files named like `rnac_zbss.txt`
 - Use `-l 500` option for more efficient chink size
 
-4. Launch a new json dump using [rnac2json.py]():
+4. Launch a new json dump using [rnac2json.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/rnac2json.py):
 
 ```
 ADD COMMAND HERE

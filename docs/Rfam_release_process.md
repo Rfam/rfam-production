@@ -391,9 +391,22 @@ tar -xzvf /some/location/database_files.tar.gz .
 
 ### Generate FTP fasta_files
 
+1. Export new fasta files for all families in Rfam using [fasta_file_generator.py](https://github.com/Rfam/rfam-production/tree/master/scripts/export/fasta_file_generator.py):
+
+```
+# Submit a new interactive LSF job
+bsub -M 10000 -Is $SHELL
+# launch the python script to export fasta files
+python fasta_file_generator.py --seq-db /path/to/rfamseq.fa --rfam-seed /path/to/releaseX/Rfam.seed --all --outdir /path/to/ftp/fasta_files
+```
+
+ALternatively, launch individual LSF jobs using X:
+
 ```
 ADD COMMAND HERE
 ```
+
+2. Copy the newly generated `fasta_files` to FTP
 
 ---
 

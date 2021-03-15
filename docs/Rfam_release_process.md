@@ -379,7 +379,7 @@ python database_file_selector.py --source-dir /tmp --dest-dir /releaseX/database
 3. Zip `database_files` directory and copy to remote server:
 
 ```
-gzip -czvf database_files.tar.gz /releaseX/database_files
+tar -czvf database_files.tar.gz /releaseX/database_files
 scp database_files.tar.gz username@remote.host:/some/location
 ```
 

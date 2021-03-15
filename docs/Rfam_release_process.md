@@ -412,6 +412,8 @@ ADD COMMAND HERE
 
 ## Prepare new data dumps to enable Rfam Text Search
 
+### Generate new data dumps
+
 **Requirements:**
 
 The directory for the Text Search index must have the following structure:
@@ -459,11 +461,31 @@ Follow the same process to generate  XML dumps for all data types:
  - genomes
  - full_region
 
-
 For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/lsf_rfam_xml_dumper.sh)
 
 :information_source: More detailed information available on confluence
 
+### Index data on **dev** and **prod**
+
+1. Change directory to `text_search` on the cluster:
+
+```
+cd_main && cd search_dumps
+```
+
+2. Index data on `dev`:
+
+```
+unlink rfam_dev
+ln -s /path/to/xml/data/dumps rfam_dev
+```
+
+3. Index data on `prod`:
+
+```
+unlink current_release
+ln -s /path/to/xml/data/dumps current_release
+```
 ---
 
 ## Create new json dumps for import to RNAcentral

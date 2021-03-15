@@ -357,9 +357,34 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 
 ### Generate FTP database_files
 
+The option `--tab` of `mysqldump` is used to generate dumps in both `.sql` and `.txt` formats, where:
+ - `table.sql` includes the MySQL query executed to create a table
+ - `table.txt` includes the table contents in tabular format
+
+If executed on the server side, `--tab` can point to a specific location where output will be created. Alternatively, create a local copy of the database and
+dump the files to `tmp` directory.
+
+1. Create a new database dump using mysqldump:
+
 ```
-ADD COMMAND HERE
+mysqldump -u <user> -h localhost -P <port> -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G --tab=/tmp rfam_live_local
 ```
+
+2. Run the [database_file_selector.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/database_file_selector.py) python script to create the subset of `database_files` available on the FTP:
+
+```
+python database_file_selector.py --source-dir /tmp --dest-dir /releaseX/database_files
+```
+
+3. Zip `database_files` directory and copy to remote server:
+
+```
+gzip -czvf database_files.tar.gz /releaseX/database_files
+scp database_files.tar.gz username@remote.host:/some/location
+```
+
+4. Restore `database_files` on FTP
+
 
 ### Generate FTP fasta_files
 

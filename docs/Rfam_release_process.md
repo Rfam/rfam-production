@@ -188,8 +188,10 @@ Truncate table pdb_full_region;
 4. Import the data in the `.txt` dump to `rfam_live` (see step 2)
 
 ```
-ADD COMMAND HERE
+mysqlimport -u <user> -h <host> -p -P <port> <database> data_dump.txt
 ```
+
+Alternatively, use `import` option in SequelPro or similar tools
 
 5. Clan compete the hits as described under `Clan competition` section (use PDB option)
 

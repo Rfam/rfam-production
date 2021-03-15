@@ -385,6 +385,9 @@ scp database_files.tar.gz username@remote.host:/some/location
 
 4. Restore `database_files` on FTP
 
+```
+tar -xzvf /some/location/database_files.tar.gz .
+```
 
 ### Generate FTP fasta_files
 

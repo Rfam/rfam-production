@@ -195,7 +195,6 @@ Alternatively, use `import` option in SequelPro or similar tools
 
 5. Clan compete the hits as described under `Clan competition` section (use PDB option)
 
-
 ### Load SEED and CM files to `rfam_live`:
 
 This enables the SEED and CM download directly from the Rfam website
@@ -519,10 +518,38 @@ split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additi
 - This command will generate 3000 files named like `rnac_zbss.txt`
 - Use `-l 500` option for more efficient chink size
 
-4. Launch a new json dump using [rnac2json.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/rnac2json.py):
+4. Create a copy of the fasta files directory:
 
 ```
-ADD COMMAND HERE
+mkdir fasta_files && cd fasta_files &&
+wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
+```
+**NOTE:** Rfam2RNAcentral regions need to match the exact same release the `fasta_files` were created for.
+          Use the Public MySQL database if `rfam-live` have been updated
+
+5. Unzip all fasta files and index using `esl-sfetch`:
+
+```
+gunzip * .gz
+for file in ./RF*.fa; do esl-sfetch --index $file; done
+```
+
+6. Copy the `Rfam.seed file from the FTP to the fasta_files directory and index using `esl-sfetch`:
+
+```
+wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
+esl-sfetch --index Rfam.seed
+```
+
+7. Launch a new json dump using [rnac2json.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/rnac2json.py):
+
+
+- `fasta file directory:` Create a new fasta files directory
+- `json files directory:` Create a new json files output directory
+
+
+```
+python rnac2json.py --input /path/to/chunks --rfam-fasta /path/to/fasta_files --outdir /path/to/json_files
 ```
 
 ---

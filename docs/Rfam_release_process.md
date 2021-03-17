@@ -288,11 +288,19 @@ alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-productio
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
 ```
 
-2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
+2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
 
-```
-perl seed-desc-to-cm.pl <SEED file with DESC> <CM file to add DESC to> > RFXXXXX.cm";
-```
+    Required files:
+
+    - `$CM_no_desc` - a CM file to add DESC to (could be 1 CM or all CMs in a single file)
+    - `$SEED_with_DESC` - a seed file with DESC lines (could be 1 seed or all seeds in a single file)
+
+    ```
+    # filter out DESC lines to avoid duplicates if some CMs already have DESC lines
+    grep -v DESC $CM_no_desc > Rfam.nodesc.cm
+    perl seed-desc-to-cm.pl $SEED_with_DESC Rfam.nodesc.cm > Rfam.cm
+    gzip Rfam.cm
+    ```
 
 ### Generate annotated Tree files:
 

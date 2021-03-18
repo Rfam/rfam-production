@@ -20,6 +20,10 @@ import os
 import subprocess
 import sys
 
+# TODO - Implement function to rename CMs from RFXXXXX.CM to RFXXXXX.cm
+# TODO - Implement function to rename RFXXXXX.taxtree to RFXXXXX.seed_tree
+# and clear all other redundant files
+
 JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",
            "TREE": "writeAnnotatedTree.pl"}
@@ -27,7 +31,7 @@ JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
 # -----------------------------------------------------------------------------
 
 
-def export_ftp_file(type, rfam_acc, dest_dir=None):
+def export_ftp_file(file_type, rfam_acc, dest_dir=None):
     """
 
     :param type:
@@ -46,7 +50,7 @@ def export_ftp_file(type, rfam_acc, dest_dir=None):
 
     try:
         # select jiffy
-        jiffy = JIFFIES[type]
+        jiffy = JIFFIES[file_type]
 
         # call jiffy
         cmd = "%s %s" % (jiffy, rfam_acc)
@@ -55,6 +59,41 @@ def export_ftp_file(type, rfam_acc, dest_dir=None):
     except:
         raise OSError
 
+# -----------------------------------------------------------------------------
+
+
+def rename_files(source_dir, file_type, rfam_acc):
+    """
+
+    :param source_dir:
+    :param file_type:
+    :return:
+    """
+
+    if not os.path.exists(source_dir):
+        raise IOError
+
+    if file_type == "SEED":
+        seed_file_loc = os.path.join(source_dir, rfam_acc)
+
+        if not os.path.exists(seed_file_loc):
+            sys.exit("Files does not exist %s" % seed_file_loc)
+
+        new_name = os.path.join(source_dir, rfam_acc+'.seed')
+        os.rename(seed_file_loc, new_name)
+
+        if not os.path.exists(new_name):
+            sys.exit("%s SEED cound not be renamed" % rfam_acc)
+
+    elif file_type == "CM":
+        # TODO - rename file from RFXXXXX.CM to RFXXXXX.cm
+        pass
+
+    elif file_type == "TREE":
+        # TODO - rename RFXXXXX.taxtree to RFXXXXX.seed_tree and clear other redundant files
+        pass
+
+    
 # -----------------------------------------------------------------------------
 
 
@@ -108,3 +147,4 @@ if __name__ == '__main__':
 
     for accession in accessions:
         export_ftp_file(jiffy_type, accession, args.dest_dir)
+        rename_files(args.dest_dir, jiffy_type, args.acc)

@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+import urllib
 import logging
 
 # ------------------------------------------------------------------------------------------
@@ -42,9 +43,14 @@ def parse_arguments():
 
 	parser = argparse.ArgumentParser()
 	
-	parser.add_argument("--mirna-list", help="A .json file containing all miRNAs to validate", action="store")
-	parser.add_argument("--desc", help="Only perform DESC validation", action="store_true", default=False)
-	parser.add_argument("--log", help="Creates a log file with all validated DESC files", action="store_true", default=False)
+	parser.add_argument("--mirna-list", 
+		help="A .json file containing all miRNAs to validate", action="store")
+	parser.add_argument("--desc", help="Only perform DESC validation", 
+		action="store_true", default=False)
+	parser.add_argument("--svn", help="Check family exists in the SVN repository", 
+		action="store_true", default=False)
+	parser.add_argument("--log", help="Creates a log file with all validated DESC files", 
+		action="store_true", default=False)
 
 	return parser	
 
@@ -64,6 +70,19 @@ def get_mirna_directory_location(mirna_id):
 	return None
 
 # ------------------------------------------------------------------------------------------
+
+
+def check_family_exists_in_svn(rfam_acc):
+	
+	svn_url = "https://xfamsvn.ebi.ac.uk/svn/data_repos/trunk/Families/%s"
+	
+	status = False
+	# Check if entry existis on SVN repo; status=True
+
+	return status
+
+# ------------------------------------------------------------------------------------------
+
 
 if __name__=='__main__':
 
@@ -89,6 +108,4 @@ if __name__=='__main__':
 						print (mirna_dir_loc)
 				
 		
-	
-
 	

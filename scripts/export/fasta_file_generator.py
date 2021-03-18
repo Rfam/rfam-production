@@ -30,6 +30,7 @@ import re
 import gzip
 import argparse
 from utils import RfamDB
+from utils import db_utils as db
 from config import rfam_config
 
 # -----------------------------------------------------------------------------
@@ -261,12 +262,12 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     query = None
 
     # open a new fasta output file
-    fp_out = gzip.open(
-        os.path.join(outdir, str(rfam_acc) + ".fa.gz"), 'w')
+    filename = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
+    fp_out = gzip.open(filename, 'w')
 
     for seq_type in seq_types:
 
-        if type == "FULL":
+        if seq_type == "FULL":
             # fetch sequence accessions for specific family - significant only!!
             query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
                           "FROM full_region fr JOIN rfamseq rf\n"
@@ -274,7 +275,7 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
                           "WHERE fr.is_significant=1\n"
                           "AND fr.type=\'full\'"
                           "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
-        elif type == "SEED":
+        elif seq_type == "SEED":
             query = ("SELECT sr.rfam_acc, sr.rfamseq_acc, sr.seq_start, sr.seq_end, rf.description\n"
                      "FROM seed_region sr JOIN rfamseq rf\n"
                      "ON sr.rfamseq_acc=rf.rfamseq_acc\n"
@@ -282,9 +283,8 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
         # execute the query
         cursor.execute(query)
-
-        for region in cursor:
-
+        
+	for region in cursor:
             cmd = ""
             if seq_type == "FULL":
                 cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
@@ -327,9 +327,9 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-    if os.path.exists(fp_out):
-        if os.path.getsize(fp_out) > 0:
-            return True
+    if os.path.exists(filename):
+       if os.path.getsize(filename) > 0:
+           return True
 
     return False
 
@@ -366,8 +366,14 @@ def parse_arguments():
     parser.add_argument("--seq-db", help="Sequence database to extract sequences from",
                         action="store")
     parser.add_argument("--rfam-seed", help="Rfam.seed file")
-    parser.add_argument("--acc", help="Rfam family accession to extract sequences for",
-                        action="store")
+    mutually_exclusive = parser.add_mutually_exclusive_group()
+    mutually_exclusive.add_argument("--acc", help="Rfam family accession to extract sequences for",
+                        action="store", default=None)
+    mutually_exclusive.add_argument("-f",
+                                    help="A list of Rfam family accessions to extract sequences for",
+                                    action="store", default=None)
+    mutually_exclusive.add_argument("--all", help="Extract sequences for all Rfam families",
+                                    action="store_true", default=False)
     parser.add_argument("--outdir", help="Output directory to store files to",
                         action="store")
 
@@ -387,7 +393,23 @@ if __name__ == '__main__':
     # some parameter checking
 
     sequence_file = args.seq_db
-    rfam_acc = args.acc
     output_dir = args.outdir
 
-    generate_fasta_single(sequence_file, rfam_acc, output_dir)
+    if args.f is not None:
+        fp = open(args.f, 'r')
+        accs = [x.strip() for x in fp]
+        fp.close()
+
+        for rfam_acc in accs:
+            extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)
+
+    elif args.acc is not None:
+        extract_family_sequences(sequence_file, args.rfam_seed, args.acc, output_dir)
+
+    elif args.all is True:
+        accs = db.fetch_rfam_accs_sorted()
+
+        for rfam_acc in accs:
+            extract_family_sequences(sequence_file, args.rfam_seed, rfam_acc, output_dir)
+    else:
+        sys.exit("Wrong input! Try again!")

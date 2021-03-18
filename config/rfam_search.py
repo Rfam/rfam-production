@@ -73,19 +73,18 @@ GENOME_ACC = "SELECT upid FROM genome WHERE num_families > 0"
 # ---------------------------------RFAM FIELDS----------------------------
 
 # Select all family related fields joining tables to fetch pubmed,go and so ids
-FAM_FIELDS = ("SELECT f.rfam_acc as id, f.rfam_id as name, f.description,"
-              "f.author, f.number_of_species as num_species,"
-              "f.number_3d_structures as num_3d_structures, f.num_seed,"
-              "f.num_full, f.type as rna_type, f.created, f.updated,"
-              "group_concat(distinct concat(dl.db_id,\':\',dl.db_link)) as dbxrefs,"
-              "group_concat(distinct concat(fl.pmid)) as pmids\n"
-              "FROM family f JOIN full_region fr USING (rfam_acc)\n"
-              "JOIN database_link dl using (rfam_acc)\n"
-              "JOIN family_literature_reference fl USING (rfam_acc)\n"
-              "WHERE f.rfam_acc = \'%s\' AND fr.is_significant=1\n"
-              "AND (dl.db_id like \'GO\' OR dl.db_id like \'SO\')\n"
-              "GROUP BY f.rfam_acc, f.rfam_id, f.description, f.author, f.number_of_species,"
-              "f.number_3d_structures, f.num_seed, f.num_full, f.type, f.created, f.updated")
+FAM_FIELDS ="""SELECT f.rfam_acc as id, f.rfam_id as name, f.description,f.author, 
+f.number_of_species as num_species,
+f.number_3d_structures as num_3d_structures, f.num_seed,
+f.num_full, f.type as rna_type, f.created, f.updated,
+group_concat(distinct concat(dl.db_id,':',dl.db_link)) as dbxrefs,
+group_concat(distinct concat(fl.pmid)) as pmids
+FROM family f JOIN database_link dl using (rfam_acc)
+JOIN family_literature_reference fl USING (rfam_acc)
+WHERE f.rfam_acc = '%s'
+AND (dl.db_id like 'GO' OR dl.db_id like 'SO')
+GROUP BY f.rfam_acc, f.rfam_id, f.description, f.author, f.number_of_species,
+f.number_3d_structures, f.num_seed, f.num_full, f.type, f.created, f.updated"""
 
 # Fetching clan fields from the db
 CLAN_FIELDS = """

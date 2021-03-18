@@ -193,6 +193,8 @@ def parse_arguments():
     parser.add_argument("--wiki-links", help="File with family/wiki link mappings", action="store", default=None)
     parser.add_argument("-f", help="a list of accessions to generate DESC files for", action="store", default=None)
     parser.add_argument("--label", help="label to be used for the generation of the DESC file", action='store', default=None)
+    parser.add_argument("--no-ref", help="Skips references in DESC file", action="store_true", default=False)
+
     return parser
 
 # --------------------------------------------------------------------

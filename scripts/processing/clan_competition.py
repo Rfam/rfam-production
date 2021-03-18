@@ -27,6 +27,7 @@ import os
 import string
 import logging
 import timeit
+import argparse
 from utils import db_utils
 
 # -----------------------------------------------------------------------------
@@ -348,25 +349,45 @@ def usage():
 
 # -----------------------------------------------------------------------------
 
+
+def parse_arguments():
+    """
+    Basic argument parsing using Python's argparse
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser(prog="clan_competition.py")
+
+    parser.add_argument("--input", help="A directory of with clan files to compete")
+    parser.add_argument("-r", help="Reset is_significant field", action="store_true",
+                        default=False)
+    mutualy_exclusive = parser.add_mutually_exclusive_group()
+    mutualy_exclusive.add_argument("--pdb", help="Clan compete PDB regions",
+                        action="store_true", default=False)
+    mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
+                        action="store_true", default=False)
+
+    return parser
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     # Input will be a directory of sorted clan files or a single sorted clan
     # file
 
-    clan_source = sys.argv[1]
-    #clan_competition_type = sys.argv[2]
+    parser = parse_arguments()
+    args = parser.parse_args()
 
-    # minor input checks
-    if not os.path.isdir(clan_source) and not os.path.isfile(clan_source):
-        usage()
-        sys.exit()
+    clan_source = args.input
 
     # with -r option reset all is_significant fields back to 1
-    if sys.argv.count("-r") == 1:
+    if args.r:
         print "\nReseting is_significant fields ..."
-        if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+        if args.pdb:
             db_utils.reset_is_significant(clan_comp_type='PDB')
-        else:
+        elif args.full:
             db_utils.reset_is_significant(clan_comp_type='FULL')
 
     t_start = timeit.default_timer()
@@ -383,11 +404,11 @@ if __name__ == '__main__':
             clan_file = os.path.join(clan_source, clan)
 
             # compete pdb_full_region
-            if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+            if args.pdb:
                 non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
 
             # compete full_region
-            else:
+            elif args.full:
                 non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
             print "%s : %s" % (str(clan[0:8]), len(non_sig_seqs))
@@ -401,10 +422,10 @@ if __name__ == '__main__':
         clan_file = clan_source
 
         # compete pdb_full_region
-        if sys.argv.count("pdb") == 1 or sys.argv.count("PDB") == 1:
+        if args.pdb:
             non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
         # compete full_region
-        else:
+        elif args.full:
             non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
         print "%s : %s" % (os.path.basename(clan_source).partition(".")[0],

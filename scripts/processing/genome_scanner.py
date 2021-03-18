@@ -43,7 +43,8 @@ MAX_JOBS = 50
 
 CREATE_SUBGROUP = "bgadd -L %s %s"
 
-SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+"""
+SEARCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
               "-f \"%s < %s\" "
               "-f \"%s < %s\" "
               "-f \"%s < %s\" "
@@ -51,18 +52,35 @@ SEARCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s 
               "-Ep \"rm /tmp/%s.*\" "
               "-a openmpi mpiexec -mca btl ^openib -np %s "
               "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
+"""
+SEARCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s,tmp=2000]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-f \"%s < %s\" "
+              "-Ep \"rm /tmp/%s.*\" "
+              "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 
-GROUP_AND_SRCH_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+"""
+GROUP_AND_SRCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
                       "-f %s < /tmp/%J.out "
                       "-f %s < /tmp/%J.inf "
                       "-f %s < /tmp/%J.err "
                       "-f %s < /tmp/%J.tbl "
                       "-a openmpi mpiexec -mca btl ^openib -np %s "
                       "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
+"""
+
+GROUP_AND_SRCH_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+                      "-f %s < /tmp/%J.out "
+                      "-f %s < /tmp/%J.inf "
+                      "-f %s < /tmp/%J.err "
+                      "-f %s < /tmp/%J.tbl "
+                      "%s -o %s --tblout %s --acc --cut_ga --rfam --notextw --nohmmonly -Z %s --mpi %s %s")
 
 """
 # unfiltered
-CMD_TEMPLATE_MPI = ("bsub -q mpi-rh7 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
+CMD_TEMPLATE_MPI = ("bsub -q production-rh74 -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -R \"span[hosts=1]\" "
                     "-a openmpi mpiexec -mca btl ^openib -np %s "
                     "%s -o %s --tblout %s --acc --notextw --nohmmonly -Z %s --mpi %s %s")
 """
@@ -98,7 +116,6 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
     # initialize output space
     if not os.path.exists(dest_dir):
         os.mkdir(dest_dir, 0775)
-    
     # create subdirs
     i = 0
     while i < SUB_DIRS:
@@ -111,6 +128,9 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
     # get candidate sequence files
     seq_files = [x for x in os.listdir(input_dir)
                  if x.endswith('.fa') or x.endswith('.fasta') or x.endswith('.fna')]
+
+    if len(seq_files) == 0:
+	sys.exit("\nNo sequence files detected. Please check input and try again!!\n")
 
     out_idx = 0
 
@@ -154,8 +174,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
             # list all smaller files
             genome_chunks = [x for x in os.listdir(gen_input_dir) if not x.endswith(".fa") or not x.endswith(".ssi") != -1]
             group_idx = out_idx
-
-            # group_idx = 0
+            
+	    # group_idx = 0
             for genome_chunk in genome_chunks:
                 # index all sequence files
                 chunk_loc = os.path.join(gen_input_dir, genome_chunk)
@@ -193,7 +213,6 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               	CPU_NO, conf.CMSCAN, inf_out_file,
                                               	inf_tbl_file, size,
                                               	conf.CMFILE, chunk_loc)
-	
                 subprocess.call(cmd, shell=True)
         # small enough genomes that don't need splitting
         else:
@@ -232,8 +251,8 @@ def genome_scan_from_sequence_directory(input_dir, dest_dir, tool="cmsearch", si
                                               CPU_NO, conf.CMSCAN, inf_out_file,
                                               inf_tbl_file, size,
                                               conf.CMFILE, seq_file_loc)
-
-            	subprocess.call(cmd, shell=True)
+            	
+		subprocess.call(cmd, shell=True)
         
 	out_idx += 1
         if out_idx == SUB_DIRS:

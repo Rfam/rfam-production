@@ -17,6 +17,7 @@ limitations under the License.
 
 import os
 import sys
+import argparse
 from utils import db_utils as db
 
 # -----------------------------------------------------------------------------
@@ -52,7 +53,25 @@ def generate_clanin_file(dest_dir=None):
 
 # -----------------------------------------------------------------------------
 
-if __name__=='__main__':
 
-    dest_dir = sys.argv[1]
-    generate_clanin_file(dest_dir)
+def parse_arguments():
+    """
+    Basic argument parsing using Python's argparse
+
+    return: Argparse parser object
+    """
+
+    parser = argparse.ArgumentParser(prog="clanin_file_generator.py")
+    parser.add_argument("--dest-dir", help="Destination directory to store output to")
+
+    return parser
+
+# -----------------------------------------------------------------------------
+
+
+if __name__ == '__main__':
+
+    parser = parse_arguments()
+    args = parser.parse_args()
+
+    generate_clanin_file(args.dest_dir)

@@ -33,7 +33,7 @@ Description: A set of database functions to ease processing and data
 
 # ---------------------------------IMPORTS---------------------------------
 
-impjson
+import json
 import os
 import string
 import sys
@@ -1346,5 +1346,102 @@ def update_metagenomic_region_md5s(data):
 
     cursor.close()
     RfamDB.disconnect(cnx)
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_family_tax_ids(rfam_acc):
+    """
+    Queries RfamLive and extracts all family taxonomy ids
+
+    rfam_acc: A valid Rfam family accession
+
+    return: A list of taxonomic ids associated with a specific Rfam family
+    """
+
+    query = """select distinct ncbi_id
+    from family_ncbi
+    where rfam_acc=\'%s\'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(buffered=True)
+
+    cursor.execute(query % rfam_acc)
+
+    tax_ids = [x[0] for x in cursor.fetchall()]
+
+    cursor.close()
+    cnx.close()
+
+    return tax_ids
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_family_full_regions(rfam_acc, sort=True):
+    """
+    Fetches family regions from full_region table
+    :param rfam_acc:
+
+    :return: A dictionary with all FULL regions per accession belonging to a specific
+    family
+    """
+
+    query = """select rfamseq_acc, seq_start, seq_end
+        from full_region
+        where rfam_acc=\'%s\'
+        and is_significant=1
+        and type=\'full\'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query % rfam_acc)
+
+    regions = {}
+
+    for region in cursor.fetchall():
+        if region["rfamseq_acc"] not in regions:
+            regions[region["rfamseq_acc"]] = [(int(region["seq_start"]), int(region["seq_end"]))]
+        else:
+            regions[region["rfamseq_acc"]].append((int(region["seq_start"]), int(region["seq_end"])))
+
+    cursor.close()
+    cnx.close()
+
+    if sort is True:
+        for accession in regions:
+            # sorts hits by start points
+            regions[accession].sort(key=lambda tup: tup[1])
+
+    return regions
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_family_seed_regions(rfam_acc):
+    """
+    Fetches family regions from full_region table
+    :param rfam_acc:
+
+    :return: A dictionary with all SEED regions per accession belonging to a specific
+    family
+    """
+
+    query = """select rfamseq_acc, seq_start, seq_end
+        from seed_region
+        where rfam_acc=\'%s\'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query % rfam_acc)
+
+    regions = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return regions
 
 # ----------------------------------------------------------------------------

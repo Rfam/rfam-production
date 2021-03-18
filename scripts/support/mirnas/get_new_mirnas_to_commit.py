@@ -16,6 +16,8 @@ def parse_arguments():
                         action="store_true", default=False)
     parser.add_argument("--dest-dir", help="Destination directory to generate output to",
                         action="store", default=os.getcwd())
+    parser.add_argument("--create-dump", help="Generates a JSON (.json) dump in destination directory",
+                        action="store_true", default=False)
 
     return parser
 
@@ -52,9 +54,6 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
-    #to_commit_fp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/support_code/data/new_mirnas_2020-11-17.json"
-    #committed_fp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/support_code/data/committed_mirnas.json"
-
     """
     fp = open(to_commit_fp, 'r')
     to_commit = json.load(fp)
@@ -77,4 +76,12 @@ if __name__ == '__main__':
     print "novel: ", len(novel.keys())
     """
 
-    family_accessions = extract_rfam_family_accessions(args.report)
+    if args.old_rfam:
+        family_accessions = extract_rfam_family_accessions(args.report)
+        if args.create_dump:
+            fp = open(os.path.join(args.dest_dir, "mirna_rfam_accessions_to_update_"+".json"), "w")
+            try:
+                json.dump(family_accessions, fp)
+            except:
+                print ("Unable to create json file!")
+            fp.close()

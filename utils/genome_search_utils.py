@@ -27,13 +27,11 @@ import gzip
 import shutil
 import re
 
-from config import rfam_local as rfl
-
 # ---------------------------------GLOBALS-------------------------------------
 
-ESL_SEQSTAT = rfl.ESL_SEQSTAT
+ESL_SEQSTAT = "esl-seqstat"
 # could import this from a configuration file
-ESL_SSPLIT = rfl.ESL_SSPLIT
+ESL_SSPLIT = "esl-ssplit.pl"
 
 MB = 1000000
 
@@ -231,7 +229,7 @@ def count_nucleotides_in_fasta(fasta_file):
             fasta_file = os.path.join(fasta_file_dir, filename+'.fa')
 
         # create a process channel and execute the command in cmd_args
-        cmd_args = [ESL_SEQSTAT, '--dna', "-c", fasta_file]
+        cmd_args = ["esl-seqstat", '--dna', "-c", fasta_file]
         channel = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
 
         # fetch esl-seqstat result

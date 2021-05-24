@@ -62,7 +62,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 mkdir ~/releaseX/clan_competition
 ```
 
-2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clan_file_generator.py):
+2. Generate clan files using [clan_file_generator.py](../scripts/release/clan_file_generator.py):
 
 ```
 python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
@@ -88,7 +88,7 @@ or for multiple files `cd ~/releaseX/clan_competition` and run:
 for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
 ```
 
-4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/processing/clan_competition.py):
+4. Run clan competition using [clan_competition.py](../scripts/processing/clan_competition.py):
 
 ```
 python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
@@ -108,7 +108,7 @@ python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
 
 2. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
 
-3. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/populate_rfamlive_for_release.py):
+3. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](../scripts/release/populate_rfamlive_for_release.py):
 
 ```
 python populate_rfamlive_for_release.py --all
@@ -268,7 +268,7 @@ Export SEED files from SVN using [writeAnnotatedSeed.pl:](https://github.com/Rfa
 perl writeAnnotatedSeed.pl RFXXXXX
 ```
 
-alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
@@ -282,7 +282,7 @@ python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-d
 perl writeAnnotatedCM.pl RFXXXXX
 ```
 
-alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
@@ -310,7 +310,7 @@ python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir
 perl writeAnnotatedTree.pl RFXXXXX
 ```
 
-alternatively use [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/generate_ftp_files.py):
+alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
@@ -355,7 +355,7 @@ order by rfam_acc;
 
 ### Generate `Rfam.clanin` file
 
-Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/release/clanin_file_generator.py):
+Generate a new `Rfam.clanin` file using [clanin_file_generator.py](../scripts/release/clanin_file_generator.py):
 
 ```
 python clanin_file_generator.py --dest-dir /path/to/destination/directory
@@ -470,7 +470,7 @@ Follow the same process to generate  XML dumps for all data types:
  - genomes
  - full_region
 
-For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](https://github.com/Rfam/rfam-production/blob/release-14.4/scripts/export/lsf_rfam_xml_dumper.sh)
+For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](../scripts/export/lsf_rfam_xml_dumper.sh)
 
 :information_source: More detailed information available on confluence
 
@@ -561,16 +561,3 @@ python rnac2json.py --input /path/to/chunks --rfam-fasta /path/to/fasta_files --
 ```
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-

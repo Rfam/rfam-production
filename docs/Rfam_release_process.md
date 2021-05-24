@@ -104,22 +104,20 @@ python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
 
 ## Prepare rfam_live for a new release
 
-1. Truncate `family_ncbi` table
+1. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
 
-2. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
-
-3. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](../scripts/release/populate_rfamlive_for_release.py):
+2. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](../scripts/release/populate_rfamlive_for_release.py):
 
 ```
 python populate_rfamlive_for_release.py --all
 ```
-4. Make useful keywords by running:
+3. Make useful keywords by running:
 
 ```
 make_rfam_keywords_table.pl
 ```
 
-5. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
+4. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
 
 ```
 perl updateTaxonomyWebsearch.pl

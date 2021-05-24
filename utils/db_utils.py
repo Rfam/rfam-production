@@ -491,17 +491,16 @@ def set_num_full_sig_seqs():
 
 def update_family_ncbi():
     """
-    Updates table family ncbi by adding all distinct taxonomic ids per family
+    Updates table family_ncbi by adding all distinct taxonomic ids per family.
 
     :return: void
     """
-
     cnx = RfamDB.connect()
 
     cursor = cnx.cursor(buffered=True)
     c_cursor = cnx.cursor(buffered=True)
 
-    cursor.execute("Select rfam_acc from family")
+    cursor.execute("select rfam_acc from family")
 
     rfam_accs = cursor.fetchall()
 
@@ -519,7 +518,7 @@ def update_family_ncbi():
 
     family_ncbi_entries = []
     cursor = cnx.cursor(buffered=True)
-
+    cursor.execute("truncate table family_ncbi")
     for rfam_acc in rfam_accs:
         c_cursor.execute(get_ncbi_ids % rfam_acc[0])
         family_ncbi_entries = list(c_cursor.fetchall())
@@ -1158,14 +1157,14 @@ def get_family_unique_ncbi_ids(rfam_acc):
     """
 
     seed_query = """
-    select distinct rs.ncbi_id 
+    select distinct rs.ncbi_id
     from seed_region sr, rfamseq rs
     where sr.rfamseq_acc=rs.rfamseq_acc
     and sr.rfam_acc = '%s'
     """
 
     full_query = """
-    select distinct rs.ncbi_id 
+    select distinct rs.ncbi_id
     from full_region fr, rfamseq rs
     where fr.rfamseq_acc=rs.rfamseq_acc
     and fr.rfam_acc = '%s'

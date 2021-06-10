@@ -1,7 +1,7 @@
 backports-abc==0.4
 certifi==2016.2.28
 demjson==2.2.4
-Django==1.8.5
+Django==2.2.24
 docutils==0.12
 functools32==3.2.3.post2
 html5lib==0.999999999

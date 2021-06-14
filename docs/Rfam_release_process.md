@@ -109,20 +109,21 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 2. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](../scripts/release/populate_rfamlive_for_release.py):
 
-```
-python populate_rfamlive_for_release.py --all
-```
-3. Make useful keywords by running:
+    ```
+    python populate_rfamlive_for_release.py --all
+    ```
 
-```
-make_rfam_keywords_table.pl
-```
+3. Make keywords using [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl):
+
+    ```
+    perl make_rfam_keywords_table.pl
+    ```
 
 4. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
 
-```
-perl updateTaxonomyWebsearch.pl
-```
+    ```
+    perl updateTaxonomyWebsearch.pl
+    ```
 
 ---
 

@@ -58,47 +58,48 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 1. Create a destination directory for clan competition required files
 
-```
-mkdir ~/releaseX/clan_competition
-```
+    ```
+    mkdir ~/releaseX/clan_competition
+    mkdir ~/releaseX/clan_competition/sorted    
+    ```
 
 2. Generate clan files using [clan_file_generator.py](../scripts/release/clan_file_generator.py):
 
-```
-python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
-```
-`--cc-type:` Clan competition type FULL/PDB
+    ```
+    python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
+    ```
+    `--cc-type:` Clan competition type FULL/PDB
 
-`--clan-acc:` Clan accession to compete
+    `--clan-acc:` Clan accession to compete
 
-`--all:` Compete all Rfam clans
+    `--all:` Compete all Rfam clans
 
-`-f:` Only compete clans in file
+    `-f:` Only compete clans in file
 
 
-3. Sort clan files in `dest-dir` based on rfamseq_acc (col2) using linux sort command and store then in the sorted directory:
+3. Sort clan files in `dest-dir` based on rfamseq_acc (col2) using linux sort command and store then in the `sorted` directory:
 
-```
-sort -k2 -t $'\t' clan_file.txt > ~/releaseX/clan_competition/sorted/clan_file_sorted.txt
-```
+    ```
+    sort -k2 -t $'\t' clan_file.txt > ~/releaseX/clan_competition/sorted/clan_file_sorted.txt
+    ```
 
-or for multiple files `cd ~/releaseX/clan_competition` and run:
+    or for multiple files `cd ~/releaseX/clan_competition` and run:
 
-```
-for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
-```
+    ```
+    for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
+    ```
 
 4. Run clan competition using [clan_competition.py](../scripts/processing/clan_competition.py):
 
-```
-python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
-```
+    ```
+    python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
+    ```
 
-`--input:` Path to ~/releaseX/clan_competition/sorted
+    `--input:` Path to ~/releaseX/clan_competition/sorted
 
-`--pdb:` Type of hits to compete PDB (pdb_full_region table)
+    `--pdb:` Type of hits to compete PDB (pdb_full_region table)
 
-`--full:` Type of hits to compete FULL (full_region table)
+    `--full:` Type of hits to compete FULL (full_region table)
 
 ---
 

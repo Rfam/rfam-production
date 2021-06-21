@@ -58,7 +58,7 @@ def commit_family(family_dir, mirna_name):
 	process = Popen(['rfnew.pl', '-m', "\"Adding new miRNA family %s \""% (mirna_name), family_dir], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     	output = process.communicate()[1]
 
-    	if output.find("This family has been asssigned the accession") == -1:
+    	if output.find("This family has been assigned the accession") == -1:
         	return False
 
     	return True

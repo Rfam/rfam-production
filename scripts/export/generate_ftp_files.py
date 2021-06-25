@@ -58,7 +58,7 @@ def export_ftp_file(file_type, rfam_acc, dest_dir=None):
         subprocess.call(cmd, shell=True)
 
     except:
-        raise OSError
+        raise Exception('Command {} failed'.format(cmd))
 
 # -----------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ def rename_files(source_dir, file_type, rfam_acc):
         seed_file_loc = os.path.join(source_dir, rfam_acc)
 
         if not os.path.exists(seed_file_loc):
-            sys.exit("Files does not exist %s" % seed_file_loc)
+            sys.exit("File does not exist %s" % seed_file_loc)
 
         new_name = os.path.join(source_dir, rfam_acc+'.seed')
         os.rename(seed_file_loc, new_name)
@@ -94,11 +94,9 @@ def rename_files(source_dir, file_type, rfam_acc):
         # TODO - rename RFXXXXX.taxtree to RFXXXXX.seed_tree and clear other redundant files
         pass
 
-    
 # -----------------------------------------------------------------------------
 
 
-def parse_arguments():
 def create_seed_archive(destination):
     """
     Create a combined Rfam.seed file and compress it.
@@ -157,6 +155,9 @@ def get_all_rfam_accessions():
 # -----------------------------------------------------------------------------
 
 
+def parse_arguments():
+    """
+    """
     parser = argparse.ArgumentParser()
 
     mutually_exclusive_type = parser.add_mutually_exclusive_group()
@@ -204,8 +205,9 @@ if __name__ == '__main__':
         jiffy_type = "TREE"
 
     for accession in accessions:
+        print(accession)
         export_ftp_file(jiffy_type, accession, args.dest_dir)
-        rename_files(args.dest_dir, jiffy_type, args.acc)
+        rename_files(args.dest_dir, jiffy_type, accession)
 
     if args.seed and args.acc == 'all':
         create_seed_archive(args.dest_dir)

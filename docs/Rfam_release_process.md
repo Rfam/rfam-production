@@ -271,6 +271,10 @@ perl writeAnnotatedSeed.pl RFXXXXX
 alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
+# to export all SEED files (recommended 16GB RAM to be able to checkout large seed alignments)
+python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
+
+# to export a subset of accessions listed in a file
 python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
 ```
 

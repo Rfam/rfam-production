@@ -103,7 +103,7 @@ def create_seed_archive(destination):
     """
     cwd = os.getcwd()
     os.chdir(destination)
-    cmd = "rm Rfam.seed && cat *.seed > Rfam.seed && gzip -c Rfam.seed > Rfam.seed.gz"
+    cmd = "rm -f Rfam.seed && cat *.seed > Rfam.seed && gzip -c Rfam.seed > Rfam.seed.gz"
     status = os.system(cmd.format(destination))
     if status:
         raise Exception('There was a problem generating Rfam.seed.gz in {}'.format(destination))
@@ -216,3 +216,5 @@ if __name__ == '__main__':
     if args.seed and args.acc == 'all':
         create_seed_archive(args.dest_dir)
         validate_seed_archive(args.dest_dir, accessions)
+    elif args.cm and args.acc == 'all':
+        create_combined_cm_file(args.dest_dir)

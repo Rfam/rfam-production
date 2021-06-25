@@ -103,6 +103,22 @@ def create_seed_archive(destination):
 # -----------------------------------------------------------------------------
 
 
+def create_combined_cm_file(destination):
+    """
+    Create a combined Rfam.cm file.
+    """
+    cwd = os.getcwd()
+    os.chdir(destination)
+    cmd = "rm -f Rfam.cm && cat *.CM > Rfam.cm"
+    status = os.system(cmd.format(destination))
+    if status:
+        raise Exception('There was a problem generating Rfam.cm in {}'.format(destination))
+    os.chdir(cwd)
+
+
+# -----------------------------------------------------------------------------
+
+
 def validate_seed_archive(destination, rfam_accs):
     """
     Check that Rfam.seed contains the correct number of entries.

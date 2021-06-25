@@ -115,6 +115,23 @@ def create_seed_archive(destination):
 # -----------------------------------------------------------------------------
 
 
+def validate_seed_archive(destination, rfam_accs):
+    """
+    Check that Rfam.seed contains the correct number of entries.
+    """
+    cwd = os.getcwd()
+    os.chdir(destination)
+    family_count = 0
+    with open(os.path.join(destination, 'Rfam.seed')) as f_seed:
+        for line in f_seed:
+            if line.startswith('# STOCKHOLM 1.0'):
+                family_count += 1
+    os.chdir(cwd)
+    try:
+        assert(family_count == len(rfam_accs))
+        print('OK: Found {} families in Rfam.seed'.format(family_count))
+    except AssertionError:
+        raise Exception('Error: Rfam.seed contains {} families instead of {}'.format(family_count, len(rfam_accs)))
 
 
 # -----------------------------------------------------------------------------
@@ -192,3 +209,4 @@ if __name__ == '__main__':
 
     if args.seed and args.acc == 'all':
         create_seed_archive(args.dest_dir)
+        validate_seed_archive(args.dest_dir, accessions)

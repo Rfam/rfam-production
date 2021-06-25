@@ -21,9 +21,6 @@ import subprocess
 import sys
 import tempfile
 
-# TODO - Implement function to rename CMs from RFXXXXX.CM to RFXXXXX.cm
-# TODO - Implement function to rename RFXXXXX.taxtree to RFXXXXX.seed_tree
-# and clear all other redundant files
 
 JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",
@@ -86,13 +83,6 @@ def rename_files(source_dir, file_type, rfam_acc):
         if not os.path.exists(new_name):
             sys.exit("%s SEED cound not be renamed" % rfam_acc)
 
-    elif file_type == "CM":
-        # TODO - rename file from RFXXXXX.CM to RFXXXXX.cm
-        pass
-
-    elif file_type == "TREE":
-        # TODO - rename RFXXXXX.taxtree to RFXXXXX.seed_tree and clear other redundant files
-        pass
 
 # -----------------------------------------------------------------------------
 

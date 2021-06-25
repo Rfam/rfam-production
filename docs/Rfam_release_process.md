@@ -262,35 +262,39 @@ source rfam_live_relX.sql
 
 ### Generate annotated SEED files:
 
-Export SEED files from SVN using [writeAnnotatedSeed.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
+Export SEED files from SVN using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+
+```
+# to export all files (recommended 16GB RAM to checkout large families)
+python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
+
+# to export accessions listed in a file
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
+```
+
+Alternatively, use [writeAnnotatedSeed.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
 
 ```
 perl writeAnnotatedSeed.pl RFXXXXX
 ```
 
-alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
-
-```
-# to export all SEED files (recommended 16GB RAM to be able to checkout large seed alignments)
-python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
-
-# to export a subset of accessions listed in a file
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
-```
-
 ### Generate annotated CM files:
 
-1. Generate a plain CM file using [writeAnnotatedCM.pl:](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl):
+1. Export plain CM files using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
-```
-perl writeAnnotatedCM.pl RFXXXXX
-```
+    ```
+    # to export all files (recommended 16GB RAM to checkout large families)
+    python generate_ftp_files.py --acc all --cm --dest-dir /path/to/seed/files/dest/dir
 
-alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+    # to export accessions listed in a file
+    python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
+    ```
 
-```
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
-```
+    alternatively use [writeAnnotatedCM.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl):
+
+    ```
+    perl writeAnnotatedCM.pl RFXXXXX
+    ```
 
 2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
 
@@ -300,9 +304,17 @@ python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir
     - `$SEED_with_DESC` - a seed file with DESC lines (could be 1 seed or all seeds in a single file)
 
     ```
-    # filter out DESC lines to avoid duplicates if some CMs already have DESC lines
+    # filter out DESC lines to avoid duplicates as some CMs already have DESC lines
     grep -v DESC $CM_no_desc > Rfam.nodesc.cm
     perl seed-desc-to-cm.pl $SEED_with_DESC Rfam.nodesc.cm > Rfam.cm
+
+    # check that Rfam.cm contains the correct number of families
+    cmstat Rfam.cm | grep -v '#' | wc -l
+
+    # check the number of DESC lines - should be 2 * number of families
+    grep DESC Rfam.cm | wc -l
+
+    # generate the final archive
     gzip Rfam.cm
     ```
 

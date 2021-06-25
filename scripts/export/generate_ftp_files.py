@@ -19,6 +19,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 
 # TODO - Implement function to rename CMs from RFXXXXX.CM to RFXXXXX.cm
 # TODO - Implement function to rename RFXXXXX.taxtree to RFXXXXX.seed_tree
@@ -98,8 +99,30 @@ def rename_files(source_dir, file_type, rfam_acc):
 
 
 def parse_arguments():
+
+
+# -----------------------------------------------------------------------------
+
+
+def get_all_rfam_accessions():
     """
+    Fetch a list of all Rfam families from the SVN repository.
     """
+    rfam_accessions = []
+    svn_url = 'https://xfamsvn.ebi.ac.uk/svn/data_repos/trunk/Families/'
+    svn_list = tempfile.NamedTemporaryFile()
+    cmd = "svn list {} > {}".format(svn_url, svn_list.name)
+    os.system(cmd)
+    with open(svn_list.name, 'r') as f_svn_list:
+        for line in f_svn_list:
+            if line.startswith('RF'):
+                rfam_accessions.append(line.strip().replace('/', ''))
+    print('Found {} accessions on SVN'.format(len(rfam_accessions)))
+    return rfam_accessions
+
+
+# -----------------------------------------------------------------------------
+
 
     parser = argparse.ArgumentParser()
 
@@ -129,7 +152,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     accessions = []
-    if os.path.isfile(args.f):
+    if args.acc == 'all':
+        accessions = get_all_rfam_accessions()
+    elif os.path.isfile(args.f):
         fp = open(args.f, 'r')
         accessions = [acc.strip() for acc in fp]
         fp.close()

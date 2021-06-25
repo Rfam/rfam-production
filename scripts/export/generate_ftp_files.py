@@ -99,6 +99,22 @@ def rename_files(source_dir, file_type, rfam_acc):
 
 
 def parse_arguments():
+def create_seed_archive(destination):
+    """
+    Create a combined Rfam.seed file and compress it.
+    """
+    cwd = os.getcwd()
+    os.chdir(destination)
+    cmd = "rm Rfam.seed && cat *.seed > Rfam.seed && gzip -c Rfam.seed > Rfam.seed.gz"
+    status = os.system(cmd.format(destination))
+    if status:
+        raise Exception('There was a problem generating Rfam.seed.gz in {}'.format(destination))
+    os.chdir(cwd)
+
+
+# -----------------------------------------------------------------------------
+
+
 
 
 # -----------------------------------------------------------------------------
@@ -173,3 +189,6 @@ if __name__ == '__main__':
     for accession in accessions:
         export_ftp_file(jiffy_type, accession, args.dest_dir)
         rename_files(args.dest_dir, jiffy_type, args.acc)
+
+    if args.seed and args.acc == 'all':
+        create_seed_archive(args.dest_dir)

@@ -195,6 +195,10 @@ if __name__ == '__main__':
     elif args.acc[0:2] == 'RF':
         accessions.append(args.acc)
 
+    if args.dest_dir and not os.path.exists(args.dest_dir):
+        os.system('mkdir -p {}'.format(args.dest_dir))
+        print('Created folder {}'.format(args.dest_dir))
+
     jiffy_type = None
 
     if args.seed:

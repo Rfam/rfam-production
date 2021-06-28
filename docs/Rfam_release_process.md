@@ -1,52 +1,116 @@
 # Rfam release process
 
-The Rfam release process involves using tools from the two main GitHub repos
+## Setup
 
- 1. Python repo: `rfam-production`
- 2. Perl repo:  `rfam-family-pipeline`
+The Rfam release process uses two main GitHub repos:
 
- **Note:** Python code can run locally, but requires EBI VPN connection
+ 1. Python repo: [rfam-production](https://github.org/rfam/rfam-production)
+ 2. Perl repo:  [rfam-family-pipeline](https://github.org/rfam/rfam-family-pipeline)
 
-## Setup the Python environment
+ **Note:** Most Python code can run locally, but requires an EBI VPN connection. All Perl code currently runs only on the EBI cluster.
 
-Use virtualenv to install the [requirements](../requirements.txt) locally. Alternatively, run the following on the cluster:
+### Setup Python environment
 
-```
-become rfamprod
-cd_code
-source env2/bin/activate
-```
+Run the following on the EBI cluster:
 
-## Setup the Perl environment
+    ```
+    become rfamprod
+    cd_code && cd rfam-production
+    source env/bin/activate
+    ```
 
-Modify the `~/.bashrc` file to include the following command:
+Alternatively, use virtualenv to install the [requirements](../requirements.txt) locally.
+
+### Setup Perl environment
+
+Make sure the `~/.bashrc` file includes the following command:
 
 ```
 source /path/to/rfam_rh74/rfamrc
 ```
 
-**Note:** The `rfamrc` file sets up several env variables including `PATH`
+**Note:** The `rfamrc` file sets up several environment variables, including `PATH`.
 
-## Useful rfamprod aliases to easily move to various locations on the cluster
+### Useful rfamprod aliases to easily move to various locations on the cluster
 
-1. Become `rfamprod` user by executing:
+1. Become `rfamprod` user:
+
+    ```
+    become rfamprod
+    ```
+
+2. Choose one of the following aliases to move to a specific location on EBI cluster:
+
+    ```
+    cd_rel - move to release working directories
+    cd_rfamseq - move to Rfamseq location
+    cd_rfam - move to rfam-family-pipeline repo
+    cd_rh7 - move to Perl libraries
+    cd_code - move to rfam-production repo
+    cd_main - move to the main Rfam production directory
+    ```
+
+---
+
+## Generate annotated SEED files
+
+Export SEED files from SVN using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
-become rfamprod
+# to export all files (recommended 16GB RAM to checkout large families)
+python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
+
+# to export accessions listed in a file
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
 ```
 
-2. Choose one of the following aliases to move to a specific location:
+Alternatively, use [writeAnnotatedSeed.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
 
 ```
-cd_rel - move to release working directories
-cd_rfamseq - move to Rfamseq location
-cd_rfam - move to rfam-family-pipeline repo
-cd_rh7 - move to Perl libraries
-cd_code - move to rfam-production repo
-cd_main - move to the main Rfam production directory
+perl writeAnnotatedSeed.pl RFXXXXX
 ```
 
-**Note:** Requires access to the EBI cluster
+## Generate annotated CM files
+
+1. Export plain CM files using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+
+    ```
+    # to export all files (recommended 16GB RAM to checkout large families)
+    python generate_ftp_files.py --acc all --cm --dest-dir /path/to/seed/files/dest/dir
+
+    # to export accessions listed in a file
+    python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
+    ```
+
+    alternatively use [writeAnnotatedCM.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl):
+
+    ```
+    perl writeAnnotatedCM.pl RFXXXXX
+    ```
+
+2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
+
+    Required files:
+
+    - `$CM_no_desc` - a CM file to add DESC to (could be 1 CM or all CMs in a single file)
+    - `$SEED_with_DESC` - a seed file with DESC lines (could be 1 seed or all seeds in a single file)
+
+    ```
+    # filter out DESC lines to avoid duplicates as some CMs already have DESC lines
+    grep -v DESC $CM_no_desc > Rfam.nodesc.cm
+    perl seed-desc-to-cm.pl $SEED_with_DESC Rfam.nodesc.cm > Rfam.cm
+
+    # check that Rfam.cm contains the correct number of families
+    cmstat Rfam.cm | grep -v '#' | wc -l
+
+    # check the number of DESC lines - should be 2 * number of families
+    grep DESC Rfam.cm | wc -l
+
+    # generate the final archive
+    gzip Rfam.cm
+    ```
+
+The SEED and CM files will be used for the FTP archive.
 
 ---
 
@@ -142,23 +206,22 @@ and `view` processes.
 
 1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
 
-
-```
-select rfam_acc, uuid
-from _post_process
-where status='PEND';
-```
+    ```
+    select rfam_acc, uuid
+    from _post_process
+    where status='PEND';
+    ```
 
 2. Update the PDB sequence file and the path in the [PDB plugin](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Lib/Bio/Rfam/View/Plugin/PDB.pm)
 
 3. Launch view processes on the EBI cluster:
 
-```
-python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path/to/destination/directory
-```
+    ```
+    python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path/to/destination/directory
+    ```
 
-`--view-list:` A list with tab separated rfam_acc, uuid pairs to run view processes on
-`--dest-dir:` The path to the destination directory to generate shell scripts and log to
+    `--view-list:` A list with tab separated rfam_acc, uuid pairs to run view processes on
+    `--dest-dir:` The path to the destination directory to generate shell scripts and log to
 
 ---
 
@@ -276,8 +339,6 @@ This enables the SEED and CM download directly from the Rfam website
 perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
 ```
 
-**Note:** This step requires the SEED and CM FTP files
-
 ---
 
 ## Stage RfamLive for a new release
@@ -333,79 +394,25 @@ source rfam_live_relX.sql
 
 ## Generate FTP files
 
-### Generate annotated SEED files:
+### Generate annotated Tree files
 
-Export SEED files from SVN using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+Generate new tree files for the release using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
 ```
 # to export all files (recommended 16GB RAM to checkout large families)
-python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
+python generate_ftp_files.py --acc all --tree --dest-dir /path/to/tree/files/dest/dir
 
 # to export accessions listed in a file
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
+python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
 ```
 
-Alternatively, use [writeAnnotatedSeed.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
-
-```
-perl writeAnnotatedSeed.pl RFXXXXX
-```
-
-### Generate annotated CM files:
-
-1. Export plain CM files using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
-
-    ```
-    # to export all files (recommended 16GB RAM to checkout large families)
-    python generate_ftp_files.py --acc all --cm --dest-dir /path/to/seed/files/dest/dir
-
-    # to export accessions listed in a file
-    python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
-    ```
-
-    alternatively use [writeAnnotatedCM.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl):
-
-    ```
-    perl writeAnnotatedCM.pl RFXXXXX
-    ```
-
-2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
-
-    Required files:
-
-    - `$CM_no_desc` - a CM file to add DESC to (could be 1 CM or all CMs in a single file)
-    - `$SEED_with_DESC` - a seed file with DESC lines (could be 1 seed or all seeds in a single file)
-
-    ```
-    # filter out DESC lines to avoid duplicates as some CMs already have DESC lines
-    grep -v DESC $CM_no_desc > Rfam.nodesc.cm
-    perl seed-desc-to-cm.pl $SEED_with_DESC Rfam.nodesc.cm > Rfam.cm
-
-    # check that Rfam.cm contains the correct number of families
-    cmstat Rfam.cm | grep -v '#' | wc -l
-
-    # check the number of DESC lines - should be 2 * number of families
-    grep DESC Rfam.cm | wc -l
-
-    # generate the final archive
-    gzip Rfam.cm
-    ```
-
-### Generate annotated Tree files:
-
-1. Generate new tree files for the release using [writeAnnotatedTree.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedTree.pl):
+alternatively use [writeAnnotatedTree.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedTree.pl):
 
 ```
 perl writeAnnotatedTree.pl RFXXXXX
 ```
 
-alternatively use [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
-
-```
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
-```
-
-### Export rfam2go
+### Generate rfam2go files
 
 1. Create a new `rfam2go` export by running [rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/rfam2go.pl):
 
@@ -431,7 +438,7 @@ where is_significant=1
 order by rfam_acc;
 ```
 
-### Generate the `Rfam.pdb` file
+### Generate `Rfam.pdb` file
 
 1. To generate the `Rfam.pdb` file execute the following query and dump in a `.txt` file:
 
@@ -496,12 +503,6 @@ tar -xzvf /some/location/database_files.tar.gz .
 bsub -M 10000 -Is $SHELL
 # launch the python script to export fasta files
 python fasta_file_generator.py --seq-db /path/to/rfamseq.fa --rfam-seed /path/to/releaseX/Rfam.seed --all --outdir /path/to/ftp/fasta_files
-```
-
-ALternatively, launch individual LSF jobs using X:
-
-```
-ADD COMMAND HERE
 ```
 
 2. Copy the newly generated `fasta_files` to FTP

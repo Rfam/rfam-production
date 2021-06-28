@@ -162,38 +162,111 @@ python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path
 
 ---
 
-## Launching PDB fasta file scan directly
+## Update PDB mapping
 
-:information_source: The view processes
+This step requires a finalised `Rfam.cm` file with the latest families, including descriptions (see FTP section for instructions).
 
-1. Scan the PDB fasta file using the newly created `Rfam.cm` on FTP:
+1. Get PDB sequences in FASTA format
 
-```
-cmscan -o /path/to/release/dir/PDB_RFAM_X_Y.out --tblout /path/to/release/dir/PDB_RFAM_X_Y.tbl --cut_ga Rfam.cm /path/to/release/dir/PDB_REL_X_Y.fa
-```
+    ```
+    wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+    ```
 
-2. Parse the `PDB_RFAM_X_Y.tbl` and generate a `pdb_full_region` dump (`.txt`) using [infernal_2_pdb_full_region.py](https://github.com/Rfam/rfam-production/blob/master/scripts/processing/infernal_2_pdb_full_region.py):
+2. Split into individual sequences
 
-```
-python infernal_2_pdb_full_region.py --tblout /path/to/pdb_full_region.tbl --dest-dir /path/to/dest/dir
-```
-**NOTE:** This script will generate a new `pdb_full_region_date.txt` file for import to `rfam_live`
+    ```
+    perl -pe "s/\>/\/\/\n\>/g" < pdb_seqres.txt > pdb_seqres_sep.txt
+    ```
 
-3. Truncate `pdb_full_region` table by executing the following query:
+3. Remove protein sequences using [collateSeq.pl](https://github.com/Rfam/rfam-production/blob/master/scripts/release/collateSeq.pl):
 
-```
-Truncate table pdb_full_region;
-```
+    ```
+    perl collateSeq.pl pdb_seqres_sep.txt
+    mv pdb_seqres_sep.txt.noprot pdb_seqres_sep_noprot.fa
+    ```
 
-4. Import the data in the `.txt` dump to `rfam_live` (see step 2)
+4. Remove extra text from FASTA descriptor line
 
-```
-mysqlimport -u <user> -h <host> -p -P <port> <database> data_dump.txt
-```
+    ```
+    awk '{print $1}' pdb_seqres_sep_noprot.fa > pdb_trimmed_noprot.fa
+    ```
 
-Alternatively, use `import` option in SequelPro or similar tools
+5. Replace any characters that are not recognised by Infernal
 
-5. Clan compete the hits as described under `Clan competition` section (use PDB option)
+    ```
+    sed -e '/^[^>]/s/[^ATGCURYMKSWHBVDatgcurymkswhbvd]/N/g' pdb_trimmed_noprot.fa > pdb_trimmed_noillegals.fa
+    ```
+
+6. Split into 100 files
+
+    ```
+    mkdir files
+    seqkit split -O files -p 100 pdb_trimmed_noillegals.fa
+    ```
+
+7. Run cmscan in parallel
+
+    ```
+    cd files
+    cmpress Rfam.cm
+    bsub -o part_001.lsf.out -e part_001.lsf.err -M 16000 "cmscan -o part_001.output --tblout part_001.tbl --cut_ga Rfam.cm pdb_trimmed_noillegals.part_001.fa"
+    ...
+    bsub -o part_100.lsf.out -e part_100.lsf.err -M 16000 "cmscan -o part_100.output --tblout part_100.tbl --cut_ga Rfam.cm pdb_trimmed_noillegals.part_001.fa"
+    ```
+
+8. Combine results
+
+    ```
+    cat *.tbl | sort | grep -v '#' > PDB_RFAM_X_Y.tbl
+    ```
+
+9. Convert Infernal output to `pdb_full_region` table using [infernal_2_pdb_full_region.py](https://github.com/Rfam/rfam-production/blob/master/scripts/processing/infernal_2_pdb_full_region.py):
+
+    ```
+    python infernal_2_pdb_full_region.py --tblout /path/to/pdb_full_region.tbl --dest-dir /path/to/dest/dir
+    ```    
+
+10. Create a new temporary table in `rfam_live`
+
+    ```
+    create table pdb_full_region_temp like pdb_full_region;
+    ```
+
+11. Import the data in the `.txt` dump into `rfam_live`
+
+    ```
+    mysqlimport -u <user> -h <host> -p -P <port> <database> data_dump.txt
+    ```
+
+    Alternatively, use `import` option in Sequel Ace or similar tools
+
+11. Examine the newly imported data and compare with `pdb_full_region`
+
+12. Rename `pdb_full_region` to `pdb_full_region_old` and rename `pdb_full_region_temp` to `pdb_full_region`
+
+13. Clan compete the hits as described under `Clan competition` section using the `--PDB` option
+
+14. List new families with 3D structures
+
+    ```
+    # number of families with 3D before
+    select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;
+
+    # number of families with 3D after
+    select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1;    
+
+    # new families with 3D
+    select distinct rfam_acc
+    from `pdb_full_region`
+    where
+        is_significant = 1
+        and rfam_acc not in
+            (select distinct rfam_acc
+             from `pdb_full_region_temp`
+             where is_significant = 1);
+    ```
+
+---
 
 ### Load SEED and CM files to `rfam_live`:
 

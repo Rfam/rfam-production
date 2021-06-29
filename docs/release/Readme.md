@@ -171,7 +171,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 1. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
 
-2. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](../scripts/release/populate_rfamlive_for_release.py):
+2. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py):
 
     ```
     python populate_rfamlive_for_release.py --all
@@ -191,18 +191,9 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 ---
 
-## Updating PDB sequence file
-
-Updating the `pdb_full_region` table on `rfam_live` depends on the PDBe auto-generated fasta file
-and `view` processes.
-
-:information_source: See confluence note
-
----
-
 ## Running view processes
 
-:warning: Requires cluster access and updating the PDB fasta file
+:warning: Requires cluster access and updating the PDB fasta file. Note that using PDB view processes plugin will be discontinued in favour of regular updates of the entire `pdb_full_region` table.
 
 1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
 
@@ -295,13 +286,9 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
     create table pdb_full_region_temp like pdb_full_region;
     ```
 
-11. Import the data in the `.txt` dump into `rfam_live`
+11. Manually import the data in the `.txt` dump into `rfam_live` using Sequel Ace or similar
 
-    ```
-    mysqlimport -u <user> -h <host> -p -P <port> <database> data_dump.txt
-    ```
-
-    Alternatively, use `import` option in Sequel Ace or similar tools
+    :warning: `mysqlimport` or `LOAD DATA INFILE` do not work with `rfam_live` because of `secure-file-priv` MySQL setting.
 
 11. Examine the newly imported data and compare with `pdb_full_region`
 
@@ -403,7 +390,7 @@ source rfam_live_relX.sql
 
 ## Generate FTP files
 
-### Generate annotated Tree files
+### Generate annotated tree files
 
 Generate new tree files for the release using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
 
@@ -421,7 +408,7 @@ alternatively use [writeAnnotatedTree.pl](https://github.com/Rfam/rfam-family-pi
 perl writeAnnotatedTree.pl RFXXXXX
 ```
 
-### Generate rfam2go files
+### Generate `rfam2go` files
 
 1. Create a new `rfam2go` export by running [rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/rfam2go.pl):
 
@@ -469,7 +456,7 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 **Note:** Only required if new Clans have been added or existing ones updated
 
 
-### Generate FTP database_files
+### Generate `database_files` folder
 
 The option `--tab` of `mysqldump` is used to generate dumps in both `.sql` and `.txt` formats, where:
  - `table.sql` includes the MySQL query executed to create a table
@@ -503,7 +490,7 @@ scp database_files.tar.gz username@remote.host:/some/location
 tar -xzvf /some/location/database_files.tar.gz .
 ```
 
-### Generate FTP fasta_files
+### Generate `fasta_files` folder
 
 1. Export new fasta files for all families in Rfam using [fasta_file_generator.py](https://github.com/Rfam/rfam-production/tree/master/scripts/export/fasta_file_generator.py):
 
@@ -518,7 +505,7 @@ python fasta_file_generator.py --seq-db /path/to/rfamseq.fa --rfam-seed /path/to
 
 ---
 
-## Prepare new data dumps to enable Rfam Text Search
+## Prepare new data dumps for Rfam Text Search
 
 ### Generate new data dumps
 
@@ -597,7 +584,6 @@ ln -s /path/to/xml/data/dumps current_release
 ---
 
 ## Create new json dumps for import to RNAcentral
-
 
 ### Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
 

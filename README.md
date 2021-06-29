@@ -1,14 +1,14 @@
-# **Rfam Production Code**
+# Rfam Production Code
 
-### **About**
+### About
 --------
 This repository provides a set of tools related to the Rfam production pipeline.
-The collection includes script for data export, database processing, visualization
-and validation.
+The collection includes script for data export, database processing, visualisation
+and validation, as well as detailed [Rfam release documentation](./docs/release/Readme.md).
 
-### **Scripts**
+### Scripts
 --------
-* **Export:** Data Export tools
+* **Export:** Data export tools
 * **Processing:** Database processing tools
 * **View:** Rfam family view process related scripts
 * **Validation:** Data validation scripts
@@ -44,6 +44,6 @@ export PYTHONPATH=/path/to/the/project
 cp config/rfam_local_template.py config/rfam_local.py
 ```
 
-### **Contact Us**
+### Contact us
 -------------
-Feel free to contact us via email _rfam-help@ebi.ac.uk_ or submit an [issue](https://github.com/Rfam/rfam-production/issues).
+Feel free to submit an [issue](https://github.com/Rfam/rfam-production/issues) if you have any questions or suggestions.

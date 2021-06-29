@@ -13,11 +13,11 @@ The Rfam release process uses two main GitHub repos:
 
 Run the following on the EBI cluster:
 
-    ```
-    become rfamprod
-    cd_code && cd rfam-production
-    source env/bin/activate
-    ```
+```
+become rfamprod
+cd_code && cd rfam-production
+source env/bin/activate
+```
 
 Alternatively, use virtualenv to install the [requirements](../requirements.txt) locally.
 

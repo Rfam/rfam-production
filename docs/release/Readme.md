@@ -331,12 +331,21 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
 ---
 
-### Load SEED and CM files to `rfam_live`:
+### Load SEED and CM files into `rfam_live`
 
-This enables the SEED and CM download directly from the Rfam website
+This enables the SEED and CM download directly from the Rfam website.
+Requires new `Rfam.cm` and `Rfam.seed` files.
+
+Use [load_cm_seed_in_db.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/load_cm_seed_in_db.py):
 
 ```
-perl populateAnnotatedFiles.pl RFXXXXX ~/path/to/CMs ~/path/to/SEEDs
+python load_cm_seed_in_db.py /path/to/Rfam.seed /path/to/Rfam.cm
+```
+
+Alternatively, use [populateAnnotatedFiles.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/populateAnnotatedFiles.pl) to process families one by one:
+
+```
+perl populateAnnotatedFiles.pl RFXXXXX /path/to/RFXXXXX.cm /path/to/RFXXXXX.seed
 ```
 
 ---

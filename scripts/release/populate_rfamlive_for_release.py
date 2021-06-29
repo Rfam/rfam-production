@@ -16,9 +16,11 @@ def parse_arguments():
     parser.add_argument("--family-ncbi",
                         help="Populates family_ncbi table with distinct family species",
                         action="store_true", default=False)
+
     parser.add_argument("--num-species",
                         help="Sets number of distinct species in family table",
                         action="store_true", default=False)
+
     parser.add_argument("--num-full", help="Sets number of full regions hits per family",
                         action="store_true", default=False)
 
@@ -41,11 +43,17 @@ if __name__ == '__main__':
     parser = parse_arguments()
     args = parser.parse_args()
 
-    if args.all is True:
+    if args.family_ncbi or args.all:
         db.update_family_ncbi()
+
+    if args.num_species or args.all:
         db.set_number_of_species()
+
+    if args.genome_full or args.all:
+        db.set_number_of_genomic_significant_hits()
+
+    if args.num_full or args.all:
         db.set_num_full_sig_seqs()
-        db.set_number_of_distinct_families_in_genome(None)
-        db.set_number_of_genomic_significant_hits(None)
 
-
+    if args.num_genome_families or args.all:
+        db.set_number_of_distinct_families_in_genome()

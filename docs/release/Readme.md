@@ -412,16 +412,33 @@ perl writeAnnotatedTree.pl RFXXXXX
 
 1. Create a new `rfam2go` export by running [rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/rfam2go.pl):
 
-```
-rfam2go.pl > /path/to/dest/dir/rfam2go
-```
+    ```
+    rfam2go.pl > /path/to/dest/dir/rfam2go
+    ```
 
 2. Create `md5` checksum of rfam2go file:
 
-```
-cd rfam2go &&
-md5sum * > md5.txt
-```
+    ```
+    cd rfam2go &&
+    md5sum * > md5.txt
+    ```
+
+3. Add a header line to `rfam2go` with release and date.
+
+    ```
+    !version date: <YYYY/MM/DD>
+    !description: A mapping of GO terms to Rfam release <XX.X>.
+    !external resource: https://rfam.org/
+    !citation: Kalvari et al. (2020) Nucl. Acids Res. 49: D192-D200
+    !contact: rfam-help@ebi.ac.uk
+    !
+    ```
+
+4. Run GO validation and review warnings using [validate_rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/qc/validate_rfam2go.pl):
+
+    ```
+    perl validate_rfam2go.pl goselect selectgo rfam2go
+    ```
 
 ### Generate `Rfam.full_region` file
 

@@ -54,7 +54,7 @@ source /path/to/rfam_rh74/rfamrc
 
 ## Generate annotated SEED files
 
-Export SEED files from SVN using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+Export SEED files from SVN using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/generate_ftp_files.py):
 
 ```
 # to export all files (recommended 16GB RAM to checkout large families)
@@ -72,7 +72,7 @@ perl writeAnnotatedSeed.pl RFXXXXX
 
 ## Generate annotated CM files
 
-1. Export plain CM files using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+1. Export plain CM files using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master//scripts/export/generate_ftp_files.py):
 
     ```
     # to export all files (recommended 16GB RAM to checkout large families)
@@ -118,8 +118,6 @@ The SEED and CM files will be used for the FTP archive.
 
 Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
 
-### Preparing for clan competition
-
 1. Create a destination directory for clan competition required files
 
     ```
@@ -127,7 +125,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
     mkdir ~/releaseX/clan_competition/sorted    
     ```
 
-2. Generate clan files using [clan_file_generator.py](../scripts/release/clan_file_generator.py):
+2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/master//scripts/release/clan_file_generator.py):
 
     ```
     python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
@@ -153,7 +151,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
     for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
     ```
 
-4. Run clan competition using [clan_competition.py](../scripts/processing/clan_competition.py):
+4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/master//scripts/processing/clan_competition.py):
 
     ```
     python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
@@ -169,21 +167,19 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 ## Prepare rfam_live for a new release
 
-1. Truncate `pdb_full_region` table (if launching view processes on all Rfam) or delete the entries for families being updated
-
-2. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py):
+1. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py):
 
     ```
     python populate_rfamlive_for_release.py --all
     ```
 
-3. Make keywords using [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl):
+2. Make keywords using [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl):
 
     ```
     perl make_rfam_keywords_table.pl
     ```
 
-4. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
+3. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
 
     ```
     perl updateTaxonomyWebsearch.pl
@@ -374,7 +370,7 @@ mysql -u username  -h hostname -P port -p
 Create schema rfam_X_Y;
 ```
 
-4. Select schema to restore MySQL dump to
+4. Select schema to restore MySQL dump
 
 ```
 Use rfam_X_Y;
@@ -392,7 +388,7 @@ source rfam_live_relX.sql
 
 ### Generate annotated tree files
 
-Generate new tree files for the release using [generate_ftp_files.py](../scripts/export/generate_ftp_files.py):
+Generate new tree files for the release using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/generate_ftp_files.py):
 
 ```
 # to export all files (recommended 16GB RAM to checkout large families)
@@ -600,7 +596,7 @@ ln -s /path/to/xml/data/dumps current_release
 ```
 ---
 
-## Create new json dumps for import to RNAcentral
+## Create new json dumps for RNAcentral
 
 ### Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
 

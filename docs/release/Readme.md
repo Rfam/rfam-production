@@ -438,29 +438,27 @@ perl writeAnnotatedTree.pl RFXXXXX
 
 ### Generate `Rfam.full_region` file
 
-To generate the `Rfam.full_region` file execute the following query and dump in a `.txt` file:
+Export [ftp_Rfam_full_region.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_region.sql):
 
 ```
-select rfam_acc, rfamseq_acc, seq_start, seq_end, bit_score, evalue_score, cm_start, cm_end, truncated, type
-from full_region
-where is_significant=1
-order by rfam_acc;
+export MYSQL_PWD=rfam_live_password
+mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_full_region.sql > /path/to/Rfam.full_region
+gzip Rfam.full_region
 ```
 
 ### Generate `Rfam.pdb` file
 
-1. To generate the `Rfam.pdb` file execute the following query and dump in a `.txt` file:
+Export [ftp_rfam_pdb.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_region.sql):
 
 ```
-select rfam_acc, pdb_id, chain, pdb_start, pdb_end, bit_score, evalue_score, cm_start, cm_end, hex_colour
-from pdb_full_region
-where is_significant=1
-order by rfam_acc;
+export MYSQL_PWD=rfam_live_password
+mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_pdb.sql > /path/to/Rfam.pdb
+gzip Rfam.pdb
 ```
 
 ### Generate `Rfam.clanin` file
 
-Generate a new `Rfam.clanin` file using [clanin_file_generator.py](../scripts/release/clanin_file_generator.py):
+Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clanin_file_generator.py):
 
 ```
 python clanin_file_generator.py --dest-dir /path/to/destination/directory

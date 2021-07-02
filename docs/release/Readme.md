@@ -125,7 +125,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
     mkdir ~/releaseX/clan_competition/sorted    
     ```
 
-2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/master//scripts/release/clan_file_generator.py):
+2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clan_file_generator.py):
 
     ```
     python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
@@ -151,7 +151,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
     for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
     ```
 
-4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/master//scripts/processing/clan_competition.py):
+4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/master/scripts/processing/clan_competition.py):
 
     ```
     python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
@@ -438,7 +438,7 @@ perl writeAnnotatedTree.pl RFXXXXX
 
 ### Generate `Rfam.full_region` file
 
-Export [ftp_Rfam_full_region.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_region.sql):
+Export [ftp_Rfam_full_region.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_reqion.sql):
 
 ```
 export MYSQL_PWD=rfam_live_password
@@ -448,7 +448,7 @@ gzip Rfam.full_region
 
 ### Generate `Rfam.pdb` file
 
-Export [ftp_rfam_pdb.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_region.sql):
+Export [ftp_rfam_pdb.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_pdb.sql):
 
 ```
 export MYSQL_PWD=rfam_live_password
@@ -465,7 +465,6 @@ python clanin_file_generator.py --dest-dir /path/to/destination/directory
 ```
 
 **Note:** Only required if new Clans have been added or existing ones updated
-
 
 ### Generate `database_files` folder
 

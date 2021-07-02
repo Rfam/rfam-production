@@ -811,7 +811,7 @@ def set_genome_size(genome_sizes):
 # ----------------------------------------------------------------------------
 
 
-def set_number_of_distinct_families_in_genome(upid):
+def set_number_of_distinct_families_in_genome(upid=None):
     """
     Sets the number distinct families with hits in a specific genome defined
     by its corresponding upid
@@ -871,7 +871,7 @@ def set_number_of_distinct_families_in_genome(upid):
 # ----------------------------------------------------------------------------
 
 
-def set_number_of_genomic_significant_hits(upid):
+def set_number_of_genomic_significant_hits(upid=None):
     """
     Sets the number of significant hits for a specific genome according to
     its corresponding upid id

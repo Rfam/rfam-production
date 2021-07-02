@@ -412,14 +412,7 @@ perl writeAnnotatedTree.pl RFXXXXX
     rfam2go.pl > /path/to/dest/dir/rfam2go
     ```
 
-2. Create `md5` checksum of rfam2go file:
-
-    ```
-    cd rfam2go &&
-    md5sum * > md5.txt
-    ```
-
-3. Add a header line to `rfam2go` with release and date.
+2. Add a header line to `rfam2go` with release and date.
 
     ```
     !version date: <YYYY/MM/DD>
@@ -428,6 +421,13 @@ perl writeAnnotatedTree.pl RFXXXXX
     !citation: Kalvari et al. (2020) Nucl. Acids Res. 49: D192-D200
     !contact: rfam-help@ebi.ac.uk
     !
+    ```
+
+3. Create `md5` checksum of rfam2go file:
+
+    ```
+    cd rfam2go &&
+    md5sum * > md5.txt
     ```
 
 4. Run GO validation and review warnings using [validate_rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/qc/validate_rfam2go.pl):

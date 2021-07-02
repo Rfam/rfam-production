@@ -429,7 +429,7 @@ def set_number_of_species():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print ("Done")
+    print ("Done updating number_of_species column in the family table")
 
 # ----------------------------------------------------------------------------
 
@@ -484,7 +484,7 @@ def set_num_full_sig_seqs():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print ("Done")
+    print ("Done updating num_full column in the family table")
 
 # ----------------------------------------------------------------------------
 
@@ -539,7 +539,7 @@ def update_family_ncbi():
     c_cursor.close()
     RfamDB.disconnect(cnx)
 
-    print ("Done updating family_ncbi.")
+    print ("Done updating family_ncbi table")
 
 # ----------------------------------------------------------------------------
 
@@ -866,6 +866,7 @@ def set_number_of_distinct_families_in_genome(upid):
     cnx.commit()
     cursor.close()
     RfamDB.disconnect(cnx)
+    print("Done updating num_families column in the genome table")
 
 # ----------------------------------------------------------------------------
 
@@ -930,6 +931,7 @@ def set_number_of_genomic_significant_hits(upid):
     cnx.commit()
     cursor.close()
     RfamDB.disconnect(cnx)
+    print("Done updating num_rfam_regions column in the genome table")
 
 # ----------------------------------------------------------------------------
 

@@ -39,7 +39,7 @@ def load_cm_seed_in_db(rfam_acc, seed_file, cm_file, cursor, cnx):
 def main(seed_file, cm_file):
     cnx = RfamDB.connect()
     cursor = cnx.cursor()
-    for rfam_acc in get_all_rfam_accessions()[:2]:
+    for rfam_acc in get_all_rfam_accessions():
         print(rfam_acc)
         load_cm_seed_in_db(rfam_acc, seed_file, cm_file, cursor, cnx)
     cursor.close()

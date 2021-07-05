@@ -220,6 +220,7 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
     ```
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+    gunzip pdb_seqres.txt.gz
     ```
 
 2. Split into individual sequences
@@ -264,6 +265,12 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
     bsub -o part_100.lsf.out -e part_100.lsf.err -M 16000 "cmscan -o part_100.output --tblout part_100.tbl --cut_ga Rfam.cm pdb_trimmed_noillegals.part_001.fa"
     ```
 
+    To check that all commands completed, check that every log file contains `Successfully completed`:
+
+    ```
+    cat part_*lsf.out | grep Success | wc -l
+    ```
+
 8. Combine results
 
     ```
@@ -275,6 +282,8 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
     ```
     python infernal_2_pdb_full_region.py --tblout /path/to/pdb_full_region.tbl --dest-dir /path/to/dest/dir
     ```    
+
+    The script will generate a file like `pdb_full_region_YYYY-MM-DD.txt`.
 
 10. Create a new temporary table in `rfam_live`
 

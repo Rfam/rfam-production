@@ -50,10 +50,10 @@ if __name__ == '__main__':
         db.set_number_of_species()
 
     if args.genome_full or args.all:
-        db.set_number_of_genomic_significant_hits()
+        db.set_number_of_genomic_significant_hits(None)
 
     if args.num_full or args.all:
         db.set_num_full_sig_seqs()
 
     if args.num_genome_families or args.all:
-        db.set_number_of_distinct_families_in_genome()
+        db.set_number_of_distinct_families_in_genome(None)

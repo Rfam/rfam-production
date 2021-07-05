@@ -403,14 +403,26 @@ def set_number_of_species():
        "where r.rfamseq_acc=f.rfamseq_acc\n"
        "and is_significant=1 and rfam_acc=\'%s\'")
 
+    count_query = """
+        SELECT count(*) AS combined_count FROM (
+            SELECT DISTINCT ncbi_id
+            FROM full_region f, rfamseq r
+            WHERE r.rfamseq_acc = f.rfamseq_acc
+            AND is_significant=1 AND rfam_acc='%s'
+        UNION
+            SELECT DISTINCT ncbi_id
+            FROM seed_region f, rfamseq r
+            WHERE r.rfamseq_acc = f.rfamseq_acc
+            AND rfam_acc='%s'
+        ) table1"""
+
     # counts list
     counts = []
     for acc in rfam_accs:
-        c_cursor.execute(count_query % str(acc[0]))
+        rfam_acc = str(acc[0])
+        c_cursor.execute(count_query % (rfam_acc, rfam_acc))
         count = c_cursor.fetchall()
-
-        counts.append((count[0][0], str(acc[0])))
-
+        counts.append((count[0][0], rfam_acc))
         count = 0
 
     c_cursor.close()

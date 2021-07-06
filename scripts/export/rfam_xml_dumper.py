@@ -184,7 +184,7 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # get pseudoknot evidence
     pseudoknots = []
-    
+
     # check if seed pseudoknot with covariation
     pseudoknot_evidence = int(fetch_value(rs.SEED_PK_WITH_COV, rfam_acc))
     if pseudoknot_evidence > 0:
@@ -417,8 +417,8 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     Format full regions for a genome. Genome metadata is retrieved only once.
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
-    name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])   
- 
+    name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+
     scientific_name = None
     if genome is not None:
         scientific_name = genome.scientific_name
@@ -1039,9 +1039,10 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                 rfam_accs = fetch_value_list(None, rs.FAM_ACC)
 
                 for entry in rfam_accs:
+                    print(entry)
                     t0 = timeit.default_timer()
                     xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir)
-                    print "Execution time: %.1fs" % (timeit.default_timer() - t0)
+                    print "%s execution time: %.1fs" % (entry, timeit.default_timer() - t0)
 
                 return
 
@@ -1050,7 +1051,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                 print entry
                 t0 = timeit.default_timer()
                 xml4db_dumper(None, None, entry_type, entry, False, outdir)
-                print "Execution time: %.1fs" % (timeit.default_timer() - t0)
+                print "%s execution time: %.1fs" % (entry, timeit.default_timer() - t0)
 
         # export single entry
         else:

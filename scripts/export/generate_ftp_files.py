@@ -119,6 +119,22 @@ def create_combined_cm_file(destination):
 # -----------------------------------------------------------------------------
 
 
+def create_tree_archive(destination):
+    """
+    Create a combined Rfam.seed_tree file.
+    """
+    cwd = os.getcwd()
+    os.chdir(destination)
+    cmd = "rm -f Rfam.seed_tree && cat *.taxtree > Rfam.seed_tree && gzip -c Rfam.seed_tree > Rfam.seed_tree.gz"
+    status = os.system(cmd.format(destination))
+    if status:
+        raise Exception('There was a problem generating Rfam.seed_tree.gz in {}'.format(destination))
+    os.chdir(cwd)
+
+
+# -----------------------------------------------------------------------------
+
+
 def validate_seed_archive(destination, rfam_accs):
     """
     Check that Rfam.seed contains the correct number of entries.
@@ -224,3 +240,5 @@ if __name__ == '__main__':
         validate_seed_archive(args.dest_dir, accessions)
     elif args.cm and args.acc == 'all':
         create_combined_cm_file(args.dest_dir)
+    elif args.tree and args.acc == 'all':
+        create_tree_archive(args.dest_dir)

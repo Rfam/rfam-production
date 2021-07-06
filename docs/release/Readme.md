@@ -523,13 +523,13 @@ python fasta_file_generator.py --seq-db /path/to/rfamseq.fa --rfam-seed /path/to
 
 ---
 
-## Prepare new data dumps for Rfam Text Search
+## Update Rfam text search
 
 ### Generate new data dumps
 
 **Requirements:**
 
-The directory for the Text Search index must have the following structure:
+The directory for the text search index must have the following structure:
 
 - release_note.txt
 - families
@@ -538,45 +538,61 @@ The directory for the Text Search index must have the following structure:
 - motifs
 - full_region
 
-
 1. Move to the main `rfam-production` repo and setup the django environment:
 
-```
-source django_settings.sh
-```
+    ```
+    source django_settings.sh
+    ```
 
 2. Create an output directory for a new release index and all required subdirectories:
 
-```
-mkdir -p relX_text_search/families
-```
+    ```
+    cd /path/to/relX_text_search
+    mkdir clans
+    mkdir families
+    mkdir full_region
+    mkdir genomes
+    mkdir motifs
+    ```
 
-3. Create a new families XML dump:
+3. Create new XML dumps:
 
-```
-python rfam_xml_dumper.py --type F --out /path/to/relX_text_search/families
-```
+    ```
+    cd /path/to/relX_text_search
+    python rfam_xml_dumper.py --type F --out families
+    python rfam_xml_dumper.py --type C --out clans
+    python rfam_xml_dumper.py --type M --out motifs
+    python rfam_xml_dumper.py --type G --out genomes
+    python rfam_xml_dumper.py --type R --out full_region
+    ```
 
-4. Validate xml dumps:
+    For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](https://github.com/Rfam/rfam-production/tree/master/scripts/export/lsf_rfam_xml_dumper.sh).
 
-```
-python xml_validator.py --input /path/to/relX_text_search/families --log
-```
+4. Validate xml dumps using [xml_validator.py](https://github.com/Rfam/rfam-production/tree/master/scripts/validation/xml_validator.py):
 
-`--input`: Single XML dump or a directory
- `--log`: Generates a log file with all XMl dumps failing validation
+    ```
+    python xml_validator.py --input /path/to/relX_text_search/families --log
+    python xml_validator.py --input /path/to/relX_text_search/clans --log
+    python xml_validator.py --input /path/to/relX_text_search/motifs --log
+    python xml_validator.py --input /path/to/relX_text_search/genomes --log
+    python xml_validator.py --input /path/to/relX_text_search/full_region --log
+    ```
 
+    Check that `error.log` files in each folder is empty.
 
-Follow the same process to generate  XML dumps for all data types:
- - families
- - clans
- - motifs
- - genomes
- - full_region
+5. Get the total number of entries:
 
-For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](../scripts/export/lsf_rfam_xml_dumper.sh)
+    ```
+    grep -r 'entry id' . | wc -l
+    ```
 
-:information_source: More detailed information available on confluence
+6. Create `release_note.txt` file:
+
+    ```
+    release=14.5
+    release_date=15-Mar-2021
+    entries=2949678
+    ```
 
 ### Index data on **dev** and **prod**
 

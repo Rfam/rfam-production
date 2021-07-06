@@ -128,6 +128,7 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clan_file_generator.py):
 
     ```
+    # recommended 16GB RAM
     python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
     ```
     `--cc-type:` Clan competition type FULL/PDB
@@ -451,7 +452,7 @@ Export [ftp_Rfam_full_region.sql](https://github.com/Rfam/rfam-production/blob/m
 
 ```
 export MYSQL_PWD=rfam_live_password
-mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_full_region.sql > /path/to/Rfam.full_region
+mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_full_reqion.sql > /path/to/Rfam.full_region
 gzip Rfam.full_region
 ```
 
@@ -470,10 +471,8 @@ gzip Rfam.pdb
 Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clanin_file_generator.py):
 
 ```
-python clanin_file_generator.py --dest-dir /path/to/destination/directory
+python clanin_file_generator.py /path/to/destination/directory
 ```
-
-**Note:** Only required if new Clans have been added or existing ones updated
 
 ### Generate `database_files` folder
 

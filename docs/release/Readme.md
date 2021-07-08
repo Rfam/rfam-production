@@ -119,6 +119,9 @@ perl writeAnnotatedSeed.pl RFXXXXX
     # get a list of Rfam IDs found in Rfam.cm
     grep ACC Rfam.cm | sed -e 's/ACC\s\+//g' | sort | uniq > list.txt
 
+    # create an index file to speed up cm retrieval
+    cmfetch --index Rfam.cm
+
     # create individual cm files
     while read p; do cmfetch Rfam.cm $p > "$p.cm" ; done <list.txt
 
@@ -126,7 +129,7 @@ perl writeAnnotatedSeed.pl RFXXXXX
     tar -czvf Rfam.tar.gz RF0*.cm
 
     # remove temporary files
-    rm RF0.cm
+    rm RF0*.cm
     ```
 
 The CM file is used for PDB mapping. The SEED and CM files are stored in FTP archive and are also available from the Rfam website.

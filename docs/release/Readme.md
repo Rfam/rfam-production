@@ -110,7 +110,26 @@ perl writeAnnotatedSeed.pl RFXXXXX
     gzip Rfam.cm
     ```
 
-The SEED and CM files will be used for the FTP archive.
+3. Split annotated `Rfam.cm` into individual `.cm` files and create `Rfam.tar.gz`:
+
+    ```
+    # delete any existing files
+    rm -f RF0*.cm
+
+    # get a list of Rfam IDs found in Rfam.cm
+    grep ACC Rfam.cm | sed -e 's/ACC\s\+//g' | sort | uniq > list.txt
+
+    # create individual cm files
+    while read p; do cmfetch Rfam.cm $p > "$p.cm" ; done <list.txt
+
+    # create an archive
+    tar -czvf Rfam.tar.gz RF0*.cm
+
+    # remove temporary files
+    rm RF0.cm
+    ```
+
+The CM file is used for PDB mapping. The SEED and CM files are stored in FTP archive and are also available from the Rfam website.
 
 ---
 

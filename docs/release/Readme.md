@@ -107,7 +107,7 @@ perl writeAnnotatedSeed.pl RFXXXXX
     grep DESC Rfam.cm | wc -l
 
     # generate the final archive
-    gzip Rfam.cm
+    gzip -c Rfam.cm > Rfam.cm.gz
     ```
 
 3. Split annotated `Rfam.cm` into individual `.cm` files and create `Rfam.tar.gz`:
@@ -130,6 +130,23 @@ perl writeAnnotatedSeed.pl RFXXXXX
     ```
 
 The CM file is used for PDB mapping. The SEED and CM files are stored in FTP archive and are also available from the Rfam website.
+
+## Load annotated SEED and CM files into `rfam_live`
+
+This enables the SEED and CM download directly from the Rfam website.
+Requires new `Rfam.cm` and `Rfam.seed` files.
+
+Use [load_cm_seed_in_db.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/load_cm_seed_in_db.py):
+
+```
+python load_cm_seed_in_db.py /path/to/Rfam.seed /path/to/Rfam.cm
+```
+
+Alternatively, use [populateAnnotatedFiles.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/populateAnnotatedFiles.pl) to process families one by one:
+
+```
+perl populateAnnotatedFiles.pl RFXXXXX /path/to/RFXXXXX.cm /path/to/RFXXXXX.seed
+```
 
 ---
 
@@ -343,24 +360,6 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
 ---
 
-### Load SEED and CM files into `rfam_live`
-
-This enables the SEED and CM download directly from the Rfam website.
-Requires new `Rfam.cm` and `Rfam.seed` files.
-
-Use [load_cm_seed_in_db.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/load_cm_seed_in_db.py):
-
-```
-python load_cm_seed_in_db.py /path/to/Rfam.seed /path/to/Rfam.cm
-```
-
-Alternatively, use [populateAnnotatedFiles.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/populateAnnotatedFiles.pl) to process families one by one:
-
-```
-perl populateAnnotatedFiles.pl RFXXXXX /path/to/RFXXXXX.cm /path/to/RFXXXXX.seed
-```
-
----
 
 ## Stage RfamLive for a new release
 

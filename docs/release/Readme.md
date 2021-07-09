@@ -375,43 +375,43 @@ export MYSQL_PWD=rfam_live_password
 bsub -o mysqldump.out -e mysqldump.err "mysqldump -u <user> -h <hostname> -P <port> --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_relX.sql"
 ```
 
-2. Create a MySQL dump of a single table:
+To create a MySQL dump of a single table:
 
 ```
 mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G database_name table_name > table_name.sql
 ```
 
-### Restore a MySQL database instance on a remote server:
+### Restore a MySQL database instance on a remote server
 
-1. Move to the directory where the new MySQL dump is located
+1. Move to the directory where a new MySQL dump is located
 
-```
-cd /path/to/rfam_live_relX.sql
-```
+    ```
+    cd /path/to/rfam_live_relX.sql
+    ```
 
 2. Connect to the MySQL server (e.g. PUBLIC)
 
-```
-mysql -u username  -h hostname -P port -p
-```
+    ```
+    mysql -u username  -h hostname -P port -p
+    ```
 
 3. Create a new MySQL Schema
 
-```
-Create schema rfam_X_Y;
-```
+    ```
+    Create schema rfam_X_Y;
+    ```
 
 4. Select schema to restore MySQL dump
 
-```
-Use rfam_X_Y;
-```
+    ```
+    Use rfam_X_Y;
+    ```
 
-5. Restore the database in preparation for a new release
+5. Restore the database
 
-```
-source rfam_live_relX.sql
-```
+    ```
+    source rfam_live_relX.sql
+    ```
 
 ---
 

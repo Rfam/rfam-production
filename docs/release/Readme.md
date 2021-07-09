@@ -501,12 +501,12 @@ The option `--tab` of `mysqldump` is used to generate dumps in both `.sql` and `
  - `table.sql` includes the MySQL query executed to create a table
  - `table.txt` includes the table contents in tabular format
 
-If executed on the server side, `--tab` can point to a specific location where output will be created. Alternatively, create a local copy of the database and dump the files to `tmp` directory.
+The main `rfam_live` database is running with the `secure-file-priv` setting so it is not possible to export using the `--tab` option directly. A workaround is to copy dump files on a laptop, and use a local MySQL database for export.
 
 1. Create a new database dump using mysqldump:
 
     ```
-    mysqldump -u <user> -h <host> -P <port> -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G --tab=/tmp rfam_local
+    mysqldump -u <user> -h <host> -P <port> -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G --tab=/tmp/database_files rfam_local
     ```
 
 2. Run the [database_file_selector.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/database_file_selector.py) python script to create the subset of `database_files` available on the FTP:
@@ -617,23 +617,23 @@ The directory for the text search index must have the following structure:
 
 1. Change directory to `text_search` on the cluster:
 
-```
-cd_main && cd search_dumps
-```
+    ```
+    cd_main && cd search_dumps
+    ```
 
 2. Index data on `dev`:
 
-```
-unlink rfam_dev
-ln -s /path/to/xml/data/dumps rfam_dev
-```
+    ```
+    unlink rfam_dev
+    ln -s /path/to/xml/data/dumps rfam_dev
+    ```
 
 3. Index data on `prod`:
 
-```
-unlink current_release
-ln -s /path/to/xml/data/dumps current_release
-```
+    ```
+    unlink current_release
+    ln -s /path/to/xml/data/dumps current_release
+    ```
 
 The files in `rfam_dev` and `current_release` folders are automatically indexed every night.
 
@@ -643,62 +643,62 @@ The files in `rfam_dev` and `current_release` folders are automatically indexed 
 
 ### Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
 
-1. Extract SEED regions:
-```
-perl Rfam2RNAcentral.pl SEED > /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
-```
+1. Extract SEED regions
 
-2. Extract FULL regions:
-```
-perl Rfam2RNAcentral.pl FULL >> /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
-```
+    ```
+    perl Rfam2RNAcentral.pl SEED > /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
+    ```
 
-3. Split regions into smaller chunks using basic linux `split` command:
+2. Extract FULL regions
 
-```
-mkdir chunks &&
-cd chunks &&
-split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additional-suffix='.txt'
-```
+    ```
+    perl Rfam2RNAcentral.pl FULL >> /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
+    ```
 
-`-n:` defines the number of chunks to generate (2000 limit on LSF)
+3. Split regions into smaller chunks using basic linux `split` command
 
-**Notes:**
-- This command will generate 3000 files named like `rnac_zbss.txt`
-- Use `-l 500` option for more efficient chink size
+    ```
+    mkdir chunks &&
+    cd chunks &&
+    split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additional-suffix='.txt'
+    ```
 
-4. Create a copy of the fasta files directory:
+    `-n:` defines the number of chunks to generate (2000 limit on LSF)
 
-```
-mkdir fasta_files && cd fasta_files &&
-wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
-```
-**NOTE:** Rfam2RNAcentral regions need to match the exact same release the `fasta_files` were created for.
-          Use the Public MySQL database if `rfam-live` have been updated
+    **Notes:**
+    - This command will generate 3000 files named like `rnac_zbss.txt`
+    - Use `-l 500` option for more efficient chink size
+
+4. Create a copy of the fasta files directory
+
+    ```
+    mkdir fasta_files && cd fasta_files &&
+    wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
+    ```
+    **NOTE:** Rfam2RNAcentral regions need to match the exact same release the `fasta_files` were created for.
+              Use the Public MySQL database if `rfam-live` have been updated
 
 5. Unzip all fasta files and index using `esl-sfetch`:
 
-```
-gunzip * .gz
-for file in ./RF*.fa; do esl-sfetch --index $file; done
-```
+    ```
+    gunzip * .gz
+    for file in ./RF*.fa; do esl-sfetch --index $file; done
+    ```
 
 6. Copy the `Rfam.seed file from the FTP to the fasta_files directory and index using `esl-sfetch`:
 
-```
-wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
-esl-sfetch --index Rfam.seed
-```
+    ```
+    wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
+    esl-sfetch --index Rfam.seed
+    ```
 
 7. Launch a new json dump using [rnac2json.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/rnac2json.py):
 
 
-- `fasta file directory:` Create a new fasta files directory
-- `json files directory:` Create a new json files output directory
+    - `fasta file directory:` Create a new fasta files directory
+    - `json files directory:` Create a new json files output directory
 
 
-```
-python rnac2json.py --input /path/to/chunks --rfam-fasta /path/to/fasta_files --outdir /path/to/json_files
-```
-
----
+    ```
+    python rnac2json.py --input /path/to/chunks --rfam-fasta /path/to/fasta_files --outdir /path/to/json_files
+    ```

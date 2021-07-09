@@ -123,7 +123,7 @@ perl writeAnnotatedSeed.pl RFXXXXX
     cmfetch --index Rfam.cm
 
     # create individual cm files
-    while read p; do cmfetch Rfam.cm $p > "$p.cm" ; done <list.txt
+    while read p; do echo $p; cmfetch Rfam.cm $p > "$p.cm" ; done <list.txt
 
     # create an archive
     tar -czvf Rfam.tar.gz RF0*.cm
@@ -366,9 +366,9 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
 ## Stage RfamLive for a new release
 
-### Creating MySQL dumps using `mysqldump`
+### Create MySQL dumps using `mysqldump`
 
-1. Create a new MySQL dump to replicate the database on REL and PUBLIC servers:
+Create a new MySQL dump to replicate the database on REL and PUBLIC servers:
 
 ```
 export MYSQL_PWD=rfam_live_password
@@ -541,6 +541,8 @@ bsub -M 10000 -o fasta_generator.lsf.out -e fasta_generator.lsf.err "python fast
 
 ## Update Rfam text search
 
+Description of indexed fields: https://www.ebi.ac.uk/ebisearch/metadata.ebi?db=rfam
+
 ### Generate new data dumps
 
 **Requirements:**
@@ -631,6 +633,9 @@ ln -s /path/to/xml/data/dumps rfam_dev
 unlink current_release
 ln -s /path/to/xml/data/dumps current_release
 ```
+
+The files in `rfam_dev` and `current_release` folders are automatically indexed every night.
+
 ---
 
 ## Create new json dumps for RNAcentral

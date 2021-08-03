@@ -23,6 +23,7 @@ def connect():
 
 
 def create_pdb_temp_table():
+    # TODO checge to take text file as a param
     """
     Create the pdb_full_region_temp table and populate with data from the pdb text file
     """
@@ -31,7 +32,7 @@ def create_pdb_temp_table():
     cursor = conn.cursor()
     try:
         cursor.execute('CREATE TABLE IF NOT EXISTS pdb_full_region_temp LIKE pdb_full_region')
-        with open('pdb_full_region_2021-07-20.txt') as f:
+        with open('pdb_full_region_2021-08-03.txt') as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 cursor.execute("""INSERT INTO pdb_full_region_temp(rfam_acc, pdb_id, chain, pdb_start,

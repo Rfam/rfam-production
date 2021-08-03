@@ -89,7 +89,7 @@ def clan_file_generator(output_dir, clan_comp_type='FULL', clan_acc=None):
 
         # open a new clan file to dump the sequences
         if len(regions) > 0:
-            print "clan: ", clan
+            print("clan: ", clan)
             clan_fp = open(os.path.join(output_dir, clan) + ".txt", 'w')
 
         # if no available regions, move to next clan

@@ -11,26 +11,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
- #Todo Need to generalize this to make the scripts independent and enable
-    # connecting to multiple databases simultaneously. Convert this to a class
+# Todo Need to generalize this to make the scripts independent and enable
+# connecting to multiple databases simultaneously. Convert this to a class
 
 # ---------------------------------IMPORTS-------------------------------------
+import logging
 
 import mysql.connector
 from mysql.connector import errorcode
 
 # Todo - NEED TO CLEAN THIS UP
 # NEED TO CLEAN THIS UP AND PROFIDE A WAY
-#from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
-#from config.rfam_config import RFAMLIVE  # rfam_live on curation host
-from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
+# from config.rfam_config import RFAMLIVEPUB  # rfam_live on public host
+# from config.rfam_config import RFAMLIVE  # rfam_live on curation host
+# from config.rfam_config import RFAMLIVELOC  # local instance of rfam_live
 
-#from config.rfam_config import XFAMDEV
-#from config.rfam_config import RFAMLOCAL
-from config.rfam_config import RFAMLIVE
-#from config.rfam_config import RFAMLIVEPUB
-#from config.rfam_config import RFAMREL
+# from config.rfam_config import XFAMDEV
+# from config.rfam_config import RFAMLOCAL
+# from config.rfam_config import RFAMLIVE
+# from config.rfam_config import RFAMLIVEPUB
+# from config.rfam_config import RFAMREL
 
 # RfamLive
 from config.rfam_config import RFAMLIVE
@@ -59,15 +59,19 @@ def connect():
     except mysql.connector.Error as err:
 
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print ("Wrong username or password")
+            print("Wrong username or password")
+            logging.debug("Wrong username or password: {0}".format(err))
 
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print ("Database does not exist")
+            print("Database does not exist")
+            logging.debug("Database does not exist: {0}".format(err))
 
         else:
-            print (err)
+            print(err)
+            logging.debug("MySQL error has occurred: {0}".format(err))
 
     return cnx
+
 
 # -----------------------------------------------------------------------------
 
@@ -82,7 +86,8 @@ def disconnect(cnx):
     try:
         cnx.close()
 
-    except:
-        print ("Error closing database connection")
+    except Exception as e:
+        print("Error closing database connection: {0}".format(e))
+        logging.debug("Error closing database connection: {0}".format(e))
 
 # -----------------------------------------------------------------------------

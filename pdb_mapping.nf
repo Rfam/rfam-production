@@ -89,42 +89,56 @@ process create_and_import_pdb_full_region {
 }
 
 // combine clan steps ?
+
+// revisit - working manually but not with nf??
+// have dest-dir be current work dir and pass to the next process
 process generate_clan_files {
     // input:
     // path(query)
+    
 
     output:
     path('*')
 
+    // mkdir -p $baseDir/releaseX/clan_competition/sorted   
     """
-    mkdir -p $baseDir/releaseX/clan_competition
-    mkdir -p $baseDir/releaseX/clan_competition/sorted  
     python $baseDir/scripts/release/clan_file_generator.py --dest-dir $baseDir/releaseX/clan_competition --clan-acc CL00001 --cc-type PDB
     """
 }
 process sort_clan_files {
+    // channel of files
+    publishDir "$baseDir/releaseX/clan_competition/sorted", mode: "copy"
+    
     input:
     path(query)
+
     output:
-    path('*.txt')
-    """
-    cd $baseDir/releaseX/clan_competition
-    for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > sorted/\${file:2:7}_s.txt; done
+    path('*_s.txt')
+
+    // cd $baseDir/releaseX/clan_competition
+    """ 
+    for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
     """
 }
 process run_clan_competition { 
     
     input:
     path(query)
+
     output:
     path('clan_file_sorted.txt')
+
     """
     python $baseDir/scripts/processing/clan_competition.py --input releaseX/clan_competition/sorted --pdb
     """
 }
 process get_new_families {
+
+    input:
+    path(query)
+
     """
-    python pdb_new_fam_db.py
+    python pdb_families.py
     """
 }
 workflow pdb_mapping {
@@ -148,12 +162,13 @@ workflow pdb_mapping {
 
     // wait until table has imported? 
     // clan compete
-    
-    generate_clan_files \
-    | view 
-    // | sort_clan_files \
-    // | run_clan_competition
-    // | get_new_families
+    // generate_clan_files \
+    // | collect \ 
+
+    channel.fromPath('releaseX/clan_competition/CL00001.txt')
+    | sort_clan_files \
+    | run_clan_competition \
+    | get_new_families
 }
 workflow {
     pdb_mapping()

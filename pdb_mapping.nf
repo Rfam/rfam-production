@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 process setup_files {
@@ -88,25 +89,19 @@ process create_and_import_pdb_full_region {
 
 }
 
-// combine clan steps ?
-
-// revisit - working manually but not with nf??
-// have dest-dir be current work dir and pass to the next process
 process generate_clan_files {
     // input:
     // path(query)
     
-
     output:
-    path('*')
+    path('CL*.txt')
 
-    // mkdir -p $baseDir/releaseX/clan_competition/sorted   
     """
-    python $baseDir/scripts/release/clan_file_generator.py --dest-dir $baseDir/releaseX/clan_competition --clan-acc CL00001 --cc-type PDB
+    mkdir -p $baseDir/releaseX/clan_competition/sorted  
+    python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --clan-acc CL00001 --cc-type PDB
     """
 }
 process sort_clan_files {
-    // channel of files
     publishDir "$baseDir/releaseX/clan_competition/sorted", mode: "copy"
     
     input:
@@ -115,21 +110,21 @@ process sort_clan_files {
     output:
     path('*_s.txt')
 
-    // cd $baseDir/releaseX/clan_competition
     """ 
     for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
     """
 }
 process run_clan_competition { 
-    
+    publishDir "$baseDir/releaseX/clan_competition", mode: "copy"
+
     input:
     path(query)
 
     output:
-    path('clan_file_sorted.txt')
+    path('*')
 
     """
-    python $baseDir/scripts/processing/clan_competition.py --input releaseX/clan_competition/sorted --pdb
+    python $baseDir/scripts/processing/clan_competition.py --input $baseDir/releaseX/clan_competition/sorted --pdb
     """
 }
 process get_new_families {
@@ -138,7 +133,7 @@ process get_new_families {
     path(query)
 
     """
-    python pdb_families.py
+    python $baseDir/pdb_families.py
     """
 }
 workflow pdb_mapping {
@@ -161,12 +156,11 @@ workflow pdb_mapping {
     | create_and_import_pdb_full_region
 
     // wait until table has imported? 
-    // clan compete
-    // generate_clan_files \
-    // | collect \ 
+    generate_clan_files \
 
-    channel.fromPath('releaseX/clan_competition/CL00001.txt')
+    // channel.fromPath('releaseX/clan_competition/CL00001.txt')
     | sort_clan_files \
+    | collect \
     | run_clan_competition \
     | get_new_families
 }

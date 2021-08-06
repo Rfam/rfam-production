@@ -15,7 +15,7 @@ process setup_files {
     wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
     gunzip Rfam.cm.gz
     mv Rfam.cm $baseDir
-    cmpress $baseDir/Rfam.cm
+    $baseDir/cmpress $baseDir/Rfam.cm
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
@@ -44,7 +44,7 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
+    $baseDir/cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
     """
 
 }
@@ -90,13 +90,14 @@ process create_and_import_pdb_full_region {
 }
 
 process generate_clan_files {
-    // input:
-    // path(query)
+    input:
+    path(query)
     
     output:
     path('CL*.txt')
 
     """
+    python $baseDir/pdb_full_region_table.py --file $query
     mkdir -p $baseDir/releaseX/clan_competition/sorted  
     python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --clan-acc CL00001 --cc-type PDB
     """
@@ -153,11 +154,8 @@ workflow pdb_mapping {
 
     // channel.fromPath("PDB_RFAM_X_Y.tbl") \
     | create_text_file_for_db \
-    | create_and_import_pdb_full_region
-
-    // wait until table has imported? 
-    generate_clan_files \
-
+    // | create_and_import_pdb_full_region - merged
+    | generate_clan_files \
     // channel.fromPath('releaseX/clan_competition/CL00001.txt')
     | sort_clan_files \
     | collect \

@@ -37,6 +37,8 @@ process remove_illegal_characters {
 
 process run_cmscan {
 
+    memory '10GB'
+
     input:
     path(query)
     
@@ -133,14 +135,13 @@ process get_new_families {
 workflow pdb_mapping {
     
     setup_files \
-    // channel.fromPath("pdb_local.txt") \
     | splitFasta( record: [id: true, desc:true, text: true] ) \
     | filter { record -> record.desc =~ /^mol:na.*/ } \
     | collectFile( name:"pdb_trimmed_noprot.fa") {
         it.text
     } \
     | remove_illegal_characters \
-    | splitFasta ( by:50, file:true ) \
+    | splitFasta ( by:300, file:true ) \
     | run_cmscan \
     | collect \
     | combine_cmscan_results \

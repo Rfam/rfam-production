@@ -14,7 +14,7 @@ process setup_files {
     wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
     gunzip Rfam.cm.gz
     mv Rfam.cm $baseDir
-    cmpress $baseDir/Rfam.cm
+    $baseDir/cmpress $baseDir/Rfam.cm
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
@@ -44,7 +44,7 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
+    $baseDir/cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
     """
 
 }
@@ -86,7 +86,7 @@ process import_db_and_generate_clan_files {
     path('CL*.txt')
 
     """
-    python $baseDir/pdb_full_region_table.py --file $query
+    python $baseDir/utils/pdb_full_region_table.py --file $query
     mkdir -p $baseDir/releaseX/clan_competition/sorted  
     python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
@@ -126,13 +126,14 @@ process get_new_families {
     path(query)
 
     """
-    python $baseDir/pdb_families.py
+    python $baseDir/release/pdb_families.py
     """
 }
 
 workflow pdb_mapping {
-
+    
     setup_files \
+    // channel.fromPath("pdb_local.txt") \
     | splitFasta( record: [id: true, desc:true, text: true] ) \
     | filter { record -> record.desc =~ /^mol:na.*/ } \
     | collectFile( name:"pdb_trimmed_noprot.fa") {

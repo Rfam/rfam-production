@@ -31,9 +31,6 @@ def create_pdb_temp_table(pdb_file):
     finally:
         cursor.close()
         conn.close()
-        # conn.commit() will automatically be called when Python leaves the outer `with` statement
-        # Neither crs.close() nor conn.close() will be called upon leaving the `with` statement!!
-        # TODO context mgr ?
 
 
 def rename_pdb_table():

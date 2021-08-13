@@ -1,7 +1,4 @@
-################################################
-# Python .gitignore
 # adapted from https://github.com/github/gitignore/blob/master/Python.gitignore
-################################################
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -93,10 +90,8 @@ ENV/
 # Rope project settings
 .ropeproject
 
-################################################
 # OSX .gitignore
 # adapted from https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
-################################################
 
 *.DS_Store
 .AppleDouble
@@ -125,8 +120,29 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-####################
 # project specific
-####################
-
 config/rfam_local.py
+
+# adapted from https://gist.github.com/2427167
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.rej
+*.swo
+*.swp
+*.vi
+*~
+*.sass-cache
+
+# Folders to ignore
+.hg
+.svn
+.CVS
+intermediate
+publish
+.idea
+
+# nextflow
+work/
+.nextflow*

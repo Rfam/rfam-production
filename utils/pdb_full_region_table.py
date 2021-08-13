@@ -18,13 +18,14 @@ def create_pdb_temp_table(pdb_file):
     conn = RfamDB.connect()
     cursor = conn.cursor()
     try:
-        cursor.execute('CREATE TABLE IF NOT EXISTS pdb_full_region_temp LIKE pdb_full_region')
+        cursor.execute("CREATE TABLE pdb_full_region_temp LIKE pdb_full_region")
         with open(pdb_file) as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 cursor.execute("""INSERT INTO pdb_full_region_temp(rfam_acc, pdb_id, chain, pdb_start,
-                pdb_end, bit_score, evalue_score, cm_start, cm_end, hex_colour, is_significant)
-                VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """, row)
+                                pdb_end, bit_score, evalue_score, cm_start, cm_end, hex_colour, is_significant)
+                                VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """, row)
+                conn.commit()
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
 

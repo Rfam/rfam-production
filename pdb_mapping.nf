@@ -128,7 +128,7 @@ process get_new_families {
     path(query)
 
     """
-    python $baseDir/release/pdb_families.py
+    python $baseDir/scripts/release/pdb_families.py
     """
 }
 

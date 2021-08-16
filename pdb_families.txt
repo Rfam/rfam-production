@@ -1,3 +1,0 @@
-Number of families with 3D before: [(122,)]
-Number of families with 3D after: [(127,)]
-New families with 3D structures: [(u'RF01856',), (u'RF01848',), (u'RF00012',), (u'RF03167',), (u'RF00075',)]

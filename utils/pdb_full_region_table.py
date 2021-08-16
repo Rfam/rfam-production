@@ -64,8 +64,7 @@ if __name__ == '__main__':
     args = parse_args()
     if args.file:
         create_pdb_temp_table(args.file)
-        #  don't call until sure of change - will overwrite pdb_full_region
-        # rename_pdb_table()
+        rename_pdb_table()
     else:
         print("Please provide a text file to import data to pdb_full_region_temp")
 

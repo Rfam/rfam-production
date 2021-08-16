@@ -124,13 +124,11 @@ process run_clan_competition {
 
 process get_new_families {
 
-    publishDir "$baseDir", mode: "copy"
-
     input:
     path(query)
 
     """
-    python $baseDir/scripts/release/pdb_families.py > pdb_families.txt
+    python $baseDir/scripts/release/pdb_families.py > $baseDir/pdb_families.txt
     """
 }
 

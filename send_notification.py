@@ -1,4 +1,6 @@
 import json
+import os
+
 import requests
 
 
@@ -8,7 +10,7 @@ def send_notification():
     """
     file_data = {}
 
-    webhook_url = "https://hooks.slack.com/services/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"
+    webhook_url = os.environ('SLACK_WEBHOOK')
 
     with open('pdb_families.txt', 'r') as f:
         for line in f:

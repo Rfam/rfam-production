@@ -146,8 +146,3 @@ publish
 # nextflow
 work/
 .nextflow*
-
-infernal*
-cmpress 
-cmscan
-releaseX

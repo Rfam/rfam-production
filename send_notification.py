@@ -16,7 +16,7 @@ def send_notification():
 
     with open('pdb_families.txt', 'r') as f:
         for line in f:
-            description, result = line.strip().split(None, 1)
+            description, result = line.strip().split(':', 1)
             file_data[description] = result.strip()
 
     data = json.dumps(file_data)

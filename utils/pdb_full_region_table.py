@@ -4,10 +4,7 @@ import logging
 
 import mysql.connector
 
-from config.rfam_config import RFAMLIVE
 from utils import RfamDB
-
-db_conf = RFAMLIVE
 
 
 def create_pdb_temp_table(pdb_file):
@@ -67,4 +64,3 @@ if __name__ == '__main__':
         rename_pdb_table()
     else:
         print("Please provide a text file to import data to pdb_full_region_temp")
-

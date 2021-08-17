@@ -1,9 +1,7 @@
 import logging
 import mysql.connector
-from config.rfam_config import RFAMLIVE
-from utils import RfamDB
 
-db_conf = RFAMLIVE
+from utils import RfamDB
 
 
 def list_new_families():

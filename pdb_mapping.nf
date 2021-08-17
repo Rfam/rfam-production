@@ -157,3 +157,22 @@ workflow pdb_mapping {
 workflow {
     pdb_mapping()
 }
+
+workflow.onComplete = {
+
+def process = ["python", "send_notification.py"].execute()
+process.waitFor()
+println process.err.text
+println process.text
+
+println "--------------------------"
+println "Pipeline execution summary"
+println "--------------------------"
+println "Started at  : ${workflow.start}"
+println "Completed at: ${workflow.complete}"
+println "Duration    : ${workflow.duration}"
+println "Success     : ${workflow.success}"
+println "workDir     : ${workflow.workDir}"
+println "exit status : ${workflow.exitStatus}"
+
+}

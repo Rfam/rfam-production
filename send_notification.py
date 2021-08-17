@@ -3,6 +3,8 @@ import os
 
 import requests
 
+from config.rfam_local import SLACK_WEBHOOK
+
 
 def send_notification():
     """
@@ -10,7 +12,7 @@ def send_notification():
     """
     file_data = {}
 
-    webhook_url = os.environ('SLACK_WEBHOOK')
+    webhook_url = SLACK_WEBHOOK
 
     with open('pdb_families.txt', 'r') as f:
         for line in f:

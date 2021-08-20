@@ -3,6 +3,7 @@
 import os
 import json
 import argparse
+import re
 
 from utils import db_utils as db
 from scripts.processing import clan_competition as cc
@@ -112,11 +113,11 @@ def extract_tax_ids_from_species_file(species_file):
         # if not a comment line
         if line[0] != '#' and not seen_ga:
             line = line.strip().split()
-            
+
             if line[3] not in tax_ids:
                 if line[5] != '-':
                     tax_ids[line[3]] = int(line[5])
-        
+
         elif line.find("CURRENT GA THRESHOLD:") != -1:
             seen_ga = True
 
@@ -173,6 +174,36 @@ def count_total_num_hits(outlist_hits):
 
 # ----------------------------------------------------------------
 
+def compare_ids(mirbase_id, rfam_id):
+    """
+    Compare ids like MIPF0000024__mir-103 and mir-103
+    """
+    parts = mirbase_id.split('__')
+    if parts[-1].lower() == rfam_id.lower():
+        return 'Yes'
+    else:
+        return 'No'
+
+# ----------------------------------------------------------------
+
+
+def parse_overlaps(overlaps_file):
+    """
+    External overlap [SS] of CM000298.1/96020656-96020744 with RF00998:CM000298.1/96020650-96020744 by fullOL
+    External overlap [SS] of CM000316.3/123249182-123249270 with RF00998:CM000316.3/123249176-123249270 by fullOL
+    """
+    overlap_accs = set()
+    with open(overlaps_file, 'r') as f:
+        for line in f:
+            if 'External overlap' not in line:
+                continue
+            match = re.search(r'with (RF\d{5})\:', line)
+            if match:
+                overlap_accs.add(match.group(1))
+    return overlap_accs
+# ----------------------------------------------------------------
+
+
 
 def parse_arguments():
     """
@@ -207,10 +238,26 @@ if __name__ == "__main__":
 
     family_overlap_counts = {}
 
+    row_id = 3 # first two rows are taken by the header
     # iterate over all miRBase ids
     for mirna_id in accessions.keys():
 
-        rfam_accs = accessions[mirna_id]["rfam_acc"]
+        # rfam_accs = accessions[mirna_id]["rfam_acc"]
+
+        # 1. Detect family dir location
+        family_dir = get_family_location(mirna_id)
+        if 'MIPF0000482__mir' in mirna_id:
+            continue
+
+        # calculate overlaps
+        overlaps = os.path.join(family_dir, 'overlap')
+        if not os.path.exists(overlaps):
+            parent_dir = os.path.dirname(family_dir)
+            cmd = 'cd {} && rqc-overlap.pl {} && cd -'.format(parent_dir, os.path.basename(family_dir))
+            os.system(cmd)
+        rfam_accs = parse_overlaps(overlaps)
+        # print(rfam_accs)
+        # import pdb; pdb.set_trace()
 
         # iterate over all rfam_accs overlapping with new miRBase candidates
         for rfam_acc in rfam_accs:
@@ -222,10 +269,6 @@ if __name__ == "__main__":
             # fetch family full region hits
             old_family_full_hits = db.fetch_family_full_regions(rfam_acc, sort=True)
             total_num_old_family_hits = count_total_num_hits(old_family_full_hits)
-
-            # now work on the miRNA family
-            # 1. Detect family dir location
-            family_dir = get_family_location(mirna_id)
 
             # 2. Find outlist path and parse it
             outlist_file_loc = os.path.join(family_dir, "outlist")
@@ -302,26 +345,29 @@ if __name__ == "__main__":
             # add unique old family regions from intersection
             num_old_family_unique_hits = num_old_family_unique_hits + old_unique_intersect
 
+            rfam_acc_metadata = db.fetch_family_metadata(rfam_acc)
+
             if args.add_header and not args.check_taxids:
                 print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
-                                  "Rfam Acc"]))
+                                  "Rfam Acc", "Rfam ID"]))
 
                 args.add_header = False
 
             if args.add_links:
                 mirbase_hyperlink = "=HYPERLINK(\"https://preview.rfam.org/mirbase/%s_relabelled.html\", \"%s\")"
                 mirbase_link = mirbase_hyperlink % (mirna_id, mirna_id)
-                mirna_id = mirbase_link
 
                 rfam_hyperlink = "=HYPERLINK(\"https://rfam.org/family/%s\", \"%s\")"
                 rfam_link = rfam_hyperlink % (rfam_acc, rfam_acc)
-                rfam_acc = rfam_link
+            else:
+                mirbase_link = mirna_id
+                rfam_link = rfam_acc
 
 	    # tax id variable declaration
 	    new_family_taxids = None
             old_family_taxids = None
-	    
+
 	    if args.check_taxids:
 		species_file = os.path.join(family_dir, "species")
                 #old_family_taxids = dict.fromkeys(db.fetch_family_tax_ids(rfam_acc), '')
@@ -335,7 +381,7 @@ if __name__ == "__main__":
 
 		if len(new_family_taxids) == 1:
 			new_family_taxids_str = new_family_taxids[0]
-		elif len(new_family_taxids) == 2: 
+		elif len(new_family_taxids) == 2:
 			new_family_taxids_str = ','.join(new_family_taxids)
 
 		if len(old_family_taxids) == 1:
@@ -346,16 +392,31 @@ if __name__ == "__main__":
 		if args.add_header:
 			print ("\t".join(["miRBase Id", "Total # new family hits", "# New family unique hits",
                                   "# Overlaps", "# Old family unique hits", "Total # old family hits",
-                                  "Rfam Acc", "New family taxids", "Old family taxids"]))
+                                  "Rfam Acc", "Rfam ID", "New family taxids", "Old family taxids", "Action"]))
 
-		print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
-                              str(overlap_count), str(num_old_family_unique_hits),
-                              str(total_num_old_family_hits), rfam_acc, new_family_taxids_str, old_family_taxids_str]))
+		print ("\t".join([
+            mirbase_link,
+            str(total_num_outlist_hits),
+            str(num_new_family_unique_hits),
+            str(overlap_count),
+            str(num_old_family_unique_hits),
+            str(total_num_old_family_hits),
+            rfam_link,
+            rfam_acc_metadata['rfam_id'],
+            '=D{0}*100/B{0}'.format(row_id),
+            '=D{0}*100/F{0}'.format(row_id),
+            compare_ids(mirna_id, rfam_acc_metadata['rfam_id']),
+            new_family_taxids_str,
+            old_family_taxids_str,
+            '=if(AND(J{0}>=$P$2,K3="Yes"), "Update", "Review")'.format(row_id),
+        ]))
+
+        row_id += 1
 
 		# continue with next iteration to prevent duplicated print statements
-		continue
+        continue
 
 
-            print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
-                              str(overlap_count), str(num_old_family_unique_hits),
-                              str(total_num_old_family_hits), rfam_acc]))
+            # print ("\t".join([mirna_id, str(total_num_outlist_hits), str(num_new_family_unique_hits),
+                              # str(overlap_count), str(num_old_family_unique_hits),
+                              # str(total_num_old_family_hits), rfam_acc, rfam_acc_metadata['rfam_id']]))

@@ -198,6 +198,17 @@ def parse_overlaps(overlaps_file):
     return overlap_accs
 # ----------------------------------------------------------------
 
+def get_desc_ga(filename):
+    """
+    Get the gathering threshold (GA) from the DESC file.
+    """
+    with open(filename, 'r') as f:
+        for line in f:
+            if not line.startswith('GA'):
+                continue
+            parts = re.split(r'\s+', line.strip())
+            return float(parts[-1])
+
 
 def main(args):
     # load accessions
@@ -213,6 +224,16 @@ def main(args):
         family_dir = get_family_location(mirna_id)
         if 'MIPF0000482__mir' in mirna_id:
             continue
+        # if 'MIPF0000260__mir' not in mirna_id:
+        #     continue
+
+        # check if the threshold has been set correctly
+        desc_ga = get_desc_ga(os.path.join(family_dir, 'DESC'))
+        curated_ga = float(accessions[mirna_id]['threshold'][0])
+        if desc_ga != curated_ga:
+            cmd = 'cd {} && rfmake.pl -t {} && cd -'.format(family_dir, curated_ga)
+            print(cmd)
+            os.system(cmd)
 
         # calculate overlaps
         overlaps = os.path.join(family_dir, 'overlap')

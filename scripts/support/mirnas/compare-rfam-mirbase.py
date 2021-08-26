@@ -16,6 +16,7 @@ bsub -M 16000 -n 4 -o lsf.out -e lsf.err 'cmscan -o cmscan.output.txt --tblout m
 import os
 import re
 import subprocess
+import sys
 
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -135,7 +136,12 @@ def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
 
 
 def main():
-    cmscan_data = parse_cmscan_tblout('mirbase-cmscan-rfam-14-6.tblout')
+    if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
+        filename = os.path.join(os.path.dirname(__file__), 'mirbase-cmscan-rfam-14-6.tblout')
+        print('Analysing file {}'.format(filename))
+    else:
+        filename = sys.argv[1]
+    cmscan_data = parse_cmscan_tblout(filename)
     rfam_cmscan_accs = cmscan_data.keys()
     rfam_microrna_accs = db.fetch_mirna_families()
     rfam_accs = db.fetch_rfam_accs_sorted()

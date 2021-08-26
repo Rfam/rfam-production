@@ -224,7 +224,7 @@ def main(args):
         family_dir = get_family_location(mirna_id)
         if 'MIPF0000482__mir' in mirna_id:
             continue
-        # if 'MIPF0000260__mir' not in mirna_id:
+        # if 'MIPF0000858__mir' not in mirna_id:
         #     continue
 
         # check if the threshold has been set correctly
@@ -295,22 +295,26 @@ def main(args):
             # count unique counts in intersection
             new_unique_intersect = 0
             old_unique_intersect = 0
+            old_family_overlapped = set()
             for accession in common_accs:
                 for region in outlist_hits[accession]:
                     found_overlap = False
                     for f_region in old_family_full_hits[accession]:
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
-                        # this ensures each region in the new family is only checked once
-                        # if no overlap found, it iterates over all superfamily hits
                         if overlap > 0:
                             overlap_count += 1
                             found_overlap = True
-                        # if no overlap detected count old family reqion as unique
-                        else:
-                            old_unique_intersect += 1
+                            old_family_overlapped.add('{}_{}_{}'.format(accession, f_region[0], f_region[1]))
                     # if no overlap count new family region as unique
                     if not found_overlap:
                         new_unique_intersect += 1
+
+            # check if there are any old hits that did not overlap anything
+            for accession in common_accs:
+                for f_region in old_family_full_hits[accession]:
+                    key = '{}_{}_{}'.format(accession, f_region[0], f_region[1])
+                    if key not in old_family_overlapped:
+                        old_unique_intersect += 1
 
             # Now add the overlap counts
             # add unique new family regions from intersection
@@ -370,7 +374,6 @@ def main(args):
                 old_family_taxids_str,
                 'if(AND(J{0}>=85,K{0}="Yes"), "Update", "Review")'.format(row_id),
             ]))
-
             row_id += 1
 
 

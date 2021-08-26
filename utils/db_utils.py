@@ -1485,3 +1485,29 @@ def fetch_family_metadata(rfam_acc):
     return metadata
 
 # ----------------------------------------------------------------------------
+
+
+def fetch_mirna_families():
+    """
+    Fetches a list of all microRNA families from family table
+
+    :return: A dictionary with metadata describing Rfam microRNA families
+    """
+
+    query = """select rfam_acc, rfam_id, description, gathering_cutoff
+        from family
+        where type like '%mirna%'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return data
+
+# ----------------------------------------------------------------------------

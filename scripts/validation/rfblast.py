@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
 """
-Replace unknown accessions in SEED alignment using NCBI BLAST results.
-
 Usage:
 cd /path/to/folder/with/SEED
 rfblast.py XXXXX
 
 where XXXXX.json is the NCBI BLAST result.
 """
-
 
 import json
 import os
@@ -70,16 +67,16 @@ def choose_replacement(data, min_identity, min_query_coverage):
             query_coverage = float(align_len - gaps) / query_len * 100
             target_coverage = float(align_len - gaps) / len(sequence) * 100
             if identity >= min_identity and query_coverage >= min_query_coverage:
-                warning = ''
+                warning = False
             else:
-                warning = '      WARNING: '
-            summary = ('#{query_num} {warning}Replace {query_title} '
+                warning = True
+            summary = ('#{query_num} {message} {query_title} '
                        'with {acc}/{start}-{end} at {identity}% identity; '
                        '{gaps} gaps; query coverage {query_coverage}').format(
                 acc=acc, start=start, end=end, query_title=query_title,
                 identity=round(identity), query_coverage=round(query_coverage),
                 target_coverage=round(target_coverage, 2), gaps=gaps,
-                warning=warning,
+                message='Replace' if not warning else '      WARNING: No replacement found for',
                 query_num=query_num+1
             )
             print(summary)
@@ -100,25 +97,52 @@ def generate_new_seed(fasta, destination):
     replacement_fasta = os.path.join(destination, filename)
     with open(replacement_fasta, 'w') as f:
         f.write(fasta)
-    cmd = ('cd {destination} && '
-           'cmalign --noprob CM {filename} > tempseed && '
+    cwd = os.getcwd()
+    os.chdir(destination)
+    cmd = ('cmalign --noprob CM {filename} > tempseed && '
            'esl-reformat pfam tempseed > NEWSEED && '
            'echo "Old SEED info:" && esl-alistat SEED && '
            'echo "New SEED info:" && esl-alistat NEWSEED && '
-           'rm tempseed && cd -').format(destination=destination, filename=filename)
+           'rm tempseed').format(filename=filename)
     os.system(cmd)
+    os.chdir(cwd)
 
 
-@click.command()
-@click.option('--identity', default=IDENTITY, help='Minimum % identity between query and target')
-@click.option('--query_coverage', default=QUERY_COVERAGE, help='Minimum coverage of the seed sequence')
-def rfblast(identity, query_coverage):
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def prepare():
+    """
+    Convert SEED to a fasta file containing sequences with unknown IDs.
+    """
+    destination = 'temp/carA'
+    seed=os.path.join(destination, 'SEED')
+    fasta=os.path.join(destination, 'blast.fasta')
+    cmd = 'esl-reformat fasta {} > {}'.format(seed, fasta)
+    os.system(cmd)
+    click.echo('Generated file {}'.format(fasta))
+    cmd = 'esl-seqstat {}'.format(fasta)
+    os.system(cmd)
+    click.echo('Done')
+
+
+@cli.command()
+@click.option('--identity', default=IDENTITY, type=click.FLOAT, help='Minimum % identity between query and target')
+@click.option('--query_coverage', default=QUERY_COVERAGE, type=click.FLOAT, help='Minimum coverage of the seed sequence')
+def replace(identity, query_coverage):
+    """
+    Replace unknown accessions in SEED alignment using NCBI BLAST results
+    """
     filename = 'carA-HHBXHPJ5013-Alignment.json'
     destination = 'temp/carA'
     blast_data = get_blast_data(filename)
     fasta = choose_replacement(blast_data, identity, query_coverage)
     generate_new_seed(fasta, destination)
+    click.echo('Done')
 
 
 if __name__ == '__main__':
-    rfblast()
+    cli()

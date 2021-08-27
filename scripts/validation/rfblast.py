@@ -1,9 +1,24 @@
 #!/usr/bin/env python
 
+"""
+Replace unknown accessions in SEED alignment using NCBI BLAST results.
+
+Usage:
+cd /path/to/folder/with/SEED
+rfblast.py XXXXX
+
+where XXXXX.json is the NCBI BLAST result.
+"""
+
+
 import json
+import os
+
+
+IDENTITY = 90
+QUERY_COVERAGE = 70
 
 #TODO do not replace valid accessions
-#TODO generate new SEED alignment
 #TODO create tests using the H742DVSC01R-Alignment.json file
 
 def get_accession(gid):
@@ -18,7 +33,7 @@ def get_accession(gid):
     return parts[-2]
 
 
-def get_data(filename):
+def get_blast_data(filename):
     """
     Load BLAST JSON output.
     """
@@ -31,6 +46,7 @@ def choose_replacement(data):
     Loop over BLAST results and pick best replacement for each hit.
     """
     # do not pick replacement from the same accession if already seen
+    fasta = ''
     seen_accessions = set()
     for query_num, search in enumerate(data['BlastOutput2']):
         query_title = search['report']['results']['search']['query_title']
@@ -52,24 +68,52 @@ def choose_replacement(data):
             identity = float(exact_matches) / align_len * 100
             query_coverage = float(align_len - gaps) / query_len * 100
             target_coverage = float(align_len - gaps) / len(sequence) * 100
-            fasta = '>{acc}/{start}-{end}\n{sequence}'.format(acc=acc, start=start, end=end, sequence=sequence.replace('-', '').replace('T', 'U'))
+            if identity >= IDENTITY and query_coverage >= QUERY_COVERAGE:
+                warning = ''
+            else:
+                warning = '      WARNING: '
             summary = ('#{query_num} {warning}Replace {query_title} '
                        'with {acc}/{start}-{end} at {identity}% identity; '
                        '{gaps} gaps; query coverage {query_coverage}').format(
                 acc=acc, start=start, end=end, query_title=query_title,
                 identity=round(identity), query_coverage=round(query_coverage),
                 target_coverage=round(target_coverage, 2), gaps=gaps,
-                warning='' if (identity >= 90 and query_coverage >=70) else '      WARNING: ',
+                warning=warning,
                 query_num=query_num+1
             )
-            print summary
+            print(summary)
+            if not warning:
+                fasta += '>{acc}/{start}-{end}\n{sequence}\n'.format(
+                    acc=acc,
+                    start=start,
+                    end=end,
+                    sequence=sequence.replace('-', '').replace('T', 'U')
+                )
             if replacement_found:
                 break
+    return fasta
+
+
+def generate_new_seed(fasta, destination):
+    filename = 'replacement.fasta'
+    replacement_fasta = os.path.join(destination, filename)
+    with open(replacement_fasta, 'w') as f:
+        f.write(fasta)
+    cmd = ('cd {destination} && '
+           'cmalign --noprob CM {filename} > tempseed && '
+           'esl-reformat pfam tempseed > NEWSEED && '
+           'echo "Old SEED info:" && esl-alistat SEED && '
+           'echo "New SEED info:" && esl-alistat NEWSEED && '
+           'rm tempseed && cd -').format(destination=destination, filename=filename)
+    os.system(cmd)
+
 
 def main():
-    filename = 'H742DVSC01R-Alignment.json'
-    data = get_data(filename)
-    choose_replacement(data)
+    filename = 'carA-HHBXHPJ5013-Alignment.json'
+    destination = 'temp/carA'
+    blast_data = get_blast_data(filename)
+    fasta = choose_replacement(blast_data)
+    generate_new_seed(fasta, destination)
 
 
 if __name__ == '__main__':

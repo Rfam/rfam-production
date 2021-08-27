@@ -2,10 +2,20 @@
 
 """
 Usage:
-cd /path/to/folder/with/SEED
-rfblast.py XXXXX
 
-where XXXXX.json is the NCBI BLAST result.
+# navigate to the folder with the SEED and CM files
+cd /path/to/folder/with/SEED
+
+# identify invalid accessions that need to be replaced
+rfblast.py validate
+
+# manually upload the file `invalid.fa` to NCBI BLAST
+# download results in the `Single-file JSON` format
+
+# replace invalid accessions in the SEED file
+rfblast.py replace XXXXXXXXXXX-Alignment.json
+
+# where XXXXXXXXXXX-Alignment.json is the NCBI BLAST result.
 """
 
 import json
@@ -18,8 +28,6 @@ import requests
 IDENTITY = 90
 QUERY_COVERAGE = 70
 
-#TODO do not replace valid accessions
-#TODO create tests using the H742DVSC01R-Alignment.json file
 
 def get_accession(gid):
     """
@@ -187,6 +195,9 @@ def parse_fasta(filename):
         click.echo('No valid accessions found')
     if invalid:
         fetch_seqs(filename, invalid, 'invalid')
+        click.echo('=========================\nGenerated file invalid.fa')
+        os.system('esl-seqstat {}'.format('invalid.fa'))
+        click.echo('Upload file invalid.fa to NCBI BLAST')
     else:
         click.echo('No invalid accessions found')
 
@@ -197,20 +208,16 @@ def cli():
 
 
 @cli.command()
-def prepare():
+def validate():
     """
     Convert SEED to a fasta file containing sequences with unknown IDs.
     """
     if not os.path.exists('SEED'):
         raise Exception('Error: SEED does not exist')
-    fasta = 'blast.fasta'
+    fasta = 'seed.fasta'
     cmd = 'esl-reformat fasta SEED > {}'.format(fasta)
     os.system(cmd)
     parse_fasta(fasta)
-    click.echo('Generated file {}'.format(fasta))
-    cmd = 'esl-seqstat {}'.format(fasta)
-    os.system(cmd)
-    click.echo('Done')
 
 
 @cli.command()

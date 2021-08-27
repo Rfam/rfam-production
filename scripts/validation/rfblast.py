@@ -14,6 +14,7 @@ where XXXXX.json is the NCBI BLAST result.
 import json
 import os
 
+import click
 
 IDENTITY = 90
 QUERY_COVERAGE = 70
@@ -41,7 +42,7 @@ def get_blast_data(filename):
         return json.load(f)
 
 
-def choose_replacement(data):
+def choose_replacement(data, min_identity, min_query_coverage):
     """
     Loop over BLAST results and pick best replacement for each hit.
     """
@@ -68,7 +69,7 @@ def choose_replacement(data):
             identity = float(exact_matches) / align_len * 100
             query_coverage = float(align_len - gaps) / query_len * 100
             target_coverage = float(align_len - gaps) / len(sequence) * 100
-            if identity >= IDENTITY and query_coverage >= QUERY_COVERAGE:
+            if identity >= min_identity and query_coverage >= min_query_coverage:
                 warning = ''
             else:
                 warning = '      WARNING: '
@@ -108,13 +109,16 @@ def generate_new_seed(fasta, destination):
     os.system(cmd)
 
 
-def main():
+@click.command()
+@click.option('--identity', default=IDENTITY, help='Minimum % identity between query and target')
+@click.option('--query_coverage', default=QUERY_COVERAGE, help='Minimum coverage of the seed sequence')
+def rfblast(identity, query_coverage):
     filename = 'carA-HHBXHPJ5013-Alignment.json'
     destination = 'temp/carA'
     blast_data = get_blast_data(filename)
-    fasta = choose_replacement(blast_data)
+    fasta = choose_replacement(blast_data, identity, query_coverage)
     generate_new_seed(fasta, destination)
 
 
 if __name__ == '__main__':
-    main()
+    rfblast()

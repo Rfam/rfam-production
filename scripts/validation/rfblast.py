@@ -100,12 +100,30 @@ def generate_new_seed(fasta):
         f.write(fasta)
     if not os.path.exists('CM') or not os.path.exists('SEED'):
         raise Exception('Error: CM or SEED files not found')
-    cmd = ('cmalign --noprob CM {} > tempseed && '
-           'esl-reformat pfam tempseed > NEWSEED && '
-           'echo "Old SEED info:" && esl-alistat SEED && '
-           'echo "New SEED info:" && esl-alistat NEWSEED && '
+    cmd = ('cmalign --mapali SEED --noprob CM {} > tempseed && '
+           'esl-reformat pfam tempseed > NEWSEEDtemp && '
            'rm tempseed').format(filename)
     os.system(cmd)
+    invalid = set()
+    with open('invalid.txt', 'r') as f:
+        for line in f:
+            invalid.add(line.strip())
+    newseed = open('NEWSEED', 'w')
+    with open('NEWSEEDtemp', 'r') as f:
+        for line in f:
+            skip = False
+            for invalid_accession in invalid:
+                if invalid_accession in line:
+                    skip = True
+                    break
+            if not skip:
+                newseed.write(line)
+    newseed.close()
+    os.remove('NEWSEEDtemp')
+    cmd = ('echo "Old SEED info:" && esl-alistat SEED && '
+           'echo "New SEED info:" && esl-alistat NEWSEED')
+    os.system(cmd)
+
 
 
 def is_valid_accession(accession):
@@ -131,6 +149,8 @@ def is_valid_accession(accession):
 
 
 def fetch_seqs(filename, accessions, label):
+    """
+    """
     f_txt = '{}.txt'.format(label)
     f_fa = '{}.fa'.format(label)
     with open(f_txt, 'w') as f:
@@ -139,10 +159,11 @@ def fetch_seqs(filename, accessions, label):
     cmd = 'esl-sfetch -f {} {} > {}'.format(filename, f_txt, f_fa)
     os.system(cmd)
     click.echo('Saved {} {} accessions in {}'.format(len(accessions), label, f_fa))
-    os.remove(f_txt)
 
 
 def parse_fasta(filename):
+    """
+    """
     accessions = set()
     with open(filename, 'r') as f:
         for line in f:

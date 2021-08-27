@@ -10,8 +10,10 @@ where XXXXX.json is the NCBI BLAST result.
 
 import json
 import os
+import re
 
 import click
+import requests
 
 IDENTITY = 90
 QUERY_COVERAGE = 70
@@ -106,6 +108,68 @@ def generate_new_seed(fasta):
     os.system(cmd)
 
 
+def is_valid_accession(accession):
+    """
+    TB03JUN2009E__Contig_2000/988-772
+    NZ_CP007501.1/771730-771924
+
+    Found:
+    {"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"1","retmax":"1","retstart":"0","idlist":["1119664412"],"translationset":[],"querytranslation":""}}
+    Found but a different ID:
+    {"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"1","retmax":"1","retstart":"0","idlist":["EP994606.1"],"translationset":[],"translationstack":[{"term":"JCVI_SCAF_1096627298421[All Fields]","field":"All Fields","count":"1","explode":"N"},"GROUP"],"querytranslation":"JCVI_SCAF_1096627298421[All Fields]"}}
+    Not found:
+    {"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"0","retmax":"0","retstart":"0","idlist":[],"translationset":[],"querytranslation":"(TB03JUN2009E__Contig_2000[All Fields])","errorlist":{"phrasesnotfound":["TB03JUN2009E__Contig_2000"],"fieldsnotfound":[]},"warninglist":{"phrasesignored":[],"quotedphrasesnotfound":[],"outputmessages":["No items found."]}}}
+    """
+    parts = accession.split('/')
+    url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=nucleotide&term={}&retmode=json&idtype=acc'
+    r = requests.get(url.format(parts[0]))
+    data = r.json()
+    if int(data['esearchresult']['count']) == 1 and len(data['esearchresult']['idlist']) > 0 and data['esearchresult']['idlist'][0] == parts[0]:
+        return True
+    else:
+        return False
+
+
+def fetch_seqs(filename, accessions, label):
+    f_txt = '{}.txt'.format(label)
+    f_fa = '{}.fa'.format(label)
+    with open(f_txt, 'w') as f:
+        for accession in accessions:
+            f.write(accession + '\n')
+    cmd = 'esl-sfetch -f {} {} > {}'.format(filename, f_txt, f_fa)
+    os.system(cmd)
+    click.echo('Saved {} {} accessions in {}'.format(len(accessions), label, f_fa))
+    os.remove(f_txt)
+
+
+def parse_fasta(filename):
+    accessions = set()
+    with open(filename, 'r') as f:
+        for line in f:
+            if line.startswith('>'):
+                parts = re.split(r'\s+', line)
+                accession = parts[0].replace('>', '')
+                accessions.add(accession)
+    valid = set()
+    invalid = set()
+    for accession in accessions:
+        if is_valid_accession(accession):
+            click.echo('{} is valid'.format(accession))
+            valid.add(accession)
+        else:
+            click.echo('{} is invalid'.format(accession))
+            invalid.add(accession)
+    os.system('esl-sfetch --index {}'.format(filename))
+    if valid:
+        fetch_seqs(filename, valid, 'valid')
+    else:
+        click.echo('No valid accessions found')
+    if invalid:
+        fetch_seqs(filename, invalid, 'invalid')
+    else:
+        click.echo('No invalid accessions found')
+
+
 @click.group()
 def cli():
     pass
@@ -121,6 +185,7 @@ def prepare():
     fasta = 'blast.fasta'
     cmd = 'esl-reformat fasta SEED > {}'.format(fasta)
     os.system(cmd)
+    parse_fasta(fasta)
     click.echo('Generated file {}'.format(fasta))
     cmd = 'esl-seqstat {}'.format(fasta)
     os.system(cmd)

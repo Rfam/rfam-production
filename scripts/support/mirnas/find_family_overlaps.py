@@ -300,6 +300,8 @@ def main(args):
                 for region in outlist_hits[accession]:
                     found_overlap = False
                     for f_region in old_family_full_hits[accession]:
+                        if cc.get_strand(region[0], region[1]) != cc.get_strand(f_region[0], f_region[1]):
+                            continue
                         overlap = cc.calc_seq_overlap(region[0], region[1], f_region[0], f_region[1])
                         if overlap > 0:
                             overlap_count += 1

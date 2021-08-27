@@ -1,5 +1,4 @@
 import json
-import os
 
 import requests
 
@@ -21,9 +20,9 @@ def send_notification():
 
     data = json.dumps(file_data)
 
-    response = requests.post(webhook_url, json={"text": data}, headers={'Content-Type': 'application/json'})
+    response = requests.post(webhook_url, json={'text': data}, headers={'Content-Type': 'application/json'})
     if response.status_code != 200:
-        raise ValueError('Error with request {}, the response is:\n{}'.format(response.status_code, response.text))
+        raise ValueError("Error with request {0}, the response is:\n{1}".format(response.status_code, response.text))
 
 
 if __name__ == '__main__':

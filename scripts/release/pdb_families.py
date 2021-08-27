@@ -20,13 +20,13 @@ def list_new_families():
                           "AND rfam_acc NOT IN "
                           "(SELECT DISTINCT rfam_acc FROM pdb_full_region_old WHERE is_significant = 1);")
     try:
-        cursor.execute('select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;')
-        print('Number of families with 3D before: {0}'.format(cursor.fetchone()[0]))
-        cursor.execute('select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1; ')
-        print('Number of families with 3D after: {0}'.format(cursor.fetchone()[0]))
+        cursor.execute("select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;")
+        print("Number of families with 3D before: {0}".format(cursor.fetchone()[0]))
+        cursor.execute("select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1; ")
+        print("Number of families with 3D after: {0}".format(cursor.fetchone()[0]))
         cursor.execute(new_families_query)
         new_families_with_3D = cursor.fetchall()
-        print('New families with 3D structures: {0}'.format(new_families_with_3D))
+        print("New families with 3D structures: {0}".format(new_families_with_3D))
         for entry in new_families_with_3D:
             print("RFAM accession number: {0}".format(entry[0]))
             print(rfam_search_url.format(entry[0]))

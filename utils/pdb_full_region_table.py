@@ -38,9 +38,9 @@ def rename_pdb_table():
     conn = RfamDB.connect()
     cursor = conn.cursor()
     try:
+        cursor.execute("DROP TABLE pdb_full_region_old;")
         cursor.execute('RENAME TABLE pdb_full_region TO pdb_full_region_old, '
                        'pdb_full_region_temp TO pdb_full_region;')
-        print('complete')
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
     finally:

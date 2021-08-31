@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Copyright [2009-2017] EMBL-European Bioinformatics Institute
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +16,7 @@ import os
 import sys
 import argparse
 from utils import db_utils as rfamdb
+
 
 # loop over all files and sort using unix sort command to group duplicate seq_acc
 # together
@@ -40,6 +42,7 @@ def parse_clan_file(clan_list):
     fp.close()
 
     return clan_accessions
+
 
 # -----------------------------------------------------------------------------
 
@@ -89,7 +92,7 @@ def clan_file_generator(output_dir, clan_comp_type='FULL', clan_acc=None):
 
         # open a new clan file to dump the sequences
         if len(regions) > 0:
-            print "clan: ", clan
+            print("clan: ", clan)
             clan_fp = open(os.path.join(output_dir, clan) + ".txt", 'w')
 
         # if no available regions, move to next clan
@@ -119,6 +122,7 @@ def clan_file_generator(output_dir, clan_comp_type='FULL', clan_acc=None):
 
         flag = 1
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -145,6 +149,7 @@ def parse_arguments():
 
     return parser
 
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -160,11 +165,7 @@ if __name__ == '__main__':
         clan_file_generator(args.dest_dir, args.cc_type, args.clan_acc)
 
     elif args.all:
-            clan_file_generator(args.dest_dir, args.cc_type, None)
+        clan_file_generator(args.dest_dir, args.cc_type, None)
 
     else:
         clan_file_generator(args.dest_dir, args.cc_type, args.f)
-
-
-
-

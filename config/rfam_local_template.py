@@ -22,6 +22,8 @@ LSF_GEN_GROUP = '/rfam_gen'
 
 USER_EMAIL = ''
 
+SLACK_WEBHOOK = ''
+
 
 # ------------------------------DATABASES--------------------------------------
 # Databases

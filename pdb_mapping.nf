@@ -14,7 +14,7 @@ process setup_files {
     wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
     gunzip Rfam.cm.gz
     mv Rfam.cm $baseDir
-    $baseDir/cmpress $baseDir/Rfam.cm
+    cmpress $baseDir/Rfam.cm
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
@@ -46,7 +46,7 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    $baseDir/cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
+    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
     """
 
 }
@@ -166,7 +166,7 @@ println process.err.text
 println process.text
 
 println "--------------------------"
-println "Pipeline execution summary"
+println "PDB Mapping Pipeline Summary"
 println "--------------------------"
 println "Started at  : ${workflow.start}"
 println "Completed at: ${workflow.complete}"

@@ -7,13 +7,15 @@ import mysql.connector
 from utils import RfamDB
 from config.rfam_config import RFAMREL
 
+DB_CONFIG = None
+
 
 def create_pdb_temp_table(pdb_file):
     """
     Create the pdb_full_region_temp table and populate with data from the pdb text file.
     :param pdb_file: Text file with data to import to pdb_full_region_temp
     """
-    conn = RfamDB.connect(DB_CONFIG)
+    conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
         cursor.execute("CREATE TABLE pdb_full_region_temp LIKE pdb_full_region")
@@ -36,7 +38,7 @@ def rename_pdb_table():
     """
     Rename pdb_full_region to pdb_full_region_old and rename pdb_full_region_temp to pdb_full_region.
     """
-    conn = RfamDB.connect(DB_CONFIG)
+    conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
         cursor.execute("DROP TABLE pdb_full_region_old;")
@@ -55,7 +57,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Create PDB full region table and import new data')
     parser.add_argument('-f', '--file', help='Text file with data to import to pdb_full_region_temp', required=True)
-    parser.add_argument('-db', '--database', help='Specify which database config values to use ', required=True)
+    parser.add_argument('-db', '--database', help='Specify which database config values to use ', required=False)
     return parser.parse_args()
 
 
@@ -64,8 +66,6 @@ if __name__ == '__main__':
     if args.file:
         if args.database == 'rfam-rel':
             DB_CONFIG = RFAMREL
-        else:
-            DB_CONFIG = None
         create_pdb_temp_table(args.file)
         rename_pdb_table()
     else:

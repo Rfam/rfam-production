@@ -43,7 +43,7 @@ db_conf = RFAMLIVE
 # -----------------------------------------------------------------------------
 
 
-def connect(db_config=None):
+def connect(db_config=db_conf):
     """
     Connects to a specific database and returns a mysql connection object.
     :param db_config: database config values
@@ -53,11 +53,11 @@ def connect(db_config=None):
 
     cnx = None
     try:
-        cnx = mysql.connector.connect(user=db_conf["user"],
-                                      password=db_conf["pwd"],
-                                      host=db_conf["host"],
-                                      database=db_conf["db"],
-                                      port=db_conf["port"])
+        cnx = mysql.connector.connect(user=db_config["user"],
+                                      password=db_config["pwd"],
+                                      host=db_config["host"],
+                                      database=db_config["db"],
+                                      port=db_config["port"])
 
     except mysql.connector.Error as err:
 

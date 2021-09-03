@@ -43,9 +43,12 @@ db_conf = RFAMLIVE
 # -----------------------------------------------------------------------------
 
 
-def connect():
+def connect(db_config=None):
     """
-    Connects to a specific database and returns a mysql connection object
+    Connects to a specific database and returns a mysql connection object.
+    :param db_config: database config values
+    :type db_config: dict
+    :return: db connection
     """
 
     cnx = None

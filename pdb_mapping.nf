@@ -1,7 +1,6 @@
 nextflow.enable.dsl=2
 
 process setup_files {
-
     publishDir "$baseDir", mode: "copy"
 
     output:
@@ -18,11 +17,9 @@ process setup_files {
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
-
 }
 
-process remove_illegal_characters {
-    
+process remove_illegal_characters {  
     input:
     path(query)
 
@@ -32,11 +29,9 @@ process remove_illegal_characters {
     """ 
     sed -e '/^[^>]/s/[^ATGCURYMKSWHBVDatgcurymkswhbvd]/N/g' $query > pdb_trimmed_noillegals.fa
     """
-
 }
 
 process run_cmscan {
-
     memory '10GB'
 
     input:
@@ -48,7 +43,6 @@ process run_cmscan {
     """
     cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
     """
-
 }
 
 process combine_cmscan_results {
@@ -77,7 +71,6 @@ process create_text_file_for_db {
     """
     python $baseDir/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
     """
-
 }
 
 process import_db_and_generate_clan_files {
@@ -123,7 +116,6 @@ process run_clan_competition {
 }
 
 process get_new_families {
-
     input:
     path(query)
 
@@ -132,8 +124,41 @@ process get_new_families {
     """
 }
 
+process update_ftp {
+    input:
+    path(query)
+
+    output:
+    path('pdb_full_region.txt.gz')
+
+    """
+    cp $query /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
+    gzip /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
+    """
+}
+
+
+process update_search_index {
+    input:
+    val('ready')
+
+    output:
+    val('done')
+
+    """
+    source django_settings.sh
+    mkdir -p relX_text_search/families
+    python scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
+    python scripts/validation/xml_validator.py --input relX_text_search/families --log
+    cd_main && cd search_dumps
+    unlink rfam_dev
+    ln -s /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/rfam_dev  
+    """
+}
+
 workflow pdb_mapping {
-    
+    emit: pdb_txt
+    main:
     setup_files \
     | splitFasta( record: [id: true, desc:true, text: true] ) \
     | filter { record -> record.desc =~ /^mol:na.*/ } \
@@ -145,17 +170,26 @@ workflow pdb_mapping {
     | run_cmscan \
     | collect \
     | combine_cmscan_results \
-    | create_text_file_for_db \
+    | create_text_file_for_db | set { pdb_txt }
+    pdb_txt
     | import_db_and_generate_clan_files \
     | sort_clan_files \
     | collect \
     | run_clan_competition \
     | get_new_families
+}
 
+workflow update_ftp {
+    take: pdb_txt
+    main:
+    pdb_txt \
+    | update_ftp
 }
 
 workflow {
     pdb_mapping()
+    update_ftp(pdb_mapping.out)
+    update_search_index()
 }
 
 workflow.onComplete = {

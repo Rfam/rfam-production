@@ -3,7 +3,7 @@ import mysql.connector
 
 from utils import RfamDB
 
-rfam_search_url = "<https://rfam.xfam.org/family/{0}|{0}>"
+rfam_search_url = "<https://rfam.org/family/{0}|{0}>"
 pdb_search_url = "<https://www.rcsb.org/structure/{0}|{0}>"
 
 
@@ -29,7 +29,7 @@ def list_new_families():
         for entry in new_families:
             rf_num = entry[0]
             pd_id = entry[1]
-            print("RFAM accession number: {0}   PDB ID: {1}".
+            print("Rfam accession number: {0}   PDB ID: {1}".
                   format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))

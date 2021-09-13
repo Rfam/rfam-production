@@ -81,7 +81,7 @@ process import_db_and_generate_clan_files {
     path('CL*.txt')
 
     """
-    python $baseDir/utils/pdb_full_region_table.py --file $query
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query
     mkdir -p $baseDir/releaseX/clan_competition/sorted  
     python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
@@ -120,7 +120,7 @@ process get_new_families {
     path(query)
 
     """
-    python $baseDir/scripts/release/pdb_families.py > $baseDir/pdb_families.txt
+    python $baseDir/pdb_mapping/pdb_families.py > $baseDir/pdb_families.txt
     """
 }
 
@@ -162,15 +162,11 @@ process index_data_on_rfam_dev {
     output:
     val('done')
 
-    when:
-    query.
-
-
     """
     cd_main && cd search_dumps
-
-    unlink rfam_dev
-    ln -s /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/rfam_dev  
+    rm -rf rfam_dev/families 
+    mkdir rfam_dev/families
+    cp -a /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev/families
     """
 
 }
@@ -206,9 +202,7 @@ workflow update_ftp {
 }
 
 workflow update_search_index {
-
     create_validate_xml_families
-
 }
 
 workflow {

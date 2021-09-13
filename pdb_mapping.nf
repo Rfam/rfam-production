@@ -141,6 +141,9 @@ process update_ftp {
 process create_validate_xml_families {
     errorStrategy 'finish'
 
+    input:
+    path(query)
+
     output:
     path('relX_text_search/families/error.log')
 
@@ -200,7 +203,7 @@ workflow pdb_mapping {
     | get_new_families
 }
 
-workflow update_ftp {
+workflow ftp {
     take: pdb_txt
     main:
     pdb_txt \
@@ -208,7 +211,8 @@ workflow update_ftp {
 }
 
 workflow update_search_index {
-    create_validate_xml_families \
+    channel.fromPath('pdb_families.txt') \
+    | create_validate_xml_families \
     | index_data_on_rfam_dev
 }
 
@@ -218,7 +222,7 @@ workflow update_website_db {
 
 workflow {
     pdb_mapping()
-    update_ftp(pdb_mapping.out)
+    ftp(pdb_mapping.out)
     update_search_index()
     update_website_db()
 }

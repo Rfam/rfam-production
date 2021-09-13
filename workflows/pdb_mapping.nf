@@ -138,22 +138,41 @@ process update_ftp {
 }
 
 
-process update_search_index {
+process create_validate_xml_families {
     input:
     val('ready')
 
     output:
-    val('done')
+    path('relX_text_search/families/error.log')
 
     """
     source django_settings.sh
+    rm -rf relX_text_search/families
     mkdir -p relX_text_search/families
     python scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
     python scripts/validation/xml_validator.py --input relX_text_search/families --log
+    """
+}
+
+process index_data_on_rfam_dev {
+
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    when:
+    query.
+
+
+    """
     cd_main && cd search_dumps
+
     unlink rfam_dev
     ln -s /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/rfam_dev  
     """
+
 }
 
 workflow pdb_mapping {
@@ -184,6 +203,12 @@ workflow update_ftp {
     main:
     pdb_txt \
     | update_ftp
+}
+
+workflow update_search_index {
+
+    create_validate_xml_families
+
 }
 
 workflow {

@@ -4,6 +4,7 @@ import logging
 
 import mysql.connector
 
+from pdb_mapping.exceptions import CheckRowsError
 from utils import RfamDB
 from config.rfam_config import RFAMREL
 
@@ -26,6 +27,35 @@ def create_pdb_temp_table(pdb_file):
                                 pdb_end, bit_score, evalue_score, cm_start, cm_end, hex_colour, is_significant)
                                 VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """, row)
                 conn.commit()
+    except mysql.connector.Error as e:
+        logging.debug("MySQL error has occurred: {0}".format(e))
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def qc_checks():
+    """
+    Execute quality control checks before we update the table
+    :return:
+    """
+    conn = RfamDB.connect(db_config=DB_CONFIG)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("COUNT(*) FROM TABLE pdb_full_region_temp")
+        num_rows_pdb_temp = cursor.fetchone()[0]
+        cursor.execute("COUNT(*) FROM TABLE pdb_full_region")
+        num_rows_pdb = cursor.fetchone()[0]
+        try:
+            if num_rows_pdb_temp - num_rows_pdb > 100:
+                raise CheckRowsError(num_rows_pdb, num_rows_pdb_temp)
+        except CheckRowsError:
+            logging.exception("Do not rename tables until error is resolved.")
+            raise
+        except Exception as e:
+            logging.exception(e)
+
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
 

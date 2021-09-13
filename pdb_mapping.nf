@@ -139,8 +139,8 @@ process update_ftp {
 
 
 process create_validate_xml_families {
-    input:
-    val('ready')
+    // finish if check empty is 1
+    errorStrategy 'finish'
 
     output:
     path('relX_text_search/families/error.log')
@@ -151,6 +151,7 @@ process create_validate_xml_families {
     mkdir -p relX_text_search/families
     python scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
     python scripts/validation/xml_validator.py --input relX_text_search/families --log
+    bash pdb_mapping/check_empty.sh
     """
 }
 
@@ -161,6 +162,8 @@ process index_data_on_rfam_dev {
 
     output:
     val('done')
+
+    when: 
 
     """
     cd_main && cd search_dumps
@@ -202,7 +205,8 @@ workflow update_ftp {
 }
 
 workflow update_search_index {
-    create_validate_xml_families
+    create_validate_xml_families \
+    | index_data_on_rfam_dev
 }
 
 workflow {

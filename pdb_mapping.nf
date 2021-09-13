@@ -139,7 +139,6 @@ process update_ftp {
 
 
 process create_validate_xml_families {
-    // finish if check empty is 1
     errorStrategy 'finish'
 
     output:
@@ -163,15 +162,19 @@ process index_data_on_rfam_dev {
     output:
     val('done')
 
-    when: 
-
     """
     cd_main && cd search_dumps
-    rm -rf rfam_dev/families 
-    mkdir rfam_dev/families
-    cp -a /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev/families
+    rm -rf rfam_dev/families/
+    cp -r /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev
     """
 
+}
+
+process sync_db {
+    """
+    become mysql-rel-4442
+    yes | sync-mysql-fb --dc=FB1
+	"""
 }
 
 workflow pdb_mapping {
@@ -209,10 +212,15 @@ workflow update_search_index {
     | index_data_on_rfam_dev
 }
 
+workflow update_website_db {
+    sync_db
+}
+
 workflow {
     pdb_mapping()
     update_ftp(pdb_mapping.out)
     update_search_index()
+    update_website_db()
 }
 
 workflow.onComplete = {

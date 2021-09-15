@@ -118,6 +118,8 @@ process run_clan_competition {
 process get_new_families {
     input:
     path(query)
+    output:
+    path('pdb_families.txt')
 
     """
     python $baseDir/pdb_mapping/pdb_families.py > $baseDir/pdb_families.txt
@@ -132,6 +134,7 @@ process update_ftp {
     path('pdb_full_region.txt.gz')
 
     """
+    rm /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
     cp $query /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
     gzip /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
     """
@@ -186,7 +189,9 @@ process sync_db {
 }
 
 workflow pdb_mapping {
-    emit: pdb_txt
+    emit:
+        pdb_txt
+        new_families
     main:
     setup_files \
     | splitFasta( record: [id: true, desc:true, text: true] ) \
@@ -205,7 +210,7 @@ workflow pdb_mapping {
     | sort_clan_files \
     | collect \
     | run_clan_competition \
-    | get_new_families
+    | get_new_families | set {new_families}
 }
 
 workflow ftp {
@@ -216,10 +221,10 @@ workflow ftp {
 }
 
 workflow update_search_index {
-    take: pdb_txt
+    take: new_families
     emit: done
     main:
-    pdb_txt \
+    new_families \
     | create_validate_xml_families \
     | index_data_on_rfam_dev | set {done}
 }
@@ -232,9 +237,9 @@ workflow update_website_db {
 
 workflow {
     pdb_mapping()
-    ftp(pdb_mapping.out)
-    update_search_index(pdb_mapping.out)
-    update_website_db(update_search_index.out)
+    ftp(pdb_mapping.out.pdb_txt)
+    update_search_index(pdb_mapping.out.new_families)
+    update_website_db(update_search_index.out.done)
 }
 
 workflow.onComplete = {

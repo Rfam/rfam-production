@@ -148,7 +148,7 @@ process create_validate_xml_families {
     path('relX_text_search/families/error.log')
 
     """
-    source django_settings.sh
+    source $baseDir/django_settings.sh
     rm -rf relX_text_search/families
     mkdir -p relX_text_search/families
     python scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
@@ -158,7 +158,6 @@ process create_validate_xml_families {
 }
 
 process index_data_on_rfam_dev {
-
     input:
     path(query)
 
@@ -174,6 +173,12 @@ process index_data_on_rfam_dev {
 }
 
 process sync_db {
+    input:
+    path(query)
+
+    output:
+    val('done')
+
     """
     become mysql-rel-4442
     yes | sync-mysql-fb --dc=FB1
@@ -211,20 +216,25 @@ workflow ftp {
 }
 
 workflow update_search_index {
-    channel.fromPath('pdb_families.txt') \
+    take: pdb_txt
+    emit: done
+    main:
+    pdb_txt \
     | create_validate_xml_families \
-    | index_data_on_rfam_dev
+    | index_data_on_rfam_dev | set {done}
 }
 
 workflow update_website_db {
+    take: done
+    main:
     sync_db
 }
 
 workflow {
     pdb_mapping()
     ftp(pdb_mapping.out)
-    update_search_index()
-    update_website_db()
+    update_search_index(pdb_mapping.out)
+    update_website_db(update_search_index.out)
 }
 
 workflow.onComplete = {

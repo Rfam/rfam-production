@@ -4,7 +4,7 @@ import logging
 
 import mysql.connector
 
-from pdb_mapping.exceptions import CheckRowsError
+from pdb_mapping.exceptions import CheckRowsError, NoFileGivenError
 from utils import RfamDB
 from config.rfam_config import RFAMREL
 
@@ -38,7 +38,6 @@ def create_pdb_temp_table(pdb_file):
 def qc_checks():
     """
     Execute quality control checks before we update the table
-    :return:
     """
     conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
@@ -97,6 +96,7 @@ if __name__ == '__main__':
         if args.database == 'rfam-rel':
             DB_CONFIG = RFAMREL
         create_pdb_temp_table(args.file)
+        qc_checks()
         rename_pdb_table()
     else:
-        print("Please provide a text file to import data to pdb_full_region_temp")
+        raise NoFileGivenError("Please provide a text file to import data to pdb_full_region_temp")

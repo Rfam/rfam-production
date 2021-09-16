@@ -152,11 +152,11 @@ process create_validate_xml_families {
 
     """
     source $baseDir/django_settings.sh
-    rm -rf relX_text_search/families
-    mkdir -p relX_text_search/families
-    python scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
-    python scripts/validation/xml_validator.py --input relX_text_search/families --log
-    bash pdb_mapping/check_empty.sh
+    rm -rf $baseDir/relX_text_search/families
+    mkdir -p $baseDir/relX_text_search/families
+    python $baseDir/scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
+    python $baseDir/scripts/validation/xml_validator.py --input relX_text_search/families --log
+    bash $baseDir/pdb_mapping/check_empty.sh
     """
 }
 
@@ -169,7 +169,7 @@ process index_data_on_rfam_dev {
 
     """
     cd_main && cd search_dumps
-    rm -rf rfam_dev/families/
+    rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
     cp -r /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev
     """
 
@@ -183,9 +183,11 @@ process sync_db {
     val('done')
 
     """
+    cd_code && cd rfam-production
     python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel
     become mysql-rel-4442
     yes | sync-mysql-fb --dc=FB1
+    exit
 	"""
 }
 
@@ -223,11 +225,10 @@ workflow ftp {
 
 workflow update_search_index {
     take: new_families
-    emit: done
     main:
     new_families \
     | create_validate_xml_families \
-    | index_data_on_rfam_dev | set {done}
+    | index_data_on_rfam_dev
 }
 
 workflow update_website_db {

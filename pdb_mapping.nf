@@ -131,7 +131,7 @@ process update_ftp {
     path(query)
 
     output:
-    path('pdb_full_region.txt.gz')
+    val('done')
 
     """
     rm /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
@@ -183,6 +183,7 @@ process sync_db {
     val('done')
 
     """
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel
     become mysql-rel-4442
     yes | sync-mysql-fb --dc=FB1
 	"""
@@ -230,21 +231,22 @@ workflow update_search_index {
 }
 
 workflow update_website_db {
-    take: done
+    take: pdb_txt
     main:
-    sync_db
+    pdb_text \
+    | sync_db
 }
 
 workflow {
     pdb_mapping()
     ftp(pdb_mapping.out.pdb_txt)
     update_search_index(pdb_mapping.out.new_families)
-    update_website_db(update_search_index.out.done)
+    update_website_db(pdb_mapping.out.pdb_txt)
 }
 
 workflow.onComplete = {
 
-def process = ["python", "send_notification.py"].execute()
+def process = ["python", "pdb_mapping/send_notification.py"].execute()
 process.waitFor()
 println process.err.text
 println process.text

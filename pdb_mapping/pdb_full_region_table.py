@@ -20,7 +20,7 @@ def create_pdb_temp_table(pdb_file):
     cursor = conn.cursor()
     try:
         cursor.execute("DROP TABLE IF EXISTS pdb_full_region_temp;")
-        cursor.execute("CREATE TABLE pdb_full_region_temp LIKE pdb_full_region")
+        cursor.execute("CREATE TABLE pdb_full_region_temp LIKE pdb_full_region;")
         with open(pdb_file) as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
@@ -44,9 +44,9 @@ def qc_checks():
     conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
-        cursor.execute("COUNT(*) FROM TABLE pdb_full_region_temp")
+        cursor.execute("COUNT(*) FROM pdb_full_region_temp;")
         num_rows_pdb_temp = cursor.fetchone()[0]
-        cursor.execute("COUNT(*) FROM TABLE pdb_full_region")
+        cursor.execute("COUNT(*) FROM pdb_full_region;")
         num_rows_pdb = cursor.fetchone()[0]
         try:
             if num_rows_pdb_temp - num_rows_pdb > 100:
@@ -91,14 +91,19 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Create PDB full region table and import new data')
     parser.add_argument('-f', '--file', help='Text file with data to import to pdb_full_region_temp', required=True)
     parser.add_argument('-db', '--database', help='Specify which database config values to use ', required=False)
+    parser.add_argument('-nqc', '--no_quality_control_checks',
+                        help='Whether to execute QC checks ', action='store_true', required=False)
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.file:
-        if args.database == 'rfam-rel':
-            DB_CONFIG = RFAMREL
+    if args.database == 'rfam-rel':
+        DB_CONFIG = RFAMREL
+    if args.file and args.no_quality_control_checks:
+        create_pdb_temp_table(args.file)
+        rename_pdb_table()
+    elif args.file:
         create_pdb_temp_table(args.file)
         qc_checks()
         rename_pdb_table()

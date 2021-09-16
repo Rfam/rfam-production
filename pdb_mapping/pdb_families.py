@@ -33,6 +33,9 @@ def list_new_families():
                   format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
+        raise e
+    except Exception as e:
+        raise e
 
     finally:
         cursor.close()

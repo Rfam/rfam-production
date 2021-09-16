@@ -25,9 +25,15 @@ def send_notification():
             },
         ]
     }
-    response = requests.post(webhook_url, json=slack_json, headers={'Content-Type': 'application/json'})
-    if response.status_code != 200:
-        raise ValueError("Error with request {0}, the response is:\n{1}".format(response.status_code, response.text))
+    try:
+        response = requests.post(webhook_url, json=slack_json, headers={'Content-Type': 'application/json'})
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        raise SystemExit(e)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+    except Exception as e:
+        raise SystemExit(e)
 
 
 if __name__ == '__main__':

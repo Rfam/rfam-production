@@ -184,7 +184,7 @@ process sync_db {
 
     """
     cd_code && cd rfam-production
-    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
     become mysql-rel-4442
     yes | sync-mysql-fb --dc=FB1
     exit
@@ -234,7 +234,7 @@ workflow update_search_index {
 workflow update_website_db {
     take: pdb_txt
     main:
-    pdb_text \
+    pdb_txt \
     | sync_db
 }
 

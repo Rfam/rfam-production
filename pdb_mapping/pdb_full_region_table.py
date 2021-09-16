@@ -19,6 +19,7 @@ def create_pdb_temp_table(pdb_file):
     conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
+        cursor.execute("DROP TABLE IF EXISTS pdb_full_region_temp;")
         cursor.execute("CREATE TABLE pdb_full_region_temp LIKE pdb_full_region")
         with open(pdb_file) as f:
             reader = csv.reader(f, delimiter='\t')
@@ -29,6 +30,7 @@ def create_pdb_temp_table(pdb_file):
                 conn.commit()
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
+        raise
 
     finally:
         cursor.close()
@@ -57,6 +59,7 @@ def qc_checks():
 
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
+        raise 
 
     finally:
         cursor.close()
@@ -70,11 +73,12 @@ def rename_pdb_table():
     conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
-        cursor.execute("DROP TABLE pdb_full_region_old;")
+        cursor.execute("DROP TABLE IF EXISTS pdb_full_region_old;")
         cursor.execute("RENAME TABLE pdb_full_region TO pdb_full_region_old, "
                        "pdb_full_region_temp TO pdb_full_region;")
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
+        raise
     finally:
         cursor.close()
         conn.close()

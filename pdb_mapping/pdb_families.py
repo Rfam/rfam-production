@@ -19,18 +19,19 @@ def list_new_families():
                           "AND rfam_acc NOT IN "
                           "(SELECT DISTINCT rfam_acc FROM pdb_full_region_old WHERE is_significant = 1);")
     try:
-        cursor.execute("select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;")
-        print("Number of families with 3D before: {0}".format(cursor.fetchone()[0]))
-        cursor.execute("select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1; ")
-        print("Number of families with 3D after: {0}".format(cursor.fetchone()[0]))
-        cursor.execute(new_families_query)
-        new_families = cursor.fetchall()
-        print("New families with 3D structures: {0}".format(new_families))
-        for entry in new_families:
-            rf_num = entry[0]
-            pd_id = entry[1]
-            print("Rfam accession number: {0}   PDB ID: {1}".
-                  format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
+        with open("pdb_families.txt", "w") as pdb_file:
+            cursor.execute("select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;")
+            pdb_file.write("Number of families with 3D before: {0} \n".format(cursor.fetchone()[0]))
+            cursor.execute("select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1; ")
+            pdb_file.write("Number of families with 3D after: {0} \n".format(cursor.fetchone()[0]))
+            cursor.execute(new_families_query)
+            new_families = cursor.fetchall()
+            pdb_file.write("New families with 3D structures: {0} \n".format(new_families))
+            for entry in new_families:
+                rf_num = entry[0]
+                pd_id = entry[1]
+                pdb_file.write("Rfam accession number: {0}   PDB ID: {1} \n".
+                               format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e

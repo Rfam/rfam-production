@@ -116,13 +116,14 @@ process run_clan_competition {
 }
 
 process get_new_families {
+    publishDir "$baseDir/pdb_mapping", mode: "copy"
     input:
     path(query)
     output:
     path('pdb_families.txt')
 
     """
-    python $baseDir/pdb_mapping/pdb_families.py > $baseDir/pdb_families.txt
+    python $baseDir/pdb_mapping/pdb_families.py
     """
 }
 
@@ -134,7 +135,7 @@ process update_ftp {
     val('done')
 
     """
-    rm /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
+    rm -f /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
     cp $query /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
     gzip /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
     """
@@ -154,8 +155,8 @@ process create_validate_xml_families {
     source $baseDir/django_settings.sh
     rm -rf $baseDir/relX_text_search/families
     mkdir -p $baseDir/relX_text_search/families
-    python $baseDir/scripts/export/rfam_xml_dumper.py --type F --out relX_text_search/families
-    python $baseDir/scripts/validation/xml_validator.py --input relX_text_search/families --log
+    python $baseDir/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
+    python $baseDir/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
     bash $baseDir/pdb_mapping/check_empty.sh
     """
 }
@@ -183,12 +184,12 @@ process sync_db {
     val('done')
 
     """
-    cd_code && cd rfam-production
+    cd /nfs/production/xfam/users/rfamprod/code && cd rfam-production
     python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
     become mysql-rel-4442
     yes | sync-mysql-fb --dc=FB1
     exit
-	"""
+    """
 }
 
 workflow pdb_mapping {

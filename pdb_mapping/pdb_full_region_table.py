@@ -44,9 +44,9 @@ def qc_checks():
     conn = RfamDB.connect(db_config=DB_CONFIG)
     cursor = conn.cursor()
     try:
-        cursor.execute("COUNT(*) FROM pdb_full_region_temp;")
+        cursor.execute("SELECT COUNT(*) FROM pdb_full_region_temp;")
         num_rows_pdb_temp = cursor.fetchone()[0]
-        cursor.execute("COUNT(*) FROM pdb_full_region;")
+        cursor.execute("SELECT COUNT(*) FROM pdb_full_region;")
         num_rows_pdb = cursor.fetchone()[0]
         try:
             if num_rows_pdb_temp - num_rows_pdb > 100:

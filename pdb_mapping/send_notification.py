@@ -10,7 +10,7 @@ def send_notification():
     slack_message = ""
     webhook_url = SLACK_WEBHOOK
 
-    with open('pdb_families.txt', 'r') as f:
+    with open('pdb_mapping/pdb_families.txt', 'r') as f:
         for line in f:
             slack_message += line
     slack_json = {

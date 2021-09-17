@@ -176,22 +176,6 @@ process index_data_on_rfam_dev {
 
 }
 
-process sync_db {
-    input:
-    path(query)
-
-    output:
-    val('done')
-
-    """
-    cd /nfs/production/xfam/users/rfamprod/code && cd rfam-production
-    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
-    become mysql-rel-4442
-    yes | sync-mysql-fb --dc=FB1
-    exit
-    """
-}
-
 workflow pdb_mapping {
     emit:
         pdb_txt
@@ -232,18 +216,10 @@ workflow update_search_index {
     | index_data_on_rfam_dev
 }
 
-workflow update_website_db {
-    take: pdb_txt
-    main:
-    pdb_txt \
-    | sync_db
-}
-
 workflow {
     pdb_mapping()
     ftp(pdb_mapping.out.pdb_txt)
     update_search_index(pdb_mapping.out.new_families)
-    update_website_db(pdb_mapping.out.pdb_txt)
 }
 
 workflow.onComplete = {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILENAME="relX_text_search/families/error.log"
+FILENAME="/nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/error.log"
 
 if [ -f ${FILENAME} ]
 then

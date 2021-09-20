@@ -1,6 +1,6 @@
 nextflow.enable.dsl=2
 
-include { pdb_mapping } from './pdb_mapping'
+pdb_text = file(params.in)
 
 process sync_db {
     input:
@@ -18,13 +18,6 @@ process sync_db {
     """
 }
 
-workflow update_website_db {
-    take: pdb_txt
-    main:
-    pdb_txt \
-    | sync_db
-}
-
 workflow {
-    update_website_db(pdb_mapping.out.pdb_txt)
+    sync_db(pdb_text)
 }

@@ -117,8 +117,10 @@ process run_clan_competition {
 
 process get_new_families {
     publishDir "$baseDir/pdb_mapping", mode: "copy"
+    
     input:
     path(query)
+    
     output:
     path('pdb_families.txt')
 
@@ -149,7 +151,7 @@ process create_validate_xml_families {
     path(query)
 
     output:
-    path('error.log')
+    val('xml')
 
     """
     source $baseDir/django_settings.sh
@@ -163,7 +165,7 @@ process create_validate_xml_families {
 
 process index_data_on_rfam_dev {
     input:
-    path(query)
+    val('xml')
 
     output:
     val('done')

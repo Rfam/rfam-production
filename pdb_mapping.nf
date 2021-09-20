@@ -149,7 +149,7 @@ process create_validate_xml_families {
     path(query)
 
     output:
-    path('relX_text_search/families/error.log')
+    path('error.log')
 
     """
     source $baseDir/django_settings.sh

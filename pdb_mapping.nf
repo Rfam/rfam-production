@@ -178,6 +178,18 @@ process index_data_on_rfam_dev {
 
 }
 
+process sync_db {
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
+    """
+}
+
 workflow pdb_mapping {
     emit:
         pdb_txt
@@ -222,6 +234,7 @@ workflow {
     pdb_mapping()
     ftp(pdb_mapping.out.pdb_txt)
     update_search_index(pdb_mapping.out.new_families)
+    sync_db(pdb_mapping.out.pdb_txt)
 }
 
 workflow.onComplete = {

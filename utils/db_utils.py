@@ -1458,3 +1458,56 @@ def fetch_family_seed_regions(rfam_acc):
     return regions
 
 # ----------------------------------------------------------------------------
+
+
+def fetch_family_metadata(rfam_acc):
+    """
+    Fetches family metadata from family table
+    :param rfam_acc:
+
+    :return: A dictionary with metadata describing an Rfam family family
+    """
+
+    query = """select rfam_id, description, type
+        from family
+        where rfam_acc=\'%s\'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query % rfam_acc)
+
+    metadata = cursor.fetchone()
+
+    cursor.close()
+    cnx.close()
+
+    return metadata
+
+# ----------------------------------------------------------------------------
+
+
+def fetch_mirna_families():
+    """
+    Fetches a list of all microRNA families from family table
+
+    :return: A dictionary with metadata describing Rfam microRNA families
+    """
+
+    query = """select rfam_acc, rfam_id, description, gathering_cutoff
+        from family
+        where type like '%mirna%'"""
+
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    cursor.execute(query)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    cnx.close()
+
+    return data
+
+# ----------------------------------------------------------------------------

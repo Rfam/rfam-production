@@ -51,6 +51,8 @@ def qc_checks():
         try:
             if num_rows_pdb_temp - num_rows_pdb > 100:
                 raise CheckRowsError(num_rows_pdb, num_rows_pdb_temp)
+            if num_rows_pdb_temp < 10000:
+                raise CheckRowsError(num_rows_pdb, num_rows_pdb_temp)
         except CheckRowsError:
             logging.exception("Do not rename tables until error is resolved.")
             raise

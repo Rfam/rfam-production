@@ -43,18 +43,21 @@ db_conf = RFAMLIVE
 # -----------------------------------------------------------------------------
 
 
-def connect():
+def connect(db_config=None):
     """
-    Connects to a specific database and returns a mysql connection object
+    Connects to a specific database and returns a mysql connection object.
+    :param db_config: database config values
+    :type db_config: dict
+    :return: db connection
     """
-
+    db_config = db_conf if db_config is None else db_config
     cnx = None
     try:
-        cnx = mysql.connector.connect(user=db_conf["user"],
-                                      password=db_conf["pwd"],
-                                      host=db_conf["host"],
-                                      database=db_conf["db"],
-                                      port=db_conf["port"])
+        cnx = mysql.connector.connect(user=db_config["user"],
+                                      password=db_config["pwd"],
+                                      host=db_config["host"],
+                                      database=db_config["db"],
+                                      port=db_config["port"])
 
     except mysql.connector.Error as err:
 

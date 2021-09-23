@@ -1,7 +1,6 @@
 nextflow.enable.dsl=2
 
 process setup_files {
-
     publishDir "$baseDir", mode: "copy"
 
     output:
@@ -18,11 +17,9 @@ process setup_files {
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
-
 }
 
-process remove_illegal_characters {
-    
+process remove_illegal_characters {  
     input:
     path(query)
 
@@ -32,11 +29,9 @@ process remove_illegal_characters {
     """ 
     sed -e '/^[^>]/s/[^ATGCURYMKSWHBVDatgcurymkswhbvd]/N/g' $query > pdb_trimmed_noillegals.fa
     """
-
 }
 
 process run_cmscan {
-
     memory '10GB'
 
     input:
@@ -48,7 +43,6 @@ process run_cmscan {
     """
     cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
     """
-
 }
 
 process combine_cmscan_results {
@@ -77,7 +71,6 @@ process create_text_file_for_db {
     """
     python $baseDir/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
     """
-
 }
 
 process import_db_and_generate_clan_files {
@@ -88,7 +81,7 @@ process import_db_and_generate_clan_files {
     path('CL*.txt')
 
     """
-    python $baseDir/utils/pdb_full_region_table.py --file $query
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query
     mkdir -p $baseDir/releaseX/clan_competition/sorted  
     python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
@@ -123,17 +116,85 @@ process run_clan_competition {
 }
 
 process get_new_families {
+    publishDir "$baseDir/pdb_mapping", mode: "copy"
+    
+    input:
+    path(query)
+    
+    output:
+    path('pdb_families.txt')
+
+    """
+    python $baseDir/pdb_mapping/pdb_families.py
+    """
+}
+
+process update_ftp {
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    rm -f /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
+    cp $query /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
+    gzip /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
+    """
+}
+
+
+process create_validate_xml_families {
+    errorStrategy 'finish'
 
     input:
     path(query)
 
+    output:
+    val('xml')
+
     """
-    python $baseDir/scripts/release/pdb_families.py > $baseDir/pdb_families.txt
+    source $baseDir/django_settings.sh
+    rm -rf $baseDir/relX_text_search/families
+    mkdir -p $baseDir/relX_text_search/families
+    python $baseDir/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
+    python $baseDir/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
+    bash $baseDir/pdb_mapping/check_empty.sh
+    """
+}
+
+process index_data_on_rfam_dev {
+    input:
+    val('xml')
+
+    output:
+    val('done')
+
+    """
+    cd_main && cd search_dumps
+    rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
+    cp -r /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev
+    """
+
+}
+
+process sync_db {
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
     """
 }
 
 workflow pdb_mapping {
-    
+    emit:
+        pdb_txt
+        new_families
+    main:
     setup_files \
     | splitFasta( record: [id: true, desc:true, text: true] ) \
     | filter { record -> record.desc =~ /^mol:na.*/ } \
@@ -145,22 +206,40 @@ workflow pdb_mapping {
     | run_cmscan \
     | collect \
     | combine_cmscan_results \
-    | create_text_file_for_db \
+    | create_text_file_for_db | set { pdb_txt }
+    pdb_txt
     | import_db_and_generate_clan_files \
     | sort_clan_files \
     | collect \
     | run_clan_competition \
-    | get_new_families
+    | get_new_families | set {new_families}
+}
 
+workflow ftp {
+    take: pdb_txt
+    main:
+    pdb_txt \
+    | update_ftp
+}
+
+workflow update_search_index {
+    take: new_families
+    main:
+    new_families \
+    | create_validate_xml_families \
+    | index_data_on_rfam_dev
 }
 
 workflow {
     pdb_mapping()
+    ftp(pdb_mapping.out.pdb_txt)
+    update_search_index(pdb_mapping.out.new_families)
+    sync_db(pdb_mapping.out.pdb_txt)
 }
 
 workflow.onComplete = {
 
-def process = ["python", "send_notification.py"].execute()
+def process = ["python", "pdb_mapping/send_notification.py"].execute()
 process.waitFor()
 println process.err.text
 println process.text

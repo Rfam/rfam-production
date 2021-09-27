@@ -4,7 +4,7 @@ import logging
 
 import mysql.connector
 
-from pdb_mapping.exceptions import CheckRowsError, NoFileGivenError
+from pdb_exceptions import CheckRowsError, NoFileGivenError
 from utils import RfamDB
 from config.rfam_config import RFAMREL
 

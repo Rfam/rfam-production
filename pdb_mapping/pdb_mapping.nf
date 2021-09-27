@@ -69,7 +69,7 @@ process create_text_file_for_db {
     path('pdb_full_region_*.txt')
     
     """
-    python $baseDir/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
+    python ${params.rfamprod}/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
     """
 }
 
@@ -81,9 +81,9 @@ process import_db_and_generate_clan_files {
     path('CL*.txt')
 
     """
-    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query
+    python $baseDir/pdb_full_region_table.py --file $query
     mkdir -p $baseDir/releaseX/clan_competition/sorted  
-    python $baseDir/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
+    python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
 }
 
@@ -111,12 +111,12 @@ process run_clan_competition {
     path('*')
 
     """
-    python $baseDir/scripts/processing/clan_competition.py --input $baseDir/releaseX/clan_competition/sorted --pdb
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/releaseX/clan_competition/sorted --pdb
     """
 }
 
 process get_new_families {
-    publishDir "$baseDir/pdb_mapping", mode: "copy"
+    publishDir "$baseDir", mode: "copy"
     
     input:
     path(query)
@@ -125,7 +125,7 @@ process get_new_families {
     path('pdb_families.txt')
 
     """
-    python $baseDir/pdb_mapping/pdb_families.py
+    python $baseDir/pdb_families.py
     """
 }
 
@@ -154,12 +154,12 @@ process create_validate_xml_families {
     val('xml')
 
     """
-    source $baseDir/django_settings.sh
+    source ${params.rfamprod}/django_settings.sh
     rm -rf $baseDir/relX_text_search/families
     mkdir -p $baseDir/relX_text_search/families
-    python $baseDir/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
-    python $baseDir/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
-    bash $baseDir/pdb_mapping/check_empty.sh
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
+    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
+    bash $baseDir/check_empty.sh
     """
 }
 
@@ -173,7 +173,7 @@ process index_data_on_rfam_dev {
     """
     cd_main && cd search_dumps
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
-    cp -r /nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/ rfam_dev
+    cp -r $baseDir/relX_text_search/families/ rfam_dev
     """
 
 }
@@ -186,7 +186,7 @@ process sync_db {
     val('done')
 
     """
-    python $baseDir/pdb_mapping/pdb_full_region_table.py --file $query --database rfam-rel -nqc
+    python $baseDir/pdb_full_region_table.py --file $query --database rfam-rel -nqc
     """
 }
 

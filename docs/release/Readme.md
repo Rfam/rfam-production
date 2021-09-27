@@ -254,8 +254,31 @@ Clan competition is a quality assurance measure ran as a pre-processing release 
 
 ## Update PDB mapping
 
-This step requires a finalised `Rfam.cm` file with the latest families, including descriptions (see FTP section for instructions).
+1. Run the PDB mapping pipeline
 
+    The pipeline will update PDB mapping, and then will update the FTP file in nfs/ftp/pub/databases/Rfam/.preview, update the Rfam text search, and begin the process of updating the website database. 
+
+    ```
+    nextflow run pdb_mapping/pdb_mapping.nf -profile cluster
+    ```
+
+2. Sync the web production databases
+
+    The table pdb_full_region has already been updated in RfamRel database (as part of the pdb_mapping.nf pipeline). This must be synced to the production databses (FB1 and PG). Currently this must be done manually, using the follwoing commands:
+
+    ```
+    become mysql-rel-4442
+    yes | sync-mysql-fb --dc=FB1
+    yes | sync-mysql-fb --dc=PG
+    ```
+
+<details>
+  <summary>Legacy steps for manually updating PDB mapping</summary>
+Please note these steps for updating PDB Mapping have been replaced with the introduction of the above PDB mapping pipeline. 
+ 
+
+This step requires a finalised `Rfam.cm` file with the latest families, including descriptions (see FTP section for instructions).
+ 
 1. Get PDB sequences in FASTA format
 
     ```
@@ -360,6 +383,7 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
              from `pdb_full_region_temp`
              where is_significant = 1);
     ```
+</details>
 
 ---
 

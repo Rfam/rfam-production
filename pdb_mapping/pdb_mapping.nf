@@ -4,7 +4,7 @@ process setup_files {
     publishDir "$baseDir", mode: "copy"
 
     output:
-    path("pdb_local.txt")
+    path("pdb_seqres.txt")
 
     """
     rm -f $baseDir/PDB_RFAM_X_Y.tbl
@@ -16,7 +16,6 @@ process setup_files {
     cmpress $baseDir/Rfam.cm
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
-    tail -100 pdb_seqres.txt > pdb_local.txt
     """
 }
 

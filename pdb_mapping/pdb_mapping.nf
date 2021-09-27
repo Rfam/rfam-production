@@ -240,7 +240,7 @@ workflow {
 
 workflow.onComplete = {
 
-def process = ["python", "send_notification.py"].execute()
+def process = ["python", "pdb_mapping/send_notification.py"].execute()
 process.waitFor()
 println process.err.text
 println process.text

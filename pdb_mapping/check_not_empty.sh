@@ -5,10 +5,10 @@ then
     if [ -s ${FILENAME} ]
     then
         echo "File exists and not empty"
-        exit 1
+        exit 0
     else
         echo "File exists but empty"
-        exit 0
+        exit 1
     fi
 else
     echo "File does not exist"

@@ -14,7 +14,7 @@ def send_notification():
         for line in f:
             slack_message += line
     slack_json = {
-        "text": slack_message,
+        "text": "PDB Mapping",
         "blocks": [
             {
                 "type": "section",

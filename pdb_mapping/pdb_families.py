@@ -27,11 +27,15 @@ def list_new_families():
             pdb_file.write("Number of families with 3D after: {0} \n".format(cursor.fetchone()[0]))
             cursor.execute(new_families_query)
             new_families = cursor.fetchall()
-            for entry in new_families:
-                rf_num = entry[0]
-                pd_id = entry[1]
-                pdb_file.write("\nRfam accession number: {0}   PDB ID: {1}".
-                               format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
+            if new_families:
+                for entry in new_families:
+                    rf_num = entry[0]
+                    pd_id = entry[1]
+                    pdb_file.write("\nRfam accession number: {0}   PDB ID: {1}".
+                                format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
+            else:
+                pdb_file.write("There are no new families.")
+
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e

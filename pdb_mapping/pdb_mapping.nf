@@ -174,7 +174,7 @@ process index_data_on_rfam_dev {
     """
     cd_main && cd search_dumps
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
-    cp -r $baseDir/relX_text_search/families/ rfam_dev
+    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
     """
 
 }

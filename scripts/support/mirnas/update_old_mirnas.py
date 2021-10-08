@@ -1,69 +1,53 @@
+import argparse
 import os
-import sys
-import json
 import shutil
 import subprocess
+
+from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, get_data_from_csv
 
 searchdirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
               "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk2_searches",
               "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
 
-# ------------------------------------------------------------------------
+
+def checkout_family(rfam_acc):
+    os.chdir(UPDATE_DIR)
+    cmd = "rfco.pl {0}".format(rfam_acc)
+    subprocess.call(cmd, shell=True)
+    if os.path.exists(os.path.join(UPDATE_DIR, rfam_acc)):
+        return True
+    return False
 
 
-def checkout_family(rfam_acc, dest_dir):
+def copy_seed_file(mirna):
+    mirna_dir = mirna
+    if mirna.find("relabelled") == -1:
+        mirna_dir = mirna + "_relabelled"
+    rfam_acc = mirnas_dict[mirna][0]
+    check = checkout_family(rfam_acc)
+    checkout_dir = os.path.join(UPDATE_DIR, rfam_acc)
+    if check:
+        for search_dir in searchdirs:
+            if os.path.exists(os.path.join(search_dir, mirna_dir)):
+                updated_mirna_loc = os.path.join(search_dir, mirna_dir)
+                updated_seed = os.path.join(updated_mirna_loc, "SEED")
+                os.rename(os.path.join(checkout_dir, "SEED"), os.path.join(checkout_dir, "SEED_old"))
+                shutil.copyfile(updated_seed, os.path.join(checkout_dir, "SEED"))
+            else:
+                continue
 
-	os.chdir(dest_dir)
-	cmd = "rfco.pl %s" % rfam_acc
 
-	subprocess.call(cmd, shell=True)
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Script to update miRNAs')
+    required_arguments = parser.add_argument_group("required arguments")
+    # input is now the csv file
+    required_arguments.add_argument("--input", help="CSV file", type=str)
 
-	if os.path.exists(os.path.join(dest_dir, rfam_acc)):
-		return True
-
-	return False
-
-
-# ------------------------------------------------------------------------
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-
-	dest_dir = "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/update_old_rfam_mirnas"
-
-	mirna_families = sys.argv[1]
-
-	fp = open(mirna_families, 'r')
-
-	mirna_dict = json.load(fp)
-
-	fp.close()
-
-
-	mirnas_to_make = {}
-
-	for mirna in mirna_dict:
-		mirna_dir = mirna
-		if mirna.find("relabelled")==-1:
-			mirna_dir = mirna+'_relabelled'
-		
-		if mirna_dict[mirna]["threshold"] != '' and mirna_dict[mirna]["rfam_match"] == 100:
-			rfam_acc = mirna_dict[mirna]["rfam_acc"]
-			mirnas_to_make[rfam_acc] = ""
-			#check = checkout_family(rfam_acc, dest_dir)
-			checkout_dir = os.path.join(dest_dir, rfam_acc)
-			check = True
-			if check is True:
-				updated_mirna_loc = ""
-				for searchdir in searchdirs:
-					if os.path.exists(os.path.join(searchdir, mirna_dir)):
-						updated_mirna_loc = os.path.join(searchdir, mirna_dir)
-						updated_seed = os.path.join(updated_mirna_loc, "SEED")
-						os.rename(os.path.join(checkout_dir, "SEED"), os.path.join(checkout_dir, "SEED_old"))
-						shutil.copyfile(updated_seed, os.path.join(checkout_dir, "SEED"))					
-					else:
-						continue
-
-	fp = open("old_mirnas_to_make.json", 'w')
-	json.dump(mirnas_to_make, fp)
-	fp.close()
+    args = parse_arguments()
+    mirnas_dict = get_data_from_csv(args.input)
+    for mirna_id in mirnas_dict:
+        copy_seed_file(mirna_id)

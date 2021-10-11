@@ -6,8 +6,8 @@ Generate the data used in the microRNA dashboard for the following tables:
 Requires a mapping between all sequences from miRBase and the current Rfam models.
 The mapping can be generated as follows:
 
-wget http://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/sequences/by-database/mirbase.fasta .
-wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz .
+wget https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/sequences/by-database/mirbase.fasta .
+wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz .
 gunzip Rfam.cm.gz
 cmpress Rfam.cm
 bsub -M 16000 -n 4 -o lsf.out -e lsf.err 'cmscan -o cmscan.output.txt --tblout mirbase-cmscan.tblout --cut_ga --rfam Rfam.cm mirbase.fasta'
@@ -93,7 +93,7 @@ def get_rnacentral_mirbase_xrefs():
     filename = 'mirbase.tsv'
     data = {}
     if not os.path.exists(filename):
-        cmd = 'wget http://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/id_mapping/database_mappings/mirbase.tsv'
+        cmd = 'wget https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/id_mapping/database_mappings/mirbase.tsv'
         os.system(cmd)
     with open(filename, 'r') as f:
         for line in f:

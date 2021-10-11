@@ -10,7 +10,7 @@ process setup_files {
     rm -f $baseDir/PDB_RFAM_X_Y.tbl
     rm -f $baseDir/pdb_seqres.txt
     rm -rf $baseDir/Rfam.cm*
-    wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
     gunzip Rfam.cm.gz
     mv Rfam.cm $baseDir
     cmpress $baseDir/Rfam.cm

@@ -697,7 +697,7 @@ The files in `rfam_dev` and `current_release` folders are automatically indexed 
 
     ```
     mkdir fasta_files && cd fasta_files &&
-    wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
+    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
     ```
     **NOTE:** Rfam2RNAcentral regions need to match the exact same release the `fasta_files` were created for.
               Use the Public MySQL database if `rfam-live` have been updated
@@ -712,7 +712,7 @@ The files in `rfam_dev` and `current_release` folders are automatically indexed 
 6. Copy the `Rfam.seed file from the FTP to the fasta_files directory and index using `esl-sfetch`:
 
     ```
-    wget http://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
+    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
     esl-sfetch --index Rfam.seed
     ```
 

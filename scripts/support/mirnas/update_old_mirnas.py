@@ -23,7 +23,7 @@ def copy_seed_file(mirna):
     mirna_dir = mirna
     if mirna.find("relabelled") == -1:
         mirna_dir = mirna + "_relabelled"
-    rfam_acc = mirnas_dict[mirna][0]
+    rfam_acc = mirnas_dict[mirna].keys()
     check = checkout_family(rfam_acc)
     checkout_dir = os.path.join(UPDATE_DIR, rfam_acc)
     if check:

@@ -33,6 +33,8 @@ def add_ref_sequentially(rfam_accs, reference):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
+    required_arguments = parser.add_argument_group("required arguments")
+    required_arguments.add_argument("--input", help="CSV file", type=str)
     parser.add_argument("--ref", help="A string indicating the PubMed id to use for reference",
                         action="store", default="30423142")
     parser.add_argument("--sequential", help="Modify DESC files sequentially",
@@ -43,7 +45,7 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    rfam_accs = get_rfam_accs()
+    rfam_accs = get_rfam_accs(args.input)
     if args.sequential:
         add_ref_sequentially(rfam_accs, args.ref)
     else:

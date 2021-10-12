@@ -12,7 +12,7 @@ def autorfmake(accessions_thresholds, serial=False):
     could_not_update = []
     for entry in accessions_thresholds:
         rfam_acc = entry.keys()[0]
-        threshold = entry.keys()[1]
+        threshold = entry.values()[0]
         family_dir = os.path.join(UPDATE_DIR, rfam_acc)
         if os.path.exists(family_dir):
             if serial is True:
@@ -32,6 +32,8 @@ def autorfmake(accessions_thresholds, serial=False):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
+    required_arguments = parser.add_argument_group("required arguments")
+    required_arguments.add_argument("--input", help="CSV file", type=str)
     parser.add_argument("--serial", help="Serial execution of rfmake", action="store_true", default=False)
 
     return parser.parse_args()
@@ -39,7 +41,7 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    mirnas_dict = get_data_from_csv()
+    mirnas_dict = get_data_from_csv(args.input)
     # key:value pairs of rfam_acc:threshold
-    ids_thresholds = mirnas_dict.values()
-    autorfmake(ids_thresholds, args.serial)
+    accs_thresholds = mirnas_dict.values()
+    autorfmake(accs_thresholds, args.serial)

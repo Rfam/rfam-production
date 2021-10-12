@@ -4,7 +4,7 @@ import argparse
 import subprocess
 import json
 
-from datetime import date
+import time
 from subprocess import Popen, PIPE
 
 from scripts.support.mirnas.update_mirnas_helpers import get_data_from_csv, get_rfam_accs, UPDATE_DIR, MEMORY, CPU, \
@@ -166,8 +166,8 @@ def run_qc_check(rfam_acc):
     lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
     lsf_out_file = os.path.join(family_dir, "auto_rqc.out")
     job_name = os.path.basename(rfam_acc)
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
-           "-J {job_name} \"cd {update_dir} && rqc-all.pl {rfam_acc} -q production-rh74\"")
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
+           "\"cd {update_dir} && rqc-all.pl {rfam_acc}\"")
     subprocess.call(
         cmd.format(
             mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
@@ -180,6 +180,7 @@ if __name__ == '__main__':
     rfam_accs = get_rfam_accs(csv_file=args.input)
     for rfam_acc in rfam_accs:
         run_qc_check(rfam_acc)
+        time.sleep(10)
         if check_rqc_passes(rfam_acc):
             print('{0} passed QC checks'.format(rfam_acc))
         else:

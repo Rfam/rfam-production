@@ -6,9 +6,9 @@ import sys
 from scripts.support.mirnas.update_mirnas_helpers import get_rfam_accs, UPDATE_DIR
 
 field_options = {
-    'AU': 'AU    Griffiths-Jones SR; 0000-0001-6043-807X\n',
-    'SE': 'SE    Griffiths-Jones SR\n',
-    'SS': 'SS    Predicted; RNAalifold\n'
+    'AU': 'AU   Griffiths-Jones SR; 0000-0001-6043-807X\n',
+    'SE': 'SE   Griffiths-Jones SR\n',
+    'SS': 'SS   Predicted; RNAalifold\n'
 }
 
 

@@ -1,6 +1,6 @@
 import csv
 
-MIRNAS_CSV = "/Users/ecooke/GitHub/rfam-production/mirnas_sample.csv"
+MIRNAS_CSV = "rfam-production/mirnas_sample.csv"
 UPDATE_DIR = "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/update_old_rfam_mirnas"
 MEMORY = 8000
 CPU = 4

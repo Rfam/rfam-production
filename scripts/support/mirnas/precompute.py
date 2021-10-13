@@ -4,8 +4,6 @@ import argparse
 
 from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, MEMORY, LSF_GROUP, get_rfam_accs
 
-REQUIRED_FILES = ["SEED", "DESC", "species", "outlist", "seedoutlist"]
-
 
 def launch_new_rfsearch(family_dir, cpu):
     """

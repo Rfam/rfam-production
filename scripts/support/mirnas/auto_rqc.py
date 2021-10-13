@@ -79,13 +79,21 @@ if __name__ == '__main__':
     args = parse_arguments()
     rfam_accs = get_rfam_accs(csv_file=args.input)
     did_not_pass = []
+    passed = []
     for rfam_acc in rfam_accs:
         run_qc_check(rfam_acc)
-        time.sleep(10)
+        time.sleep(120)
         if check_rqc_passes(rfam_acc):
             print('{0} passed QC checks'.format(rfam_acc))
+            passed.append(rfam_acc)
         else:
             did_not_pass.append(rfam_acc)
             print('{0} DID NOT PASS QC checks. Please check the output at {1}'.format(
-                rfam_acc, os.path.join(UPDATE_DIR, rfam_acc, "auto_rqc.out")))
+                rfam_acc, os.path.join(UPDATE_DIR, rfam_acc, "auto_rqc.err")))
     print("Families that did not pass QC checks: {0}".format(did_not_pass))
+    with open(os.path.join(UPDATE_DIR, 'qc_passed.txt'), 'w') as outfile:
+        for family in passed:
+            outfile.write(family)
+    with open(os.path.join(UPDATE_DIR, 'did_not_pass_qc.txt'), 'w') as outfile:
+        for family in did_not_pass:
+            outfile.write(family)

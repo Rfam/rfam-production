@@ -9,10 +9,13 @@ from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, MEMORY, CPU
 def check_error_file(family):
     family_dir = os.path.join(UPDATE_DIR, family)
     err_file = os.path.join(family_dir, "auto_rfci.err")
-    if "Filesystem has no item: '/trunk/Families/{0}/SEEDTBLOUT'".format(family) in err_file:
-        os.chdir(family_dir)
-        subprocess.call('svn add SEEDSCORES SEEDTBLOUT', shell=True)
-        return True
+    with open(err_file) as f:
+        f_read = f.read()
+        if "Filesystem has no item: '/trunk/Families/{0}/SEEDTBLOUT'".format(family) in f_read:
+            print('svn add for this family')
+            os.chdir(family_dir)
+            subprocess.call('svn add SEEDSCORES SEEDTBLOUT', shell=True)
+            return True
 
     return False
 
@@ -58,6 +61,9 @@ def check_in_all_families(families):
                 svn_add = check_error_file(family)
                 if svn_add:
                     check_in(family)
+                    if check_successful(family):
+                        print('{0} has been checked in'.format(family))
+                        checked_in.append(family)
                 else:
                     not_checked_in.append(family)
                     print('{0} HAS NOT been checked in. Please check manually {1}'.format(

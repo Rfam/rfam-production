@@ -93,7 +93,7 @@ if __name__ == '__main__':
     print("Families that did not pass QC checks: {0}".format(did_not_pass))
     with open(os.path.join(UPDATE_DIR, 'qc_passed.txt'), 'w') as outfile:
         for family in passed:
-            outfile.write(family)
+            outfile.write(family + '\n')
     with open(os.path.join(UPDATE_DIR, 'did_not_pass_qc.txt'), 'w') as outfile:
         for family in did_not_pass:
-            outfile.write(family)
+            outfile.write(family + '\n')

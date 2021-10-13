@@ -46,8 +46,10 @@ def check_in_all_families(families):
     checked_in = []
     not_checked_in = []
     with open(families) as infile:
-        for family in infile:
-            check_in(family.strip())
+        file_data = infile.read()
+        all_families = [line for line in file_data.split('\n') if line.strip() != '']
+        for family in all_families:
+            check_in(family)
             time.sleep(120)
             if check_successful(family):
                 print('{0} has been checked in'.format(family))

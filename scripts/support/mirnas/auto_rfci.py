@@ -38,9 +38,9 @@ def check_in(rfam_acc, preseed=False):
     lsf_out_file = os.path.join(family_dir, "auto_rfci.out")
     job_name = rfam_acc
     if preseed:
-        option = 'Update using miRBase seed -preseed'
+        option = "\'Update using miRBase seed\' -preseed"
     else:
-        option = 'Update using miRBase seed'
+        option = "\'Update using miRBase seed\'"
     cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
            "\"cd {update_dir} && rfci.pl -m {option} {rfam_acc}\"")
     subprocess.call(

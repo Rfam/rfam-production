@@ -32,17 +32,21 @@ def check_successful(rfam_acc):
     return False
 
 
-def check_in(rfam_acc):
+def check_in(rfam_acc, preseed=False):
     family_dir = os.path.join(UPDATE_DIR, rfam_acc)
     lsf_err_file = os.path.join(family_dir, "auto_rfci.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfci.out")
     job_name = rfam_acc
+    if preseed:
+        option = 'Update using miRBase seed -preseed'
+    else:
+        option = 'Update using miRBase seed'
     cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
-           "\"cd {update_dir} && rfci.pl -m \'Update using miRBase seed\' {rfam_acc}\"")
+           "\"cd {update_dir} && rfci.pl -m {option} {rfam_acc}\"")
     subprocess.call(
         cmd.format(
             mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
-            job_name=job_name, update_dir=UPDATE_DIR, rfam_acc=rfam_acc), shell=True)
+            job_name=job_name, update_dir=UPDATE_DIR, option=option, rfam_acc=rfam_acc), shell=True)
 
 
 def check_in_all_families(families):
@@ -60,7 +64,7 @@ def check_in_all_families(families):
             else:
                 svn_add = check_error_file(family)
                 if svn_add:
-                    check_in(family)
+                    check_in(family, preseed=True)
                     if check_successful(family):
                         print('{0} has been checked in'.format(family))
                         checked_in.append(family)

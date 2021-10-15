@@ -52,7 +52,7 @@ def num_lines_in_seed_file(rfam_acc):
     return num_lines
 
 
-def check_seed_match(num_errors):
+def check_seed_match(num_errors, family):
     num_seed_sequences = num_lines_in_seed_file(family)
     percentage_seed_error = (float(num_errors) / float(num_seed_sequences) * 100)
     if percentage_seed_error < 25:
@@ -73,7 +73,7 @@ def check_rqc_passes(family):
         elif "in SEED in not in SCORES list!" in read_output:
             families_with_seed_error.append(rfam_acc)
             number_error_occurrences = read_output.count("in SEED in not in SCORES list!")
-            if check_seed_match(number_error_occurrences):
+            if check_seed_match(number_error_occurrences, rfam_acc):
                 print("At least 75% of sequences match, continuing to check in family {0} with -i seed".format(rfam_acc))
                 ignore_seed.append(rfam_acc)
                 continue_to_check_in = True

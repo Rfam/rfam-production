@@ -8,6 +8,11 @@ from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, MEMORY,
                                                           LSF_GROUP)
 from scripts.support.mirnas.config import UPDATE_DIR
 
+families_with_seed_error = []
+ignore_seed = []
+passed = []
+did_not_pass = []
+
 
 def extract_family_overlaps(rqc_output):
     error_lines = []
@@ -39,29 +44,62 @@ def extract_family_overlaps(rqc_output):
     return overlap_accessions.keys()
 
 
-def check_rqc_passes(rfam_acc):
-    family_dir = os.path.join(UPDATE_DIR, rfam_acc)
+def num_lines_in_seed_file(rfam_acc):
+    seed_file = os.path.join(UPDATE_DIR, rfam_acc, 'SEED')
+    with open(seed_file) as f:
+        num_lines = sum(1 for _ in f)
+    print("Number of lines in SEED file: {0}".format(num_lines))
+    return num_lines
+
+
+def check_seed_match(num_errors):
+    num_seed_sequences = num_lines_in_seed_file(family)
+    percentage_seed_error = (float(num_errors) / float(num_seed_sequences) * 100)
+    if percentage_seed_error < 25:
+        return True
+    else:
+        return False
+
+
+def check_rqc_passes(family):
+    family_dir = os.path.join(UPDATE_DIR, family)
     lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
 
     with open(lsf_err_file) as rqc_output:
         read_output = rqc_output.read()
         if "Family passed with no serious errors" in read_output:
-            return True
+            passed.append(rfam_acc)
+            continue_to_check_in = True
+        elif "in SEED in not in SCORES list!" in read_output:
+            families_with_seed_error.append(rfam_acc)
+            number_error_occurrences = read_output.count("in SEED in not in SCORES list!")
+            if check_seed_match(number_error_occurrences):
+                print("At least 75% of sequences match, continuing to check in family {0} with -i seed".format(rfam_acc))
+                ignore_seed.append(rfam_acc)
+                continue_to_check_in = True
+            else:
+                print("Error - SEED not in SCORES list. Larger than 25% mismatch. "
+                      "Manual intervention required, see error output:{0}".format(lsf_err_file))
+                continue_to_check_in = False
+        else:
+            continue_to_check_in = False
+            print("Family {0} failed QC checks. Manual Intervention is required. Please see error output: {1}".format(
+                family, lsf_err_file))
 
-    return False
+    return continue_to_check_in
 
 
-def run_qc_check(rfam_acc):
-    family_dir = os.path.join(UPDATE_DIR, rfam_acc)
+def run_qc_check(family):
+    family_dir = os.path.join(UPDATE_DIR, family)
     lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
     lsf_out_file = os.path.join(family_dir, "auto_rqc.out")
-    job_name = os.path.basename(rfam_acc)
+    job_name = os.path.basename(family)
     cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
            "\"cd {update_dir} && rqc-all.pl {rfam_acc}\"")
     subprocess.call(
         cmd.format(
             mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
-            job_name=job_name, update_dir=UPDATE_DIR, rfam_acc=rfam_acc), shell=True)
+            job_name=job_name, update_dir=UPDATE_DIR, rfam_acc=family), shell=True)
 
 
 def parse_arguments():
@@ -76,25 +114,26 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-
     args = parse_arguments()
     rfam_accs = get_rfam_accs(csv_file=args.input)
-    did_not_pass = []
-    passed = []
     for rfam_acc in rfam_accs:
         run_qc_check(rfam_acc)
-        time.sleep(120)
+        time.sleep(60)
         if check_rqc_passes(rfam_acc):
-            print('{0} passed QC checks'.format(rfam_acc))
-            passed.append(rfam_acc)
+            print("Continue to check in {0}".format(rfam_acc))
         else:
             did_not_pass.append(rfam_acc)
-            print('{0} DID NOT PASS QC checks. Please check the output at {1}'.format(
-                rfam_acc, os.path.join(UPDATE_DIR, rfam_acc, "auto_rqc.err")))
-    print("Families that did not pass QC checks: {0}".format(did_not_pass))
+            print("Cannot check in {0} - manual intervention required.".format(rfam_acc))
+
     with open(os.path.join(UPDATE_DIR, 'qc_passed.txt'), 'w') as outfile:
         for family in passed:
             outfile.write(family + '\n')
+    with open(os.path.join(UPDATE_DIR, 'qc_checkin_ignore_seed.txt'), 'w') as outfile:
+        for family in ignore_seed:
+            outfile.write(family + '\n')
     with open(os.path.join(UPDATE_DIR, 'did_not_pass_qc.txt'), 'w') as outfile:
         for family in did_not_pass:
+            outfile.write(family + '\n')
+    with open(os.path.join(UPDATE_DIR, 'seed_not_in_scores.txt'), 'w') as outfile:
+        for family in families_with_seed_error:
             outfile.write(family + '\n')

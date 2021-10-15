@@ -4,8 +4,9 @@ import subprocess
 
 import time
 
-from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, UPDATE_DIR, MEMORY, CPU,
+from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, MEMORY, CPU,
                                                           LSF_GROUP)
+from scripts.support.mirnas.config import UPDATE_DIR
 
 
 def extract_family_overlaps(rqc_output):

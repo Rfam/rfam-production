@@ -1,7 +1,8 @@
 import os
 import argparse
 import subprocess
-from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, get_rfam_accs
+from scripts.support.mirnas.update_mirnas_helpers import MEMORY, CPU, LSF_GROUP, get_rfam_accs
+from scripts.support.mirnas.config import UPDATE_DIR
 
 
 def auto_addref(rfam_accs, reference):

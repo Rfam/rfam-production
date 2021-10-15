@@ -2,7 +2,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, get_data_from_csv
+from scripts.support.mirnas.update_mirnas_helpers import MEMORY, CPU, LSF_GROUP, get_data_from_csv
+from scripts.support.mirnas.config import UPDATE_DIR
 
 
 def autorfmake(accessions_thresholds, serial=False):

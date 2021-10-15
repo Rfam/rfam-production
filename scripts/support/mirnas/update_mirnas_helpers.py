@@ -1,7 +1,7 @@
 import csv
 
-MIRNAS_CSV = "rfam-production/mirnas_sample.csv"
-UPDATE_DIR = "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/update_old_rfam_mirnas"
+from scripts.support.mirnas.config import MIRNAS_CSV
+
 MEMORY = 8000
 CPU = 4
 LSF_GROUP = "/rfam_srch"

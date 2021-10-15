@@ -3,11 +3,8 @@ import os
 import shutil
 import subprocess
 
-from scripts.support.mirnas.update_mirnas_helpers import UPDATE_DIR, get_data_from_csv
-
-searchdirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
-              "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk2_searches",
-              "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
+from scripts.support.mirnas.update_mirnas_helpers import get_data_from_csv
+from scripts.support.mirnas.config import UPDATE_DIR, searchdirs
 
 
 def checkout_family(rfam_acc):

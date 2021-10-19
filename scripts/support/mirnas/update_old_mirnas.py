@@ -24,7 +24,7 @@ def checkout_family(rfam_acc):
 
 def copy_seed_file(mirna):
     """
-    Copy the SEEd file from the miRNA search directories to the Rfam family directory
+    Copy the SEED file from the miRNA search directories to the Rfam family directory
     :param mirna: MiRBase ID
     """
 

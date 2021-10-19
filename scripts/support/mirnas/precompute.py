@@ -56,11 +56,12 @@ def remove_all_gaps(family_dir):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Precompute families by launching an rfsearch job")
-    required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument("--csv-input",
+    mutually_exclusive = parser.add_mutually_exclusive_group()
+    mutually_exclusive.add_argument("--input", help="A file listing all family directories", type=str)
+    mutually_exclusive.add_argument("--csv-input",
                                     help="CSV file with miRNA id, rfam accession number, "
                                          "threshold value of families to update")
-    parser.add_argument('--no-gap', help='Remove all gap columns from the alignment', action="store_true",
+    parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment', action="store_true",
                         default=False)
 
     return parser.parse_args()
@@ -68,11 +69,19 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    rfam_accs = get_rfam_accs(csv_file=args.input)
-    for rfam_acc in rfam_accs:
-        # commenting out for now as I don't know if it's needed
-        # if args.no_gap:
-        #     check = remove_all_gaps(rfam_family_dir)
-        #     if check is True:
-        rfam_family_dir = os.path.join(UPDATE_DIR, rfam_acc)
-        launch_new_rfsearch(rfam_family_dir, cpu=4)
+    dirs = []
+    if args.csv_input:
+        rfam_accs = get_rfam_accs(csv_file=args.input)
+        for rfam_acc in rfam_accs:
+            rfam_family_dir = os.path.join(UPDATE_DIR, rfam_acc)
+            dirs.append(rfam_family_dir)
+    elif args.input:
+        with open(args.input, 'r') as fp:
+            dirs = [x.strip() for x in fp]
+    if args.ignore_gap_check:
+        for family_dir in dirs:
+            launch_new_rfsearch(family_dir, cpu=4)
+    else:
+        for family_dir in dirs:
+            if remove_all_gaps(family_dir):
+                launch_new_rfsearch(family_dir, cpu=4)

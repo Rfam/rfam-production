@@ -8,10 +8,9 @@ from scripts.support.mirnas.config import UPDATE_DIR
 
 def launch_new_rfsearch(family_dir, cpu):
     """
-    Launches a new LSF job
-
-    family_dir: The location of a valid family directory (directory with Rfam ID)
-    cpus: Number of CPUs to use per thread
+    Launches a new LSF job with rfsearch.pl
+    :param family_dir: The location of a valid family directory (directory with Rfam ID)
+    :param cpu: Number of CPUs to use per thread
     """
 
     lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
@@ -37,16 +36,18 @@ def launch_new_rfsearch(family_dir, cpu):
 
 
 def remove_all_gaps(family_dir):
+    """
+    Rename SEED to OLD_SEED, then regenerate SEED file removing all gaps
+    :param family_dir: The location of a valid family directory (directory with Rfam ID)
+    :return: True if the gaps are removed and the SEED is updated, else False
+    """
+
     seed = os.path.join(family_dir, "SEED")
     old_seed = os.path.join(family_dir, "OLD_SEED")
 
-    # rename SEED to OLD_SEED
     os.rename(seed, old_seed)
-    # regenerate SEED file removing all gaps
-    cmd = "esl-reformat --mingap stockholm %s > %s" % (old_seed, seed)
-
+    cmd = "esl-reformat --mingap stockholm {old_seed} > {seed}".format(old_seed=old_seed, seed=seed)
     subprocess.call(cmd, shell=True)
-
     if os.path.exists(seed):
         return True
 
@@ -54,9 +55,11 @@ def remove_all_gaps(family_dir):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Script to precompute families')
+    parser = argparse.ArgumentParser(description="Precompute families by launching an rfsearch job")
     required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument("--input", help="CSV file", type=str)
+    required_arguments.add_argument("--csv-input",
+                                    help="CSV file with miRNA id, rfam accession number, "
+                                         "threshold value of families to update")
     parser.add_argument('--no-gap', help='Remove all gap columns from the alignment', action="store_true",
                         default=False)
 

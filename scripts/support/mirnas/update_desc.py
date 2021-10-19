@@ -14,6 +14,10 @@ field_options = {
 
 
 def replace_field(field):
+    """
+    Replace the line in the DESC file for the given field
+    :param field: AU, SE, or SS - field line to update
+    """
     for line in fileinput.input('DESC', inplace=True):
         if line.strip().startswith(field):
             line = field_options[field]
@@ -21,6 +25,11 @@ def replace_field(field):
 
 
 def update_desc_fields(rfam_accessions):
+    """
+    Update the DESC fields AU, SEE, and SS
+    :param rfam_accessions:
+    :return:
+    """
     fields = ['AU', 'SE', 'SS']
     for family in rfam_accessions:
         family_dir = os.path.join(UPDATE_DIR, family)
@@ -33,7 +42,8 @@ def update_desc_fields(rfam_accessions):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument("--input", help="CSV file", type=str)
+    required_arguments.add_argument(
+        "--csv-input", help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
 
     return parser.parse_args()
 

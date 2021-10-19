@@ -80,7 +80,7 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
     if args.csv_input:
-        mirnas_dict = get_mirna_dict(args.input)
+        mirnas_dict = get_mirna_dict(args.csv_input)
         ids_thresholds = mirnas_dict.values()
     elif args.thresholds:
         json_file = args.thresholds

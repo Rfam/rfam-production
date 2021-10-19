@@ -71,7 +71,7 @@ if __name__ == '__main__':
     args = parse_arguments()
     dirs = []
     if args.csv_input:
-        rfam_accs = get_rfam_accs(csv_file=args.input)
+        rfam_accs = get_rfam_accs(csv_file=args.csv_input)
         for rfam_acc in rfam_accs:
             rfam_family_dir = os.path.join(UPDATE_DIR, rfam_acc)
             dirs.append(rfam_family_dir)

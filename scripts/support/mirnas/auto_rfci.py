@@ -17,7 +17,7 @@ def check_svn_error(family):
     """
 
     family_dir = os.path.join(UPDATE_DIR, family)
-    err_file = os.path.join(family_dir, "auto_rfci.err")
+    err_file = os.path.join(family_dir, "auto_rfci.out")
 
     with open(err_file) as rqc_output:
         read_output = rqc_output.read()
@@ -38,7 +38,7 @@ def check_successful(rfam_acc):
     """
 
     family_dir = os.path.join(UPDATE_DIR, rfam_acc)
-    err_file = os.path.join(family_dir, "auto_rfci.err")
+    err_file = os.path.join(family_dir, "auto_rfci.out")
 
     with open(err_file) as rqc_output:
         read_output = rqc_output.read()
@@ -78,7 +78,7 @@ def call_check_in(family, ignore_seed):
     """
 
     check_in(family, ignore_seed=ignore_seed)
-    time.sleep(60)
+    time.sleep(30)
     if check_successful(family):
         print('{0} has been checked in'.format(family))
         checked_in.append(family)

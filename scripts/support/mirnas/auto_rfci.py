@@ -10,6 +10,12 @@ not_checked_in = []
 
 
 def check_svn_error(family):
+    """
+    Check the err output to decide if `svn add` needs to be applied
+    :param family: accession number of family
+    :return: True if `svn add` applied, else False
+    """
+
     family_dir = os.path.join(UPDATE_DIR, family)
     err_file = os.path.join(family_dir, "auto_rfci.err")
 
@@ -25,6 +31,12 @@ def check_svn_error(family):
 
 
 def check_successful(rfam_acc):
+    """
+    Check if the err output contains a success message
+    :param rfam_acc: accession number of family
+    :return: True if family has been checked in, else False
+    """
+
     family_dir = os.path.join(UPDATE_DIR, rfam_acc)
     err_file = os.path.join(family_dir, "auto_rfci.err")
 
@@ -37,6 +49,13 @@ def check_successful(rfam_acc):
 
 
 def check_in(acc, pre_seed=False, ignore_seed=False):
+    """
+    Call rfci.pl to check in the family
+    :param acc: accession number of family
+    :param pre_seed: True if using -preseed option, else False
+    :param ignore_seed: True if using -i seed option, else False
+    """
+
     family_dir = os.path.join(UPDATE_DIR, acc)
     out_file = os.path.join(family_dir, "auto_rfci.out")
     message = "\'Update using miRBase seed\'"
@@ -50,19 +69,14 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
         msg=message, option=option, rfam_acc=acc, out_file=out_file), shell=True)
 
 
-def get_families_from_files(qc_passed_file, ignore_seed_file):
-    with open(qc_passed_file) as infile:
-        file_data = infile.read()
-        families = [line for line in file_data.split('\n') if line.strip() != '']
+def call_check_in(family, ignore_seed):
+    """
+    Call check in and determine if family has been successfully checked in
+    :param family: accession number of the family
+    :param ignore_seed: True if using -i seed option, else False
+    :return:
+    """
 
-    with open(ignore_seed_file) as infile:
-        file_data = infile.read()
-        families_ignore_seed = [line for line in file_data.split('\n') if line.strip() != '']
-
-    return families, families_ignore_seed
-
-
-def call_check_in(family, ignore_seed=False):
     check_in(family, ignore_seed=ignore_seed)
     time.sleep(60)
     if check_successful(family):
@@ -83,6 +97,10 @@ def call_check_in(family, ignore_seed=False):
 
 
 def write_result_to_files():
+    """
+    Write to files, the list of families checked in and not checked in
+    """
+
     with open(os.path.join(UPDATE_DIR, 'checked_in.txt'), 'w') as outfile:
         for family in checked_in:
             outfile.write(family)
@@ -94,24 +112,43 @@ def write_result_to_files():
             not_checked_in))
 
 
-def check_in_all_families(families_to_ci, families_ignore_seed):
-    for family in families_to_ci:
-        call_check_in(family, ignore_seed=False)
-    for family in families_ignore_seed:
-        call_check_in(family, ignore_seed=True)
+def check_in_all_families(families, ignore_seed):
+    """
+    Start the process of checking in all given families
+    :param families: list of accession numbers fo rfamilies to check in
+    :param ignore_seed: True if using -i seed option, else False
+    """
+
+    for family in families:
+        call_check_in(family, ignore_seed)
 
     write_result_to_files()
 
 
+def get_families_from_files(qc_passed_file):
+    """
+    Get the list of families to check in from the given text file
+    :param qc_passed_file: text file
+    :return: list of families to check in
+    """
+    with open(qc_passed_file) as infile:
+        file_data = infile.read()
+        families = [line for line in file_data.split('\n') if line.strip() != '']
+
+    return families
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--qc_passed", help="list of families to check in", action="store")
-    parser.add_argument("--ignore-seed", help="list of families to check in with -i seed", action="store")
+    parser.add_argument("--input", help="Text file of the families that have passed QC checks, and can be checked in",
+                        action="store")
+    parser.add_argument("--ignore-seed", help="True if families should be checked in with -i seed", action="store",
+                        default=False)
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_arguments()
-    families, families_iseed = get_families_from_files(args.qc_passed, args.ignore_seed)
-    check_in_all_families(families, families_iseed)
+    families = get_families_from_files(args.input)
+    check_in_all_families(families, ignore_seed=args.ignore_seed)

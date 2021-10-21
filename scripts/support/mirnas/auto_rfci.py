@@ -57,7 +57,7 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     """
 
     family_dir = os.path.join(UPDATE_DIR, acc)
-    out_file = os.path.join(family_dir, "auto_rfci.out")
+    out_file = open(os.path.join(family_dir, "auto_rfci.out"), "w")
     message = "\'Update using miRBase seed\'"
     option = ''
     if pre_seed:
@@ -65,8 +65,8 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     if ignore_seed:
         option += "-i seed "
     os.chdir(UPDATE_DIR)
-    subprocess.call("rfci.pl -m {msg} {option} {rfam_acc} > {out_file}".format(
-        msg=message, option=option, rfam_acc=acc, out_file=out_file), shell=True)
+    subprocess.call("rfci.pl -m {msg} {option} {rfam_acc}".format(
+        msg=message, option=option, rfam_acc=acc), stdout=out_file, shell=True)
 
 
 def call_check_in(family, ignore_seed):
@@ -142,8 +142,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Text file of the families that have passed QC checks, and can be checked in",
                         action="store")
-    parser.add_argument("--ignore-seed", help="True if families should be checked in with -i seed", action="store",
-                        default=False)
+    parser.add_argument("--ignore-seed", help="True if families should be checked in with -i seed",
+                        action="store_true", default=False)
 
     return parser.parse_args()
 

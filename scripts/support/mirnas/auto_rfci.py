@@ -57,8 +57,8 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     :param ignore_seed: True if using -i seed option, else False
     """
     family_dir = os.path.join(UPDATE_DIR, acc)
-    lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
-    lsf_out_file = os.path.join(family_dir, "auto_rqc.out")
+    lsf_err_file = os.path.join(family_dir, "auto_rfci.err")
+    lsf_out_file = os.path.join(family_dir, "auto_rfci.out")
     cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
            "\"cd {update_dir} && rfci.pl -m {msg} {option} {rfam_acc}\"")
     message = "\'Update using miRBase seed\'"
@@ -67,7 +67,7 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
         option += "-preseed "
     if ignore_seed:
         option += "-i seed "
-    cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP, job_name=acc,
+    cmd = cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP, job_name=acc,
                update_dir=UPDATE_DIR, msg=message, option=option, rfam_acc=acc)
     subprocess.call(cmd, shell=True)
 

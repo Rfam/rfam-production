@@ -11,15 +11,15 @@ not_checked_in = []
 
 def check_svn_error(family):
     """
-    Check the err output to decide if `svn add` needs to be applied
+    Check the output to decide if `svn add` needs to be applied
     :param family: accession number of family
     :return: True if `svn add` applied, else False
     """
 
     family_dir = os.path.join(UPDATE_DIR, family)
-    err_file = os.path.join(family_dir, "auto_rfci.out")
+    out_file = os.path.join(family_dir, "auto_rfci.out")
 
-    with open(err_file) as rqc_output:
+    with open(out_file) as rqc_output:
         read_output = rqc_output.read()
         if "Filesystem has no item: '/trunk/Families/{0}/SEEDTBLOUT'".format(family) in read_output:
             print('svn add for this family')
@@ -32,15 +32,15 @@ def check_svn_error(family):
 
 def check_successful(rfam_acc):
     """
-    Check if the err output contains a success message
+    Check if the output contains a success message
     :param rfam_acc: accession number of family
     :return: True if family has been checked in, else False
     """
 
     family_dir = os.path.join(UPDATE_DIR, rfam_acc)
-    err_file = os.path.join(family_dir, "auto_rfci.out")
+    out_file = os.path.join(family_dir, "auto_rfci.out")
 
-    with open(err_file) as rqc_output:
+    with open(out_file) as rqc_output:
         read_output = rqc_output.read()
         if "Successfully checked family in" in read_output:
             return True
@@ -57,7 +57,7 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     """
 
     family_dir = os.path.join(UPDATE_DIR, acc)
-    out_file = open(os.path.join(family_dir, "auto_rfci.out"), "w")
+    out_file = os.path.join(family_dir, "auto_rfci.out")
     message = "\'Update using miRBase seed\'"
     option = ''
     if pre_seed:
@@ -65,8 +65,10 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     if ignore_seed:
         option += "-i seed "
     os.chdir(UPDATE_DIR)
-    subprocess.call("rfci.pl -m {msg} {option} {rfam_acc}".format(
-        msg=message, option=option, rfam_acc=acc), stdout=out_file, shell=True)
+    cmd = "rfci.pl -m {msg} {option} {rfam_acc} > {out_file} ".format(msg=message, option=option, rfam_acc=acc,
+                                                                      out_file=out_file)
+    process = subprocess.Popen([cmd], shell=True)
+    process.communicate()
 
 
 def call_check_in(family, ignore_seed):
@@ -93,7 +95,7 @@ def call_check_in(family, ignore_seed):
         else:
             not_checked_in.append(family)
             print('{0} HAS NOT been checked in. Please check manually {1}'.format(
-                family, os.path.join(UPDATE_DIR, family, "auto_rfci.err")))
+                family, os.path.join(UPDATE_DIR, family, "auto_rfci.out")))
 
 
 def write_result_to_files():

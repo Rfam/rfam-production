@@ -13,6 +13,24 @@ field_options = {
 }
 
 
+def rewrite_wk():
+    """
+    Extract the line beginning with 'WK' and append to the end of file
+    """
+    line_to_add = ''
+    with open('DESC', 'r') as desc:
+        lines = desc.readlines()
+        for line in lines:
+            if line.strip().startswith('WK'):
+                line_to_add = line
+                print(line_to_add)
+    with open('DESC', 'w') as desc:
+        for line in lines:
+            if not line.strip().startswith('WK'):
+                desc.write(line)
+        desc.write(line_to_add)
+
+
 def replace_field(field):
     """
     Replace the line in the DESC file for the given field
@@ -26,7 +44,7 @@ def replace_field(field):
 
 def update_desc_fields(rfam_accessions):
     """
-    Update the DESC fields AU, SEE, and SS
+    Update the DESC fields AU, SE, and SS
     :param rfam_accessions:
     :return:
     """
@@ -35,6 +53,7 @@ def update_desc_fields(rfam_accessions):
         family_dir = os.path.join(UPDATE_DIR, family)
         if os.path.exists(family_dir):
             os.chdir(family_dir)
+            rewrite_wk()
             for field in fields:
                 replace_field(field)
 
@@ -50,5 +69,5 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    rfam_accs = get_rfam_accs(args.input)
+    rfam_accs = get_rfam_accs(args.csv_input)
     update_desc_fields(rfam_accs)

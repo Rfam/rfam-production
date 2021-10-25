@@ -83,7 +83,7 @@ def write_to_files():
     with open(os.path.join(UPDATE_DIR, 'did_not_pass_qc.txt'), 'w') as outfile:
         for family in did_not_pass:
             outfile.write(family + '\n')
-    with open(os.path.join(UPDATE_DIR, 'seed_not_in_scores.txt'), 'w') as outfile:
+    with open(os.path.join(UPDATE_DIR, 'seed_not_in_scores.txt'), 'a') as outfile:
         for family in families_with_seed_error:
             outfile.write(family + '\n')
 

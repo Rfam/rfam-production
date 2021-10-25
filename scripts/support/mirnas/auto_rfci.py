@@ -60,54 +60,57 @@ def check_in(acc, pre_seed=False, ignore_seed=False):
     lsf_err_file = os.path.join(family_dir, "auto_rfci.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfci.out")
     cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
-           "\"cd {update_dir} && rfci.pl -m {msg} {option} {rfam_acc}\"")
+           "\"cd {update_dir} && yes | rfci.pl -m {msg} {option} {rfam_acc}\"")
     message = "\'Update using miRBase seed\'"
     option = ''
     if pre_seed:
         option += "-preseed "
     if ignore_seed:
         option += "-i seed "
-    cmd = cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP, job_name=acc,
-               update_dir=UPDATE_DIR, msg=message, option=option, rfam_acc=acc)
+    cmd = cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
+                     job_name=acc,
+                     update_dir=UPDATE_DIR, msg=message, option=option, rfam_acc=acc)
     subprocess.call(cmd, shell=True)
 
 
-def call_check_in(family, ignore_seed):
+def call_check_in(families, ignore_seed):
     """
     Call check in and determine if family has been successfully checked in
-    :param family: accession number of the family
+    :param families: accession numbers of the families to check in
     :param ignore_seed: True if using -i seed option, else False
     :return:
     """
-
-    check_in(family, ignore_seed=ignore_seed)
-    time.sleep(20)
-    if check_successful(family):
-        print('{0} has been checked in'.format(family))
-        checked_in.append(family)
-    else:
-        svn_add = check_svn_error(family)
-        if svn_add:
-            print('svn add has been applied for {0}. Trying to check in again using -preseed'.format(family))
-            check_in(family, pre_seed=True, ignore_seed=ignore_seed)
-            if check_successful(family):
-                print('{0} has been checked in'.format(family))
-                checked_in.append(family)
+    for family in families:
+        check_in(family, ignore_seed=ignore_seed)
+        time.sleep(20)
+        if check_successful(family):
+            print('{0} has been checked in'.format(family))
+            checked_in.append(family)
         else:
-            not_checked_in.append(family)
-            print('{0} HAS NOT been checked in. Please check manually {1}'.format(
-                family, os.path.join(UPDATE_DIR, family, "auto_rfci.err")))
+            svn_add = check_svn_error(family)
+            if svn_add:
+                print('svn add has been applied for {0}. Trying to check in again using -preseed'.format(family))
+                check_in(family, pre_seed=True, ignore_seed=ignore_seed)
+                if check_successful(family):
+                    print('{0} has been checked in'.format(family))
+                    checked_in.append(family)
+            else:
+                not_checked_in.append(family)
+                print('{0} HAS NOT been checked in. Please check manually {1}'.format(
+                    family, os.path.join(UPDATE_DIR, family, "auto_rfci.err")))
+
+    return checked_in, not_checked_in
 
 
-def write_result_to_files():
+def write_result_to_files(checked_in, not_checked_in):
     """
     Write to files, the list of families checked in and not checked in
     """
 
-    with open(os.path.join(UPDATE_DIR, 'checked_in.txt'), 'w') as outfile:
+    with open(os.path.join(UPDATE_DIR, 'checked_in.txt'), 'a') as outfile:
         for family in checked_in:
             outfile.write(family)
-    with open(os.path.join(UPDATE_DIR, 'not_checked_in.txt'), 'w') as outfile:
+    with open(os.path.join(UPDATE_DIR, 'not_checked_in.txt'), 'a') as outfile:
         for family in not_checked_in:
             outfile.write(family)
     if len(not_checked_in) > 0:
@@ -118,14 +121,11 @@ def write_result_to_files():
 def check_in_all_families(families, ignore_seed):
     """
     Start the process of checking in all given families
-    :param families: list of accession numbers fo rfamilies to check in
+    :param families: list of accession numbers for families to check in
     :param ignore_seed: True if using -i seed option, else False
     """
-
-    for family in families:
-        call_check_in(family, ignore_seed)
-
-    write_result_to_files()
+    checked, not_checked = call_check_in(families, ignore_seed)
+    write_result_to_files(checked, not_checked)
 
 
 def get_families_from_files(qc_passed_file):

@@ -160,7 +160,7 @@ process create_validate_xml_families {
     mkdir -p $baseDir/relX_text_search/families
     python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
     python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
-    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/relX_text_search/families/error.log"
+    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/relX_text_search/families/error.log"
     """
 }
 
@@ -172,7 +172,6 @@ process index_data_on_rfam_dev {
     val('done')
 
     """
-    cd_main && cd search_dumps
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
     cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
     """

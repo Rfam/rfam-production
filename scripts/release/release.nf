@@ -1,15 +1,24 @@
 nextflow.enable.dsl=2
 
+params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
+params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/"
+params.release_ftp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/ftp"
+
 process generate_seed_files {
+    memory '10GB'
     output:
     path("Rfam.seed")
 
     """
-    python $baseDir/generate_ftp_files.py --acc all --seed --dest-dir /hps/nobackup/production/xfam/rfam/RELEASES/14.7/release/ftp/seed/
+    rm -rf ${params.release_ftp}/seed/
+    mkdir -p ${params.release_ftp}/seed/
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir ${params.release_ftp}/seed/
     """
 
 }
 process generate_cm_files {  
+    memory '10GB'
+    publishDir "${params.release_ftp}/cm", mode: "copy"
     input:
     path(query)
 
@@ -17,10 +26,13 @@ process generate_cm_files {
     path("Rfam.cm")
 
     """
-    python $baseDir/generate_ftp_files.py --acc all --cm --dest-dir /hps/nobackup/production/xfam/rfam/RELEASES/14.7/release/ftp/cm/
+    rm -rf ${params.release_ftp}/cm
+    mkdir -p ${params.release_ftp}/cm/
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --cm --dest-dir .
     """
 }
 process rewrite_cm_file { 
+    publishDir "${params.release_ftp}/cm", mode: "copy"
     input:
     path(query)
 
@@ -34,7 +46,7 @@ process rewrite_cm_file {
 
 }
 process generate_archive_zip { 
-    publishDir "$baseDir", mode: "copy"
+    publishDir "${params.release_ftp}/cm", mode: "copy"
 
     input:
     path(query)
@@ -42,20 +54,15 @@ process generate_archive_zip {
     output:
     path("Rfam.cm.gz")
 
-    // convert this to a check 
     """
-    # check that Rfam.cm contains the correct number of families
-    cmstat $query | grep -v '#' | wc -l
-
-    # check the number of DESC lines - should be 2 * number of families
-    grep DESC $query | wc -l
-
+    cmstat $query > cmstat_file.txt
+    python scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
     gzip -c $query > Rfam.cm.gz
     """
 
 }
 process create_tar_file {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "${params.release_ftp}/cm", mode: "copy"
 
     input:
     path(query)
@@ -72,6 +79,18 @@ process create_tar_file {
     rm RF0*.cm
     """
 }
+process load_into_rfam_live {
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    python load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed ${params.release_ftp}/cm/Rfam.cm
+    """
+
+}
 
 workflow generate_annotated_files {
     emit: 
@@ -83,5 +102,54 @@ workflow generate_annotated_files {
         rfam_cm \
         | generate_archive_zip
         rfam_cm \
-        | create_tar_file
+        | create_tar_file \
+        | load_into_rfam_live
+}
+
+process generate_clan_files {
+    input:
+    val('ready')
+    
+    output:
+    path('CL*.txt')
+    """
+    mkdir -p ${params.release}/clan_competition/sorted  
+    python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type FULL
+    """
+}
+process sort_clan_files {
+    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
+    
+    input:
+    path(query)
+    
+    output:
+    path('*_s.txt')
+    """ 
+    for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
+    """
+}
+process run_clan_competition { 
+    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
+    
+    input:
+    path(query)
+    
+    output:
+    path('*')
+    """
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input ${params.release}/clan_competition/sorted --full
+    """
+}
+
+workflow clan_competition {
+    generate_clan_files \
+    | sort_clan_files \
+    | run_clan_competition
+    
+}
+
+workflow {
+    generate_annotated_files()
+    clan_competition()
 }

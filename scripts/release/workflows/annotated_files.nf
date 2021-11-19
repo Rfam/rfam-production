@@ -1,11 +1,11 @@
 nextflow.enable.dsl=2
 
 params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/"
 params.release_ftp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/ftp"
 
 process generate_seed_files {
     memory '10GB'
+    publishDir "${params.release_ftp}/seed", mode: "copy"
     
     output:
     path("Rfam.seed")
@@ -13,7 +13,7 @@ process generate_seed_files {
     """
     rm -rf ${params.release_ftp}/seed/
     mkdir -p ${params.release_ftp}/seed/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir ${params.release_ftp}/seed/
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir .
     """
 
 }

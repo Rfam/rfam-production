@@ -1,9 +1,10 @@
 nextflow.enable.dsl=2
 
 params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/"
+params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7"
 
 process generate_clan_files {
+    memory '10GB'
     
     output:
     path('CL*.txt')
@@ -13,6 +14,7 @@ process generate_clan_files {
     python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type FULL
     """
 }
+
 process sort_clan_files {
     publishDir "${params.release}/clan_competition/sorted", mode: "copy"
     
@@ -26,6 +28,7 @@ process sort_clan_files {
     for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
     """
 }
+
 process run_clan_competition { 
     publishDir "${params.release}/clan_competition/sorted", mode: "copy"
     
@@ -34,7 +37,7 @@ process run_clan_competition {
     
     output:
     path('*')
-    
+
     """
     python ${params.rfamprod}/scripts/processing/clan_competition.py --input ${params.release}/clan_competition/sorted --full
     """

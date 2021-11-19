@@ -1,38 +1,35 @@
 nextflow.enable.dsl=2
 
 params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/"
 
 process populate_rfam_live {
     
     output:
-    path('')
+    val('populate_complete')
 
     """
-    python ${params.release}/scripts/release/populate_rfamlive_for_release.py --all
+    python ${params.rfamprod}/scripts/release/populate_rfamlive_for_release.py --all
     """
 }
 process make_keywords {
-    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
     
     input:
-    path(query)
+    val('populate_complete')
     
     output:
-    path('')
+    val('keyword_complete')
 
     """ 
     perl make_rfam_keywords_table.pl
     """
 }
 process update_taxonomy_websearch { 
-    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
     
     input:
-    path(query)
+    val('keyword_complete')
     
     output:
-    path('')
+    val('update_complete')
     
     """
     perl updateTaxonomyWebsearch.pl

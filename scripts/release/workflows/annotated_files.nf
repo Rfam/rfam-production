@@ -6,6 +6,7 @@ params.release_ftp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/ftp"
 
 process generate_seed_files {
     memory '10GB'
+    
     output:
     path("Rfam.seed")
 
@@ -19,6 +20,7 @@ process generate_seed_files {
 process generate_cm_files {  
     memory '10GB'
     publishDir "${params.release_ftp}/cm", mode: "copy"
+    
     input:
     path(query)
 
@@ -33,6 +35,7 @@ process generate_cm_files {
 }
 process rewrite_cm_file { 
     publishDir "${params.release_ftp}/cm", mode: "copy"
+    
     input:
     path(query)
 
@@ -61,6 +64,7 @@ process generate_archive_zip {
     """
 
 }
+
 process create_tar_file {
     publishDir "${params.release_ftp}/cm", mode: "copy"
 
@@ -72,13 +76,14 @@ process create_tar_file {
 
     """
     rm -f RF0*.cm
-    grep ACC $query | sed -e 's/ACC\s\+//g' | sort | uniq > list.txt
+    grep ACC $query | sed -e 's/ACC\\s\\+//g' | sort | uniq > list.txt
     cmfetch --index $query
     while read p; do echo ${p}; cmfetch $query ${p} > "${p.cm}" ; done <list.txt
     tar -czvf Rfam.tar.gz RF0*.cm
     rm RF0*.cm
     """
 }
+
 process load_into_rfam_live {
     input:
     path(query)
@@ -106,50 +111,6 @@ workflow generate_annotated_files {
         | load_into_rfam_live
 }
 
-process generate_clan_files {
-    input:
-    val('ready')
-    
-    output:
-    path('CL*.txt')
-    """
-    mkdir -p ${params.release}/clan_competition/sorted  
-    python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type FULL
-    """
-}
-process sort_clan_files {
-    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
-    
-    input:
-    path(query)
-    
-    output:
-    path('*_s.txt')
-    """ 
-    for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
-    """
-}
-process run_clan_competition { 
-    publishDir "${params.release}/clan_competition/sorted", mode: "copy"
-    
-    input:
-    path(query)
-    
-    output:
-    path('*')
-    """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input ${params.release}/clan_competition/sorted --full
-    """
-}
-
-workflow clan_competition {
-    generate_clan_files \
-    | sort_clan_files \
-    | run_clan_competition
-    
-}
-
 workflow {
     generate_annotated_files()
-    clan_competition()
 }

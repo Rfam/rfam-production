@@ -36,7 +36,7 @@ process run_clan_competition {
     path(query)
     
     output:
-    path('*')
+    val('done')
 
     """
     python ${params.rfamprod}/scripts/processing/clan_competition.py --input ${params.release}/clan_competition/sorted --full

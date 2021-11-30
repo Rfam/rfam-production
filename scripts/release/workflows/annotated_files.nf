@@ -44,11 +44,11 @@ process rewrite_cm_file {
 
     """
     grep -v DESC $query > Rfam.nodesc.cm
-    perl seed-desc-to-cm.pl Rfam.seed Rfam.nodesc.cm > Rfam.cm
+    perl seed-desc-to-cm.pl ${params.release_ftp}/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
     """
 
 }
-process generate_archive_zip { 
+process checks_and_generate_archive_zip { 
     publishDir "${params.release_ftp}/cm", mode: "copy"
 
     input:
@@ -75,6 +75,7 @@ process create_tar_file {
     path("Rfam.tar.gz")
 
     """
+    cd ${params.release_ftp}/cm
     rm -f RF0*.cm
     grep ACC $query | sed -e 's/ACC\\s\\+//g' | sort | uniq > list.txt
     cmfetch --index $query
@@ -105,7 +106,7 @@ workflow generate_annotated_files {
         | generate_cm_files \
         | rewrite_cm_file | set { rfam_cm }
         rfam_cm \
-        | generate_archive_zip
+        | checks_and_generate_archive_zip
         rfam_cm \
         | create_tar_file \
         | load_into_rfam_live

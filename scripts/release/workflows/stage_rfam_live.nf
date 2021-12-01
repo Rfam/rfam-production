@@ -1,9 +1,5 @@
 nextflow.enable.dsl=2
 
-params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7"
-params.releasex = "14.7"
-
 process mysql_dump {
     
     output:
@@ -25,8 +21,8 @@ process restore_mysql {
 
     """ 
     cd ${params.release}/rfam_live_rel${params.releasex}.sql
-    python restore_mysqldump.py --rel
-    python restore_mysqldump.py --public
+    python ${params.rfamprod}/scripts/release/restore_mysqldump.py --rel
+    python ${params.rfamprod}/scripts/release/restore_mysqldump.py --public
     """
 }
 

@@ -1,7 +1,5 @@
 nextflow.enable.dsl=2
 
-params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-
 process populate_rfam_live {
     
     output:
@@ -20,7 +18,7 @@ process make_keywords {
     val('keyword_complete')
 
     """ 
-    perl make_rfam_keywords_table.pl
+    perl ${params.perl_path}/jiffies/release/make_rfam_keywords_table.pl
     """
 }
 process update_taxonomy_websearch { 
@@ -32,7 +30,7 @@ process update_taxonomy_websearch {
     val('update_complete')
     
     """
-    perl updateTaxonomyWebsearch.pl
+    perl ${params.perl_path}/jiffies/updateTaxonomyWebsearch.pl
     """
 }
 

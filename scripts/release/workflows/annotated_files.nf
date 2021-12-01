@@ -1,36 +1,31 @@
 nextflow.enable.dsl=2
 
-params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release_ftp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/ftp"
-
 process generate_seed_files {
     memory '10GB'
-    publishDir "${params.release_ftp}/seed", mode: "copy"
     
     output:
-    path("Rfam.seed")
+    path("${params.release_ftp}/seed/Rfam.seed")
 
     """
     rm -rf ${params.release_ftp}/seed/
     mkdir -p ${params.release_ftp}/seed/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir .
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir ${params.release_ftp}/seed
     """
 
 }
 process generate_cm_files {  
     memory '10GB'
-    publishDir "${params.release_ftp}/cm", mode: "copy"
     
     input:
     path(query)
 
     output:
-    path("Rfam.cm")
+    path("${params.release_ftp}/cm/Rfam.cm")
 
     """
     rm -rf ${params.release_ftp}/cm
     mkdir -p ${params.release_ftp}/cm/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --cm --dest-dir .
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --cm --dest-dir ${params.release_ftp}/cm
     """
 }
 process rewrite_cm_file { 
@@ -44,7 +39,7 @@ process rewrite_cm_file {
 
     """
     grep -v DESC $query > Rfam.nodesc.cm
-    perl seed-desc-to-cm.pl ${params.release_ftp}/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
+    perl ${params.perl_path}/jiffies/seed-desc-to-cm.pl ${params.release_ftp}/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
     """
 
 }
@@ -59,7 +54,7 @@ process checks_and_generate_archive_zip {
 
     """
     cmstat $query > cmstat_file.txt
-    python scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
+    python ${params.rfamprod}/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
     gzip -c $query > Rfam.cm.gz
     """
 
@@ -93,7 +88,7 @@ process load_into_rfam_live {
     val('done')
 
     """
-    python load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed ${params.release_ftp}/cm/Rfam.cm
+    python ${params.rfamprod}/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed ${params.release_ftp}/cm/Rfam.cm
     """
 
 }

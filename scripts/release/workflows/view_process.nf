@@ -5,7 +5,7 @@ process fetch_families_and_uuids {
   file('family_info')
 
   """
-  mysql $params.mysql_options <<< "select rfam_acc, uuid from _post_process where status='PEND'" > family_info
+  mysql `$baseDir/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND'" > family_info
   """
 }
 
@@ -21,8 +21,8 @@ process run_rfam_view {
   tuple val(family), val(uuid)
 
   """
-  $params.rfam_family_view -id $uuid -f $family family
-  mysql $params.mysql_options <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done
+  ${params.perl_path}/view/rfam_family_view.pl -id $uuid -f $family family
+  mysql `$baseDir/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done
   bash $baseDir/check_empty.sh done
   """
 }
@@ -32,4 +32,8 @@ workflow view_process {
     fetch_families_and_uuids \
     | splitCsv(sep: "\t") \
     | run_rfam_view
+}
+
+workflow {
+  view_process()
 }

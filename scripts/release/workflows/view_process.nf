@@ -23,7 +23,7 @@ process run_rfam_view {
   """
   $params.rfam_family_view -id $uuid -f $family family
   mysql $params.mysql_options <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done
-  test -n done
+  bash $baseDir/check_empty.sh done
   """
 }
 

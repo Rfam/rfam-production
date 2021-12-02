@@ -1,8 +1,5 @@
 nextflow.enable.dsl=2
 
-params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release_ftp = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7/ftp"
-
 process generate_seed_files {
     memory '10GB'
     publishDir "${params.release_ftp}/seed", mode: "copy"
@@ -44,11 +41,27 @@ process rewrite_cm_file {
 
     """
     grep -v DESC $query > Rfam.nodesc.cm
-    perl seed-desc-to-cm.pl Rfam.seed Rfam.nodesc.cm > Rfam.cm
+    perl ${params.perl_path}/jiffies/seed-desc-to-cm.pl ${params.release_ftp}/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
     """
 
 }
-process generate_archive_zip { 
+process checks { 
+    publishDir "${params.release_ftp}/cm", mode: "copy"
+
+    input:
+    path(query)
+
+    output:
+    path("Rfam.cm")
+
+    """
+    cmstat $query > cmstat_file.txt
+    python ${params.rfamprod}/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
+    """
+
+}
+
+process generate_archive_zip {
     publishDir "${params.release_ftp}/cm", mode: "copy"
 
     input:
@@ -58,8 +71,6 @@ process generate_archive_zip {
     path("Rfam.cm.gz")
 
     """
-    cmstat $query > cmstat_file.txt
-    python scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
     gzip -c $query > Rfam.cm.gz
     """
 
@@ -75,6 +86,7 @@ process create_tar_file {
     path("Rfam.tar.gz")
 
     """
+    cd ${params.release_ftp}/cm
     rm -f RF0*.cm
     grep ACC $query | sed -e 's/ACC\\s\\+//g' | sort | uniq > list.txt
     cmfetch --index $query
@@ -92,7 +104,7 @@ process load_into_rfam_live {
     val('done')
 
     """
-    python load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed ${params.release_ftp}/cm/Rfam.cm
+    python ${params.rfamprod}/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed $query
     """
 
 }
@@ -103,11 +115,13 @@ workflow generate_annotated_files {
     main:
         generate_seed_files \
         | generate_cm_files \
-        | rewrite_cm_file | set { rfam_cm }
-        rfam_cm \
+        | rewrite_cm_file \
+        | checks | set { rfam_cm }
+        rfam_cm
         | generate_archive_zip
         rfam_cm \
-        | create_tar_file \
+        | create_tar_file 
+        rfam_cm \
         | load_into_rfam_live
 }
 

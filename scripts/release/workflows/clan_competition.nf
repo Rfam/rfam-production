@@ -1,8 +1,5 @@
 nextflow.enable.dsl=2
 
-params.rfamprod = "/nfs/production/xfam/users/rfamprod/code/rfam-production"
-params.release = "/hps/nobackup/production/xfam/rfam/RELEASES/14.7"
-
 process generate_clan_files {
     memory '10GB'
     
@@ -36,7 +33,7 @@ process run_clan_competition {
     path(query)
     
     output:
-    path('*')
+    val('done')
 
     """
     python ${params.rfamprod}/scripts/processing/clan_competition.py --input ${params.release}/clan_competition/sorted --full

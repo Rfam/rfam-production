@@ -45,7 +45,23 @@ process rewrite_cm_file {
     """
 
 }
-process checks_and_generate_archive_zip { 
+process checks { 
+    publishDir "${params.release_ftp}/cm", mode: "copy"
+
+    input:
+    path(query)
+
+    output:
+    path("Rfam.cm")
+
+    """
+    cmstat $query > cmstat_file.txt
+    python ${params.rfamprod}/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
+    """
+
+}
+
+process generate_archive_zip {
     publishDir "${params.release_ftp}/cm", mode: "copy"
 
     input:
@@ -55,8 +71,6 @@ process checks_and_generate_archive_zip {
     path("Rfam.cm.gz")
 
     """
-    cmstat $query > cmstat_file.txt
-    python ${params.rfamprod}/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
     gzip -c $query > Rfam.cm.gz
     """
 
@@ -90,7 +104,7 @@ process load_into_rfam_live {
     val('done')
 
     """
-    python ${params.rfamprod}/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed ${params.release_ftp}/cm/Rfam.cm
+    python ${params.rfamprod}/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed $query
     """
 
 }
@@ -101,11 +115,13 @@ workflow generate_annotated_files {
     main:
         generate_seed_files \
         | generate_cm_files \
-        | rewrite_cm_file | set { rfam_cm }
+        | rewrite_cm_file \
+        | checks | set { rfam_cm }
+        rfam_cm
+        | generate_archive_zip
         rfam_cm \
-        | checks_and_generate_archive_zip
+        | create_tar_file 
         rfam_cm \
-        | create_tar_file \
         | load_into_rfam_live
 }
 

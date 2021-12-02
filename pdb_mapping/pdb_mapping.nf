@@ -169,11 +169,25 @@ process index_data_on_rfam_dev {
     val('xml')
 
     output:
-    val('done')
+    val('dev_done')
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
     cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
+    """
+
+}
+
+process index_data_on_prod {
+    input:
+    val('dev_done')
+
+    output:
+    val('done')
+
+    """
+    rm -rf /nfs/production/xfam/rfam/search_dumps/current_release/families/
+    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
     """
 
 }
@@ -227,7 +241,8 @@ workflow update_search_index {
     main:
     new_families \
     | create_validate_xml_families \
-    | index_data_on_rfam_dev
+    | index_data_on_rfam_dev \
+    | index_data_on_prod
 }
 
 workflow {

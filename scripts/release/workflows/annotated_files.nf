@@ -90,7 +90,7 @@ process create_tar_file {
     rm -f RF0*.cm
     grep ACC $query | sed -e 's/ACC\\s\\+//g' | sort | uniq > list.txt
     cmfetch --index $query
-    while read p; do echo ${p}; cmfetch $query ${p} > "${p.cm}" ; done <list.txt
+    while read p; do echo \$p; cmfetch Rfam.cm \$p > "\$p.cm" ; done <list.txt
     tar -czvf Rfam.tar.gz RF0*.cm
     rm RF0*.cm
     """

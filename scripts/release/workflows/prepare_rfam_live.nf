@@ -22,6 +22,7 @@ process make_keywords {
     """
 }
 process update_taxonomy_websearch { 
+    memory '10GB'
     
     input:
     val('keyword_complete')

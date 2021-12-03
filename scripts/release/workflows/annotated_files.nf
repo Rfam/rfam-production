@@ -83,7 +83,7 @@ process create_tar_file {
     path(query)
 
     output:
-    path("Rfam.tar.gz")
+    val("done")
 
     """
     cd ${params.release_ftp}/cm

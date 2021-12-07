@@ -5,7 +5,7 @@ process fetch_families_and_uuids {
   file('family_info')
 
   """
-  mysql `${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND'" > family_info
+  mysql `python ${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND'" > family_info
   """
 }
 
@@ -22,7 +22,7 @@ process run_rfam_view {
 
   """
   ${params.perl_path}/view/rfam_family_view.pl -id $uuid -f $family family
-  mysql `${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done
+  mysql `python ${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done
   bash $baseDir/check_empty.sh done
   """
 }

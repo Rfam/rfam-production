@@ -5,7 +5,7 @@ from config import rfam_local as config
 
 def main(db_name):
     db = getattr(config, db_name.upper())
-    options = "--host '{host}' --port {port} --user {user} --password '{password}' --database {db_name}".format(
+    options = "--host {host} --port {port} --user {user} -p{password} --database {db_name}".format(
         host=db['host'],
         port=db['port'],
         user=db['user'],

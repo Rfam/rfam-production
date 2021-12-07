@@ -2,15 +2,14 @@ nextflow.enable.dsl=2
 
 process generate_seed_files {
     memory '10GB'
-    publishDir "${params.release_ftp}/seed", mode: "copy"
     
     output:
-    path("Rfam.seed")
+    val('done)')
 
     """
     rm -rf ${params.release_ftp}/seed/
     mkdir -p ${params.release_ftp}/seed/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir .
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir "${params.release_ftp}/seed"
     """
 
 }
@@ -19,7 +18,7 @@ process generate_cm_files {
     publishDir "${params.release_ftp}/cm", mode: "copy"
     
     input:
-    path(query)
+    val('done)')
 
     output:
     path("Rfam.cm")

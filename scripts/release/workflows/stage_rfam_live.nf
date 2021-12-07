@@ -6,7 +6,7 @@ process mysql_dump {
     val('mysqldump_done')
 
     """
-    mysqldump `python $params.rfamprod/scripts/view/mysql_options.py $params.db` --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > ${params.release_ftp}/rfam_live_rel_${params.releasex}.sql"
+    mysqldump `python $params.rfamprod/scripts/view/mysql_options.py $params.db` --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > $params.release_ftp/rfam_live_rel_${params.releasex}.sql
     """
 }
 
@@ -19,7 +19,8 @@ process restore_mysql {
     val('done')
 
     """ 
-    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.rel_db` <<< "Create schema $params.db_schema_name; Use $params.db_schema_name; source $params.release/rfam_live_rel_${params.releasex}.sql"
+    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db_rel` <<< "Create schema $params.db_schema_name;Use $params.db_schema_name;source $params.release_ftp/rfam_live_rel_${params.releasex}.sql;"
+    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db_pub` <<< "Create schema $params.db_schema_name;Use $params.db_schema_name;source $params.release_ftp/rfam_live_rel_${params.releasex}.sql;"
     """
 }
 

@@ -3,26 +3,23 @@ nextflow.enable.dsl=2
 process mysql_dump {
     
     output:
-    path("rfam_live_rel${params.releasex}.sql")
+    val('mysqldump_done')
 
     """
-    cd ${params.release}
-    bsub -o mysqldump.out -e mysqldump.err "mysqldump -u admin -h mysql-rfam-live -P 4445 --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_rel${params.releasex}.sql"
+    mysqldump `python $params.rfamprod/scripts/view/mysql_options.py $params.db` --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > ${params.release_ftp}/rfam_live_rel_${params.releasex}.sql"
     """
 }
 
 process restore_mysql {
     
     input:
-    path(query)
+    val('mysqldump_done')
     
     output:
     val('done')
 
     """ 
-    cd ${params.release}/rfam_live_rel${params.releasex}.sql
-    python ${params.rfamprod}/scripts/release/restore_mysqldump.py --rel
-    python ${params.rfamprod}/scripts/release/restore_mysqldump.py --public
+    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.rel_db` <<< "Create schema $params.db_schema_name; Use $params.db_schema_name; source $params.release/rfam_live_rel_${params.releasex}.sql"
     """
 }
 

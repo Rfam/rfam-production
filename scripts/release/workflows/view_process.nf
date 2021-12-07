@@ -11,9 +11,7 @@ process fetch_families_and_uuids {
 
 process run_rfam_view {
   tag {"$family"}
-  memory {
-    ["RF00002", "RF00005", "RF00177", "RF02542"].contains(family) ? 10000 : 20000
-  }
+  memory { ["RF00002", "RF00005", "RF00177", "RF02542"].contains(family) ? "10GB" : "20GB" }
 
   clusterOptions '-g /rfam_view'
 

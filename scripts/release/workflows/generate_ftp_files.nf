@@ -9,7 +9,7 @@ process tree_files {
     """
     rm -rf ${params.release_ftp}/tree/
     mkdir -p ${params.release_ftp}/tree/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir ${params.release_ftp}/tree
+    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --tree --dest-dir ${params.release_ftp}/tree
     """
 }
 
@@ -21,9 +21,7 @@ process rfam2go_file {
     val('rfam2go_export')
 
     """
-    rm -rf ${params.release_ftp}/rfam2go
-    mkdir -p ${params.release_ftp}/rfam2go
-    perl ${params.perl_path}/export/rfam2go.pl > ${params.release_ftp}/rfam2go
+    perl ${params.perl_path}/export/rfam2go.pl > ${params.release_ftp}
     """
 }
 
@@ -35,12 +33,12 @@ process add_header {
     val('rfam2go_header')
 
     """
-    python ${params.rfamprod}/scripts/release/add_header_rfam2go.py --input $query
+    python ${params.rfamprod}/scripts/release/add_header_rfam2go.py --input ${params.release_ftp}/rfam2go
     """
 }
 
 process checksum {
-    publishDir "${params.release_ftp}/rfam2go/", mode: "copy"
+    publishDir "${params.release_ftp}", mode: "copy"
     
     input:
     val('rfam2go_header')
@@ -49,7 +47,7 @@ process checksum {
     path("md5.txt")
 
     """
-    cd ${params.release_ftp}/rfam2go && md5sum * > md5.txt
+    ${params.release_ftp}/rfam2go > md5.txt
     """
 }
 
@@ -125,5 +123,5 @@ workflow generate_ftp_files {
 }
 
 workflow {
-    stage_rfam_live()
+    generate_ftp_files()
 }

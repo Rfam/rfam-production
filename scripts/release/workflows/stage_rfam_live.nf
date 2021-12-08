@@ -1,5 +1,7 @@
 nextflow.enable.dsl=2
 
+params.releasex = "14_7"
+
 process mysql_dump {
     
     output:

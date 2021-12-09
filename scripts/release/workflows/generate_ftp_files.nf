@@ -65,15 +65,12 @@ process generate_fasta_files {
 
     """
     mkdir $params.release_ftp/fasta_files
-    python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --all --outdir $params.release_ftp/fasta_files"
+    python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --all --outdir $params.release_ftp/fasta_files
     """
 }
 
 
 workflow generate_ftp_files {
-    emit:
-    tree_done
-    main:
     tree_files()
     generate_full_region_file \
     | generate_pdb_file \

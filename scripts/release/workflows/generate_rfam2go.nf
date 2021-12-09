@@ -16,10 +16,10 @@ process add_header {
     path(query)
     
     output:
-    val('rfam2go_header')
+    path('rfam2go')
 
     """
-    python $params.rfamprod/scripts/release/add_header_rfam2go.py --input $params.release_ftp/rfam2go
+    python $params.rfamprod/scripts/release/add_header_rfam2go.py --input $query
     """
 }
 
@@ -27,17 +27,18 @@ process checksum {
     publishDir "$params.release_ftp", mode: "copy"
     
     input:
-    val('rfam2go_header')
+    path(query)
     
     output:
     path('md5.txt')
 
     """
-    md5sum $params.release_ftp/rfam2go > md5.txt
+    md5sum $query > md5.txt
     """
 }
 
 process validate_go {
+    publishDir "$params.release_ftp", mode: "copy"
     input:
     path(query)
     
@@ -45,15 +46,21 @@ process validate_go {
     val('go_validated')
 
     """
-    perl $params.perl_path/qc/validate_rfam2go.pl goselect selectgo $params.release_ftp/rfam2go
+    perl $params.perl_path/qc/validate_rfam2go.pl goselect selectgo $query
     """
 
 }
 
 workflow generate_rfam2go {
+    emit: 
+    rfam2go_file
+    
+    main:
     rfam2go_file \
-    | add_header \
-    | checksum \
+    | add_header | set {rfam2go_file}
+    rfam2go_file \
+    | checksum
+    rfam2go_file \
     | validate_go
 }
 

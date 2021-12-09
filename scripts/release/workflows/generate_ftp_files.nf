@@ -20,7 +20,7 @@ process generate_full_region_file {
     path('Rfam.full_region.gz')
 
     """
-    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db` < sql/ftp_rfam_full_reqion.sql > Rfam.full_region
+    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db` < $params.rfamprod/sql/ftp_rfam_full_reqion.sql > Rfam.full_region
     gzip Rfam.full_region
     """
 
@@ -36,7 +36,7 @@ process generate_pdb_file {
     path('Rfam.pdb.gz')
 
     """
-    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db` < sql/ftp_rfam_pdb.sql > Rfam.pdb
+    mysql `python $params.rfamprod/scripts/view/mysql_options.py $params.db` < $params.rfamprod/sql/ftp_rfam_pdb.sql > Rfam.pdb
     gzip Rfam.pdb
     """
 

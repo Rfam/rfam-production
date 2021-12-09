@@ -37,31 +37,10 @@ process checksum {
     """
 }
 
-process validate_go {
-    publishDir "$params.release_ftp", mode: "copy"
-    input:
-    path(query)
-    
-    output:
-    val('go_validated')
-
-    """
-    perl $params.perl_path/qc/validate_rfam2go.pl goselect selectgo $query
-    """
-
-}
-
 workflow generate_rfam2go {
-    emit: 
-    rfam2go_file
-    
-    main:
     rfam2go_file \
-    | add_header | set {rfam2go_file}
-    rfam2go_file \
+    | add_header \
     | checksum
-    rfam2go_file \
-    | validate_go
 }
 
 workflow {

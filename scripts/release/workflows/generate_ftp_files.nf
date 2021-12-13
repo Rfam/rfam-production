@@ -58,7 +58,6 @@ process generate_clanin_file {
 
 process generate_fasta_files {
     memory '10GB'
-    publishDir "$params.release_ftp", mode: "copy"
    
     output:
     val('done')

@@ -72,7 +72,7 @@ process create_release_note {
     """
 }
 
-process index_data {
+process index_data_on_dev {
     input:
     path(query)
 
@@ -82,8 +82,6 @@ process index_data {
     """
     unlink /nfs/production/xfam/rfam/search_dumps/rfam_dev
     ln -s $params.text_search /nfs/production/xfam/rfam/search_dumps/rfam_dev
-    unlink /nfs/production/xfam/rfam/search_dumps/current_release
-    ln -s $params.text_search /nfs/production/xfam/rfam/search_dumps/current_release
     """
 }
 
@@ -92,7 +90,7 @@ workflow text_search {
     | xml_validate \
     | check_error_logs_are_empty \
     | create_release_note \
-    | index_data
+    | index_data_on_dev
     
     
 }

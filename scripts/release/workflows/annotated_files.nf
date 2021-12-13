@@ -25,7 +25,7 @@ process generate_cm_files {
 
     """
     rm -rf ${params.release_ftp}/cm
-    mkdir -p ${params.release_ftp}/cm/
+    mkdir -p ${params.release_ftp}/cm
     python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --cm --dest-dir .
     """
 }

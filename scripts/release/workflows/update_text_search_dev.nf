@@ -5,10 +5,11 @@ params.xml_dumper = "$params.rfamprod/scripts/export/rfam_xml_dumper.py"
 params.validate = "$params.rfamprod/scripts/validation/xml_validator.py"
 params.empty = "$params.rfamprod/scripts/release/check_empty.sh"
 types = Channel.from( ['families', 'F'], ['clans', 'C'], ['motifs', 'M'], ['genomes', 'G'], ['full_region', 'R'] )
+groups = Channel.from('families', 'clans', 'motifs', 'genomes', 'full_region')
 
 process xml_dump {  
     input:
-    tuple val(group), val(type) from types 
+    tuple val(group), val(type) 
     
     output:
     val('xml_done')
@@ -24,7 +25,7 @@ process xml_dump {
 
 process xml_validate {
     input:
-    tuple val(group), val(type) from types 
+    tuple val(group), val('xml_done')
     
     output:
     val('validate_done')
@@ -36,7 +37,7 @@ process xml_validate {
 
 process check_error_logs_are_empty { 
     input:
-    tuple val(group), val(type) from types 
+    tuple val(group), val('xmlvalidate_done')
     
     output:
     val('done')
@@ -74,8 +75,10 @@ process index_data_on_dev {
 
 workflow text_search {
     types \
-    | xml_dump \
-    | xml_validate \
+    | xml_dump | set {done}
+    groups, done \
+    | xml_validate | | set {validated}
+    groups, validated \
     | check_error_logs_are_empty \
     | create_release_note \
     | index_data_on_dev

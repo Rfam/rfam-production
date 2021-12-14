@@ -1,16 +1,12 @@
 nextflow.enable.dsl=2
-
 params.text_search = "$params.release/text_search"
 params.xml_dumper = "$params.rfamprod/scripts/export/rfam_xml_dumper.py"
 params.validate = "$params.rfamprod/scripts/validation/xml_validator.py"
 params.empty = "$params.rfamprod/scripts/release/check_empty.sh"
 
-groups = Channel.from('families', 'clans', 'motifs', 'genomes', 'full_region')
 
-process xml_dump {   
-    input:
-    tuple val(group), val(type) 
-    
+process xml_dump {  
+    memory '10GB'
     output:
     val('xml_done')
 
@@ -18,55 +14,67 @@ process xml_dump {
     cd ${params.rfamprod}
     source django_settings.sh
     mkdir -p $params.text_search
-    mkdir $params.text_search/$group  
-    python $params.xml_dumper --type $type --out $params.text_search/$group
+    mkdir $params.text_search/families
+    mkdir $params.text_search/clans
+    mkdir $params.text_search/motifs
+    mkdir $params.text_search/genomes
+    mkdir $params.text_search/full_region   
+    python $params.xml_dumper --type F --out $params.text_search/families
+    python $params.xml_dumper --type C --out $params.text_search/clans
+    python $params.xml_dumper --type M --out $params.text_search/motifs
+    python $params.xml_dumper --type G --out $params.text_search/genomes
+    python $params.xml_dumper --type R --out $params.text_search/full_region 
     """
 }
 
 process xml_validate {
     input:
-    tuple val('xml_done'), val(group)
-    
+    val('xml_done')
+
     output:
     val('validate_done')
 
     """ 
-    python $params.validate --input $params.text_search/$group --log
+    python $params.validate --input $params.text_search/families --log
+    python $params.validate --input $params.text_search/clans --log
+    python $params.validate --input $params.text_search/motifs --log
+    python $params.validate --input $params.text_search/genomes --log
+    python $params.validate --input $params.text_search/full_region --log
     """
 }
 
 process check_error_logs_are_empty { 
     input:
-    tuple val('validate_done'), val(group)
-    
+    val('validate_done')
+
     output:
-    val('empty')
+    val('done')
 
     """ 
-    bash $params.empty "$params.text_search/$group/error.log"
+    bash $params.empty "$params.text_search/families/error.log"
+    bash $params.empty "$params.text_search/clans/error.log"
+    bash $params.empty "$params.text_search/motifs/error.log"
+    bash $params.empty "$params.text_search/genomes/error.log"
+    bash $params.empty "$params.text_search/full_region/error.log"
     """
 }
 process create_release_note {
     publishDir "$params.text_search", mode: "copy"
     
     input:
-    val('empty')
+    val('done')
     
     output:
     path("release_note.txt")
-
     """ 
     python $params.rfamprod/scripts/release/create_release_note.txt --version=$params.releasex --entries=`grep -r 'entry id' $params.text_search | wc -l`
     """
 }
-
 process index_data_on_dev {
     input:
     path(query)
-
     output:
     val('dev_done')
-
     """
     unlink /nfs/production/xfam/rfam/search_dumps/rfam_dev
     ln -s $params.text_search /nfs/production/xfam/rfam/search_dumps/rfam_dev
@@ -74,20 +82,14 @@ process index_data_on_dev {
 }
 
 workflow text_search {
-    emit: 
-        done
-        validated
-    main: 
-        Channel.from( ['families', 'F'], ['clans', 'C'], ['motifs', 'M'], ['genomes', 'G'], ['full_region', 'R'] ) \
-        | xml_dump | set {done}
-        done, groups \
-        | xml_validate | set {validated}
-        validated, groups \
-        | check_error_logs_are_empty \
-        | create_release_note \
-        | index_data_on_dev 
+    xml_dump \
+    | xml_validate \
+    | check_error_logs_are_empty \
+    | create_release_note \
+    | index_data_on_dev
+    
+    
 }
-
 workflow {
     text_search()
 }

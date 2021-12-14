@@ -4,10 +4,10 @@ params.text_search = "$params.release/text_search"
 params.xml_dumper = "$params.rfamprod/scripts/export/rfam_xml_dumper.py"
 params.validate = "$params.rfamprod/scripts/validation/xml_validator.py"
 params.empty = "$params.rfamprod/scripts/release/check_empty.sh"
-types = Channel.from( ['families', 'F'], ['clans', 'C'], ['motifs', 'M'], ['genomes', 'G'], ['full_region', 'R'] )
+
 groups = Channel.from('families', 'clans', 'motifs', 'genomes', 'full_region')
 
-process xml_dump {  
+process xml_dump {   
     input:
     tuple val(group), val(type) 
     
@@ -25,7 +25,7 @@ process xml_dump {
 
 process xml_validate {
     input:
-    tuple val(group), val('xml_done')
+    tuple val('xml_done'), val(group)
     
     output:
     val('validate_done')
@@ -37,10 +37,10 @@ process xml_validate {
 
 process check_error_logs_are_empty { 
     input:
-    tuple val(group), val('xmlvalidate_done')
+    tuple val('validate_done'), val(group)
     
     output:
-    val('done')
+    val('empty')
 
     """ 
     bash $params.empty "$params.text_search/$group/error.log"
@@ -50,7 +50,7 @@ process create_release_note {
     publishDir "$params.text_search", mode: "copy"
     
     input:
-    val('done')
+    val('empty')
     
     output:
     path("release_note.txt")
@@ -74,16 +74,18 @@ process index_data_on_dev {
 }
 
 workflow text_search {
-    types \
-    | xml_dump | set {done}
-    groups, done \
-    | xml_validate | | set {validated}
-    groups, validated \
-    | check_error_logs_are_empty \
-    | create_release_note \
-    | index_data_on_dev
-    
-    
+    emit: 
+        done
+        validated
+    main: 
+        Channel.from( ['families', 'F'], ['clans', 'C'], ['motifs', 'M'], ['genomes', 'G'], ['full_region', 'R'] ) \
+        | xml_dump | set {done}
+        done, groups \
+        | xml_validate | set {validated}
+        validated, groups \
+        | check_error_logs_are_empty \
+        | create_release_note \
+        | index_data_on_dev 
 }
 
 workflow {

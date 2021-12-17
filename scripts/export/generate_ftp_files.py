@@ -17,6 +17,7 @@ limitations under the License.
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -82,6 +83,10 @@ def rename_files(source_dir, file_type, rfam_acc):
 
         if not os.path.exists(new_name):
             sys.exit("%s SEED cound not be renamed" % rfam_acc)
+    elif file_type == "TREE":
+        taxtree = os.path.join(source_dir, rfam_acc + '.taxtree')
+        seed_tree = os.path.join(source_dir, rfam_acc + '.seed_tree')
+        shutil.copy(taxtree, seed_tree)
 
 
 # -----------------------------------------------------------------------------
@@ -125,7 +130,11 @@ def create_tree_archive(destination):
     """
     cwd = os.getcwd()
     os.chdir(destination)
-    cmd = "rm -f Rfam.seed_tree && cat *.taxtree > Rfam.seed_tree && gzip -c Rfam.seed_tree > Rfam.seed_tree.gz"
+    cmd = ("rm -f Rfam.seed_tree.tar.gz && "
+           "rm -Rf Rfam.seed_tree && "
+           "mkdir Rfam.seed_tree && "
+           "mv RF0*.seed_tree Rfam.seed_tree && "
+           "tar -cf Rfam.seed_tree.tar.gz Rfam.seed_tree")
     status = os.system(cmd.format(destination))
     if status:
         raise Exception('There was a problem generating Rfam.seed_tree.gz in {}'.format(destination))

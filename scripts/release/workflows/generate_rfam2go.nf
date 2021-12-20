@@ -19,7 +19,7 @@ process add_header {
     path('rfam2go')
 
     """
-    python $params.rfamprod/scripts/release/add_header_rfam2go.py --input $query
+    python $params.rfamprod/scripts/release/add_header_rfam2go.py --input $query --version $params.releasex
     """
 }
 

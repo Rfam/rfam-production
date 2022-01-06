@@ -123,7 +123,7 @@ process get_new_families {
     path(query)
     
     output:
-    path('pdb_families.txt')
+    path('pdb_families_*.txt')
 
     """
     python $baseDir/pdb_families.py
@@ -245,11 +245,15 @@ workflow update_search_index {
     | index_data_on_prod
 }
 
-workflow {
+workflow mapping_and_updates {
     pdb_mapping()
     ftp(pdb_mapping.out.pdb_txt)
     update_search_index(pdb_mapping.out.new_families)
     sync_db(pdb_mapping.out.pdb_txt)
+}
+
+workflow {
+    mapping_and_updates()
 }
 
 workflow.onComplete = {

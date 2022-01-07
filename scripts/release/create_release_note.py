@@ -4,9 +4,9 @@ from datetime import datetime
 
 def create_note(version, entries):
     now = datetime.now()
-    date = now.strftime("%m/%d/%Y")
+    date = now.strftime("%d-%m-%Y")
     release_text = "release={version}\n" \
-                   "release_date={date}}\n" \
+                   "release_date={date}\n" \
                    "entries={entries}\n".format(version=version, date=date, entries=entries)
     with open("release_note.txt", "w") as f:
         f.write(release_text)

@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 process rfam2go_file {
     input:
     val(_flag)
-    
+
     output:
     path('rfam2go')
 

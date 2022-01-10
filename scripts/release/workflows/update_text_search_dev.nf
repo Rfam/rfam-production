@@ -10,7 +10,7 @@ process xml_dump {
 
     input:
     val(_flag)
-    
+
     output:
     val('xml_done')
 

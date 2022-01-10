@@ -1,6 +1,8 @@
 nextflow.enable.dsl=2
 
 process populate_rfam_live {
+    input:
+    val(_flag)
     
     output:
     val('populate_complete')
@@ -36,9 +38,9 @@ process update_taxonomy_websearch {
 }
 
 workflow prepare_rfam_live {
-    emit:
-        done
-    populate_rfam_live \
+    take: start 
+    emit: done
+    start | populate_rfam_live \
     | make_keywords \
     | update_taxonomy_websearch
     | set { done }
@@ -46,5 +48,5 @@ workflow prepare_rfam_live {
 }
 
 workflow {
-    prepare_rfam_live()
+    prepare_rfam_live(Channel.of('start'))
 }

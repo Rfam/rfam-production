@@ -2,6 +2,8 @@ nextflow.enable.dsl=2
 
 process tree_files {
     memory '10GB'
+    input:
+    val(_flag)
     
     output:
     val('tree_done')
@@ -70,10 +72,10 @@ process generate_fasta_files {
 
 
 workflow generate_ftp_files {
-    emit:
-        done
+    take: start 
+    emit: done
     main:
-        tree_files()
+        tree_files(start)
         generate_full_region_file \
         | generate_pdb_file \
         | generate_clanin_file
@@ -82,5 +84,5 @@ workflow generate_ftp_files {
 }
 
 workflow {
-    generate_ftp_files()
+    generate_ftp_files(Channel.of('start'))
 }

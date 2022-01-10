@@ -2,6 +2,8 @@ nextflow.enable.dsl=2
 
 process generate_clan_files {
     memory '10GB'
+    input:
+    val(_flag)
     
     output:
     path('CL*.txt')
@@ -41,10 +43,10 @@ process run_clan_competition {
 }
 
 workflow clan_competition {
-    emit:
-        done
+    take: start
+    emit: done
     main:
-        generate_clan_files \
+        start | generate_clan_files \
         | sort_clan_files \
         | run_clan_competition
         | set { done }
@@ -52,5 +54,5 @@ workflow clan_competition {
 }
 
 workflow {
-    clan_competition()
+    clan_competition(Channel.of('start'))
 }

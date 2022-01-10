@@ -3,6 +3,9 @@ nextflow.enable.dsl=2
 process setup_files {
     publishDir "$baseDir", mode: "copy"
 
+    input:
+    val(_flag)
+
     output:
     path("pdb_seqres.txt")
 
@@ -205,59 +208,59 @@ process sync_db {
 }
 
 workflow pdb_mapping {
+    take: start
     emit:
         pdb_txt
         new_families
     main:
-    setup_files \
-    | splitFasta( record: [id: true, desc:true, text: true] ) \
-    | filter { record -> record.desc =~ /^mol:na.*/ } \
-    | collectFile( name:"pdb_trimmed_noprot.fa") {
-        it.text
-    } \
-    | remove_illegal_characters \
-    | splitFasta ( by:300, file:true ) \
-    | run_cmscan \
-    | collect \
-    | combine_cmscan_results \
-    | create_text_file_for_db | set { pdb_txt }
-    pdb_txt
-    | import_db_and_generate_clan_files \
-    | sort_clan_files \
-    | collect \
-    | run_clan_competition \
-    | get_new_families | set {new_families}
+        start | setup_files \
+        | splitFasta( record: [id: true, desc:true, text: true] ) \
+        | filter { record -> record.desc =~ /^mol:na.*/ } \
+        | collectFile( name:"pdb_trimmed_noprot.fa") {
+            it.text
+        } \
+        | remove_illegal_characters \
+        | splitFasta ( by:300, file:true ) \
+        | run_cmscan \
+        | collect \
+        | combine_cmscan_results \
+        | create_text_file_for_db | set { pdb_txt }
+        pdb_txt
+        | import_db_and_generate_clan_files \
+        | sort_clan_files \
+        | collect \
+        | run_clan_competition \
+        | get_new_families | set {new_families}
 }
 
 workflow ftp {
     take: pdb_txt
     main:
-    pdb_txt \
-    | update_ftp
+        pdb_txt \
+        | update_ftp
 }
 
 workflow update_search_index {
     take: new_families
     main:
-    new_families \
-    | create_validate_xml_families \
-    | index_data_on_rfam_dev \
-    | index_data_on_prod
+        new_families \
+        | create_validate_xml_families \
+        | index_data_on_rfam_dev \
+        | index_data_on_prod
 }
 
 workflow mapping_and_updates {
-    emit:
-        done
+    take: start
+    emit: done
     main:
-        pdb_mapping()
+        pdb_mapping(start)
         ftp(pdb_mapping.out.pdb_txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_db(pdb_mapping.out.pdb_txt)
-        | set { done }
+        sync_db(pdb_mapping.out.pdb_txt) | set { done }
 }
 
 workflow {
-    mapping_and_updates()
+    mapping_and_updates(Channel.of('start'))
 }
 
 workflow.onComplete = {

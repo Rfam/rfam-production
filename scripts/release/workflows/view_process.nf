@@ -1,6 +1,9 @@
 nextflow.enable.dsl=2
 
 process fetch_families_and_uuids {
+  input:
+  val(_flag)
+  
   output:
   file('family_info')
 
@@ -26,15 +29,15 @@ process run_rfam_view {
 }
 
 workflow view_process {
-  emit:
-    done
+  take: start
+  emit: done
   main:
-    fetch_families_and_uuids \
+    start | fetch_families_and_uuids \
     | splitCsv(sep: "\t") \
     | run_rfam_view \
     | set { done }
 }
 
 workflow {
-  view_process()
+  view_process(Channel.of('start'))
 }

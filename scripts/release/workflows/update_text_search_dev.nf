@@ -7,6 +7,10 @@ params.empty = "$params.rfamprod/scripts/release/check_empty.sh"
 
 process xml_dump {  
     memory '10GB'
+
+    input:
+    val(_flag)
+    
     output:
     val('xml_done')
 
@@ -83,10 +87,10 @@ process index_data_on_dev {
 }
 
 workflow text_search {
-    emit:
-        done
+    take: start
+    emit: done
     main:
-        xml_dump \
+        start | xml_dump \
         | xml_validate \
         | check_error_logs_are_empty \
         | create_release_note \
@@ -96,5 +100,5 @@ workflow text_search {
     
 }
 workflow {
-    text_search()
+    text_search(Channel.of('start'))
 }

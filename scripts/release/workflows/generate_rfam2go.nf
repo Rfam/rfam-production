@@ -1,6 +1,9 @@
 nextflow.enable.dsl=2
 
 process rfam2go_file {
+    input:
+    val(_flag)
+    
     output:
     path('rfam2go')
 
@@ -38,15 +41,15 @@ process checksum {
 }
 
 workflow generate_rfam2go {
-    emit:
-        done
+    take: start
+    emit: done
     main:
-        rfam2go_file \
+        start | rfam2go_file \
         | add_header \
         | checksum \
         | set { done }
 }
 
 workflow {
-    generate_rfam2go()
+    generate_rfam2go(Channel.of('start'))
 }

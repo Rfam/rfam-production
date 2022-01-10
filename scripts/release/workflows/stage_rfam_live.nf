@@ -3,6 +3,8 @@ nextflow.enable.dsl=2
 params.releasex = "14_7"
 
 process mysql_dump {
+    input:
+    val(_flag)
     
     output:
     val('mysqldump_done')
@@ -28,15 +30,15 @@ process restore_mysql {
 
 
 workflow stage_rfam_live {
-    emit:
-        done
+    take: start
+    emit: done 
     main:
-        mysql_dump \
-        | restore_mysql 
+        start | mysql_dump \
+        | restore_mysql \
         | set { done }
     
 }
 
 workflow {
-    stage_rfam_live()
+    stage_rfam_live(Channel.of('start'))
 }

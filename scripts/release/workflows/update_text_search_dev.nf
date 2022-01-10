@@ -83,11 +83,15 @@ process index_data_on_dev {
 }
 
 workflow text_search {
-    xml_dump \
-    | xml_validate \
-    | check_error_logs_are_empty \
-    | create_release_note \
-    | index_data_on_dev
+    emit:
+        done
+    main:
+        xml_dump \
+        | xml_validate \
+        | check_error_logs_are_empty \
+        | create_release_note \
+        | index_data_on_dev \
+        | set { done }
     
     
 }

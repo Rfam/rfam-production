@@ -28,8 +28,12 @@ process restore_mysql {
 
 
 workflow stage_rfam_live {
-    mysql_dump \
-    | restore_mysql 
+    emit:
+        done
+    main:
+        mysql_dump \
+        | restore_mysql 
+        | set { done }
     
 }
 

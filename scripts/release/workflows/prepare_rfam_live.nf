@@ -36,9 +36,12 @@ process update_taxonomy_websearch {
 }
 
 workflow prepare_rfam_live {
+    emit:
+        done
     populate_rfam_live \
     | make_keywords \
     | update_taxonomy_websearch
+    | set { done }
     
 }
 

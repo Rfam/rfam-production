@@ -70,11 +70,15 @@ process generate_fasta_files {
 
 
 workflow generate_ftp_files {
-    tree_files()
-    generate_full_region_file \
-    | generate_pdb_file \
-    | generate_clanin_file
-    generate_fasta_files()
+    emit:
+        done
+    main:
+        tree_files()
+        generate_full_region_file \
+        | generate_pdb_file \
+        | generate_clanin_file
+        generate_fasta_files() \
+        | set { done }
 }
 
 workflow {

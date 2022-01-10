@@ -246,10 +246,14 @@ workflow update_search_index {
 }
 
 workflow mapping_and_updates {
-    pdb_mapping()
-    ftp(pdb_mapping.out.pdb_txt)
-    update_search_index(pdb_mapping.out.new_families)
-    sync_db(pdb_mapping.out.pdb_txt)
+    emit:
+        done
+    main:
+        pdb_mapping()
+        ftp(pdb_mapping.out.pdb_txt)
+        update_search_index(pdb_mapping.out.new_families)
+        sync_db(pdb_mapping.out.pdb_txt)
+        | set { done }
 }
 
 workflow {

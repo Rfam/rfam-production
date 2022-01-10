@@ -38,9 +38,13 @@ process checksum {
 }
 
 workflow generate_rfam2go {
-    rfam2go_file \
-    | add_header \
-    | checksum
+    emit:
+        done
+    main:
+        rfam2go_file \
+        | add_header \
+        | checksum \
+        | set { done }
 }
 
 workflow {

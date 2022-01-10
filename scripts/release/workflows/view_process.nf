@@ -26,10 +26,13 @@ process run_rfam_view {
 }
 
 workflow view_process {
+  emit:
+    done
   main:
     fetch_families_and_uuids \
     | splitCsv(sep: "\t") \
-    | run_rfam_view
+    | run_rfam_view \
+    | set { done }
 }
 
 workflow {

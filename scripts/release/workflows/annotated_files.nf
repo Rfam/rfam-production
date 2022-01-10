@@ -111,6 +111,7 @@ process load_into_rfam_live {
 workflow generate_annotated_files {
     emit: 
         rfam_cm
+        done
     main:
         generate_seed_files \
         | generate_cm_files \
@@ -122,6 +123,7 @@ workflow generate_annotated_files {
         | create_tar_file 
         rfam_cm \
         | load_into_rfam_live
+        | set { done }
 }
 
 workflow {

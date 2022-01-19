@@ -158,7 +158,7 @@ process create_validate_xml_families {
     source ${params.rfamprod}/django_settings.sh
     rm -rf $baseDir/relX_text_search/families
     mkdir -p $baseDir/relX_text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families -db rfam-rel
     python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
     bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/relX_text_search/families/error.log"
     """
@@ -180,7 +180,7 @@ process index_data_on_rfam_dev {
 
 process sync_db {
     input:
-    path(query)
+    tuple val(done), path(query)
 
     output:
     val('done')
@@ -223,18 +223,20 @@ workflow ftp {
 }
 
 workflow update_search_index {
+    emit: done
     take: new_families
     main:
     new_families \
     | create_validate_xml_families \
     | index_data_on_rfam_dev
+    | set {done}
 }
 
 workflow {
     pdb_mapping()
     ftp(pdb_mapping.out.pdb_txt)
     update_search_index(pdb_mapping.out.new_families)
-    sync_db(pdb_mapping.out.pdb_txt)
+    sync_db(update_search_index.out.done, pdb_mapping.out.pdb_txt)
 }
 
 workflow.onComplete = {

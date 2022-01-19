@@ -11,16 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-"""
-Description: This module exports Rfam data for the search engine
-
-TO DO:
-       - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
-       - Set release version and date automatically
-"""
-
-# ----------------------------------------------------------------------------
+from __future__ import print_function
 
 import argparse
 import datetime
@@ -36,16 +27,25 @@ import django
 
 from config import rfam_config as rfc
 from config import rfam_search as rs
+from config.rfam_config import RFAMREL, RFAMLIVE
 from utils import RfamDB
 from utils.parse_taxbrowser import *
 
-django.setup()
-#settings.configure()
-
 from rfam_schemas.RfamLive.models import Genseq, Genome
 
+"""
+Description: This module exports Rfam data for the search engine
 
-# ----------------------------------------------------------------------------
+TO DO:
+       - Optimizations (motif_xml_dumper, family_xml_dumper, clan_xml_dumper)
+       - Set release version and date automatically
+"""
+
+django.setup()
+# settings.configure()
+
+DB_CONFIG = None
+
 
 def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
     """
@@ -97,7 +97,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     entry_count = len(entries.findall("entry"))
 
     if entry_count == 0:
-        print "No full region entries found for %s" % entry_acc
+        print("No full region entries found for %s" % entry_acc)
         return
 
     ET.SubElement(db_xml, "entry_count").text = str(entry_count)
@@ -121,7 +121,7 @@ def get_taxonomy_info(rfam_acc):
     """
     Get distinct ncbi_ids and tax_strings associated with a family.
     """
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(rs.NCBI_IDs_QUERY % rfam_acc)
     ncbi_ids = []
@@ -506,7 +506,7 @@ def get_rnacentral_mapping(upid):
     AND gs.upid = '%s'
     AND gs.version='14.0'
     """
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True, buffered=True)
     cursor.execute(query % upid)
     rnacentral_ids = {}
@@ -541,7 +541,7 @@ def full_region_xml_builder(entries, upid):
         chromosomes = get_chromosome_metadata()
 
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True, buffered=True)
 
     # work on 'full' refions
@@ -693,7 +693,6 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
         for tax_string in tax_strings:
             ET.SubElement(add_fields, "field", name="tax_string").text = str(tax_string)
-
 
         # work on pseudoknots here
         if fields["has_pseudoknot"] == 1:
@@ -881,7 +880,7 @@ def fetch_value_list(rfam_acc, query):
     query:  A string with the MySQL query to be executed
     """
 
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
 
     cursor = cnx.cursor(raw=True)
 
@@ -916,7 +915,7 @@ def fetch_entry_fields(entry_acc, entry_type):
 
     # maybe the entry type not required... use rfam_acc[0:2]
 
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True)
 
     entry_type = entry_type[0].capitalize()
@@ -939,7 +938,7 @@ def fetch_entry_fields(entry_acc, entry_type):
         fields = cursor.fetchall()[0]
 
     except:
-        print "Failure retrieving values for entry %s." % entry_acc
+        print("Failure retrieving values for entry %s." % entry_acc)
 
     cursor.close()
     cnx.disconnect()
@@ -959,7 +958,7 @@ def fetch_value(query, accession):
                 to execute the query on
     """
 
-    cnx = RfamDB.connect()
+    cnx = RfamDB.connect(db_config=DB_CONFIG)
 
     cursor = cnx.cursor(raw=True)
 
@@ -1007,7 +1006,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
             try:
                 os.mkdir(outdir)
             except:
-                print "Error creating output directory at: ", outdir
+                print("Error creating output directory at: ", outdir)
 
         # export all entries
         if rfam_acc is None:
@@ -1042,16 +1041,16 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                     print(entry)
                     t0 = timeit.default_timer()
                     xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir)
-                    print "%s execution time: %.1fs" % (entry, timeit.default_timer() - t0)
+                    print("%s execution time: %.1fs" % (entry, timeit.default_timer() - t0))
 
                 return
 
             # Don't build hierarchical references for Clans and Motifs
             for entry in rfam_accs:
-                print entry
+                print(entry)
                 t0 = timeit.default_timer()
                 xml4db_dumper(None, None, entry_type, entry, False, outdir)
-                print "%s execution time: %.1fs" % (entry, timeit.default_timer() - t0)
+                print("%s execution time: %.1fs" % (entry, timeit.default_timer() - t0))
 
         # export single entry
         else:
@@ -1088,7 +1087,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
             for rfam_acc in rem_fams:
                 logging.debug(rfam_acc)
         else:
-            print "Error exporting %s." % rfam_acc
+            print("Error exporting %s." % rfam_acc)
 
 
 # ----------------------------------------------------------------------------
@@ -1145,10 +1144,10 @@ def xmllint(filepath):
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print 'ERROR: xmllint validation failed'
-        print e.output
-        print e.cmd
-        print 'Return code {0}'.format(e.returncode)
+        print('ERROR: xmllint validation failed')
+        print(e.output)
+        print(e.cmd)
+        print('Return code {0}'.format(e.returncode))
         sys.exit(1)
 
 
@@ -1178,6 +1177,8 @@ def usage():
     req_args.add_argument(
         "--out", help="path to output directory", type=str, required=True)
 
+    parser.add_argument("-db", "--database", help="database to use", type=str, default=None)
+
     return parser
 
 
@@ -1202,14 +1203,24 @@ if __name__ == '__main__':
             wrong_input = True
 
     if wrong_input is True:
-        print "\nAccession does not match the export type.\n"
+        print("\nAccession does not match the export type.\n")
         parser.print_help()
         sys.exit()
 
     # check output directory
     if os.path.isdir(args.out) is False:
-        print "\nPlease provide a valid output directory.\n"
+        print("\nPlease provide a valid output directory.\n")
         parser.print_help()
         sys.exit()
+
+    if not args.db:
+        DB_CONFIG = RFAMLIVE
+    else:
+        if args.db == 'rfam-rel':
+            DB_CONFIG = RFAMREL
+        if args.db == 'rfam-live':
+            DB_CONFIG = RFAMLIVE
+        else:
+            print("\nPlease provide a valid database option: rfam-rel or rfam-live\n")
 
     main(args.type, args.acc, args.out, hfields=args.hfields)

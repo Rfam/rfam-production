@@ -6,7 +6,7 @@ import mysql.connector
 
 from pdb_exceptions import CheckRowsError, NoFileGivenError
 from utils import RfamDB
-from config.rfam_config import RFAMREL
+from config.rfam_config import RFAMREL, PG, FB1
 
 DB_CONFIG = None
 
@@ -102,6 +102,10 @@ if __name__ == '__main__':
     args = parse_args()
     if args.database == 'rfam-rel':
         DB_CONFIG = RFAMREL
+    if args.database == 'pg':
+        DB_CONFIG = PG
+    if args.database == 'fb1':
+        DB_CONFIG = FB1
     if args.file and args.no_quality_control_checks:
         create_pdb_temp_table(args.file)
         rename_pdb_table()

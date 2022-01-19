@@ -22,10 +22,10 @@ import subprocess
 import sys
 import tempfile
 
-
 JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",
            "TREE": "writeAnnotatedTree.pl"}
+
 
 # -----------------------------------------------------------------------------
 
@@ -58,6 +58,7 @@ def export_ftp_file(file_type, rfam_acc, dest_dir=None):
     except:
         raise Exception('Command {} failed'.format(cmd))
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -78,7 +79,7 @@ def rename_files(source_dir, file_type, rfam_acc):
         if not os.path.exists(seed_file_loc):
             sys.exit("File does not exist %s" % seed_file_loc)
 
-        new_name = os.path.join(source_dir, rfam_acc+'.seed')
+        new_name = os.path.join(source_dir, rfam_acc + '.seed')
         os.rename(seed_file_loc, new_name)
 
         if not os.path.exists(new_name):
@@ -157,7 +158,7 @@ def validate_seed_archive(destination, rfam_accs):
                 family_count += 1
     os.chdir(cwd)
     try:
-        assert(family_count == len(rfam_accs))
+        assert (family_count == len(rfam_accs))
         print('OK: Found {} families in Rfam.seed'.format(family_count))
     except AssertionError:
         raise Exception('Error: Rfam.seed contains {} families instead of {}'.format(family_count, len(rfam_accs)))
@@ -208,6 +209,7 @@ def parse_arguments():
     parser.add_argument("--dest-dir", help="Destination directory to generate files to")
 
     return parser
+
 
 # -----------------------------------------------------------------------------
 

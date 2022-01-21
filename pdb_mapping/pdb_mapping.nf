@@ -195,7 +195,7 @@ process index_data_on_prod {
 
 }
 
-process sync_db {
+process sync_rel_db {
     input:
     path(query)
 
@@ -204,6 +204,18 @@ process sync_db {
 
     """
     python $baseDir/pdb_full_region_table.py --file $query --database rfam-rel -nqc
+    """
+}
+
+process sync_web_production_db {
+    input:
+    path(query)
+
+    output:
+    val('synced')
+    """
+    python $baseDir/pdb_full_region_table.py --file $query --database pg -nqc
+    python $baseDir/pdb_full_region_table.py --file $query --database fb1 -nqc
     """
 }
 
@@ -256,7 +268,9 @@ workflow mapping_and_updates {
         pdb_mapping(start)
         ftp(pdb_mapping.out.pdb_txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_db(pdb_mapping.out.pdb_txt) | set { done }
+        sync_rel_db(pdb_mapping.out.pdb_txt) 
+        sync_web_production_db(pdb_mapping.out.pdb_txt) 
+        | set { done }
 }
 
 workflow {

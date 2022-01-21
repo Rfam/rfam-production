@@ -52,203 +52,28 @@ source /path/to/rfam_rh74/rfamrc
 
 ---
 
-## Generate annotated SEED files
+## Start the release pipeline
 
-Export SEED files from SVN using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/generate_ftp_files.py):
+1. Update the release version in scripts/release/workflows/nextflow.config 
 
+2. Start the pipeline
 ```
-# to export all files (recommended 16GB RAM to checkout large families)
-python generate_ftp_files.py --acc all --seed --dest-dir /path/to/seed/files/dest/dir
-
-# to export accessions listed in a file
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --seed --dest-dir /path/to/seed/files/dest/dir
+nextflow run scripts/release/workflows/release_pipeline.nf 
 ```
 
-Alternatively, use [writeAnnotatedSeed.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedSeed.pl):
+This will begin a pipeline that runs the below workflows, in order. If you wish to run these workflows individually, the commands are outlined below. 
+
+## Generate annotated files
+
+This workflow will: 
+- Export SEED and CM files
+- Generate CM archive zip
+- Create tar file 
+- Load the SEED and CM files into rfam_live 
 
 ```
-perl writeAnnotatedSeed.pl RFXXXXX
+nextflow run scripts/release/workflows/annotated_files.nf
 ```
-
-## Generate annotated CM files
-
-1. Export plain CM files using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master//scripts/export/generate_ftp_files.py):
-
-    ```
-    # to export all files (recommended 16GB RAM to checkout large families)
-    python generate_ftp_files.py --acc all --cm --dest-dir /path/to/seed/files/dest/dir
-
-    # to export accessions listed in a file
-    python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --cm --dest-dir /path/to/CM/files/dest/dir
-    ```
-
-    alternatively use [writeAnnotatedCM.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedCM.pl):
-
-    ```
-    perl writeAnnotatedCM.pl RFXXXXX
-    ```
-
-2. Rewrite CM file and descriptions from SEED using [seed-desc-to-cm.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/seed-desc-to-cm.pl):
-
-    Required files:
-
-    - `$CM_no_desc` - a CM file to add DESC to (could be 1 CM or all CMs in a single file)
-    - `$SEED_with_DESC` - a seed file with DESC lines (could be 1 seed or all seeds in a single file)
-
-    ```
-    # filter out DESC lines to avoid duplicates as some CMs already have DESC lines
-    grep -v DESC $CM_no_desc > Rfam.nodesc.cm
-    perl seed-desc-to-cm.pl $SEED_with_DESC Rfam.nodesc.cm > Rfam.cm
-
-    # check that Rfam.cm contains the correct number of families
-    cmstat Rfam.cm | grep -v '#' | wc -l
-
-    # check the number of DESC lines - should be 2 * number of families
-    grep DESC Rfam.cm | wc -l
-
-    # generate the final archive
-    gzip -c Rfam.cm > Rfam.cm.gz
-    ```
-
-3. Split annotated `Rfam.cm` into individual `.cm` files and create `Rfam.tar.gz`:
-
-    ```
-    # delete any existing files
-    rm -f RF0*.cm
-
-    # get a list of Rfam IDs found in Rfam.cm
-    grep ACC Rfam.cm | sed -e 's/ACC\s\+//g' | sort | uniq > list.txt
-
-    # create an index file to speed up cm retrieval
-    cmfetch --index Rfam.cm
-
-    # create individual cm files
-    while read p; do echo $p; cmfetch Rfam.cm $p > "$p.cm" ; done <list.txt
-
-    # create an archive
-    tar -czvf Rfam.tar.gz RF0*.cm
-
-    # remove temporary files
-    rm RF0*.cm
-    ```
-
-The CM file is used for PDB mapping. The SEED and CM files are stored in FTP archive and are also available from the Rfam website.
-
-## Load annotated SEED and CM files into `rfam_live`
-
-This enables the SEED and CM download directly from the Rfam website.
-Requires new `Rfam.cm` and `Rfam.seed` files.
-
-Use [load_cm_seed_in_db.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/load_cm_seed_in_db.py):
-
-```
-python load_cm_seed_in_db.py /path/to/Rfam.seed /path/to/Rfam.cm
-```
-
-Alternatively, use [populateAnnotatedFiles.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/populateAnnotatedFiles.pl) to process families one by one:
-
-```
-perl populateAnnotatedFiles.pl RFXXXXX /path/to/RFXXXXX.cm /path/to/RFXXXXX.seed
-```
-
----
-
-## Clan competition
-
-Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
-
-1. Create a destination directory for clan competition required files
-
-    ```
-    mkdir ~/releaseX/clan_competition
-    mkdir ~/releaseX/clan_competition/sorted    
-    ```
-
-2. Generate clan files using [clan_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clan_file_generator.py):
-
-    ```
-    # recommended 16GB RAM
-    python clan_file_generator.py --dest-dir ~/releaseX/clan_competition --clan-acc CL00001 --cc-type FULL
-    ```
-    `--cc-type:` Clan competition type FULL/PDB
-
-    `--clan-acc:` Clan accession to compete
-
-    `--all:` Compete all Rfam clans
-
-    `-f:` Only compete clans in file
-
-
-3. Sort clan files in `dest-dir` based on rfamseq_acc (col2) using linux sort command and store then in the `sorted` directory:
-
-    ```
-    sort -k2 -t $'\t' clan_file.txt > ~/releaseX/clan_competition/sorted/clan_file_sorted.txt
-    ```
-
-    or for multiple files `cd ~/releaseX/clan_competition` and run:
-
-    ```
-    for file in ./CL*; do sort -k2 -t $'\t' ${file:2:7}.txt > sorted/${file:2:7}_s.txt; done
-    ```
-
-4. Run clan competition using [clan_competition.py](https://github.com/Rfam/rfam-production/blob/master/scripts/processing/clan_competition.py):
-
-    ```
-    python clan_competition.py --input ~/releaseX/clan_competition/sorted --full
-    ```
-
-    `--input:` Path to ~/releaseX/clan_competition/sorted
-
-    `--pdb:` Type of hits to compete PDB (pdb_full_region table)
-
-    `--full:` Type of hits to compete FULL (full_region table)
-
----
-
-## Prepare rfam_live for a new release
-
-1. Populate `rfam_live` tables using [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py):
-
-    ```
-    python populate_rfamlive_for_release.py --all
-    ```
-
-2. Make keywords using [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl):
-
-    ```
-    perl make_rfam_keywords_table.pl
-    ```
-
-3. Update `taxonomy_websearch` table using [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) (:warning: requires cluster access):
-
-    ```
-    perl updateTaxonomyWebsearch.pl
-    ```
-
----
-
-## Running view processes
-
-:warning: Requires cluster access and updating the PDB fasta file. Note that using PDB view processes plugin will be discontinued in favour of regular updates of the entire `pdb_full_region` table.
-
-1. Create a list of tab separated family accessions and their corresponding uuids using the following query:
-
-    ```
-    select rfam_acc, uuid
-    from _post_process
-    where status='PEND';
-    ```
-
-2. Update the PDB sequence file and the path in the [PDB plugin](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Lib/Bio/Rfam/View/Plugin/PDB.pm)
-
-3. Launch view processes on the EBI cluster:
-
-    ```
-    python job_dequeuer.py --view-list /path/to/rfam_uuid_pairs.tsv --dest-dir /path/to/destination/directory
-    ```
-
-    `--view-list:` A list with tab separated rfam_acc, uuid pairs to run view processes on
-    `--dest-dir:` The path to the destination directory to generate shell scripts and log to
 
 ---
 
@@ -387,139 +212,52 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
 ---
 
-
-## Stage RfamLive for a new release
-
-### Create MySQL dumps using `mysqldump`
-
-Create a new MySQL dump to replicate the database on REL and PUBLIC servers:
+## Running view processes
 
 ```
-export MYSQL_PWD=rfam_live_password
-bsub -o mysqldump.out -e mysqldump.err "mysqldump -u <user> -h <hostname> -P <port> --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > rfam_live_relX.sql"
+nextflow run scripts/release/workflows/view_process.nf
 ```
 
-To create a MySQL dump of a single table:
+---
+
+## Clan competition
+
+Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
 
 ```
-mysqldump -u username  -h hostname -P port -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G database_name table_name > table_name.sql
+nextflow run scripts/release/workflows/clan_competition.nf
 ```
 
-### Restore a MySQL database instance on a remote server
+---
 
-1. Move to the directory where a new MySQL dump is located
+## Prepare rfam_live for a new release
 
-    ```
-    cd /path/to/rfam_live_relX.sql
-    ```
+This workflow runs the following scripts : 
+- [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py)
+- [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl)
+- [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) 
 
-2. Connect to the MySQL server (e.g. PUBLIC)
-
-    ```
-    mysql -u username  -h hostname -P port -p
-    ```
-
-3. Create a new MySQL Schema
-
-    ```
-    Create schema rfam_X_Y;
-    ```
-
-4. Select schema to restore MySQL dump
-
-    ```
-    Use rfam_X_Y;
-    ```
-
-5. Restore the database
-
-    ```
-    source rfam_live_relX.sql
-    ```
+```
+nextflow run scripts/release/workflows/prepare_rfam_live.nf
+```
 
 ---
 
 ## Generate FTP files
 
-### Generate annotated tree files
-
-Generate new tree files for the release using [generate_ftp_files.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/generate_ftp_files.py):
-
-```
-# to export all files (recommended 16GB RAM to checkout large families)
-python generate_ftp_files.py --acc all --tree --dest-dir /path/to/tree/files/dest/dir
-
-# to export accessions listed in a file
-python generate_ftp_files.py -f /path/to/rfam_accession_list.txt --tree --dest-dir /path/to/tree/files/dest/dir
-```
-
-alternatively use [writeAnnotatedTree.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/writeAnnotatedTree.pl):
+This workflow will generate:
+- annotated tree files 
+- `Rfam.full_region` file
+- `Rfam.pdb` file
+- `Rfam.clanin` file
+- `fasta_files` folder
 
 ```
-perl writeAnnotatedTree.pl RFXXXXX
-```
-
-### Generate `rfam2go` files
-
-1. Create a new `rfam2go` export by running [rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/rfam2go.pl):
-
-    ```
-    rfam2go.pl > /path/to/dest/dir/rfam2go
-    ```
-
-2. Add a header line to `rfam2go` with release and date.
-
-    ```
-    !version date: <YYYY/MM/DD>
-    !description: A mapping of GO terms to Rfam release <XX.X>.
-    !external resource: https://rfam.org/
-    !citation: Kalvari et al. (2020) Nucl. Acids Res. 49: D192-D200
-    !contact: rfam-help@ebi.ac.uk
-    !
-    ```
-
-3. Create `md5` checksum of rfam2go file:
-
-    ```
-    cd rfam2go &&
-    md5sum * > md5.txt
-    ```
-
-4. Run GO validation and review warnings using [validate_rfam2go.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/qc/validate_rfam2go.pl):
-
-    ```
-    perl validate_rfam2go.pl goselect selectgo rfam2go
-    ```
-
-### Generate `Rfam.full_region` file
-
-Export [ftp_Rfam_full_region.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_full_reqion.sql):
-
-```
-export MYSQL_PWD=rfam_live_password
-mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_full_reqion.sql > /path/to/Rfam.full_region
-gzip Rfam.full_region
-```
-
-### Generate `Rfam.pdb` file
-
-Export [ftp_rfam_pdb.sql](https://github.com/Rfam/rfam-production/blob/master/sql/ftp_rfam_pdb.sql):
-
-```
-export MYSQL_PWD=rfam_live_password
-mysql -u <user> -h <host> -P <port> --database rfam_live < sql/ftp_rfam_pdb.sql > /path/to/Rfam.pdb
-gzip Rfam.pdb
-```
-
-### Generate `Rfam.clanin` file
-
-Generate a new `Rfam.clanin` file using [clanin_file_generator.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/clanin_file_generator.py):
-
-```
-python clanin_file_generator.py /path/to/destination/directory
+nextflow run scripts/release/workflows/generate_ftp_files.nf
 ```
 
 ### Generate `database_files` folder
+The following steps must be performed manually.
 
 The option `--tab` of `mysqldump` is used to generate dumps in both `.sql` and `.txt` formats, where:
  - `table.sql` includes the MySQL query executed to create a table
@@ -554,12 +292,20 @@ The main `rfam_live` database is running with the `secure-file-priv` setting so 
     tar -xzvf /some/location/database_files.tar.gz .
     ```
 
-### Generate `fasta_files` folder
+---
 
-Export new fasta files for all families in Rfam using [fasta_file_generator.py](https://github.com/Rfam/rfam-production/tree/master/scripts/export/fasta_file_generator.py):
+## Generate `rfam2go` file
 
 ```
-bsub -M 10000 -o fasta_generator.lsf.out -e fasta_generator.lsf.err "python fasta_file_generator.py --seq-db /path/to/rfamseq.fa --rfam-seed /path/to/releaseX/Rfam.seed --all --outdir /path/to/ftp/fasta_files"
+nextflow run scripts/release/workflows/rfam2go.nf
+```
+
+## Stage RfamLive for a new release
+
+This workflow will generate a new MySQL dump to replicate the database on REL and PUBLIC servers. Then the MySQL instance is restored on REL and PUBLIC. 
+
+```
+nextflow run scripts/release/workflows/stage_rfam_live.nf
 ```
 
 ---
@@ -581,63 +327,13 @@ The directory for the text search index must have the following structure:
 - motifs
 - full_region
 
-1. Move to the main `rfam-production` repo and setup the django environment:
+This workflow will also index the data on dev. Once this is successful, it is necessary to index the data on **prod**
 
-    ```
-    source django_settings.sh
-    ```
+```
+nextflow run scripts/release/workflows/update_text_search_dev.nf
+```
 
-2. Create an output directory for a new release index and all required subdirectories:
-
-    ```
-    cd /path/to/relX_text_search
-    mkdir clans
-    mkdir families
-    mkdir full_region
-    mkdir genomes
-    mkdir motifs
-    ```
-
-3. Create new XML dumps:
-
-    ```
-    cd /path/to/relX_text_search
-    python rfam_xml_dumper.py --type F --out families
-    python rfam_xml_dumper.py --type C --out clans
-    python rfam_xml_dumper.py --type M --out motifs
-    python rfam_xml_dumper.py --type G --out genomes
-    python rfam_xml_dumper.py --type R --out full_region
-    ```
-
-    For more information on launching XML dumps as LSF jobs see [lsf_rfam_xml_dumper.sh](https://github.com/Rfam/rfam-production/tree/master/scripts/export/lsf_rfam_xml_dumper.sh).
-
-4. Validate xml dumps using [xml_validator.py](https://github.com/Rfam/rfam-production/tree/master/scripts/validation/xml_validator.py):
-
-    ```
-    python xml_validator.py --input /path/to/relX_text_search/families --log
-    python xml_validator.py --input /path/to/relX_text_search/clans --log
-    python xml_validator.py --input /path/to/relX_text_search/motifs --log
-    python xml_validator.py --input /path/to/relX_text_search/genomes --log
-    python xml_validator.py --input /path/to/relX_text_search/full_region --log
-    ```
-
-    Check that `error.log` files in each folder is empty.
-
-5. Get the total number of entries:
-
-    ```
-    grep -r 'entry id' . | wc -l
-    ```
-
-6. Create `release_note.txt` file:
-
-    ```
-    release=14.5
-    release_date=15-Mar-2021
-    entries=2949678
-    ```
-
-### Index data on **dev** and **prod**
+### Index data on **prod**
 
 1. Change directory to `text_search` on the cluster:
 
@@ -645,14 +341,7 @@ The directory for the text search index must have the following structure:
     cd_main && cd search_dumps
     ```
 
-2. Index data on `dev`:
-
-    ```
-    unlink rfam_dev
-    ln -s /path/to/xml/data/dumps rfam_dev
-    ```
-
-3. Index data on `prod`:
+2. Index data on `prod`:
 
     ```
     unlink current_release

@@ -1,4 +1,7 @@
 import logging
+import datetime
+import os
+
 import mysql.connector
 
 from utils import RfamDB
@@ -19,7 +22,9 @@ def list_new_families():
                           "AND rfam_acc NOT IN "
                           "(SELECT DISTINCT rfam_acc FROM pdb_full_region_old WHERE is_significant = 1);")
     try:
-        pdb_txt = "pdb_mapping/pdb_families.txt"
+        today_date = str(datetime.date.today())
+        pdb_txt = "pdb_families_{0}.txt".format(today_date)
+
         with open(pdb_txt, "w") as pdb_file:
             cursor.execute("select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;")
             pdb_file.write("Number of families with 3D before: {0} \n".format(cursor.fetchone()[0]))

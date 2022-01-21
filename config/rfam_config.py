@@ -24,6 +24,8 @@ RFAMLIVELOC = cfl.RFAMLIVELOC
 #XFAMDEV = cfl.XFAMDEV
 RFAMLOCAL = cfl.RFAMLOCAL
 RFAMREL = cfl.RFAMREL
+PG = cfl.PG
+FB1 = cfl.FB1
 
 # ---------------------------------SEQDBs--------------------------------------
 

@@ -3,6 +3,9 @@ nextflow.enable.dsl=2
 process setup_files {
     publishDir "$baseDir", mode: "copy"
 
+    input:
+    val(_flag)
+
     output:
     path("pdb_seqres.txt")
 
@@ -123,7 +126,7 @@ process get_new_families {
     path(query)
     
     output:
-    path('pdb_families.txt')
+    path('pdb_families_*.txt')
 
     """
     python $baseDir/pdb_families.py
@@ -169,7 +172,7 @@ process index_data_on_rfam_dev {
     val('xml')
 
     output:
-    val('done')
+    val('dev_done')
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
@@ -178,7 +181,21 @@ process index_data_on_rfam_dev {
 
 }
 
-process sync_db {
+process index_data_on_prod {
+    input:
+    val('dev_done')
+
+    output:
+    val('done')
+
+    """
+    rm -rf /nfs/production/xfam/rfam/search_dumps/current_release/families/
+    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
+    """
+
+}
+
+process sync_rel_db {
     input:
     tuple val(done), path(query)
 
@@ -190,36 +207,49 @@ process sync_db {
     """
 }
 
+process sync_web_production_db {
+    input:
+    path(query)
+
+    output:
+    val('synced')
+    """
+    python $baseDir/pdb_full_region_table.py --file $query --database pg -nqc
+    python $baseDir/pdb_full_region_table.py --file $query --database fb1 -nqc
+    """
+}
+
 workflow pdb_mapping {
+    take: start
     emit:
         pdb_txt
         new_families
     main:
-    setup_files \
-    | splitFasta( record: [id: true, desc:true, text: true] ) \
-    | filter { record -> record.desc =~ /^mol:na.*/ } \
-    | collectFile( name:"pdb_trimmed_noprot.fa") {
-        it.text
-    } \
-    | remove_illegal_characters \
-    | splitFasta ( by:300, file:true ) \
-    | run_cmscan \
-    | collect \
-    | combine_cmscan_results \
-    | create_text_file_for_db | set { pdb_txt }
-    pdb_txt
-    | import_db_and_generate_clan_files \
-    | sort_clan_files \
-    | collect \
-    | run_clan_competition \
-    | get_new_families | set {new_families}
+        start | setup_files \
+        | splitFasta( record: [id: true, desc:true, text: true] ) \
+        | filter { record -> record.desc =~ /^mol:na.*/ } \
+        | collectFile( name:"pdb_trimmed_noprot.fa") {
+            it.text
+        } \
+        | remove_illegal_characters \
+        | splitFasta ( by:300, file:true ) \
+        | run_cmscan \
+        | collect \
+        | combine_cmscan_results \
+        | create_text_file_for_db | set { pdb_txt }
+        pdb_txt
+        | import_db_and_generate_clan_files \
+        | sort_clan_files \
+        | collect \
+        | run_clan_competition \
+        | get_new_families | set {new_families}
 }
 
 workflow ftp {
     take: pdb_txt
     main:
-    pdb_txt \
-    | update_ftp
+        pdb_txt \
+        | update_ftp
 }
 
 workflow update_search_index {
@@ -232,11 +262,20 @@ workflow update_search_index {
     | set {done}
 }
 
+workflow mapping_and_updates {
+    take: start
+    emit: done
+    main:
+        pdb_mapping(start)
+        ftp(pdb_mapping.out.pdb_txt)
+        update_search_index(pdb_mapping.out.new_families)
+        sync_rel_db(pdb_mapping.out.pdb_txt) 
+        sync_web_production_db(pdb_mapping.out.pdb_txt) 
+        | set { done }
+}
+
 workflow {
-    pdb_mapping()
-    ftp(pdb_mapping.out.pdb_txt)
-    update_search_index(pdb_mapping.out.new_families)
-    sync_db(update_search_index.out.done, pdb_mapping.out.pdb_txt)
+    mapping_and_updates(Channel.of('start'))
 }
 
 workflow.onComplete = {

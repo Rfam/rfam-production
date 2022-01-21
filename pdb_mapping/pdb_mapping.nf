@@ -197,7 +197,7 @@ process index_data_on_prod {
 
 process sync_rel_db {
     input:
-    tuple val(done), path(query)
+    path(query)
 
     output:
     val('done')
@@ -258,8 +258,8 @@ workflow update_search_index {
     main:
     new_families \
     | create_validate_xml_families \
-    | index_data_on_rfam_dev
-    | set {done}
+    | index_data_on_rfam_dev \
+    | index_data_on_prod
 }
 
 workflow mapping_and_updates {

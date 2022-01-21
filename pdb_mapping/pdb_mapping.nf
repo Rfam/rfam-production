@@ -253,7 +253,6 @@ workflow ftp {
 }
 
 workflow update_search_index {
-    emit: done
     take: new_families
     main:
     new_families \

@@ -161,7 +161,7 @@ process create_validate_xml_families {
     source ${params.rfamprod}/django_settings.sh
     rm -rf $baseDir/relX_text_search/families
     mkdir -p $baseDir/relX_text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families -db rfam-rel
     python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
     bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/relX_text_search/families/error.log"
     """
@@ -255,10 +255,10 @@ workflow ftp {
 workflow update_search_index {
     take: new_families
     main:
-        new_families \
-        | create_validate_xml_families \
-        | index_data_on_rfam_dev \
-        | index_data_on_prod
+    new_families \
+    | create_validate_xml_families \
+    | index_data_on_rfam_dev \
+    | index_data_on_prod
 }
 
 workflow mapping_and_updates {

@@ -47,7 +47,7 @@ def connect(db_config=None):
     """
     Connects to a specific database and returns a mysql connection object.
     :param db_config: database config values
-    :type db_config: dict
+    :type db_config: dict or None
     :return: db connection
     """
     db_config = db_conf if db_config is None else db_config

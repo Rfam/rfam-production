@@ -1177,7 +1177,7 @@ def usage():
     req_args.add_argument(
         "--out", help="path to output directory", type=str, required=True)
 
-    parser.add_argument("-db", "--database", help="database to use", type=str, default=None)
+    parser.add_argument("-db", "--database", help="database to use - rel or live", type=str, default=None)
 
     return parser
 

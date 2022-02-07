@@ -53,10 +53,9 @@ def clan_file_generator(output_dir, clan_comp_type='FULL', clan_acc=None):
 
     output_dir: The path to the output directory. It will be created if
     it does not exist
-    clan_comp_type: This can be 'FULL' for clan competition on on full_region_table
+    clan_comp_type: This can be 'FULL' for clan competition on full_region_table
     or PDB for clan competition on pdb_full_region
 
-    returns: void
     """
 
     if os.path.exists(output_dir) is False:

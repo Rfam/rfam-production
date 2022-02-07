@@ -264,7 +264,7 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
         cnx.commit()
 
     except:
-        print ("MySQL Update Error. Rolling back...")
+        print("MySQL Update Error. Rolling back...")
         cnx.rollback()
         cursor.close()
         RfamDB.disconnect(cnx)
@@ -324,7 +324,7 @@ def reset_is_significant(clan_comp_type='FULL'):
         u_cursor.executemany(update_query, seq_regs)
         cnx.commit()
     except:
-        print ("MySQL Update Error. Rolling back...")
+        print("MySQL Update Error. Rolling back...")
         cnx.rollback()
         u_cursor.close()
         RfamDB.disconnect(cnx)
@@ -631,7 +631,7 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
         cnx.commit()
 
     except:
-        print ("MySQL Update Error. Rolling back...")
+        print("MySQL Update Error. Rolling back...")
         cnx.rollback()
 
     cursor.close()
@@ -639,8 +639,6 @@ def set_pdb_is_significant_to_zero(non_sig_seqs):
 
     cursor.close()
     RfamDB.disconnect(cnx)
-
-# ----------------------------------------------------------------------------
 
 
 def fetch_clan_accessions():

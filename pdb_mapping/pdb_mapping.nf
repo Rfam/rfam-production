@@ -86,13 +86,13 @@ process import_db_and_generate_clan_files {
     """
     bash $baseDir/check_not_empty.sh $query 
     python $baseDir/pdb_full_region_table.py --file $query
-    mkdir -p $baseDir/releaseX/clan_competition/sorted  
+    mkdir -p $baseDir/clan_competition/sorted  
     python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
 }
 
 process sort_clan_files {
-    publishDir "$baseDir/releaseX/clan_competition/sorted", mode: "copy"
+    publishDir "$baseDir/clan_competition/sorted", mode: "copy"
     
     input:
     path(query)
@@ -106,16 +106,16 @@ process sort_clan_files {
 }
 
 process run_clan_competition { 
-    publishDir "$baseDir/releaseX/clan_competition", mode: "copy"
+    publishDir "$baseDir/clan_competition", mode: "copy"
 
     input:
-    path(query)
+    tuple path(query), pdb_text
 
     output:
-    path('*')
+    path('pdb_full_region_*.txt')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/releaseX/clan_competition/sorted --pdb
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --pdb-in $pdb_text --pdb-out .
     """
 }
 
@@ -223,6 +223,7 @@ workflow pdb_mapping {
     take: start
     emit:
         pdb_txt
+        pdb_updated_txt
         new_families
     main:
         start | setup_files \
@@ -241,12 +242,14 @@ workflow pdb_mapping {
         | import_db_and_generate_clan_files \
         | sort_clan_files \
         | collect \
-        | run_clan_competition \
+        pdb_txt
+        | run_clan_competition | set { pdb_updated_txt }
+        pdb_updated_txt
         | get_new_families | set {new_families}
 }
 
 workflow ftp {
-    take: pdb_txt
+    take: pdb_updated_txt
     main:
         pdb_txt \
         | update_ftp
@@ -266,10 +269,10 @@ workflow mapping_and_updates {
     emit: done
     main:
         pdb_mapping(start)
-        ftp(pdb_mapping.out.pdb_txt)
+        ftp(pdb_mapping.out.pdb_updated_ txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_db(pdb_mapping.out.pdb_txt) 
-        sync_web_production_db(pdb_mapping.out.pdb_txt) 
+        sync_rel_db(pdb_mapping.out.pdb_updated_txt) 
+        sync_web_production_db(pdb_mapping.out.pdb_updated_txt) 
         | set { done }
 }
 

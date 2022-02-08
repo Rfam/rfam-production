@@ -331,21 +331,22 @@ def update_pdb_file_is_significant(non_sig_seqs, pdb_in, pdb_out):
 
     new_list_of_lines = []
     with open(pdb_in, 'r') as pf:
-        list_of_lists = []
+        list_of_lines = []
         for line in pf:
             stripped_line = line.strip()
             line_list = stripped_line.split()
-            list_of_lists.append(line_list)
+            list_of_lines.append(line_list)
 
-        for entry in list_of_lists:
+        for entry in list_of_lines:
             for region in pdb_reformatted_regions:
                 if region[0] == entry[0] and region[1] == entry[1] \
                         and region[2] == entry[2] and region[3] == int(entry[3]):
                     entry[10] = '0'
             new_list_of_lines.append(entry)
 
-    txt_file = "pdb_full_region_updated_{0}.txt".format(str(datetime.date.today()))
-    with open(os.path.join(pdb_out, txt_file, 'w')) as out_file:
+    file_name = "pdb_full_region_updated_{0}.txt".format(str(datetime.date.today()))
+    txt = os.path.join(pdb_out, file_name)
+    with open(txt, 'w') as out_file:
         for line in new_list_of_lines:
             out_file.write('\t'.join(line) + '\n')
 

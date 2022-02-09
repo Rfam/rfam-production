@@ -98,7 +98,7 @@ process sort_clan_files {
     path(query)
 
     output:
-    path('*_s.txt')
+    val('sorted')
 
     """ 
     for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
@@ -109,13 +109,13 @@ process run_clan_competition {
     publishDir "$baseDir/clan_competition", mode: "copy"
 
     input:
-    tuple path(query), pdb_text
+    tuple val(sorted), path(pdb_txt)
 
     output:
-    path('pdb_full_region_*.txt')
+    path('pdb_full_region_updated*.txt')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --pdb-in $pdb_text --pdb-out .
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --pdb-in $pdb_txt --pdb-out .
     """
 }
 
@@ -241,8 +241,7 @@ workflow pdb_mapping {
         pdb_txt
         | import_db_and_generate_clan_files \
         | sort_clan_files \
-        | collect \
-        pdb_txt
+        | combine(pdb_txt) 
         | run_clan_competition | set { pdb_updated_txt }
         pdb_updated_txt
         | get_new_families | set {new_families}
@@ -251,7 +250,7 @@ workflow pdb_mapping {
 workflow ftp {
     take: pdb_updated_txt
     main:
-        pdb_txt \
+        pdb_updated_txt \
         | update_ftp
 }
 
@@ -269,7 +268,7 @@ workflow mapping_and_updates {
     emit: done
     main:
         pdb_mapping(start)
-        ftp(pdb_mapping.out.pdb_updated_ txt)
+        ftp(pdb_mapping.out.pdb_updated_txt)
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_db(pdb_mapping.out.pdb_updated_txt) 
         sync_web_production_db(pdb_mapping.out.pdb_updated_txt) 

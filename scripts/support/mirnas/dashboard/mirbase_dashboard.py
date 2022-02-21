@@ -271,7 +271,7 @@ def get_input_data(filename):
         data[row[2]] = {
             'score': row[3],
             'author': row[4],
-            'comment': row[12],
+            'comment': row[10],
         }
 
     return data

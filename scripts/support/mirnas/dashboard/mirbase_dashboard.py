@@ -421,12 +421,13 @@ def generate_dashboard(f_out, data, nocache):
         action = ''
         print(identifier)
 
-        if 'MIPF0000419__mir' in identifier: # rerunning rfsearch done, now rfmake, >300K hits
-            continue
-        if 'MIPF0000901__mir' in identifier:
-            continue # massive overlap with RF00017, giant list of hits
+        black_list = ['MIPF0000419__mir-574', 'MIPF0000901__mir-3470'] # giant lists of hits that cause crashes
+        if identifier in black_list:
+            print('Warning: family {} is skipped because it will cause a crash'.format(identifier))
+            skip = True
+        else:
+            skip = False
 
-        print(identifier)
         if identifier not in data:
             action = 'Fix missing data'
             metadata = {
@@ -443,12 +444,13 @@ def generate_dashboard(f_out, data, nocache):
             skip = True
             overlaps = []
         try:
-            run_rfmake(location, score)
+            if not skip:
+                run_rfmake(location, score)
         except:
             action = 'Fix rfmake problems'
         try:
-            if not action:
-                overlaps = get_overlaps(identifier)
+            if not action and not skip:
+                overlaps = get_overlaps(identifier, nocache)
         except:
             overlaps = []
             action = 'Fix overlap problems'

@@ -149,6 +149,21 @@ def is_single_seed(location):
     return None
 
 
+def is_inconsistent_ss(location):
+    """
+    Check if seed alignment has an inconsistent secondary structure.
+    """
+    seed_file = os.path.join(location, 'SEED')
+    alistat_file = seed_file + '_alistat.txt'
+    cmd = 'esl-alistat --bpinfo test.bp.txt {} > {} 2>&1'.format(seed_file, alistat_file)
+    os.system(cmd)
+    with open(alistat_file, 'r') as f_alistat:
+        for line in f_alistat:
+            if line.startswith('Consensus structure string is inconsistent'):
+                return True
+    return False
+
+
 def get_new_or_updated(overlaps):
     """
     Check if this is one of the microRNA family that has already been updated or
@@ -309,6 +324,10 @@ def get_summary(row_id, data_type):
             'formula': '=COUNTIF(F:F, "Choose threshold")',
         },
         {
+            'label': 'Inconsistent SS_CONS',
+            'formula': '=COUNTIF(F:F, "Inconsistent SS_CONS")',
+        },
+        {
             'label': 'Fix a problem',
             'formula': '=COUNTIF(F:F, "Fix*")',
         },
@@ -419,6 +438,10 @@ def generate_dashboard(f_out, data, nocache):
             metadata = data[identifier]
         score = metadata['score']
         location = get_family_location(identifier)
+        if is_inconsistent_ss(location):
+            action = 'Inconsistent SS_CONS'
+            skip = True
+            overlaps = []
         try:
             run_rfmake(location, score)
         except:

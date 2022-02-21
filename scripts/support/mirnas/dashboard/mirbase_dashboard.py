@@ -6,11 +6,11 @@ Usage:
 python mirbase_dashboard.py <document_id> <sheet_id>
 """
 
+import argparse
 import csv
 import glob
 import os
 import re
-import sys
 import tempfile
 
 import requests
@@ -82,7 +82,7 @@ def run_rfmake(location, score):
         os.system(cmd)
 
 
-def get_overlaps(identifier):
+def get_overlaps(identifier, nocache):
     """
     Run rqc-overlaps and get overlapping families.
     External overlap [SS] of CM001599.2/64499845-64499913 with RF00600:CM001599.2/64499850-64499995 by 64
@@ -90,12 +90,11 @@ def get_overlaps(identifier):
     location = get_family_location(identifier)
     overlap_file = os.path.join(location, 'overlap')
     rfam_accs = set()
-    if not os.path.exists(overlap_file) or os.stat(overlap_file).st_size == 0:
         cmd = 'cd {} && touch SEED CM DESC TBLOUT SCORES && cd - > /dev/null'.format(location)
         os.system(cmd)
+    if not os.path.exists(overlap_file) or os.stat(overlap_file).st_size == 0 or nocache:
         cmd = 'cd {} && rqc-overlap.pl {} && cd - > /dev/null'.format(SEARCH_DIR, os.path.basename(location))
         os.system(cmd)
-        # return rfam_accs
     with open(overlap_file, 'r') as f_overlap:
         for line in f_overlap:
             match = re.search(r'with (RF\d{5})', line)
@@ -394,14 +393,14 @@ def get_mirbase_acc(identifier):
     return mirbase_acc
 
 
-def generate_dashboard(f_out, data):
+def generate_dashboard(f_out, data, nocache):
     """
     """
     csvwriter = csv.writer(f_out, delimiter='\t', quoting=csv.QUOTE_ALL)
     csvwriter.writerow(get_header_line())
     for row_id, identifier in enumerate(get_mirbase_alignments()):
         action = ''
-        overlap_problem = False
+        print(identifier)
 
         if 'MIPF0000419__mir' in identifier: # rerunning rfsearch done, now rfmake, >300K hits
             continue
@@ -456,17 +455,19 @@ def main():
     """
     Main entry point.
     """
-    if len(sys.argv) < 3:
-        message = ('google_doc_id and google_sheet_id are required. '
-                   'Check Readme for details about where to find them.')
-        raise Exception(message)
-    google_doc_id = sys.argv[1]
-    google_sheet_id = sys.argv[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('google_doc_id', type=str, help='Google Doc ID', action='store')
+    parser.add_argument('google_sheet_id', type=str, help='Google Sheet ID', action='store')
+    parser.add_argument("--nocache", help="Recompute cached overlap files", action="store_true", default=False)
+    args = parser.parse_args()
+    google_doc_id = args.google_doc_id
+    google_sheet_id = args.google_sheet_id
+    nocache = args.nocache
 
     google_file = get_google_sheets_data(google_doc_id, google_sheet_id)
     data = get_input_data(google_file)
     with open(get_output_path(), 'w') as f_out:
-        generate_dashboard(f_out, data)
+        generate_dashboard(f_out, data, nocache)
     os.system('rm {}'.format(google_file))
     print("""
     Created a file on disk: {path}

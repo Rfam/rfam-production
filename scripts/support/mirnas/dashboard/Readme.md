@@ -16,7 +16,8 @@ The main Dashboard lists the status of all miRBase seed alignments.
 
 1. Run `python mirbase_dashboard.py <document_id> <sheet_id>`
 
-    The script will show a URL where the output file can be accessed
+    - Use `--nocache` to recompute all overlaps (they are cached by default)
+    - The script will show a URL where the output file can be accessed
 
 1. Download the newly generated file to your computer
 

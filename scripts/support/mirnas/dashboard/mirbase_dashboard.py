@@ -276,9 +276,9 @@ def get_header_line():
     """
     Return spreadsheet column headers.
     """
-    columns = ['Summary', '', 'Report', 'Score', 'Author', 'Action',
-               'miRBase AC', 'miRBase ID', 'Rfam ID(s)', 'Rfam AC(s)',
-               'Comment',]
+    columns = ['Summary', '', 'Report', 'Score (editable)', 'Author (editable)',
+               'Action', 'miRBase AC', 'miRBase ID', 'Rfam ID(s)', 'Rfam AC(s)',
+               'Comment (editable)',]
     return columns
 
 

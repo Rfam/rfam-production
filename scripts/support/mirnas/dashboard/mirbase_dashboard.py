@@ -58,6 +58,13 @@ def get_family_location(identifier):
     raise Exception('Search location not found')
 
 
+class SpeciesFileNotFound(Exception):
+    """
+    Raised when rfmake fails.
+    """
+    pass
+
+
 def run_rfmake(location, score):
     """
     Run rfmake with a manually selected threshold if not done already.
@@ -67,7 +74,7 @@ def run_rfmake(location, score):
     score = float(score)
     species_file = os.path.join(location, 'species')
     if not os.path.exists(species_file):
-        raise Exception('Species file not found in {}'.format(location))
+        raise SpeciesFileNotFound('Species file not found in {}'.format(location))
     ga_threshold = None
     with open(species_file, 'r') as f_in:
         for line in f_in:
@@ -446,7 +453,8 @@ def generate_dashboard(f_out, data, nocache):
         try:
             if not skip:
                 run_rfmake(location, score)
-        except:
+        except SpeciesFileNotFound as e:
+            print(e.message)
             action = 'Fix rfmake problems'
         try:
             if not action and not skip:

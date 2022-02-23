@@ -421,6 +421,35 @@ def get_google_sheets_data(document_id, sheet_id):
     return temp_file.name
 
 
+def qc_check(new, updated):
+    """
+    Ensure that all families that are recorded as updated have the correct
+    status in the dashboard.
+
+    Found 972 new families but expected to find 979
+    Found 267 updated families but expected to find 272
+
+    (Pdb) set(new_commits) - new
+    set(['RF03770', 'RF04088', 'RF03311'])
+    (Pdb) set(updated_families) - updated
+    set(['RF00663', 'RF00859', 'RF00762', 'RF00727', 'RF00716'])
+    """
+    new_commits_set = set(new_commits)
+    updated_families_set = set(updated_families)
+    if len(new) != len(new_commits_set):
+        msg = 'Found {} new families but expected to find {}'.format(len(new), len(new_commits_set))
+        print(new_commits_set - new)
+    else:
+        msg = 'Found expected number of new families'
+    print(msg)
+    if len(updated) != len(updated_families_set):
+        msg = 'Found {} updated families but expected to find {}'.format(len(updated), len(updated_families_set))
+        print(updated_families_set - updated)
+    else:
+        msg = 'Found expected number of updated families'
+    print(msg)
+
+
 def get_mirbase_id(identifier):
     """
     Example:
@@ -450,6 +479,8 @@ def generate_dashboard(f_out, data, nocache):
     """
     csvwriter = csv.writer(f_out, delimiter='\t', quoting=csv.QUOTE_ALL)
     csvwriter.writerow(get_header_line())
+    done_new = set()
+    done_updated = set()
     for row_id, identifier in enumerate(get_mirbase_alignments()):
         action = ''
         overlaps = []
@@ -492,13 +523,15 @@ def generate_dashboard(f_out, data, nocache):
             rfam_matches = rfam_matches.replace('")', ' Match by ID, no overlap")')
         else:
             rfam_matches = format_rfam_overlaps(overlaps)
+        if not action:
+            action = get_action(identifier, location, overlaps, overlaps_by_id, score)
         fields = [
             get_summary(row_id, 'label'),
             get_summary(row_id, 'formula'),
             get_report_url(identifier),
             str(score),
             metadata['author'],
-            action if action else get_action(identifier, location, overlaps, overlaps_by_id, score),
+            action,
             format_mirbase_url(get_mirbase_acc(identifier)),
             get_mirbase_id(identifier),
             format_rfam_ids(overlaps) if overlaps else format_rfam_ids(overlaps_by_id),
@@ -506,6 +539,11 @@ def generate_dashboard(f_out, data, nocache):
             metadata['comment'],
         ]
         csvwriter.writerow(fields)
+        if action == 'Done (new family)':
+            done_new.add(overlaps[0] if overlaps else overlaps_by_id[0])
+        elif action == 'Done (updated family)':
+            done_updated.add(overlaps[0] if overlaps else overlaps_by_id[0])
+    qc_check(done_new, done_updated)
 
 
 def main():

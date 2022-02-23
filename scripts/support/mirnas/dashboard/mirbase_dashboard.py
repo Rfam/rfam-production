@@ -193,7 +193,7 @@ def get_new_or_updated(overlaps):
 
 def get_action(identifier, location, overlaps, overlaps_by_id, score):
     """
-    Identify the action for the family.
+    Identify what should be done with a family.
     """
     action = ''
     if overlaps:
@@ -203,18 +203,25 @@ def get_action(identifier, location, overlaps, overlaps_by_id, score):
     else:
         overlap_status = None
 
-    if len(overlaps_by_id) == 1 and len(overlaps) == 1:
-        if overlaps[0] != overlaps_by_id[0]:
-            return 'Fix ID mismatch'
+    mirbase_id = get_mirbase_id(identifier)
+    if len(overlaps_by_id) == 1 and len(overlaps) == 1 and overlaps[0] != overlaps_by_id[0]:
+        return 'Fix ID mismatch'
+    elif len(overlaps_by_id) == 1 and len(overlaps) == 1 and overlaps[0] == overlaps_by_id[0]:
+        rfam_id = get_rfam_id(overlaps[0])
+    elif len(overlaps) == 1 and not overlaps_by_id:
+        rfam_id = get_rfam_id(overlaps[0])
+    elif len(overlaps_by_id) == 1 and not overlaps:
+        rfam_id = get_rfam_id(overlaps_by_id[0])
+
     if 'HYPERLINK' not in get_report_url(identifier):
         action = 'Generate report'
     elif is_single_seed(location):
         action = '1_SEED'
     elif not score or score == '?':
         action = 'Choose threshold'
-    elif overlap_status == 'New':
+    elif overlap_status == 'New' and rfam_id.lower() == mirbase_id.lower():
         action = 'Done (new family)'
-    elif overlap_status == 'Updated':
+    elif overlap_status == 'Updated' and rfam_id.lower() == mirbase_id.lower():
         action = 'Done (updated family)'
     elif score > 0 and not overlaps and not overlaps_by_id:
         action = 'New family'
@@ -245,16 +252,25 @@ def format_mirbase_url(identifier):
     return link.format(identifier)
 
 
+def get_rfam_id(rfam_acc):
+    """
+    Get Rfam ID for an Rfam accession.
+    """
+    url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Family%22&fields=name&format=json'
+    data = requests.get(url.format(rfam_acc))
+    if data.json()['hitCount'] != 0:
+        return(data.json()['entries'][0]['fields']['name'][0])
+    else:
+        return ''
+
+
 def format_rfam_ids(overlaps):
     """
     Given a list of Rfam accessions, return a list of Rfam IDs.
     """
     rfam_ids = []
     for rfam_acc in sorted(overlaps):
-        url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Family%22&fields=name&format=json'
-        data = requests.get(url.format(rfam_acc))
-        if data.json()['hitCount'] != 0:
-            rfam_ids.append(data.json()['entries'][0]['fields']['name'][0])
+        rfam_ids.append(get_rfam_id(rfam_acc))
     return ', '.join(rfam_ids)
 
 

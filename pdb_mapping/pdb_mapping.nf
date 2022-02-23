@@ -109,13 +109,13 @@ process run_clan_competition {
     publishDir "$baseDir/clan_competition", mode: "copy"
 
     input:
-    tuple val(sorted), path(pdb_txt)
+    path(query)
 
     output:
-    path('pdb_full_region_updated*.txt')
+    path('*')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --pdb-in $pdb_txt --pdb-out .
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb
     """
 }
 
@@ -219,11 +219,25 @@ process sync_web_production_db {
     """
 }
 
+process clan_compete_rel_web {
+    publishDir "$baseDir/clan_competition", mode: "copy"
+
+    input:
+    val('synced')
+
+    output:
+    path('*')
+
+    """
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --sync
+    """
+
+}
+
 workflow pdb_mapping {
     take: start
     emit:
         pdb_txt
-        pdb_updated_txt
         new_families
     main:
         start | setup_files \
@@ -241,16 +255,15 @@ workflow pdb_mapping {
         pdb_txt
         | import_db_and_generate_clan_files \
         | sort_clan_files \
-        | combine(pdb_txt) 
-        | run_clan_competition | set { pdb_updated_txt }
-        pdb_updated_txt
+        | collect \
+        | run_clan_competition \
         | get_new_families | set {new_families}
 }
 
 workflow ftp {
-    take: pdb_updated_txt
+    take: pdb_txt
     main:
-        pdb_updated_txt \
+        pdb_txt \
         | update_ftp
 }
 
@@ -263,15 +276,23 @@ workflow update_search_index {
     | index_data_on_prod
 }
 
+workflow sync_rel_web {
+    take: pdb_txt
+    main:
+        pdb_txt \
+        sync_rel_db \
+        sync_web_production_db \
+        clan_compete_rel_web
+}
+
 workflow mapping_and_updates {
     take: start
     emit: done
     main:
         pdb_mapping(start)
-        ftp(pdb_mapping.out.pdb_updated_txt)
+        ftp(pdb_mapping.out.pdb_txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_db(pdb_mapping.out.pdb_updated_txt) 
-        sync_web_production_db(pdb_mapping.out.pdb_updated_txt) 
+        sync_rel_web(pdb_mapping.out.pdb_txt)
         | set { done }
 }
 

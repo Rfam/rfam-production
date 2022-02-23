@@ -251,12 +251,13 @@ def compete_seq_regions(regions, log):
     return non_sig_regs
 
 
-def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
+def complete_clan_seqs(sorted_clan, clan_comp_type='FULL', sync=False):
     """
-    Parses a sorted clan file and generates a list of regions per rfam_acc,
-    which are then competed by compete_seq_regions
-
-    sorted_clan: A valid path to a sorted clan file
+    Parses a sorted clan file and generates a list of regions per rfam_acc, which are then competed by
+    compete_seq_regions
+    :param sorted_clan: sorted clan file
+    :param clan_comp_type: FULL or PDB
+    :param sync: whether to update rel and web (fb1 and pg) databases
     """
 
     fp = open(sorted_clan, 'r')
@@ -306,49 +307,9 @@ def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
         if clan_comp_type == 'FULL':
             db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
         else:
-            db_utils.set_pdb_is_significant_to_zero(non_sig_regs)
+            db_utils.set_pdb_is_significant_to_zero(non_sig_regs,    )
 
     return non_sig_regs
-
-
-def update_pdb_file_is_significant(non_sig_seqs, pdb_in, pdb_out):
-    """
-    Update the corresponding 'is_significant' column in the pdb_full_region text file, to prepare for import to the db
-
-    :param non_sig_seqs: non significant regions i.e. is_significant value is 0
-    :param pdb_in: pdb_full_region input text file
-    :param pdb_out: file to write out to
-    """
-
-    if os.path.exists(pdb_out) is False:
-        os.mkdir(pdb_out)
-
-    pdb_reformatted_regions = []
-    for competed_region in non_sig_seqs:
-        pdb_id_chain_pairs = competed_region[1].partition('_')
-        pdb_reformatted_regions.append((str(competed_region[0]), str(pdb_id_chain_pairs[0]),
-                                        str(pdb_id_chain_pairs[2]), int(competed_region[2])))
-
-    new_list_of_lines = []
-    with open(pdb_in, 'r') as pf:
-        list_of_lines = []
-        for line in pf:
-            stripped_line = line.strip()
-            line_list = stripped_line.split()
-            list_of_lines.append(line_list)
-
-        for entry in list_of_lines:
-            for region in pdb_reformatted_regions:
-                if region[0] == entry[0] and region[1] == entry[1] \
-                        and region[2] == entry[2] and region[3] == int(entry[3]):
-                    entry[10] = '0'
-            new_list_of_lines.append(entry)
-
-    file_name = "pdb_full_region_updated_{0}.txt".format(str(datetime.date.today()))
-    txt = os.path.join(pdb_out, file_name)
-    with open(txt, 'w') as out_file:
-        for line in new_list_of_lines:
-            out_file.write('\t'.join(line) + '\n')
 
 
 def usage():
@@ -384,8 +345,7 @@ def parse_arguments():
                                    action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
                                    action="store_true", default=False)
-    parser.add_argument("--pdb-in", help="File path to pdb_full_region.txt")
-    parser.add_argument("--pdb-out", help="File path to write updated pdb_full_region.txt to")
+    parser.add_argument("--sync", help="Update release and web production databases")
 
     return parser
 
@@ -415,15 +375,13 @@ if __name__ == '__main__':
     if os.path.isdir(clan_source):
         clan_files = [x for x in os.listdir(clan_source) if x.endswith(".txt")]
 
-        non_sig_seqs = None
         for clan in clan_files:
             print(clan)
             clan_file = os.path.join(clan_source, clan)
 
             # compete pdb_full_region
             if args.pdb:
-                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
-                update_pdb_file_is_significant(non_sig_seqs, args.pdb_in, args.pdb_out)
+                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB', sync=True if args.sync else False)
 
             # compete full_region
             elif args.full:

@@ -12,6 +12,7 @@ import glob
 import os
 import re
 import tempfile
+import time
 
 import requests
 
@@ -365,6 +366,10 @@ def get_summary(row_id, data_type):
         {
             'label': 'Emma',
             'formula': '=COUNTIF(E:E, "Emma")',
+        },
+        {
+            'label': 'Last updated',
+            'formula': '{}'.format(time.strftime("%d/%m/%Y %H:%M")),
         },
     ]
     if data_type not in ['label', 'formula']:

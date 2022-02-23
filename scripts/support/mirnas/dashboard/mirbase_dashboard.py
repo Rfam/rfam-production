@@ -23,6 +23,11 @@ from microrna_progress import updated_families, new_commits
 SEARCH_DIR = '/hps/nobackup/production/xfam/rfam/RELEASES/14.8/microrna/searches'
 HTML_REPORTS = '/nfs/public/rw/xfam/rfam/test/' + 'searches/mirbase'
 OUTPUT_FILENAME = 'mirbase-dashboard.tsv'
+BLACK_LIST = [
+    'MIPF0000419__mir-574',
+    'MIPF0000901__mir-3470',
+    'MIPF0001768__mir-7407', #rfmake running
+] # giant families that cause crashes
 
 
 def get_output_path():
@@ -431,10 +436,9 @@ def generate_dashboard(f_out, data, nocache):
     csvwriter.writerow(get_header_line())
     for row_id, identifier in enumerate(get_mirbase_alignments()):
         action = ''
+        overlaps = []
         print(identifier)
-
-        black_list = ['MIPF0000419__mir-574', 'MIPF0000901__mir-3470'] # giant lists of hits that cause crashes
-        if identifier in black_list:
+        if identifier in BLACK_LIST:
             print('Warning: family {} is skipped because it will cause a crash'.format(identifier))
             skip = True
         else:
@@ -454,7 +458,6 @@ def generate_dashboard(f_out, data, nocache):
         if is_inconsistent_ss(location):
             action = 'Inconsistent SS_CONS'
             skip = True
-            overlaps = []
         try:
             if not skip:
                 run_rfmake(location, score)

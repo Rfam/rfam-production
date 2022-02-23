@@ -616,7 +616,7 @@ def set_pdb_is_significant_to_zero(non_sig_seqs, sync=False):
     :param sync: Flag to sync release and web databases with the live db by updating the is_significant column
     The list is product of clan competition.
     """
-    
+
     # reformat list by splitting pdb_id and chain
     pdb_reformatted_regions = []
 

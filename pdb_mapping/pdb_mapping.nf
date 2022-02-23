@@ -159,11 +159,11 @@ process create_validate_xml_families {
 
     """
     source ${params.rfamprod}/django_settings.sh
-    rm -rf $baseDir/relX_text_search/families
-    mkdir -p $baseDir/relX_text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families --db rfam-rel
-    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
-    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/relX_text_search/families/error.log"
+    rm -rf $baseDir/text_search/families
+    mkdir -p $baseDir/text_search/families
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/text_search/families --db rfam-rel
+    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/text_search/families --log
+    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/text_search/families/error.log"
     """
 }
 
@@ -176,7 +176,7 @@ process index_data_on_rfam_dev {
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
-    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
+    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
     """
 
 }
@@ -190,7 +190,7 @@ process index_data_on_prod {
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/current_release/families/
-    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
+    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
     """
 
 }
@@ -223,10 +223,10 @@ process clan_compete_rel_web {
     publishDir "$baseDir/clan_competition", mode: "copy"
 
     input:
-    val('synced')
+    path(query)
 
     output:
-    path('*')
+    val('done')
 
     """
     python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --sync
@@ -270,19 +270,22 @@ workflow ftp {
 workflow update_search_index {
     take: new_families
     main:
-    new_families \
-    | create_validate_xml_families \
-    | index_data_on_rfam_dev \
-    | index_data_on_prod
+        new_families \
+        | create_validate_xml_families \
+        | index_data_on_rfam_dev \
+        | index_data_on_prod
 }
 
 workflow sync_rel_web {
-    take: pdb_txt
+    take: pdb_txt, new_families
+    emit: synced 
     main:
         pdb_txt \
-        sync_rel_db \
-        sync_web_production_db \
-        clan_compete_rel_web
+        | sync_rel_db
+        pdb_txt \
+        | sync_web_production_db
+        new_families
+        | clan_compete_rel_web | set { synced } 
 }
 
 workflow mapping_and_updates {

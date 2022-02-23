@@ -307,7 +307,7 @@ def complete_clan_seqs(sorted_clan, clan_comp_type='FULL', sync=False):
         if clan_comp_type == 'FULL':
             db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
         else:
-            db_utils.set_pdb_is_significant_to_zero(non_sig_regs,    )
+            db_utils.set_pdb_is_significant_to_zero(non_sig_regs, sync)
 
     return non_sig_regs
 
@@ -345,7 +345,7 @@ def parse_arguments():
                                    action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
                                    action="store_true", default=False)
-    parser.add_argument("--sync", help="Update release and web production databases")
+    parser.add_argument("--sync", help="Update release and web production databases", default=False)
 
     return parser
 

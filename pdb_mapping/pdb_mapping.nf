@@ -98,7 +98,7 @@ process sort_clan_files {
     path(query)
 
     output:
-    val('sorted')
+    path('*_s.txt')
 
     """ 
     for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
@@ -277,7 +277,9 @@ workflow update_search_index {
 }
 
 workflow sync_rel_web {
-    take: pdb_txt, new_families
+    take: 
+        pdb_txt
+        new_families
     emit: synced 
     main:
         pdb_txt \
@@ -295,7 +297,7 @@ workflow mapping_and_updates {
         pdb_mapping(start)
         ftp(pdb_mapping.out.pdb_txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_web(pdb_mapping.out.pdb_txt)
+        sync_rel_web(pdb_mapping.out.pdb_txt, pdb_mapping.out.new_families)
         | set { done }
 }
 

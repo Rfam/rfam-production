@@ -220,10 +220,8 @@ process sync_web_production_db {
 }
 
 process clan_compete_rel_web {
-    publishDir "$baseDir/clan_competition", mode: "copy"
-
     input:
-    path(query)
+    val('synced')
 
     output:
     val('done')
@@ -279,15 +277,12 @@ workflow update_search_index {
 workflow sync_rel_web {
     take: 
         pdb_txt
-        new_families
     emit: synced 
     main:
         pdb_txt \
         | sync_rel_db
         pdb_txt \
-        | sync_web_production_db
-        new_families
-        | clan_compete_rel_web | set { synced } 
+        | sync_web_production_db | set { synced } 
 }
 
 workflow mapping_and_updates {
@@ -297,7 +292,8 @@ workflow mapping_and_updates {
         pdb_mapping(start)
         ftp(pdb_mapping.out.pdb_txt)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_web(pdb_mapping.out.pdb_txt, pdb_mapping.out.new_families)
+        sync_rel_web(pdb_mapping.out.pdb_txt)
+        clan_compete_rel_web(sync_rel_web.out.synced)
         | set { done }
 }
 

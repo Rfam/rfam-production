@@ -319,13 +319,14 @@ def usage():
 
     print("\nUsage:\n------")
 
-    print("\nclan_competition.py [clan_file|clan_dir] [-r] [PDB|FULL]")
+    print("\nclan_competition.py [clan_file|clan_dir] [-r] [PDB|FULL] [SYNC]")
 
     print("\nclan_dir: A directory of sorted clan region files")
     print("clan_file: The path to a sorted clan region file")
     print("\n-r option to reset is_significant field")
     print("\nPDB option for pdb clan competition")
     print("\nFULL option for full region clan competition")
+    print("\nSYNC option to update REL, FB1 and PG databases")
 
 
 def parse_arguments():
@@ -345,7 +346,7 @@ def parse_arguments():
                                    action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
                                    action="store_true", default=False)
-    parser.add_argument("--sync", help="Update release and web production databases", default=False)
+    parser.add_argument("--sync", help="Update release and web production databases", action="store_true", default=False)
 
     return parser
 

@@ -43,3 +43,24 @@ The main Dashboard lists the status of all miRBase seed alignments.
 
 1. Rename old Dashboard sheet and hide it, rename the new Dashboard sheet
 
+## Update the Family updates sheet
+
+1. Get Google Sheet `document_id` and `sheet_id` from the URL as above.
+
+    - The main Dashboard is used to get a list of  families that require updates.
+
+1. Run `python find_family_overlaps.py <document_id> <sheet_id>`
+
+    - The script will show a URL where the output file can be accessed
+
+1. Download the newly generated file to your computer
+
+1. In Google Sheets, create a new sheet by duplicating the current `Family updates` sheet
+
+1. Go to File > Import > Upload and select the new file
+
+1. Select `Replace current sheet` and make sure `Convert text to numbers, dates and formulas` is selected
+
+1. Check that the summary columns make sense compared to the previous version
+
+1. Rename old Dashboard sheet and hide it, rename the new Dashboard sheet

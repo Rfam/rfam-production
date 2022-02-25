@@ -2,14 +2,6 @@
 Generate the data used in the microRNA dashboard for the following tables:
 - Rfam miRNAs without matches
 - Rfam non-miRNA families matching miRBase
-
-Requires a mapping between all sequences from miRBase and the current Rfam models.
-The mapping can be generated as follows (takes ~2.5 hours on a laptop):
-
-wget https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/sequences/by-database/mirbase.fasta .
-wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz .
-gunzip Rfam.cm.gz && cmpress Rfam.cm
-cmscan -o cmscan.output.txt --tblout mirbase-cmscan.tblout --cut_ga --rfam Rfam.cm mirbase.fasta
 """
 
 import os
@@ -60,6 +52,7 @@ def get_rfam_microrna_families_without_mirbase_hits(rfam_microrna_accs, rfam_cms
             get_last_modified_date(rfam_acc),
         ])
         print(line)
+    print('\n\n')
 
 
 def get_rfam_non_microrna_families_matching_mirbase(rfam_accs, rfam_microrna_accs, rfam_cmscan_accs):

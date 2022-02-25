@@ -76,3 +76,32 @@ with relevant text files can be generated as follows:
 
     - The script will show a URL where the output file can be accessed
 
+## Update `Rfam miRNA without matches` and  `Rfam non-miRNA families matching miRBase` sheets
+
+This step requires a mapping between all sequences from miRBase and the current Rfam models.
+The mapping should be recomputed after a new Rfam release or when a new set of covariance models is available.
+A precomputed file `mirbase-cmscan.tblout` is included in the repository.
+
+1. (Optional) Update file `mirbase-cmscan.tblout` as follows (takes ~2.5 hours on a laptop):
+
+    ```
+    wget https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/sequences/by-database/mirbase.fasta .
+    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz .
+    gunzip Rfam.cm.gz && cmpress Rfam.cm
+    cmscan -o cmscan.output.txt --tblout mirbase-cmscan.tblout --cut_ga --rfam Rfam.cm mirbase.fasta
+    ```
+
+    - Commit new file for the record
+
+1. Run `python compare_rfam_mirbase.py` to analyse a precomputed file or `python compare_rfam_mirbase.py <tblout>` to analyse a different file
+
+    - The script will print a list of Rfam microRNA families without miRBase hits. At the time of writing it includes only 2 families.
+    - The script will show a URL where the output file with Rfam non-microRNA families matching miRBase can be accessed
+
+1. Download the newly generated file to your computer
+
+1. In Google Sheets, create a new sheet by duplicating the current `Family updates` sheet
+
+1. Go to File > Import > Upload and select the new file
+
+1. Select `Replace current sheet` and make sure `Convert text to numbers, dates and formulas` is selected

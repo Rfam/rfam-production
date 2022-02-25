@@ -116,6 +116,8 @@ def get_rnacentral_description(urs_taxid):
 
 def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
     mirbase_xrefs = get_rnacentral_mirbase_xrefs()
+    filename = 'rfam-non-mirna-families-matching-mirbase.tsv'
+    f_out = open(filename, 'w')
     for rfam_acc in non_mirna_matching_accs:
         for seq in cmscan_data[rfam_acc]:
             metadata = db.fetch_family_metadata(rfam_acc)
@@ -132,12 +134,14 @@ def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
                 mirbase_url,
                 get_rnacentral_description(seq),
             ])
-            print(line)
+            f_out.write(line + '\n')
+    f_out.close()
+    print('Created file %s' % filename)
 
 
 def main():
     if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
-        filename = os.path.join(os.path.dirname(__file__), 'mirbase-cmscan-rfam-14-6.tblout')
+        filename = os.path.join(os.path.dirname(__file__), 'mirbase-cmscan-rfam-14-7.tblout')
         print('Analysing file {}'.format(filename))
     else:
         filename = sys.argv[1]

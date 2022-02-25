@@ -10,7 +10,9 @@ import argparse
 import csv
 import glob
 import os
+import random
 import re
+import string
 import tempfile
 import time
 
@@ -41,12 +43,16 @@ def get_output_path():
 def get_output_url(filename):
     """
     Get a public URL for the output file.
+    Include a random cache-busting string to avoid accidental re-download
+    of a previously generated file (especially useful when debugging).
     """
     return '/'.join([
         'https://preview.rfam.org',
         HTML_REPORTS.split(os.sep)[-2],
         HTML_REPORTS.split(os.sep)[-1],
-        filename
+        filename + \
+        '?cachebust-' + \
+        ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
     ])
 
 

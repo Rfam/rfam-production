@@ -42,6 +42,7 @@ def parse_outlist_file(outlist_file):
             if unique_accession not in outlist_info:
                 outlist_info[unique_accession] = {"evalue": float(line[1]),
                                                   "bit_score": float(line[0]),
+                                                  "seq_label": line[2],
                                                   "accession": line[3],
                                                   "start": int(line[5]),
                                                   "end": int(line[6])}

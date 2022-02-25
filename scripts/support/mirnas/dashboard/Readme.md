@@ -64,3 +64,15 @@ The main Dashboard lists the status of all miRBase seed alignments.
 1. Check that the summary columns make sense compared to the previous version
 
 1. Rename old Dashboard sheet and hide it, rename the new Dashboard sheet
+
+## Generate an archive for 1_SEED families
+
+To facilitate manual review of entries with a single seed sequence, an archive
+with relevant text files can be generated as follows:
+
+1. Get Google Sheet `document_id` and `sheet_id` from the URL as above.
+
+1. Run `python process_one_seed_families.py <document_id> <sheet_id`
+
+    - The script will show a URL where the output file can be accessed
+

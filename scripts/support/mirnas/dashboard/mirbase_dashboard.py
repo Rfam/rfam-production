@@ -38,7 +38,7 @@ def get_output_path():
     return os.path.join(HTML_REPORTS, OUTPUT_FILENAME)
 
 
-def get_output_url():
+def get_output_url(filename):
     """
     Get a public URL for the output file.
     """
@@ -46,7 +46,7 @@ def get_output_url():
         'https://preview.rfam.org',
         HTML_REPORTS.split(os.sep)[-2],
         HTML_REPORTS.split(os.sep)[-1],
-        OUTPUT_FILENAME
+        filename
     ])
 
 
@@ -103,9 +103,9 @@ def get_overlaps(identifier, nocache):
     location = get_family_location(identifier)
     overlap_file = os.path.join(location, 'overlap')
     rfam_accs = set()
+    if not os.path.exists(overlap_file) or os.stat(overlap_file).st_size == 0 or nocache:
         cmd = 'cd {} && touch SEED CM DESC TBLOUT SCORES && cd - > /dev/null'.format(location)
         os.system(cmd)
-    if not os.path.exists(overlap_file) or os.stat(overlap_file).st_size == 0 or nocache:
         cmd = 'cd {} && rqc-overlap.pl {} && cd - > /dev/null'.format(SEARCH_DIR, os.path.basename(location))
         os.system(cmd)
     with open(overlap_file, 'r') as f_overlap:
@@ -578,7 +578,7 @@ def main():
 
     3. Follow instructions in Readme.
 
-    """.format(path=get_output_path(), url=get_output_url(),
+    """.format(path=get_output_path(), url=get_output_url(OUTPUT_FILENAME),
                filename=OUTPUT_FILENAME))
 
 

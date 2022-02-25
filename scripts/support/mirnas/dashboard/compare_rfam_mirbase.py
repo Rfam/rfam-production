@@ -4,19 +4,19 @@ Generate the data used in the microRNA dashboard for the following tables:
 - Rfam non-miRNA families matching miRBase
 
 Requires a mapping between all sequences from miRBase and the current Rfam models.
-The mapping can be generated as follows:
+The mapping can be generated as follows (takes ~2.5 hours on a laptop):
 
 wget https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/sequences/by-database/mirbase.fasta .
 wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz .
-gunzip Rfam.cm.gz
-cmpress Rfam.cm
-bsub -M 16000 -n 4 -o lsf.out -e lsf.err 'cmscan -o cmscan.output.txt --tblout mirbase-cmscan.tblout --cut_ga --rfam Rfam.cm mirbase.fasta'
+gunzip Rfam.cm.gz && cmpress Rfam.cm
+cmscan -o cmscan.output.txt --tblout mirbase-cmscan.tblout --cut_ga --rfam Rfam.cm mirbase.fasta
 """
 
 import os
 import re
 import subprocess
 import sys
+import time
 
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -24,6 +24,11 @@ from collections import defaultdict
 from utils import db_utils as db
 
 import requests
+
+from mirbase_dashboard import get_output_url, HTML_REPORTS
+
+
+OUTPUT_FILENAME = 'rfam-non-mirna-families-matching-mirbase.tsv'
 
 
 def get_last_modified_date(rfam_acc):
@@ -114,10 +119,13 @@ def get_rnacentral_description(urs_taxid):
     return description
 
 
+
 def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
     mirbase_xrefs = get_rnacentral_mirbase_xrefs()
-    filename = 'rfam-non-mirna-families-matching-mirbase.tsv'
+    filename = os.path.join(HTML_REPORTS, OUTPUT_FILENAME)
+    header = ['Family', 'Rfam ID', 'RNA type', 'Rfam description', 'RNAcentral ID', 'miRBase ID', 'RNAcentral description', 'Last updated: ' + '{}'.format(time.strftime("%d/%m/%Y %H:%M"))]
     f_out = open(filename, 'w')
+    f_out.write('\t'.join(header) + '\n')
     for rfam_acc in non_mirna_matching_accs:
         for seq in cmscan_data[rfam_acc]:
             metadata = db.fetch_family_metadata(rfam_acc)
@@ -136,12 +144,29 @@ def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
             ])
             f_out.write(line + '\n')
     f_out.close()
-    print('Created file %s' % filename)
+    print("""
+    Created a file on disk: {path}
+    The file is available at: {url}
+
+    To load the data in Google Sheets:
+
+    1. Save the file locally
+
+    wget -O {filename} {url}
+
+    2. Manually import file {filename} into Google Sheets.
+
+    3. Follow instructions in Readme.
+
+    """.format(path=filename, url=get_output_url(OUTPUT_FILENAME),
+               filename=OUTPUT_FILENAME))
+
+    print('')
 
 
 def main():
     if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
-        filename = os.path.join(os.path.dirname(__file__), 'mirbase-cmscan-rfam-14-7.tblout')
+        filename = os.path.join(os.path.dirname(__file__), 'mirbase-cmscan.tblout')
         print('Analysing file {}'.format(filename))
     else:
         filename = sys.argv[1]

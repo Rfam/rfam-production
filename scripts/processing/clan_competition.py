@@ -346,7 +346,8 @@ def parse_arguments():
                                    action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
                                    action="store_true", default=False)
-    parser.add_argument("--sync", help="Update release and web production databases", action="store_true", default=False)
+    parser.add_argument("--sync", help="Update release and web production databases",
+                        action="store_true", default=False)
 
     return parser
 

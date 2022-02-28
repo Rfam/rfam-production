@@ -133,6 +133,20 @@ process get_new_families {
     """
 }
 
+process get_ftp_file {
+    publishDir "$baseDir", mode: "copy"
+
+    input:
+    path(query)
+
+    output:
+    path('pdb_full_region_updated_*.txt')
+
+    """
+    python $baseDir/pdb_ftp_file.py --dest-dir .
+    """
+}
+
 process update_ftp {
     input:
     path(query)
@@ -259,9 +273,10 @@ workflow pdb_mapping {
 }
 
 workflow ftp {
-    take: pdb_txt
+    take: new_families
     main:
-        pdb_txt \
+        new_families \
+        | get_ftp_file \
         | update_ftp
 }
 
@@ -290,7 +305,7 @@ workflow mapping_and_updates {
     emit: done
     main:
         pdb_mapping(start)
-        ftp(pdb_mapping.out.pdb_txt)
+        ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(pdb_mapping.out.pdb_txt)
         clan_compete_rel_web(sync_rel_web.out.synced)

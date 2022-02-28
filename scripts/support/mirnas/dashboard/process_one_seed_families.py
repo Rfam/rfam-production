@@ -52,6 +52,10 @@ def get_input_data(filename):
 
 def process_one_seed_family(output_folder, accessions, identifier):
     """
+    Generate a subfolder that contains an alignment with a single SEED sequence
+    (with a URS id) and all other sequences up to a manually selected threshold
+    (indicated in the filename). It also included species and outlist files
+    that help check the validity of the threshold.
     """
     threshold = accessions[identifier]['threshold'][0]
     data_path = get_family_location(identifier)
@@ -68,8 +72,10 @@ def process_one_seed_family(output_folder, accessions, identifier):
             full_hits_found = True
             break
     if not full_hits_found:
-        print('Only seed hits found in {}'.format(identifier))
-        return
+        with open(os.path.join(output_folder, 'only-seed-hits.txt'), 'a') as f_out:
+            print('Only seed hits found in {}'.format(identifier))
+            f_out.write(identifier + '\n')
+            return
 
     if not os.path.exists(align):
         cmd = 'cd {} && rfmake.pl -t {} -local -a -forcethr -relax && cp align {} && cd - > /dev/null'
@@ -80,12 +86,34 @@ def process_one_seed_family(output_folder, accessions, identifier):
     if not os.path.exists(align_with_seed_pfam) or os.stat(align_with_seed_pfam).st_size == 0:
         cmd = 'esl-reformat pfam {} > {}'.format(align_with_seed, align_with_seed_pfam)
         os.system(cmd)
+
     output_family_folder = os.path.join(output_folder, identifier)
     cmd = 'mkdir -p {}'.format(output_family_folder)
     os.system(cmd)
-    for filename in [species, outlist, align_with_seed_pfam]:
+    with open(align_with_seed_pfam, 'r') as f_seed_in:
+        align_with_seed_pfam_out = os.path.join(output_family_folder, 'align-with-seed-pfam-{}'.format(threshold))
+        with open(align_with_seed_pfam_out, 'w') as f_seed_out:
+            for line in f_seed_in:
+                if 'STOCKHOLM' in line: # add ID so that it appears in the esl-alistat report
+                    line = '# STOCKHOLM 1.0\n#=GF ID {}\n'.format(identifier)
+                f_seed_out.write(line)
+    combined_seed = os.path.join(output_folder, 'combined.sto')
+    cmd = 'cat {} >> {}'.format(align_with_seed_pfam_out, combined_seed)
+    os.system(cmd)
+    for filename in [species, outlist]:
         cmd = 'cp {} {}'.format(filename, output_family_folder)
         os.system(cmd)
+
+
+def generate_summary_report(output_folder):
+    """
+    Generate a report to help prioritise families with many additional sequences
+    and <100% sequence identity.
+    """
+    combined_seed = os.path.join(output_folder, 'combined.sto')
+    summary_file = os.path.join(output_folder, 'summary.txt')
+    cmd = 'esl-alistat -1 {} > {}'.format(combined_seed, summary_file)
+    os.system(cmd)
 
 
 def main():
@@ -110,6 +138,8 @@ def main():
             continue
         process_one_seed_family(output_folder, accessions, identifier)
 
+    generate_summary_report(output_folder)
+
     filename = os.path.join(HTML_REPORTS, OUTPUT_FILENAME)
     cmd = 'tar -cvzf {} {}'.format(filename, output_folder)
     os.system(cmd)
@@ -118,7 +148,9 @@ def main():
     print("""
     Created a file on disk: {path}
     The file is available at: {url}
-    """.format(path=filename, url=get_output_url(OUTPUT_FILENAME)))
+    wget -O {filename} {url}
+    """.format(path=filename, filename=OUTPUT_FILENAME,
+               url=get_output_url(OUTPUT_FILENAME)))
 
 
 if __name__ == "__main__":

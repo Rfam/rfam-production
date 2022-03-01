@@ -19,7 +19,7 @@ def export_pdb_full_region_table(dest):
     try:
         cursor.execute("SELECT * FROM pdb_full_region;")
         results = cursor.fetchall()
-        with open(pdb_file, 'w', newline='') as pdb_text:
+        with open(pdb_file, 'w') as pdb_text:
             a = csv.writer(pdb_text, delimiter='\t')
             a.writerows(results)
     except mysql.connector.Error as e:

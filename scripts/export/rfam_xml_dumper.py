@@ -1177,7 +1177,7 @@ def usage():
     req_args.add_argument(
         "--out", help="path to output directory", type=str, required=True)
 
-    parser.add_argument("-db", "--database", help="database to use - rel or live", type=str, default=None)
+    parser.add_argument("--db", help="database to use - rel or live", type=str, default=None)
 
     return parser
 
@@ -1216,11 +1216,11 @@ if __name__ == '__main__':
     if not args.db:
         DB_CONFIG = RFAMLIVE
     else:
-        if args.db == 'rfam-rel':
+        if args.db == 'rfamrel':
             DB_CONFIG = RFAMREL
-        if args.db == 'rfam-live':
+        elif args.db == 'rfamlive':
             DB_CONFIG = RFAMLIVE
         else:
-            print("\nPlease provide a valid database option: rfam-rel or rfam-live\n")
+            print("\nPlease provide a valid database option: rfamrel or rfamlive\n")
 
     main(args.type, args.acc, args.out, hfields=args.hfields)

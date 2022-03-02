@@ -86,13 +86,13 @@ process import_db_and_generate_clan_files {
     """
     bash $baseDir/check_not_empty.sh $query 
     python $baseDir/pdb_full_region_table.py --file $query
-    mkdir -p $baseDir/releaseX/clan_competition/sorted  
+    mkdir -p $baseDir/clan_competition/sorted  
     python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
 }
 
 process sort_clan_files {
-    publishDir "$baseDir/releaseX/clan_competition/sorted", mode: "copy"
+    publishDir "$baseDir/clan_competition/sorted", mode: "copy"
     
     input:
     path(query)
@@ -106,7 +106,7 @@ process sort_clan_files {
 }
 
 process run_clan_competition { 
-    publishDir "$baseDir/releaseX/clan_competition", mode: "copy"
+    publishDir "$baseDir/clan_competition", mode: "copy"
 
     input:
     path(query)
@@ -115,7 +115,7 @@ process run_clan_competition {
     path('*')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/releaseX/clan_competition/sorted --pdb
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb
     """
 }
 
@@ -130,6 +130,20 @@ process get_new_families {
 
     """
     python $baseDir/pdb_families.py
+    """
+}
+
+process get_ftp_file {
+    publishDir "$baseDir", mode: "copy"
+
+    input:
+    path(query)
+
+    output:
+    path('pdb_full_region_updated_*.txt')
+
+    """
+    python $baseDir/pdb_ftp_file.py --dest-dir .
     """
 }
 
@@ -159,11 +173,11 @@ process create_validate_xml_families {
 
     """
     source ${params.rfamprod}/django_settings.sh
-    rm -rf $baseDir/relX_text_search/families
-    mkdir -p $baseDir/relX_text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/relX_text_search/families -db rfam-rel
-    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/relX_text_search/families --log
-    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/relX_text_search/families/error.log"
+    rm -rf $baseDir/text_search/families
+    mkdir -p $baseDir/text_search/families
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/text_search/families --db rfam-rel
+    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/text_search/families --log
+    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/text_search/families/error.log"
     """
 }
 
@@ -176,7 +190,7 @@ process index_data_on_rfam_dev {
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
-    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
+    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
     """
 
 }
@@ -190,7 +204,7 @@ process index_data_on_prod {
 
     """
     rm -rf /nfs/production/xfam/rfam/search_dumps/current_release/families/
-    cp -r $baseDir/relX_text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
+    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
     """
 
 }
@@ -217,6 +231,19 @@ process sync_web_production_db {
     python $baseDir/pdb_full_region_table.py --file $query --database pg -nqc
     python $baseDir/pdb_full_region_table.py --file $query --database fb1 -nqc
     """
+}
+
+process clan_compete_rel_web {
+    input:
+    val('synced')
+
+    output:
+    val('done')
+
+    """
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --sync
+    """
+
 }
 
 workflow pdb_mapping {
@@ -246,19 +273,31 @@ workflow pdb_mapping {
 }
 
 workflow ftp {
-    take: pdb_txt
+    take: new_families
     main:
-        pdb_txt \
+        new_families \
+        | get_ftp_file \
         | update_ftp
 }
 
 workflow update_search_index {
     take: new_families
     main:
-    new_families \
-    | create_validate_xml_families \
-    | index_data_on_rfam_dev \
-    | index_data_on_prod
+        new_families \
+        | create_validate_xml_families \
+        | index_data_on_rfam_dev \
+        | index_data_on_prod
+}
+
+workflow sync_rel_web {
+    take: 
+        pdb_txt
+    emit: synced 
+    main:
+        pdb_txt \
+        | sync_rel_db
+        pdb_txt \
+        | sync_web_production_db | set { synced } 
 }
 
 workflow mapping_and_updates {
@@ -266,10 +305,10 @@ workflow mapping_and_updates {
     emit: done
     main:
         pdb_mapping(start)
-        ftp(pdb_mapping.out.pdb_txt)
+        ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_db(pdb_mapping.out.pdb_txt) 
-        sync_web_production_db(pdb_mapping.out.pdb_txt) 
+        sync_rel_web(pdb_mapping.out.pdb_txt)
+        clan_compete_rel_web(sync_rel_web.out.synced)
         | set { done }
 }
 

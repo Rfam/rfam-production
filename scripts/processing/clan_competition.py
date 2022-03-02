@@ -20,17 +20,12 @@ Notes: clan files are generated using export script clan_file_generator.py
        sort -k2 -t $'\t\' clan_file.txt > clan_file_sorted.txt
 """
 
-# ---------------------------------IMPORTS-------------------------------------
-
-import sys
 import os
-import string
 import logging
 import timeit
 import argparse
+import datetime
 from utils import db_utils
-
-# -----------------------------------------------------------------------------
 
 RFAM_ACC = 0  # full region rfam_acc
 SEQ_ACC = 1  # full region rfamseq_acc
@@ -42,9 +37,7 @@ TRUNC = 8  # full region truncated
 
 OVERLAP = 0.5  # overlap cutoff
 COMP_OVL = 1.0  # complete overlap
-NO_OVL = 0.0    # no overlap
-
-# -----------------------------------------------------------------------------
+NO_OVL = 0.0  # no overlap
 
 
 def get_strand(start, end):
@@ -64,8 +57,6 @@ def get_strand(start, end):
         return 1
 
     return 0
-
-# -----------------------------------------------------------------------------
 
 
 def calc_seq_overlap(s1, e1, s2, e2):
@@ -100,8 +91,6 @@ def calc_seq_overlap(s1, e1, s2, e2):
 
     # will return None in a case that we didn't capture
     return overlap
-
-# -----------------------------------------------------------------------------
 
 
 def cal_overlap_pos_strand(s1, e1, s2, e2):
@@ -148,8 +137,6 @@ def cal_overlap_pos_strand(s1, e1, s2, e2):
 
     return overlap
 
-# -----------------------------------------------------------------------------
-
 
 def cal_overlap_neg_strand(s1, e1, s2, e2):
     """
@@ -195,8 +182,6 @@ def cal_overlap_neg_strand(s1, e1, s2, e2):
         overlap = float(s1 - e2 + 1) / float(min_len)
 
     return overlap
-
-# -----------------------------------------------------------------------------
 
 
 def compete_seq_regions(regions, log):
@@ -265,15 +250,14 @@ def compete_seq_regions(regions, log):
 
     return non_sig_regs
 
-# -----------------------------------------------------------------------------
 
-
-def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
+def complete_clan_seqs(sorted_clan, clan_comp_type='FULL', sync=False):
     """
-    Parses a sorted clan file and generates a list of regions per rfam_acc,
-    which are then competed by compete_seq_regions
-
-    sorted_clan: A valid path to a sorted clan file
+    Parses a sorted clan file and generates a list of regions per rfam_acc, which are then competed by
+    compete_seq_regions
+    :param sorted_clan: sorted clan file
+    :param clan_comp_type: FULL or PDB
+    :param sync: whether to update rel and web (fb1 and pg) databases
     """
 
     fp = open(sorted_clan, 'r')
@@ -294,9 +278,8 @@ def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
 
         # the same accession - create region list, otherwise the sequence is
         # significant...
-        while(len(seq_next) > 1 and string.find(seq_prev[SEQ_ACC],
-                                                seq_next[SEQ_ACC]) != -1):
-            # add the previous only in the first occurence
+        while len(seq_next) > 1 and seq_next[SEQ_ACC].find(seq_prev[SEQ_ACC]) != -1:
+            # add the previous only in the first occurrence
 
             if len(regions) == 0:
                 regions.append(seq_prev)  # add the first
@@ -324,11 +307,9 @@ def complete_clan_seqs(sorted_clan, clan_comp_type='FULL'):
         if clan_comp_type == 'FULL':
             db_utils.set_is_singificant_to_zero_multi(non_sig_regs)
         else:
-            db_utils.set_pdb_is_significant_to_zero(non_sig_regs)
+            db_utils.set_pdb_is_significant_to_zero(non_sig_regs, sync)
 
     return non_sig_regs
-
-# -----------------------------------------------------------------------------
 
 
 def usage():
@@ -336,18 +317,16 @@ def usage():
     Displays information on how to run clan competition
     """
 
-    print "\nUsage:\n------"
+    print("\nUsage:\n------")
 
-    print "\nclan_competition.py [clan_file|clan_dir] [-r] [PDB|FULL]"
+    print("\nclan_competition.py [clan_file|clan_dir] [-r] [PDB|FULL] [SYNC]")
 
-    print "\nclan_dir: A directory of sorted clan region files"
-    print "clan_file: The path to a sorted clan region file"
-    print "\n-r option to reset is_significant field"
-    print "\nPDB option for pdb clan competition"
-    print "\nFULL option for full region clan competition"
-
-
-# -----------------------------------------------------------------------------
+    print("\nclan_dir: A directory of sorted clan region files")
+    print("clan_file: The path to a sorted clan region file")
+    print("\n-r option to reset is_significant field")
+    print("\nPDB option for pdb clan competition")
+    print("\nFULL option for full region clan competition")
+    print("\nSYNC option to update REL, FB1 and PG databases")
 
 
 def parse_arguments():
@@ -364,18 +343,18 @@ def parse_arguments():
                         default=False)
     mutualy_exclusive = parser.add_mutually_exclusive_group()
     mutualy_exclusive.add_argument("--pdb", help="Clan compete PDB regions",
-                        action="store_true", default=False)
+                                   action="store_true", default=False)
     mutualy_exclusive.add_argument("--full", help="Clan compete FULL regions",
+                                   action="store_true", default=False)
+    parser.add_argument("--sync", help="Update release and web production databases",
                         action="store_true", default=False)
 
     return parser
 
-# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    # Input will be a directory of sorted clan files or a single sorted clan
-    # file
+    # Input will be a directory of sorted clan files or a single sorted clan file
 
     parser = parse_arguments()
     args = parser.parse_args()
@@ -384,7 +363,7 @@ if __name__ == '__main__':
 
     # with -r option reset all is_significant fields back to 1
     if args.r:
-        print "\nReseting is_significant fields ..."
+        print("\nResetting is_significant fields ...")
         if args.pdb:
             db_utils.reset_is_significant(clan_comp_type='PDB')
         elif args.full:
@@ -392,30 +371,29 @@ if __name__ == '__main__':
 
     t_start = timeit.default_timer()
 
-    print "\nCompeting Clans ...\n"
+    print("\nCompeting Clans ...\n")
 
     # compete multiple clans
     if os.path.isdir(clan_source):
         clan_files = [x for x in os.listdir(clan_source) if x.endswith(".txt")]
 
-        non_sig_seqs = None
         for clan in clan_files:
-            print clan
+            print(clan)
             clan_file = os.path.join(clan_source, clan)
 
             # compete pdb_full_region
             if args.pdb:
-                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB')
+                non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='PDB', sync=True if args.sync else False)
 
             # compete full_region
             elif args.full:
                 non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
-            print "%s : %s" % (str(clan[0:8]), len(non_sig_seqs))
+            print("%s : %s" % (str(clan[0:8]), len(non_sig_seqs)))
             non_sig_seqs = None
 
         elapsed_time = timeit.default_timer() - t_start
-        print "elapsed time: ", elapsed_time
+        print("elapsed time: ", elapsed_time)
 
     # compete a single clan
     elif os.path.isfile(clan_source):
@@ -428,12 +406,11 @@ if __name__ == '__main__':
         elif args.full:
             non_sig_seqs = complete_clan_seqs(clan_file, clan_comp_type='FULL')
 
-        print "%s : %s" % (os.path.basename(clan_source).partition(".")[0],
-                           len(non_sig_seqs))
+        print("%s : %s" % (os.path.basename(clan_source).partition(".")[0], len(non_sig_seqs)))
         non_sig_seqs = None
 
         elapsed_time = timeit.default_timer() - t_start
-        print "elapsed time: ", elapsed_time
+        print("elapsed time: ", elapsed_time)
 
     else:
         usage()

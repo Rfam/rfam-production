@@ -17,7 +17,7 @@ def export_pdb_full_region_table(dest):
     conn = RfamDB.connect()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM pdb_full_region;")
+        cursor.execute("SELECT * FROM pdb_full_region ORDER BY rfam_acc;")
         results = cursor.fetchall()
         with open(pdb_file, 'w') as pdb_text:
             a = csv.writer(pdb_text, delimiter='\t')

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Find start/stop coordinates given a Stockholm file with valid
 INSDC or RefSeq accessions.
@@ -61,7 +62,7 @@ def get_fasta_file(identifier):
     os.system('mkdir -p {}'.format(fasta_folder))
     fasta_file = os.path.join(fasta_folder, identifier + '.fasta')
     if not os.path.exists(fasta_file):
-        cmd = 'wget -O {0} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={1}&rettype=fasta&retmode=text"'.format(fasta_file, identifier)
+        cmd = 'wget -q -O {0} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={1}&rettype=fasta&retmode=text"'.format(fasta_file, identifier)
         os.system(cmd)
     return fasta_file
 

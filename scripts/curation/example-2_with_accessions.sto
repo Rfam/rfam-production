@@ -1,0 +1,64 @@
+# STOCKHOLM 1.0
+# STOCKHOLM                   1.0
+
+NC_003806.1/3443-3512         CAAGCGT.AACCTCCA-..Tc............-CGAGTTGCAA-GAGAGGGaa.A.CGC-.......................AGTCTCG-.CCGACC.ctg.tt...gcca...aacagTAA
+NC_001747.1/3506-3566         TAAAACT.AGCCAAGCAtaC.............ACGAGTTGCAAGCATTGGA...A.GTTCa......................AGCCTCGT.TACATC......................AAC
+NC_003756.1/3458-3527         TAAGTGT.AGCCTCCA-..Cc............-CGAGTTGCAA-GAGGGGAac.A.CGC-.......................AGTCTCG-.CCGACC.ctg.tt...ggca...aacagTAA
+AB034916.1/3457-3526          TTAGCGC.AGCCTCCA-..Tc............-CGAGTTGCAA-GAGAGGAa..GaCGC-.......................AGTCTCG-.CCGACC.ctg.tt...ggca...aacagTAA
+NC_003530.1/3396-3469         TTCCCGT.AGCCGCCA-..A.............CAAAGTTGCAA-GAGCGGGc..GtTGCT.......................AGCCTTTG.CCGACC.ctg.ctt..cctg..gcgcagCAA
+MH794505.1/204-131            TAAACGT.AGCCGCCA-..A.............CAAAGTTGCAA-GAGCGGGc..GtTGTT.......................AGCCTTTG.TCGACC.ctg.ctt..cctg..gagcagCAA
+NC_003627.1/4098-4163         CAAGGTG.AGCCGGCA-..T.............-GAGGTTGCAA-GACCGGAa..CaACC-.......................AGTCCTT-.C-----.tgg.cag..agtc..ctgccaATC
+NC_027710.2/3582-3656         CAACCAC.AGCCAAGC-..A.............TTAAGTTGCAAGCGTTGGA...G.TGGC.......................AGGCTTAA.CGT---.ccgacagtacgacaactgcggTGT
+NC_004366.1/3517-3573         AAAACGG.AGCTAGAT-..T.............TAGTGTTGCAATTGCTAGA...C.CGTT.......................AGCCACTA.CGCCAG......................ACA
+KJ372735.1/2077-2133          GAAGGCT.AGCCGGGC-..A.............ATGTGTTGCAAGCGCCGGA...A.GCTC.......................AGGCACAT.GGGTGG......................AAC
+FN597051.1/2612-2668          TTAAGTT.AGCCAGGC-..A.............TATGGTTGCAAGCGCTGGG...G.ACTT.......................AGTCCATA.GAGCCA......................CTG
+NC_034243.1/2885-2940         ATGGCCGtAGCCCGCG-..Tt............-GTAGTTGCAA-GACGGGA..gC.GTT-.......................AGTCTAC-.TGAATG......................GGG
+FJ188472.1/2655-2709          GTCACGT.AGCTAGTA-..-.............CCAGGTTGCAATA-CTAGA...G.CGTT.......................AGTCCTGG.GGCAGC......................CCC
+NC_001726.1/2661-2715         GTCACGT.AGCTAGTA-..-.............CCAGGTTGCAATA-CTAGA...G.CGTT.......................AGTCCTGG.GGCGTC......................CCT
+NC_035451.1/3370-3427         GTAACGTcAGCCGCCA-..A.............CACAGTTGCAA-GAGCGGAa.gA.CGT-.......................AGTCTGTG.TCAAAT......................CGT
+NC_000874.1/3464-3521         GCATCCCgAGCCACCA-..T.............ATAGGTTGCAA-GAGTGGAa.cG.GGA-.......................AGTCCTAT.AGATAA......................GCC
+NC_025837.1/3484-3540         TTTGAACcAGCGAACA-..At............-TCAGTTGCGA-GATTCGA..gGtTTC-.......................AGTCTGA-.ATCATA......................GGC
+NC_031747.1/3736-3792         GACAGAT.AGCCGGTAT..Ca............-GTTGTTGCAATAGCCGGA...G.TCTT.......................AGTCAAC-.GTACAA......................TCG
+NC_010809.1/3332-3391         AGAACACtAGCCGGAAAtaC.............-GTTGTTGCAATTGCCGGA..aG.TTTA.......................AGCCAAC-.TACAAA......................ATA
+NC_018571.2/3455-3514         TCATAACtAGCCGGAAAtaC.............-GTTGTTGCAATTGCCGGA..aG.TTAA.......................AGTCAAC-.TACAAC......................ATA
+NC_004751.1/3564-3622         AAAACT-.AGCCGGACAaaC.............GTAAGTTGCAAGTGCCGGA...-.AGTCa......................AGTCTTAC.ACACAA......................GCC
+NC_021484.1/3332-3393         CTCAAGTcAGCCAGGCAaaT.............TCGAGTTGCAAGCACTGGAt.gA.CCT-.......................AGTCTCGA.TACATA......................AAC
+LN865080.1/843-902            CATAGCC.AGCCACACAtaC.............ACAAGTTGCAAGTAGTGGA...G.GTTC.......................AGTCTTGT.TACCAT......................AAC
+NC_006265.1/3306-3363         GAAGCT-.AGCCGAGAAacAc............-GTTGTTGCAATCGTCGGA...-.AGCAa......................AGCCAAC-.TACAAG......................AAA
+NC_034247.1/3465-3523         CTCAGTT.AGCCGGAAAgtC.............-GCTGTTGCAATTGCCGGAa..A.ACTT.......................AGTCAGC-.TACACA......................AAA
+NC_010732.1/3457-3517         ATAAACT.AGCCAAGCAtaC.............RTCAGTTGCRAGCGTTGGA...A.GTTCa......................AGTCTGAT.TACCAA......................AGC
+NC_003688.1/3317-3378         AGAACACtAGCCAAGCAcaC.............ACGAGTTGCAAGCATTGGA..aG.TCTG.......................AGTCTCGT.TACCAA......................GAG
+NC_036803.1/3442-3502         TATAACT.AGCCAAGCAtaC.............ATCAGTTGCAAGCGTTGGA...A.GTTCa......................AGTCTGAT.TACCAA......................CAG
+JX427534.1/587-647            TATAACT.AGCCAAGCAtaC.............ATCAGTTGCAAGCATTGGA...A.GTTCa......................AGTCTGAT.TACCAA......................TAG
+NC_004756.1/3344-3402         AACACT-.AGCCGAGCAaaC.............GAAAGTTGCAAGCATCGGA...-.AGTCa......................AGTCTTTC.ACATCA......................GCC
+NC_002766.1/3422-3482         TACAAAC.AGCCGGGTAaaC.............ATCAGTTGCAAACACCGGAa..G.TTTT.......................AGTCTGAT.TACACA......................ACA
+NC_029906.1/3325-3386         CTGAAGCtAGCCAGACAtaC.............GTGAGTTGCAAGTACTGGAt.aG.CTT-.......................AGTCTCAC.ACATTT......................GCA
+MN204612.1/3410-3468          GAAACAT.AGCCTCACAtaC.............-ACAGTTGCAAGTGGAGGA...G.TGTTt......................AGTCTGT-.TACCAC......................GCG
+MK482114.1/3574-3630          CAGCT--.AGCCCGGAAttT.............-GTTGTTGCAATCGCGGGAaa.-.-AGAa......................AGTCAAC-.TACATA......................AGG
+LC428360.1/3278-3336          GAAGTT-.AGCCCTACAtaC.............GTAAGTTGCAAGTAAGGGA...-.AACAa......................AGTCTTAC.ACCCGA......................GTA
+LC424839.1/3422-3481          CGGAGTG.AGCCAGACAtaC.............GCAAGCTGCAAGTACTGGA...C.ACTA.......................AGCCTTGC.ACATAA......................ACT
+MK333461.1/3445-3505          CTTAGTT.AGCCAAGCAtaC.............ATCAGTTGCAAGCGTTGGA...A.ACTTa......................AGTCTGAT.TACCTT......................AGC
+MH645154.1/3368-3428          TATAGTA.AGCCAAGCAtaC.............ATCAGTTGCAAGCATTGGAa..T.ACTT.......................AGCCTGAT.TACCAA......................CAA
+MK050791.1/3409-3470          TACAGAC.AGCCAGACAcaCg............-CAAGTTGCAAGTACTGGAa..G.TCTTa......................AGTCTTG-.TTACAAa.....................GAG
+LR584020.1/3338-3396          GAAGTT-.AGCCCTACAtaC.............GTAAGTTGCAAGTAAGGGA...-.AACAa......................AGTCTTAC.ACCCGA......................GAA
+L39983.1/338-398              ATAAAAC.AGCCGGGTAaaC.............ATCAGTTGCAAACACCGGAa..G.TTTT.......................AGTCTGAT.TACATA......................ACA
+NC_028793.1/3525-3585         GAAAACT.AGCCAAGCAcaC.............GCGAGTTGCAAGCATTGGA...A.GTTCa......................AGTCTCGC.TACAAC......................AAG
+KT963000.1/3530-3589          TACACT-.AGCCAAGCAaaC.............ACGAGTTGCAAGCATTGGA...-.AGTAaa.....................AGTCTCGT.TACAAT......................AAG
+NC_034265.1/3498-3558         ATAAGCT.AGCCAAGCAtaC.............ACGAGTTGCAAGCATTGGA...A.GTTCa......................AGCCTCGT.TACATC......................AAC
+NC_034207.1/3516-3576         CACGATC.AGCCAAGCAtaC.............ATCAGTTGCAAGCGTTGGA...G.ATCAc......................AGTCTGAT.TACCAT......................AGC
+NC_027703.1/3484-3547         TACATAC.AGCCGGGCAtaC.............CGTAGTTGCAAGCGCCGGAaa.G.TATCtg.....................AGTCTACG.TACCGR......................ACA
+KC960436.1/599-657            TAAAGCC.AGCCGAGTTagA.............-CTTGTTGCAAACGTCGGA...G.GCTAa......................AGTCAAG-.CACTAT......................ACC
+MF136435.1/2804-2862          TAAACAC.AGCCAATA-..-............aTCTTGTTGCAATAGTTGGA...G.TGTTc......................AGCCAAGAtGCCCCG......................TAA
+NC_008249.1/3486-3543         ACAGAGAtAGCCGACT-..-............aACTAGTTGCGA-GATCGGA..gT.CTC-.......................AGTCTAGTtCATTGC......................AAA
+NC_034246.1/3377-3434         TCAGAATcAGCCCTAC-..-............aTCAAGTTGCGAGTGAGGGA..gA.TTC-.......................AGCCTTGAt-TCAGC......................GAC
+NC_014545.1/3448-3508         CCTGAGCtAGCTCTTA-..-............aTCTTGTTGCATTAGAGAGA..aG.CTTAa......................AGTCAAGAtCACAGC......................CTA
+LN865083.1/839-911            GAAACAC.AGCCGGCAAatAaacttaaaataa.GTAGGTTGCAA-GATCGGA...G.TGTAca.....................AGTCCTAC.AACAGA......................ACA
+MH323436.1/3743-3799          CTCCAGT.AGCTGAAG-..C.............GAAAGTTGCAACTGTCAGA...A.CTGT.......................AGTCTTTC.ACACAC......................GCA
+NC_034836.1/4190-4268         CCCCCC-.AGCCGAAAG..Tt............CTAGGTTGCAATTGTCGGT...-.GGGCtcc.ggcgtaagctcaaatatacAGGCCTAG.CATAAT......................GGT
+NC_032224.1/3354-3419         CGAGAGTcAGCCAAACAaaC.............ACAAGTTGCAAGTGTTGGA..gA.CTCAttct...................AGTCTTGT.TAACAC......................ACC
+NC_033229.1/3703-3762         CAAAATC.AGCCACACAtaC.............ACAAGTTGCGAGTAGTGGA...G.ATTC.......................AGTCTTGT.TACCAA......................AGT
+#=GC SS_cons                  :::<<<<.--<<<<<<_--_-------------___________>>->>>>---.>->>>:----...----...---------::::::::-::::::-...-....------.......:::
+#=GC RF                       caAacac.AGCCgaccA..c.............cuAAGUUGCAAggAucGGA...g.uguc.......................AGUCUUag.cAcAaa......................aaa
+#=GC SS_cons_1                ---------[-------------------------------]----------------------------------------------------------------------------------
+#=GC SS_cons_2                --------------------------------[[[[[[-------------------------------------------------]]]]]]-------------------------------
+//

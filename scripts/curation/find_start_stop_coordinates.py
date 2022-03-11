@@ -26,6 +26,7 @@ The command generates a new file <input_with_accessions.sto>
 import os
 import re
 import sys
+import time
 
 from Bio import AlignIO
 from Bio import SeqIO
@@ -63,6 +64,7 @@ def get_fasta_file(identifier):
     fasta_file = os.path.join(fasta_folder, identifier + '.fasta')
     if not os.path.exists(fasta_file):
         cmd = 'wget -q -O {0} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={1}&rettype=fasta&retmode=text"'.format(fasta_file, identifier)
+        time.sleep(1)
         os.system(cmd)
     return fasta_file
 

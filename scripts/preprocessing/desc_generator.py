@@ -4,10 +4,12 @@ import os
 import argparse
 import requests
 
+
 # --------------------------------------------------------------------
 
 
-def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, go_terms=None, dest_dir=None):
+def desc_template_generator(desc_file, mirna_name, family_id, wiki_links=None, second_author=None, go_terms=None,
+                            dest_dir=None):
     """
 
     desc_file:
@@ -95,7 +97,7 @@ WK   %s
         i = 0
 
         for go_term_string in go_terms.keys():
-            if i < len(go_terms.keys()) -1:
+            if i < len(go_terms.keys()) - 1:
                 if i == 0:
                     fp_out.write("\nDR   %s\n" % go_term_string)
                 else:
@@ -113,6 +115,7 @@ WK   %s
         return True
 
     return False
+
 
 # --------------------------------------------------------------------
 
@@ -141,6 +144,7 @@ def extract_sequence_accessions_from_seed(seed_file):
     fp.close()
 
     return accessions
+
 
 # --------------------------------------------------------------------
 
@@ -173,6 +177,7 @@ def fetch_go_terms_from_rnacentral(rnacentral_id):
 
     return go_terms
 
+
 # --------------------------------------------------------------------
 
 
@@ -185,29 +190,30 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser("Generates a DESC template for a new family")
     parser.add_argument("--input", help="miRBase directory with rfsearch results",
-                      action="store", default=None)
+                        action="store", default=None)
     parser.add_argument("--outdir", help="Path to the output directory", action="store",
-                      default=None)
+                        default=None)
     parser.add_argument("--ga-author", help="Name and orcid of gathering threshold author (e.g. Edwards BA; ORCID)",
                         action="store", default=None)
     parser.add_argument("--wiki-links", help="File with family/wiki link mappings", action="store", default=None)
     parser.add_argument("-f", help="a list of accessions to generate DESC files for", action="store", default=None)
-    parser.add_argument("--label", help="label to be used for the generation of the DESC file", action='store', default=None)
+    parser.add_argument("--label", help="label to be used for the generation of the DESC file", action='store',
+                        default=None)
     parser.add_argument("--no-ref", help="Skips references in DESC file", action="store_true", default=False)
 
-    return parser
+    return parser.parse_args()
+
 
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    parser = parse_arguments()
-    args = parser.parse_args()
+    args = parse_arguments()
 
     desc_file = os.path.join(args.input, "DESC")
 
     if args.label is None:
-        label = os.path.basename(args.input)    
+        label = os.path.basename(args.input)
     else:
         label = args.label
 
@@ -216,7 +222,6 @@ if __name__ == '__main__':
     mirna_name = mirna_labels[1]
 
     wiki_links = None
-
     if args.wiki_links is not None:
         wiki_links = {}
         fp = open(args.wiki_links, 'r')
@@ -225,7 +230,6 @@ if __name__ == '__main__':
             if line[0] not in wiki_links:
                 wiki_links[line[0]] = line[2]
         fp.close()
-
 
     seed_file = os.path.join(args.input, "SEED")
 
@@ -237,7 +241,7 @@ if __name__ == '__main__':
         urs_go = fetch_go_terms_from_rnacentral(urs_accession)
         if urs_go is not None:
             for go_id in urs_go.keys():
-                go_term = '; '.join([go_id.replace(':', '; '), urs_go[go_id]+';'])
+                go_term = '; '.join([go_id.replace(':', '; '), urs_go[go_id] + ';'])
                 if go_term not in family_go_terms:
                     family_go_terms[go_term] = ""
 

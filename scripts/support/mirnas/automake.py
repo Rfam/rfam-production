@@ -4,7 +4,7 @@ import subprocess
 import argparse
 
 from scripts.support.mirnas.update_mirnas_helpers import MEMORY, CPU, LSF_GROUP, get_mirna_dict
-from scripts.support.mirnas.config import UPDATE_DIR, SEARCH_DIRS
+from scripts.support.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS
 
 
 def rfmake_serial(family_dir, threshold):

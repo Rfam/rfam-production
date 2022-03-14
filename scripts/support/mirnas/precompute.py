@@ -3,7 +3,7 @@ import subprocess
 import argparse
 
 from scripts.support.mirnas.update_mirnas_helpers import MEMORY, LSF_GROUP, get_rfam_accs
-from scripts.support.mirnas.config import UPDATE_DIR
+from scripts.support.mirnas.mirna_config import UPDATE_DIR
 
 
 def launch_new_rfsearch(family_dir, cpu):

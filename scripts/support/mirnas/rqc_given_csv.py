@@ -6,7 +6,7 @@ import time
 
 from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, MEMORY, CPU,
                                                           LSF_GROUP)
-from scripts.support.mirnas.config import UPDATE_DIR
+from scripts.support.mirnas.mirna_config import UPDATE_DIR
 
 families_with_seed_error = []
 ignore_seed = []

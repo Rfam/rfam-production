@@ -3,10 +3,6 @@ import json
 
 from scripts.support.mirnas.mirna_config import MIRNAS_CSV
 
-MEMORY = 8000
-CPU = 4
-LSF_GROUP = "/rfam_srch"
-
 
 def get_mirna_dict(csv_file=None):
     csv_file = MIRNAS_CSV if csv_file is None else csv_file
@@ -28,9 +24,9 @@ def get_rfam_accs(csv_file=None):
 def get_mirna_ids(input_args):
     with open(input_args, 'r') as fp:
         ids_thresholds = json.load(fp)
-        mirna_ids = []
-        for entry in ids_thresholds:
-            # entry_id = entry.keys()[0]
-            # threshold = entry.values()[0]
-            mirna_ids.append(entry.keys()[0])
+    mirna_ids = []
+    for entry in ids_thresholds:
+        # entry_id = entry.keys()[0]
+        # threshold = entry.values()[0]
+        mirna_ids.append(entry)
     return mirna_ids

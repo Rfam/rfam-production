@@ -3,8 +3,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import MEMORY, CPU, LSF_GROUP, get_mirna_dict
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS
+from scripts.support.mirnas.update_mirnas_helpers import get_mirna_dict
+from scripts.support.mirnas.mirna_config import UPDATE_DIR, NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 
 def rfmake_serial(family_dir, threshold):
@@ -45,16 +45,12 @@ def autorfmake(entryids_thresholds, serial=False):
     family_dir = ""
 
     for entry in entryids_thresholds:
-        entry_id = entry.keys()[0]
-        threshold = entry.values()[0]
+        entry_id = entry
+        threshold = entryids_thresholds[entry]
         if entry_id.startswith('RF'):
             family_dir = os.path.join(UPDATE_DIR, entry_id)
         elif entry_id.startswith('MIPF'):
-            for searchdir in SEARCH_DIRS:
-                if entry_id.find("relabelled") == -1:
-                    family_dir = os.path.join(searchdir, entry_id + "_relabelled")
-                else:
-                    family_dir = os.path.join(searchdir, entry_id)
+            family_dir = os.path.join(NEW_DIR, entry_id)
         if os.path.exists(family_dir):
             if serial is True:
                 rfmake_serial(family_dir, threshold)

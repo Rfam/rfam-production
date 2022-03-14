@@ -8,6 +8,19 @@ from scripts.support.mirnas.update_mirnas_helpers import get_mirna_dict, get_mir
 from scripts.support.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS, NEW_DIR
 
 
+def create_new_dir(mirna):
+    """
+    Create a new directory for the new miRNA family
+    :param mirna: miRBase ID
+    :return: True if successful
+    """
+    family_dir = os.path.join(NEW_DIR, mirna)
+    os.mkdir(family_dir)
+    if os.path.exists(family_dir):
+        return True
+    return False
+
+
 def checkout_family(rfam_acc):
     """
     Run rfco.pl to checkout the given Rfam family
@@ -50,18 +63,6 @@ def copy_seed_file(mirna, new=False):
                 shutil.copyfile(updated_seed, os.path.join(checkout_dir, "SEED"))
             else:
                 continue
-
-
-def create_new_dir(mirna):
-    """
-    Create a new directory for the new miRNA family
-    :param mirna: miRBase ID
-    :return: True if successful
-    """
-    family_dir = os.path.join(NEW_DIR, mirna)
-    if os.path.exists(os.path.join(UPDATE_DIR, family_dir)):
-        return True
-    return False
 
 
 def parse_arguments():

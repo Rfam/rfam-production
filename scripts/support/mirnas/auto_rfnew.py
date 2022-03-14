@@ -12,8 +12,8 @@ def auto_rfnew(mirnas):
     """
     for mirna in mirnas:
         family_dir = os.path.join(NEW_DIR, mirna)
-        lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
-        lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
+        lsf_err_file = os.path.join(family_dir, "auto_rfnew.err")
+        lsf_out_file = os.path.join(family_dir, "auto_rfnew.out")
         cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
                "-J {job_name} \"cd {new_dir} && rfnew.pl -m 'Adding new miRNA family' {mirna_id}\"")
         subprocess.call(

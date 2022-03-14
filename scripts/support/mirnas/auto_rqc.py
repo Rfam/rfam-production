@@ -92,7 +92,7 @@ def parse_arguments():
     parser.add_argument("--csv-input",
                         help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
     parser.add_argument("--input", help="JSON file with miRNA id : threshold value pairs")
-    parser.add_argument("--new", help="If supplied, these are new miRNA families", default=False)
+    parser.add_argument("--new", help="If supplied, these are new miRNA families", action="store_true", default=False)
 
     return parser.parse_args()
 

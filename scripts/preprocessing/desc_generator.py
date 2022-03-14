@@ -83,7 +83,7 @@ WK   %s
 
     wiki_link = wk_constant
 
-    if family_id in wiki_links:
+    if wiki_links and family_id in wiki_links:
         wiki_link = wiki_links[family_id]
 
     # write DESC upper half
@@ -209,7 +209,6 @@ def parse_arguments():
 if __name__ == '__main__':
 
     args = parse_arguments()
-
     desc_file = os.path.join(args.input, "DESC")
 
     if args.label is None:

@@ -27,7 +27,7 @@ def launch_new_rfsearch(family_dir, cpu):
     for file_type in file_extensions:
         subprocess.call("rm -f %s/*.%s" % (family_dir, file_type), shell=True)
 
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
            "-J {job_name} \"cd {family_dir} && rfsearch.pl -t 25 -cnompi -q production-rh74 -relax {option}\"")
     subprocess.call(
         cmd.format(

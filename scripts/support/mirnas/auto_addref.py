@@ -37,7 +37,7 @@ def call_add_ref_cmd(fam_dir, ref):
     :param fam_dir: family directory, from which to call the command
     :param ref: PubMed reference ID for the DESC, by default the latest MiRBase paper 30423142
     """
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
            " \"cd {family_dir} && add_ref.pl {ref}\"")
     lsf_err_file = os.path.join(fam_dir, "auto_add_ref.err")
     lsf_out_file = os.path.join(fam_dir, "auto_add_ref.out")

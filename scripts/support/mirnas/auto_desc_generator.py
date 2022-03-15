@@ -19,7 +19,7 @@ def auto_desc_make(mirna_id, wiki_links_file=None):
         lsf_out_file = os.path.join(family_dir, "auto_desc_make.out")
 
         if wiki_links_file:
-            cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
+            cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
                    "-J {job_name} \"source {env_path} && python {desc_gen} --input {family_dir} --wiki-links {wiki}\"")
             subprocess.call(
                 cmd.format(
@@ -27,7 +27,7 @@ def auto_desc_make(mirna_id, wiki_links_file=None):
                     job_name=mirna_id, env_path=ENV_PATH, desc_gen=DESC_GEN_PATH, family_dir=family_dir,
                     wiki=wiki_links_file), shell=True)
         else:
-            cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
+            cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
                    "-J {job_name} \"source {env_path} && python {desc_gen} --input {family_dir}\"")
             subprocess.call(
                 cmd.format(

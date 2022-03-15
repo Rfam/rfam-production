@@ -14,7 +14,7 @@ did_not_pass = []
 
 
 def num_lines_in_seed_file(acc):
-    seed_file = os.path.join(UPDATE_DIR, acc, 'SEED')
+    seed_file = os.path.join(DIR_TO_USE, acc, 'SEED')
     with open(seed_file) as f:
         num_lines = sum(1 for _ in f)
     print("Number of lines in SEED file: {0}".format(num_lines))

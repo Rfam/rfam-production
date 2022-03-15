@@ -17,21 +17,21 @@ Use the following scripts if you wish to run the processes individually.
 2. Launch `rfsearch.pl` for the families, given the input CSV:
 
     `precompute.py`
-3. 
-4. Launch `rfmake.pl` with the threshold per family, given the input CSV:
+
+3. Launch `rfmake.pl` with the threshold per family, given the input CSV:
     `automake.py`
-5. 
-6. Modify the DESC files sequentially:
+
+4. Modify the DESC files sequentially:
     `auto_addref.py`
-7. 
-8. Update the fields AU, SE, SS in the DESC files:
+
+5. Update the fields AU, SE, SS in the DESC files:
     `auto_addref.py`
-9. 
-10. Run the QC checks:
-     `auto_rqc.py`
-11. 
-12. Check in the families:
-    `auto_rfci.py`
+
+6. Run the QC checks:
+    `auto_rqc.py`
+
+7. Check in the families:
+   `auto_rfci.py`
 
    
 ## Create new families

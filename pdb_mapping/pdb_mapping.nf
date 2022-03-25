@@ -302,11 +302,8 @@ workflow sync_rel_web {
 
 workflow mapping_and_updates {
     take: start
-    emit: done
     main:
         pdb_mapping(start)
-
-        | set { done }
 }
 
 workflow {

@@ -45,20 +45,19 @@ def autorfmake(entryids_thresholds, serial=False):
     family_dir = ""
 
     for entry in entryids_thresholds:
-        entry_id = entry
-        threshold = entryids_thresholds[entry]
-        if entry_id.startswith('RF'):
-            family_dir = os.path.join(UPDATE_DIR, entry_id)
-        elif entry_id.startswith('MIPF'):
-            family_dir = os.path.join(NEW_DIR, entry_id)
-        if os.path.exists(family_dir):
-            if serial is True:
-                rfmake_serial(family_dir, threshold)
+        for entry_id, threshold in entry.items():
+            if entry_id.startswith('RF'):
+                family_dir = os.path.join(UPDATE_DIR, entry_id)
+            elif entry_id.startswith('MIPF'):
+                family_dir = os.path.join(NEW_DIR, entry_id)
+            if os.path.exists(family_dir):
+                if serial is True:
+                    rfmake_serial(family_dir, threshold)
+                else:
+                    rfmake(family_dir, entry_id, threshold)
             else:
-                rfmake(family_dir, entry_id, threshold)
-        else:
-            could_not_update.append(family_dir)
-            continue
+                could_not_update.append(family_dir)
+                continue
 
 
 def parse_arguments():

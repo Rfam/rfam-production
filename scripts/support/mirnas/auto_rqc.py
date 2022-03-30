@@ -99,7 +99,7 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    families=[]
+    families = []
     if args.csv_input:
         families = get_rfam_accs(csv_file=args.csv_input)
     elif args.input:

@@ -19,7 +19,7 @@ Use the following scripts if you wish to run the processes individually.
     `precompute.py`
 
 3. Launch `rfmake.pl` with the threshold per family, given the input CSV:
-    `automake.py`
+    `auto_rfmake.py`
 
 4. Modify the DESC files sequentially:
     `auto_addref.py`
@@ -41,7 +41,7 @@ Use the following scripts if you wish to run the processes individually.
 2. Launch `rfsearch.pl` jobs:
     `precompute.py`
 3. Launch `rfmake.pl` jobs:
-   `automake.py`
+   `auto_rfmake.py`
 4. Generate the correct DESC file, by updating the DESC template:
     `auto_desc_generator.py`
 5. Add the microRna references:

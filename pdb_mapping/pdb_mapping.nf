@@ -148,6 +148,8 @@ process get_ftp_file {
 }
 
 process update_ftp {
+    queue 'datamover'
+
     input:
     path(query)
 
@@ -302,8 +304,14 @@ workflow sync_rel_web {
 
 workflow mapping_and_updates {
     take: start
+    emit: done
     main:
         pdb_mapping(start)
+        ftp(pdb_mapping.out.new_families)
+        update_search_index(pdb_mapping.out.new_families)
+        sync_rel_web(pdb_mapping.out.pdb_txt)
+        clan_compete_rel_web(sync_rel_web.out.synced)
+        | set { done }
 }
 
 workflow {

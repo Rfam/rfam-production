@@ -25,7 +25,7 @@ Use the following scripts if you wish to run the processes individually.
     `auto_addref.py`
 
 5. Update the fields AU, SE, SS in the DESC files:
-    `auto_addref.py`
+    `update_desc.py`
 
 6. Run the QC checks:
     `auto_rqc.py`

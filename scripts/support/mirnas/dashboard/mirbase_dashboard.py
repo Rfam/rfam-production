@@ -17,8 +17,8 @@ import tempfile
 import time
 
 import requests
-
-
+import mysql.connector
+from utils import RfamDB
 from microrna_progress import updated_families, new_commits
 
 
@@ -283,12 +283,28 @@ def format_rfam_ids(overlaps):
 def get_id_matches(mirbase_id):
     """
     In case there are no overlaps, check for ID matches.
+    For newly created families (not yet in the search index), run a query against RfamLive. 
     """
     url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query="{}"%20AND%20entry_type:%22Family%22&fields=name&format=json'
     data = requests.get(url.format(mirbase_id))
     if data.json()['hitCount'] == 1:
         rfam_id = data.json()['entries'][0]['id']
         return [rfam_id]
+    if data.json()['hitCount'] == 0:
+        query = "SELECT rfam_acc FROM family WHERE rfam_id = '{}'".format(mirbase_id)
+        conn = RfamDB.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(query)
+            rfam_id = cursor.fetchone()
+            return [rfam_id]
+        except mysql.connector.Error as e:
+            print("MySQL error has occurred: {0}".format(e))
+            raise e
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
     return []
 
 

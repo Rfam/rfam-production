@@ -3,8 +3,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import MEMORY, CPU, LSF_GROUP, get_mirna_dict
-from scripts.support.mirnas.config import UPDATE_DIR, SEARCH_DIRS
+from scripts.support.mirnas.update_mirnas_helpers import get_mirna_dict
+from scripts.support.mirnas.mirna_config import UPDATE_DIR, NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 
 def rfmake_serial(family_dir, threshold):
@@ -25,7 +25,7 @@ def rfmake(family_dir, entry_id, threshold):
     :param entry_id: ID of the family to update, miRBase ID or Rfam accession number
     :param threshold: manually selected threshold
     """
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q production-rh74 "
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
            "-J {job_name} \"cd {family_dir} && rfmake.pl -t {threshold} -forcethr -a\"")
     lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
@@ -45,24 +45,19 @@ def autorfmake(entryids_thresholds, serial=False):
     family_dir = ""
 
     for entry in entryids_thresholds:
-        entry_id = entry.keys()[0]
-        threshold = entry.values()[0]
-        if entry_id.startswith('RF'):
-            family_dir = os.path.join(UPDATE_DIR, entry_id)
-        elif entry_id.startswith('MIPF'):
-            for searchdir in SEARCH_DIRS:
-                if entry_id.find("relabelled") == -1:
-                    family_dir = os.path.join(searchdir, entry_id + "_relabelled")
+        for entry_id, threshold in entry.items():
+            if entry_id.startswith('RF'):
+                family_dir = os.path.join(UPDATE_DIR, entry_id)
+            elif entry_id.startswith('MIPF'):
+                family_dir = os.path.join(NEW_DIR, entry_id)
+            if os.path.exists(family_dir):
+                if serial is True:
+                    rfmake_serial(family_dir, threshold)
                 else:
-                    family_dir = os.path.join(searchdir, entry_id)
-        if os.path.exists(family_dir):
-            if serial is True:
-                rfmake_serial(family_dir, threshold)
+                    rfmake(family_dir, entry_id, threshold)
             else:
-                rfmake(family_dir, entry_id, threshold)
-        else:
-            could_not_update.append(family_dir)
-            continue
+                could_not_update.append(family_dir)
+                continue
 
 
 def parse_arguments():

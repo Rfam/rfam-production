@@ -50,7 +50,7 @@ def parse_go_term_file(go_term_file):
         # check if the go term pairs are correct. Each GO term id must be followed
         # by a description
         if len(go_terms) % 2 != 0:
-            print "Erroneous go term for %s" % rfam_acc
+            print("Erroneous go term for %s" % rfam_acc)
             continue
 
         idx = 0

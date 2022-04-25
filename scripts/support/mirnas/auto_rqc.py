@@ -1,217 +1,119 @@
 import os
-import sys
 import argparse
 import subprocess
-import json
 
-from datetime import date
-from subprocess import Popen, PIPE
+import time
 
-search_dirs = ["/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk1_searches",
-               "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch1_chunk2_searches",
-               "/hps/nobackup/production/xfam/rfam/RELEASES/14.3/miRNA_relabelled/batch2/searches"]
+from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, get_mirna_ids)
+from scripts.support.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, NEW_DIR
 
-
-# ---------------------------------------------------------------------------------------------
-
-
-def check_desc_ga(DESC, cut_ga):
-    """
-    """
-
-    process = Popen(['grep', "GA", DESC], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output, err = process.communicate()
-
-    if output.find("%.2f" % float(cut_ga)) == -1:
-        return False
-
-    return True
+families_with_seed_error = []
+ignore_seed = []
+passed = []
+did_not_pass = []
 
 
-# ---------------------------------------------------------------------------------------------
+def num_lines_in_seed_file(acc):
+    seed_file = os.path.join(DIR_TO_USE, acc, 'SEED')
+    with open(seed_file) as f:
+        num_lines = sum(1 for _ in f)
+    print("Number of lines in SEED file: {0}".format(num_lines))
+    return num_lines
 
 
-def check_family_passes_qc(family_dir):
-    dir_elements = os.path.split(family_dir)
-    search_dir = dir_elements[0]
-
-    os.chdir(search_dir)
-
-    process = Popen(["rqc-all.pl", dir_elements[1]], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output = process.communicate()[1]
-
-    if output.find("Family passed with no serious errors") == -1:
-        return False
-
-    return True
-
-
-# ---------------------------------------------------------------------------------------------
-
-
-def find_rqc_error(rqc_output):
-    error_types = {"CM": 1, "FORMAT": 1, "OVERLAP": 1, "STRUCTURE": 1,
-                   "MISSING": 1, "SEQUENCE": 1, "NON-CODING": 1}
-
-    rqc_lines = [x.strip() for x in rqc_output.split("\n") if x != '']
-
-    error_type_count = len(error_types.keys())
-
-    success_string = "--%s check completed with no major errors"
-
-    for error_type in error_types.keys():
-        for rqc_line in rqc_lines:
-            if rqc_line.find(success_string % error_type) != -1:
-                error_types[error_type] = 0
-                break
-
-    return error_types
-
-
-# ---------------------------------------------------------------------------------------------
-
-
-def fetch_rqc_output(family_dir):
-    dir_elements = os.path.split(family_dir)
-    parent_dir = dir_elements[0]
-
-    os.chdir(parent_dir)
-
-    process = Popen(["rqc-all.pl", dir_elements[1]], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output = process.communicate()[1]
-
-    return output
-
-
-# ---------------------------------------------------------------------------------------------
-
-
-def generate_rqc_report(rqc_error_types):
-    # develop functionality here
-    pass
-
-
-# ---------------------------------------------------------------------------------------------
-
-def fetch_format_error_lines(rqc_output):
-    rqc_lines = [x.strip() for x in rqc_output.split("\n") if x != '']
-
-    error_lines = []
-
-    start = '(2) FORMAT CHECK'
-    end = '(3) OVERLAP CHECK'
-    flag = False
-
-    for line in rqc_lines:
-        if line == start:
-            flag = True
-        if line == end:
-            flag = False
-        if flag is True:
-            error_lines.append(line)
-
-    return error_lines
-
-
-# ---------------------------------------------------------------------------------------------
-
-def check_error_is_fatal(error_lines):
-    error_string = "\n".join(error_lines)
-
-    if error_string.find("FATAL") != -1:
+def check_seed_match(num_errors, family):
+    num_seed_sequences = num_lines_in_seed_file(family)
+    percentage_seed_error = (float(num_errors) / float(num_seed_sequences) * 100)
+    if percentage_seed_error < 25:
         return True
-
-    return False
-
-
-# ---------------------------------------------------------------------------------------------
-
-def extract_family_overlaps(rqc_output):
-    error_lines = []
-
-    rqc_lines = [x.strip() for x in rqc_output.split("\n") if x != '']
-
-    start = '(3) OVERLAP CHECK'
-    end = '(4) STRUCTURE CHECK'
-    flag = False
-
-    # read error lines
-    for line in rqc_lines:
-        if line == start:
-            flag = True
-        if line == end:
-            flag = False
-        if flag is True:
-            error_lines.append(line)
-
-    overlap_accessions = {}
-    # process error lines
-    for line in error_lines:
-        rfam_acc = ""
-        if line.find("RF") != -1:
-            rfam_acc = line.split(':')[0][-7:]
-            if rfam_acc not in overlap_accessions:
-                overlap_accessions[rfam_acc] = ''
-
-    return overlap_accessions.keys()
+    else:
+        return False
 
 
-# ---------------------------------------------------------------------------------------------
+def check_rqc_passes(family):
+    family_dir = os.path.join(DIR_TO_USE, family)
+    lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
+
+    with open(lsf_err_file) as rqc_output:
+        read_output = rqc_output.read()
+        if "Family passed with no serious errors" in read_output:
+            passed.append(family)
+            continue_to_check_in = True
+        elif "in SEED in not in SCORES list!" in read_output:
+            families_with_seed_error.append(family)
+            number_error_occurrences = read_output.count("in SEED in not in SCORES list!")
+            if check_seed_match(number_error_occurrences, family):
+                print(
+                    "At least 75% of sequences match, continuing to check in family {0} with -i seed".format(family))
+                ignore_seed.append(family)
+                continue_to_check_in = True
+            else:
+                print("Error - SEED not in SCORES list. Larger than 25% mismatch. "
+                      "Manual intervention required, see error output:{0}".format(lsf_err_file))
+                continue_to_check_in = False
+        else:
+            continue_to_check_in = False
+            print("Family {0} failed QC checks. Manual Intervention is required. Please see error output: {1}".format(
+                family, lsf_err_file))
+
+    return continue_to_check_in
+
+
+def run_qc_check(family):
+    family_dir = os.path.join(DIR_TO_USE, family)
+    lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
+    lsf_out_file = os.path.join(family_dir, "auto_rqc.out")
+    job_name = os.path.basename(family)
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
+           "\"cd {dir} && rqc-all.pl {family}\"")
+    subprocess.call(
+        cmd.format(
+            mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
+            job_name=job_name, dir=DIR_TO_USE, family=family), shell=True)
+
+
+def write_to_files():
+    with open(os.path.join(DIR_TO_USE, 'qc_passed.txt'), 'w') as outfile:
+        for family in passed:
+            outfile.write(family + '\n')
+    with open(os.path.join(DIR_TO_USE, 'qc_passed_ignore_seed.txt'), 'w') as outfile:
+        for family in ignore_seed:
+            outfile.write(family + '\n')
+    with open(os.path.join(DIR_TO_USE, 'qc_not_passed.txt'), 'a') as outfile:
+        for family in did_not_pass:
+            outfile.write(family + '\n')
+    with open(os.path.join(DIR_TO_USE, 'seed_not_in_scores.txt'), 'a') as outfile:
+        for family in families_with_seed_error:
+            outfile.write(family + '\n')
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--csv-input",
+                        help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
+    parser.add_argument("--input", help="JSON file with miRNA id : threshold value pairs")
+    parser.add_argument("--new", help="If supplied, these are new miRNA families", action="store_true", default=False)
 
-    parser.add_argument("--mirna-ids", help="A .json file with miRNAs to commit",
-                        action="store")
-    parser.add_argument("--log-dir", help="Log file destination",
-                        action="store", default=os.getcwd())
-    parser.add_argument("--overlaps", help="Displays family overlaps",
-                        action="store_true", default=False)
-    parser.add_argument("--format", help="Displays families failing FORMAT check",
-                        action="store_true", default=False)
-
-    return parser
-
-
-# ---------------------------------------------------------------------------------------------
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
+    args = parse_arguments()
+    families = []
+    if args.csv_input:
+        families = get_rfam_accs(csv_file=args.csv_input)
+    elif args.input:
+        families = get_mirna_ids(args.input)
 
-    parser = parse_arguments()
-    args = parser.parse_args()
+    DIR_TO_USE = NEW_DIR if args.new else UPDATE_DIR
+    print("Using dir: ".format(DIR_TO_USE))
+    for family_id in families:
+        run_qc_check(family_id)
+        time.sleep(60)
+        if check_rqc_passes(family_id):
+            print("Continue to check in {0}".format(family_id))
+        else:
+            did_not_pass.append(family_id)
+            print("Cannot check in {0} - manual intervention required.".format(family_id))
 
-    fp = open(args.mirna_ids, 'r')
-    miRNA_accessions = json.load(fp)
-    fp.close()
-
-    # fp = open(os.path.join(args.log_dir, 'successful_mirna_commits.log'), 'w')
-
-    for accession in miRNA_accessions.keys():
-        dir_label = ''
-        if accession.find("_relabelled") == -1:
-            dir_label = accession + "_relabelled"
-
-        for search_dir in search_dirs:
-            family_dir_loc = os.path.join(search_dir, dir_label)
-            if os.path.exists(family_dir_loc):
-                # print family_dir_loc
-                rqc_output = fetch_rqc_output(family_dir_loc)
-                qc_error_dict = find_rqc_error(rqc_output)
-                # count = 0
-                # for key in qc_error_dict.keys():
-                #	count = count + qc_error_dict[key]
-                # if count != 0:
-                # if qc_error_dict["STRUCTURE"] == 1 or qc_error_dict["FORMAT"] == 1:
-                #	print (family_dir_loc)
-                if args.overlaps:
-                    if qc_error_dict["OVERLAP"] == 1:
-                        overlaps = extract_family_overlaps(rqc_output)
-                        for family in overlaps:
-                            print("%s\t%s" % (accession, family))
-                elif args.format:
-                    if qc_error_dict["FORMAT"] == 1:
-                        print(family_dir_loc)
-
-            # print find_2_seed_family(rqc_output)
+    write_to_files()

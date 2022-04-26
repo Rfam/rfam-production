@@ -26,7 +26,7 @@ Alternatively, use virtualenv to install the [requirements](../requirements.txt)
 Make sure the `~/.bashrc` file includes the following command:
 
 ```
-source /path/to/rfam_rh74/rfamrc
+source /path/to/rfamrc
 ```
 
 **Note:** The `rfamrc` file sets up several environment variables, including `PATH`.
@@ -45,7 +45,6 @@ source /path/to/rfam_rh74/rfamrc
     cd_rel - move to release working directories
     cd_rfamseq - move to Rfamseq location
     cd_rfam - move to rfam-family-pipeline repo
-    cd_rh7 - move to Perl libraries
     cd_code - move to rfam-production repo
     cd_main - move to the main Rfam production directory
     ```
@@ -79,22 +78,11 @@ nextflow run scripts/release/workflows/annotated_files.nf
 
 ## Update PDB mapping
 
-1. Run the PDB mapping pipeline
-
-    The pipeline will update PDB mapping, and then will update the FTP file in nfs/ftp/pub/databases/Rfam/.preview, update the Rfam text search, and begin the process of updating the website database. 
+Run the PDB mapping pipeline
+- The pipeline will update PDB mapping, and then will update the FTP file in nfs/ftp/public/databases/Rfam/.preview, update the Rfam text search, and begin the process of updating the website database. 
 
     ```
     nextflow run pdb_mapping/pdb_mapping.nf -profile cluster
-    ```
-
-2. Sync the web production databases
-
-    The table pdb_full_region has already been updated in RfamRel database (as part of the pdb_mapping.nf pipeline). This must be synced to the production databses (FB1 and PG). Currently this must be done manually, using the follwoing commands:
-
-    ```
-    become mysql-rel-4442
-    yes | sync-mysql-fb --dc=FB1
-    yes | sync-mysql-fb --dc=PG
     ```
 
 <details>

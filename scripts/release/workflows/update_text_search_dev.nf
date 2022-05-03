@@ -80,9 +80,9 @@ process index_data_on_dev {
     output:
     val('dev_done')
     """
-    cp $query /nfs/production/xfam/rfam/search_dumps/rfam_dev
-    unlink /nfs/production/xfam/rfam/search_dumps/rfam_dev
-    ln -s $params.text_search /nfs/production/xfam/rfam/search_dumps/rfam_dev
+    cp $query /nfs/production/agb/rfam/search_dumps/rfam_dev
+    unlink /nfs/production/agb/rfam/search_dumps/rfam_dev
+    ln -s $params.text_search /nfs/production/agb/rfam/search_dumps/rfam_dev
     """
 }
 

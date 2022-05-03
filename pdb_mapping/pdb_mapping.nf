@@ -266,7 +266,7 @@ workflow pdb_mapping {
         | collect \
         | combine_cmscan_results \
         | create_text_file_for_db | set { pdb_txt }
-        pdb_txt
+        pdb_txt \
         | import_db_and_generate_clan_files \
         | sort_clan_files \
         | collect \
@@ -310,7 +310,7 @@ workflow mapping_and_updates {
         ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(pdb_mapping.out.pdb_txt)
-        clan_compete_rel_web(sync_rel_web.out.synced)
+        clan_compete_rel_web(sync_rel_web.out.synced) \
         | set { done }
 }
 

@@ -21,10 +21,6 @@ FORMATS = {"xml": ".xml", "fasta": ".fa"}
 # Taxonomy Domains
 DOMAINS = ['eukaryota', 'archaea', 'viruses', 'bacteria']
 
-# Rfam's LSF GPFS location
-RFAM_HPS_LOC = cfl.RFAM_HPS_LOC
-LOC_PATH = cfl.LOC_PATH
-
 # LSF JOB constraints & params
 MEM = 5000
 TMP_MEM = 1000
@@ -93,16 +89,16 @@ ENA_DATA_URL = "http://www.ebi.ac.uk/ena/data/view/%s&display=%s"
 ENA_TAX_URL = "http://www.ebi.ac.uk/ena/data/warehouse/search?query=\"tax_eq(%s)\"&result=assembly&display=xml"
 
 # path to genome downloader executable
-GEN_DWLD_EXEC = cfl.GEN_DWLD_EXEC
+# GEN_DWLD_EXEC = cfl.GEN_DWLD_EXEC
 
 # path to public WGS sets
-ENA_FTP_WGS_PUB = cfl.ENA_FTP_WGS_PUB
+# ENA_FTP_WGS_PUB = cfl.ENA_FTP_WGS_PUB
 
 # path to supressed WGS sets
-ENA_FTP_WGS_SUP = cfl.ENA_FTP_WGS_SUP
+# ENA_FTP_WGS_SUP = cfl.ENA_FTP_WGS_SUP
 
 # path to ena assembly sequence report files
-ENA_GCA_SEQ_REPORT = cfl.ENA_GCA_SEQ_REPORT
+# ENA_GCA_SEQ_REPORT = cfl.ENA_GCA_SEQ_REPORT
 
 # -----------------------------------MODELS------------------------------------
 

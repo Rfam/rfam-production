@@ -12,11 +12,12 @@ def update_version(release_version):
     conn = RfamDB.connect()
     cursor = conn.cursor()
     num_families_query = "select count(*) from family;"
-    version_query = ("UPDATE version SET rfam_release = {release}, rfam_release_date = {date}, number_families = {"
+    version_query = ("UPDATE version SET rfam_release = {release}, rfam_release_date = \'{date}\', number_families = {"
                      "num_families}, embl_release = 132;")
     try:
         today_date = str(datetime.date.today())
-        num_families = cursor.execute(num_families_query)
+        cursor.execute(num_families_query)
+        num_families = cursor.fetchone()[0]
         cursor.execute(version_query.format(release=release_version, date=today_date, num_families=num_families))
 
     except mysql.connector.Error as e:

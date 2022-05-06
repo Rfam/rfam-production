@@ -46,6 +46,7 @@ ESL_FSEQ_PATH = cfl.ESL_FSEQ_PATH
 ENA_URL = cfl.ENA_URL
 TAX_NODES_DUMP = cfl.TAX_NODES_DUMP
 TAX_NAMES_DUMP = cfl.TAX_NAMES_DUMP
+ESL_PATH = cfl.ESL_SFETCH
 # -------------------------------LSF GROUPS------------------------------------
 # rfamprod privileges required
 FA_EXPORT_GROUP = cfl.FA_EXPORT_GROUP

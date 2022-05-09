@@ -21,16 +21,6 @@ source env/bin/activate
 
 Alternatively, use virtualenv to install the [requirements](../requirements.txt) locally.
 
-### Setup Perl environment
-
-Make sure the `~/.bashrc` file includes the following command:
-
-```
-source /path/to/rfamrc
-```
-
-**Note:** The `rfamrc` file sets up several environment variables, including `PATH`.
-
 ### Useful rfamprod aliases to easily move to various locations on the cluster
 
 1. Become `rfamprod` user:
@@ -251,33 +241,38 @@ The option `--tab` of `mysqldump` is used to generate dumps in both `.sql` and `
  - `table.sql` includes the MySQL query executed to create a table
  - `table.txt` includes the table contents in tabular format
 
-The main `rfam_live` database is running with the `secure-file-priv` setting so it is not possible to export using the `--tab` option directly. A workaround is to copy dump files on a laptop, and use a local MySQL database for export.
+The main `rfam_live` database is running with the `secure-file-priv` setting, so it is not possible to export using the `--tab` option directly. A workaround is to copy dump files on a laptop, and use a local MySQL database for export.
 
-1. Create a new database dump using mysqldump:
+1. Export a the .sql files of the rfam_live database (using Sequel Ace or via command line), then recreate a local copy, for example
+   ```
+   mysql > use rfam_live_14_8; 
+   mysql > source /Users/user/Desktop/sql_queries/14_8_copy.sql; 
+   ```
+2. Create a new database dump of the local copy of rfam_love using mysqldump:
 
     ```
     mysqldump -u <user> -h <host> -P <port> -p --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G --tab=/tmp/database_files rfam_local
     ```
 
-2. Run the [database_file_selector.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/database_file_selector.py) python script to create the subset of `database_files` available on the FTP:
+3. Run the [database_file_selector.py](https://github.com/Rfam/rfam-production/blob/master/scripts/release/database_file_selector.py) python script to create the subset of `database_files` available on the FTP:
 
     ```
-    cd /releaseX/database_files
+    cd /tmp/database_files
     gzip *.txt
-    python database_file_selector.py --source-dir /tmp --dest-dir /releaseX/database_files
+    python database_file_selector.py --source-dir /tmp/database_files --dest-dir /releaseX/database_files
     ```
 
-3. Zip `database_files` directory and copy to remote server:
+4. Zip `database_files` directory and copy to remote server:
 
     ```
     tar -czvf database_files.tar.gz /releaseX/database_files
     scp database_files.tar.gz username@remote.host:/some/location
     ```
 
-4. Restore `database_files` on FTP
+5. Restore `database_files` on FTP
 
     ```
-    tar -xzvf /some/location/database_files.tar.gz .
+    tar -xzvf /some/location/database_files.tar.gz /path/to/release/ftp/database_files
     ```
 
 ---
@@ -339,67 +334,3 @@ nextflow run scripts/release/workflows/update_text_search_dev.nf
 The files in `rfam_dev` and `current_release` folders are automatically indexed every night.
 
 ---
-
-## Create new json dumps for RNAcentral
-
-### Create a new region export from Rfam using [Rfam2RNAcentral.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/export/Rfam2RNAcentral.pl):
-
-1. Extract SEED regions
-
-    ```
-    perl Rfam2RNAcentral.pl SEED > /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
-    ```
-
-2. Extract FULL regions
-
-    ```
-    perl Rfam2RNAcentral.pl FULL >> /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt
-    ```
-
-3. Split regions into smaller chunks using basic linux `split` command
-
-    ```
-    mkdir chunks &&
-    cd chunks &&
-    split -n 3000 /path/to/relX/rnacentral/dir/rfamX_rnac_regions.txt rnac_ --additional-suffix='.txt'
-    ```
-
-    `-n:` defines the number of chunks to generate (2000 limit on LSF)
-
-    **Notes:**
-    - This command will generate 3000 files named like `rnac_zbss.txt`
-    - Use `-l 500` option for more efficient chink size
-
-4. Create a copy of the fasta files directory
-
-    ```
-    mkdir fasta_files && cd fasta_files &&
-    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
-    ```
-    **NOTE:** Rfam2RNAcentral regions need to match the exact same release the `fasta_files` were created for.
-              Use the Public MySQL database if `rfam-live` have been updated
-
-5. Unzip all fasta files and index using `esl-sfetch`:
-
-    ```
-    gunzip * .gz
-    for file in ./RF*.fa; do esl-sfetch --index $file; done
-    ```
-
-6. Copy the `Rfam.seed file from the FTP to the fasta_files directory and index using `esl-sfetch`:
-
-    ```
-    wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.seed.gz && gunzip Rfam.seed.gz
-    esl-sfetch --index Rfam.seed
-    ```
-
-7. Launch a new json dump using [rnac2json.py](https://github.com/Rfam/rfam-production/blob/master/scripts/export/rnac2json.py):
-
-
-    - `fasta file directory:` Create a new fasta files directory
-    - `json files directory:` Create a new json files output directory
-
-
-    ```
-    python rnac2json.py --input /path/to/chunks --rfam-fasta /path/to/fasta_files --outdir /path/to/json_files
-    ```

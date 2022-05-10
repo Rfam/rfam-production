@@ -50,6 +50,18 @@ process update_version_table {
 
 }
 
+process update_rnacentral_descriptions {
+    input:
+    val('version_complete')
+
+    output:
+    val('rnacentral_complete')
+
+    """
+    python $params.rfamprod/scripts/release/update_rnacentral_descriptions.py
+    """
+}
+
 workflow prepare_rfam_live {
     take: start 
     emit: done
@@ -57,6 +69,7 @@ workflow prepare_rfam_live {
     | make_keywords \
     | update_taxonomy_websearch \
     | update_version_table \
+    | update_rnacentral_descriptions \
     | set { done }
     
 }

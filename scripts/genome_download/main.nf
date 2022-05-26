@@ -84,16 +84,21 @@ workflow genome_download {
   main:
     fetch_ncbi_locations | set { ncbi }
 
-    Channel.fromPath(params.ignore_upi) | find_genomes
-    
-    find_genomes.out.ncbi \
+    Channel.fromPath(params.ignore_upi) \
+    | find_genomes \
     | splitCsv \
-    | combine(ncbi) \
-    | download_gca
+    | branch {
+      ncbi: it[1] == 'ncbi'
+      ena: it[1] == 'other'
+    } \
+    | set { to_download }
 
-    find_genomes.out.ena \
-    | splitCsv \
-    | download_ena
+    to_download.ncbi | combine(ncbi) | download_gca
+
+    to_download.ena \
+    | download_ena \
+    | groupTuple \
+    | merge_ena_fasta
 }
 
 workflow {

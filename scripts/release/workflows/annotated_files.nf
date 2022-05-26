@@ -16,9 +16,6 @@ process generate_seed_files {
 process generate_cm_files {  
     memory '10GB'
     publishDir "${params.release_ftp}/cm", mode: "copy"
-    
-    input:
-    val('done)')
 
     output:
     path("Rfam.cm")

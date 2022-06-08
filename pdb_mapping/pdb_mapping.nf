@@ -148,6 +148,8 @@ process get_ftp_file {
 }
 
 process update_ftp {
+    queue 'datamover'
+
     input:
     path(query)
 
@@ -155,9 +157,9 @@ process update_ftp {
     val('done')
 
     """
-    rm -f /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt.gz
-    cp $query /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
-    gzip /nfs/ftp/pub/databases/Rfam/.preview/pdb_full_region.txt
+    rm -f $params.preview/pdb_full_region.txt.gz
+    cp $query $params.preview/pdb_full_region.txt
+    gzip $params.preview/pdb_full_region.txt
     """
 }
 
@@ -177,7 +179,7 @@ process create_validate_xml_families {
     mkdir -p $baseDir/text_search/families
     python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/text_search/families --db rfam-rel
     python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/text_search/families --log
-    bash $baseDir/check_empty.sh "/nfs/production/xfam/users/rfamprod/code/rfam-production/pdb_mapping/text_search/families/error.log"
+    bash $baseDir/check_empty.sh "$params.rfamprod/pdb_mapping/text_search/families/error.log"
     """
 }
 
@@ -189,8 +191,8 @@ process index_data_on_rfam_dev {
     val('dev_done')
 
     """
-    rm -rf /nfs/production/xfam/rfam/search_dumps/rfam_dev/families/
-    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/rfam_dev/
+    rm -rf $params.search_dumps/rfam_dev/families/
+    cp -r $baseDir/text_search/families/ $params.search_dumps/rfam_dev/
     """
 
 }
@@ -203,8 +205,8 @@ process index_data_on_prod {
     val('done')
 
     """
-    rm -rf /nfs/production/xfam/rfam/search_dumps/current_release/families/
-    cp -r $baseDir/text_search/families/ /nfs/production/xfam/rfam/search_dumps/current_release/
+    rm -rf $params.search_dumps/current_release/families/
+    cp -r $baseDir/text_search/families/ $params.search_dumps/current_release/
     """
 
 }
@@ -323,14 +325,18 @@ process.waitFor()
 println process.err.text
 println process.text
 
-println "--------------------------"
-println "PDB Mapping Pipeline Summary"
-println "--------------------------"
-println "Started at  : ${workflow.start}"
-println "Completed at: ${workflow.complete}"
-println "Duration    : ${workflow.duration}"
-println "Success     : ${workflow.success}"
-println "workDir     : ${workflow.workDir}"
-println "exit status : ${workflow.exitStatus}"
+def msg = """\
+        Pipeline execution summary
+        ---------------------------
+        Completed at: ${workflow.complete}
+        Duration    : ${workflow.duration}
+        Success     : ${workflow.success}
+        workDir     : ${workflow.workDir}
+        exit status : ${workflow.exitStatus}
+        """
+        .stripIndent()
+
+sendMail(to: $params.email, subject: 'PDB pipeline execution', body: msg)
+println msg
 
 }

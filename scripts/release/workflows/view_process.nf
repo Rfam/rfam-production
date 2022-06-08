@@ -21,6 +21,9 @@ process run_rfam_view {
   input:
   tuple val(family), val(uuid)
 
+  output:
+  val('done')
+
   """
   ${params.perl_path}/view/rfam_family_view.pl -id $uuid -f $family family
   mysql -s `python ${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc, uuid from _post_process where status='PEND' and uuid = '$uuid'" > done

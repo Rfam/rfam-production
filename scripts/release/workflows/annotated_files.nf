@@ -16,9 +16,6 @@ process generate_seed_files {
 process generate_cm_files {  
     memory '10GB'
     publishDir "${params.release_ftp}/cm", mode: "copy"
-    
-    input:
-    val('done)')
 
     output:
     path("Rfam.cm")
@@ -113,16 +110,16 @@ workflow generate_annotated_files {
         rfam_cm
         done
     main:
-        generate_seed_files \
-        | generate_cm_files \
+        generate_seed_files()
+        generate_cm_files \
         | rewrite_cm_file \
         | checks | set { rfam_cm }
-        rfam_cm
+        rfam_cm \
         | generate_archive_zip
         rfam_cm \
         | create_tar_file 
         rfam_cm \
-        | load_into_rfam_live
+        | load_into_rfam_live \
         | set { done }
 }
 

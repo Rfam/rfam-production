@@ -8,7 +8,7 @@ process populate_rfam_live {
     val('populate_complete')
 
     """
-    python ${params.rfamprod}/scripts/release/populate_rfamlive_for_release.py --all
+    python $params.rfamprod/scripts/release/populate_rfamlive_for_release.py --all
     """
 }
 process make_keywords {
@@ -20,7 +20,7 @@ process make_keywords {
     val('keyword_complete')
 
     """ 
-    perl ${params.perl_path}/jiffies/release/make_rfam_keywords_table.pl
+    perl $params.perl_path/jiffies/release/make_rfam_keywords_table.pl
     """
 }
 process update_taxonomy_websearch { 
@@ -30,10 +30,35 @@ process update_taxonomy_websearch {
     val('keyword_complete')
     
     output:
-    val('update_complete')
+    val('taxonomy_complete')
     
     """
-    perl ${params.perl_path}/jiffies/updateTaxonomyWebsearch.pl
+    perl $params.perl_path/jiffies/updateTaxonomyWebsearch.pl
+    """
+}
+
+process update_version_table {
+    input:
+    val('taxonomy_complete')
+    
+    output:
+    val('version_complete')
+    
+    """
+    python $params.rfamprod/scripts/release/update_version_table.py --version $params.releasex
+    """
+
+}
+
+process update_rnacentral_descriptions {
+    input:
+    val('version_complete')
+
+    output:
+    val('rnacentral_complete')
+
+    """
+    python $params.rfamprod/scripts/release/update_rnacentral_descriptions.py
     """
 }
 
@@ -42,7 +67,9 @@ workflow prepare_rfam_live {
     emit: done
     start | populate_rfam_live \
     | make_keywords \
-    | update_taxonomy_websearch
+    | update_taxonomy_websearch \
+    | update_version_table \
+    | update_rnacentral_descriptions \
     | set { done }
     
 }

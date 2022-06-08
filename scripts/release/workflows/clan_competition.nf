@@ -48,7 +48,7 @@ workflow clan_competition {
     main:
         start | generate_clan_files \
         | sort_clan_files \
-        | run_clan_competition
+        | run_clan_competition \
         | set { done }
     
 }

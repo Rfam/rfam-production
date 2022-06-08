@@ -1,6 +1,6 @@
 nextflow.enable.dsl=2
 
-params.releasex = "14_7"
+params.releasex = "14_8"
 
 process mysql_dump {
     input:
@@ -10,7 +10,8 @@ process mysql_dump {
     val('mysqldump_done')
 
     """
-    mysqldump `python $params.rfamprod/scripts/view/mysql_options.py $params.db` --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G rfam_live > $params.release_ftp/rfam_live_rel_${params.releasex}.sql
+    mysqldump `python $params.rfamprod/scripts/view/mysql_options.py $params.db` --single-transaction --add-locks --lock-tables --add-drop-table --dump-date --comments --allow-keywords --max-allowed-packet=1G --no-create-db rfam_live > $params.release_ftp/rfam_live_rel_${params.releasex}.sql
+    cat $params.release_ftp/rfam_live_rel_${params.releasex}.sql | sed '/USE `rfam_live`;/d' > $params.release_ftp/rfam_live_rel_${params.releasex}.sql
     """
 }
 

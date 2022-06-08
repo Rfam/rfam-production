@@ -1,6 +1,5 @@
 import logging
 import datetime
-import os
 
 import mysql.connector
 

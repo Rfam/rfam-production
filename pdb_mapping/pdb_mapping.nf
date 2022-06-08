@@ -63,7 +63,7 @@ process combine_cmscan_results {
 }
 
 process create_text_file_for_db {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "$pdb_files", mode: "copy"
 
     input:
     path(query)
@@ -86,13 +86,13 @@ process import_db_and_generate_clan_files {
     """
     bash $baseDir/check_not_empty.sh $query 
     python $baseDir/pdb_full_region_table.py --file $query
-    mkdir -p $baseDir/clan_competition/sorted  
+    mkdir -p $pdb_files/clan_competition/sorted
     python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
 }
 
 process sort_clan_files {
-    publishDir "$baseDir/clan_competition/sorted", mode: "copy"
+    publishDir "$pdb_files/clan_competition/sorted", mode: "copy"
     
     input:
     path(query)
@@ -106,7 +106,7 @@ process sort_clan_files {
 }
 
 process run_clan_competition { 
-    publishDir "$baseDir/clan_competition", mode: "copy"
+    publishDir "$pdb_files/clan_competition", mode: "copy"
 
     input:
     path(query)
@@ -115,12 +115,12 @@ process run_clan_competition {
     path('*')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $pdb_files/clan_competition/sorted --pdb
     """
 }
 
 process get_new_families {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "$pdb_files", mode: "copy"
     
     input:
     path(query)
@@ -134,7 +134,7 @@ process get_new_families {
 }
 
 process get_ftp_file {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "$pdb_files", mode: "copy"
 
     input:
     path(query)
@@ -175,11 +175,11 @@ process create_validate_xml_families {
 
     """
     source ${params.rfamprod}/django_settings.sh
-    rm -rf $baseDir/text_search/families
-    mkdir -p $baseDir/text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $baseDir/text_search/families --db rfam-rel
-    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $baseDir/text_search/families --log
-    bash $baseDir/check_empty.sh "$params.rfamprod/pdb_mapping/text_search/families/error.log"
+    rm -rf $pdb_files/text_search/families
+    mkdir -p $pdb_files/text_search/families
+    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $pdb_files/text_search/families --db rfam-rel
+    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $pdb_files/text_search/families --log
+    bash $baseDir/check_empty.sh "$pdb_files/text_search/families/error.log"
     """
 }
 
@@ -192,7 +192,7 @@ process index_data_on_rfam_dev {
 
     """
     rm -rf $params.search_dumps/rfam_dev/families/
-    cp -r $baseDir/text_search/families/ $params.search_dumps/rfam_dev/
+    cp -r $pdb_files/text_search/families/ $params.search_dumps/rfam_dev/
     """
 
 }
@@ -206,7 +206,7 @@ process index_data_on_prod {
 
     """
     rm -rf $params.search_dumps/current_release/families/
-    cp -r $baseDir/text_search/families/ $params.search_dumps/current_release/
+    cp -r $pdb_files/text_search/families/ $params.search_dumps/current_release/
     """
 
 }
@@ -243,7 +243,7 @@ process clan_compete_rel_web {
     val('done')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $baseDir/clan_competition/sorted --pdb --sync
+    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $pdb_files/clan_competition/sorted --pdb --sync
     """
 
 }

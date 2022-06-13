@@ -4,7 +4,7 @@
 # Genome scanner
 - doc: Functional tests for genome scanner
   job: genome_scanner/test.yml
-  tool: ../../workflows/genome_scanner.cwl
+  tool: ../../release/genome_scanner.cwl
   should_fail: false
   output:
     cmsearch_matches:

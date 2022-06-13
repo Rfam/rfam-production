@@ -33,7 +33,7 @@ CWL_WORKFLOW_OPTIONS = ['--singularity']
 
 current_dir = os.path.dirname(__file__)
 
-WORKFLOW_PATH = os.path.realpath(os.path.join(current_dir, os.pardir, 'workflows', 'nc_rna_workflow.cwl'))
+WORKFLOW_PATH = os.path.realpath(os.path.join(current_dir, os.pardir, 'release', 'nc_rna_workflow.cwl'))
 
 REFERENCE_CM_DB = os.path.realpath(os.path.join(current_dir, os.pardir, 'db', REFERENCE_DB_NAME))
 

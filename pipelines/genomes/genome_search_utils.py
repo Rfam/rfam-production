@@ -19,7 +19,7 @@ import luigi
 
 from config import rfam_local as conf
 from config import gen_config as gc
-from support import merge_fasta as mf
+from scripts.support import merge_fasta as mf
 
 from utils import genome_search_utils as gsu
 
@@ -49,7 +49,7 @@ class SplitGenomeFasta(luigi.Task):
 
         if not os.path.exists(seq_chunks_dir):
             os.mkdir(seq_chunks_dir)
-            os.chmod(seq_chunks_dir, 0777)
+            os.chmod(seq_chunks_dir, 0o777)
 
             # check if we need to split the seq_file
             if gsu.count_nucleotides_in_fasta(upid_fasta) >= gc.SPLIT_SIZE:

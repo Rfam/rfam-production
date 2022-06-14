@@ -22,8 +22,8 @@ from utils import RfamDB
 from microrna_progress import updated_families, new_commits
 
 
-SEARCH_DIR = '/hps/nobackup/production/xfam/rfam/RELEASES/14.8/microrna/searches'
-HTML_REPORTS = '/nfs/public/rw/xfam/rfam/test/' + 'searches/mirbase'
+SEARCH_DIR = '/nfs/production/agb/rfam/RELEASES/14.8/microrna/searches'
+HTML_REPORTS = '/nfs/public/rw/xfam/rfam/' + 'searches/mirbase'
 OUTPUT_FILENAME = 'mirbase-dashboard.tsv'
 BLACK_LIST = [
     'MIPF0000419__mir-574',

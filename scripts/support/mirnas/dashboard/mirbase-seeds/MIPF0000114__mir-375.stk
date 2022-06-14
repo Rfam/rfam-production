@@ -1,0 +1,52 @@
+# STOCKHOLM 1.0
+
+
+URS000075C031_7425/21-89            GGT.CCATCGATCCCAACG..ATCAA..TAAACTGTG............TTATTAAACA...........AGtttgttcgttcggctcgagttaTTA
+URS0000D52C3E_7426/2-70             GGT.CCATCGATCCCAACG..ATCAA..TAAACTGTG............TTATTAAACA...........AGtttgttcgttcggctcgagttaTCA
+URS000075BC26_7460/21-87            GGT.GCATCGATCCTAACG..ATCAA..CAAACTTTT............CACTTGAA.............AGtttgttcgttcggctcgagttaTCA
+URS000075DA86_10224/14-78           ATT.GTC.CGGGCCCCACG..ATCA...TGGCTTAT.............AGCGTAAAC............GCtttgttcgttcggctcgcgcgaCTT
+URS0000759A31_7955/10-73            TTT.ACGTTGAGCCACACG..CACAA..TACATGT...............GGATTCA.............GTtttgttcgttcggctcgcgttaAGC
+URS0000D510BB_7998/1-57             ....ACGTTGAGCCACACG..CACAA..TACATGT...............GGATTCA.............GTtttgttcgttcggctcgcgtt....
+URS0000D53D67_8030/1-58             ....acgttgagccacacg..cacaa..taCCTGA...............AGATTAA.............GTtttgttcgttcggctcgcgtta...
+URS0000812140_31033/9-73            CTTCACGTTGAGCCTCACG..CACAA..TACCTGA...............AGATGAA.............GTtttgttcgttcggctcgcgttaTGC
+URS0000812140_99883/9-73            CTTCACGTTGAGCCTCACG..CACAA..TACCTGA...............AGATGAA.............GTtttgttcgttcggctcgcgttaTGC
+URS0000D5475D_8030/1-58             ....acgttgagccatacg..cacaa..taCCTGA...............AGATGAA.............GTtttgttcgttcggctcgcgtta...
+URS000075CC06_7955/9-76             TCTCACGTTGAGCCACACG..CACAA..TGCCTGC...............AGATGAAAGG..........GTtttgttcgttcggctcgcgttaCGC
+URS0000D56AE7_7962/20-87            TCTCACGTTGAGCCACACG..CACAA..TACCTGC...............AGATGAAAAG..........GTtttgttcgttcggctcgcgttaCGC
+URS0000D4F67B_7998/1-59             .....CGTTGAGCCACACG..CACAA..TGCCTGC...............AGATGAAAGG..........GTtttgttcgttcggctcgcgtt....
+URS0000D556E8_7757/13-83            CGCAacgccgagcccgacg..cacaa..tgcCTGC...............TCTGTCACGGCG.......CGTtttgttcgttcggctcgcgttgCGC
+URS0000A9FE59_7757/13-83            CGTCacgccgagcccgacg..cgcaa..tgctGGC...............CGCCGCTGTGCG.......CGCtttgttcgttcggctcgcgttaCGC
+URS00007E4AFF_9615/2-65             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS0000D563B4_29078/8-71            CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGttttgttcgttcggctcgcgtgagGC
+URS000075BCF9_9913/1-64             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGttttgttcgttcggctcgcgtgaGGC
+URS000075E099_9598/1-63             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGG.
+URS000075E716_9593/32-95            CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075BCF9_9544/1-64             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075DEE4_10116/6-69            CCCCgcgacgagcccctcg..cacaa...accGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075BCF9_9600/1-64             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075BCF9_10090/1-64            CCCCgcgacgagcccctcg..cacaa...acCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075BCF9_9606/1-64             CCCCGCGACGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGTtttgttcgttcggctcgcgtgaGGC
+URS000075C634_13616/1-63            .CCCGCGCCGAGCCCCTCG..CACAA...ACCGG................ACCTGAG............CGttttgttcgttcggctcgcgtgaGGC
+URS000075B612_9031/1-65             CCTGGCGTCGAGCCCCACG..TGCAA..GACCTG................ACCTGAA............CGTtttgttcgttcggctcgcgttaGGC
+URS000075AD57_59729/1-65            CCTGGCGTCGAGCCCCACG..TGCAA..TACCTG................ACCTGAA............CGTtttgttcgttcggctcgcgttaGGC
+URS00007E37F7_28377/21-85           CCTCgcgtcgagccccacg..cacaa..gaCCTG................ACGTGAA............TGTtttgttcgttcggctcgcgttaGGC
+URS0000D52469_8665/10-74            CCTGgcgtcgagccccacg..cacaa..GACCTG................ATGTGAA............CGTtttgttcgttcggctcgcgttaGGC
+URS0000D5057F_7739/17-85            GAC.AGGCCGAGCCTGGCG..AGCAA..AGCTGT................GTCTAAACTTAA.......CGTTTtgttcgttcggctcgcgttatct
+URS0000D55F7B_7741/17-85            GAT.AGGCCGAGCCCGGCG..TGCAA..AGCTGT................GTACAACATGAA.......TGTtttgttcgttcggctcgcgttatCT
+URS0000D5165A_8030/1-61             ....acgctgagccacgcg..cacaa..taCAT.................GATGAAGATGA........CGTtttgttcgttcggctcgcgtta...
+URS00007A741B_283909/21-85          GTTAGCA.TGGGCCAAACG..TGCAA..GACT....................GTGTTTGAGC.......TGTtttgttcgtccggctcgcgttaACA
+URS0000D4FE2E_46514/10-80           TTTCGCG.CGCGCCCGACG..TGCAA..AACCTGAA.............CAAATTAACGGGT.......TGTtttgttcgttcggctcgcgtcaAA.
+URS0000D510D0_6945/18-85            GCTGACT.CGAGCTGCCCG..TGCAA..AACTGGA.................ACCACTGCGT.......TGTtttgttcgttcggctcgagttaGAA
+URS0000D50321_225164/20-85          ACTGACC.CGAGCCGTTTGT.AACAA..GGCTTAA................ATTACAAT...........GTtttgttcgttcggctcgcgttaCAA
+URS000075E5EC_7070/5-71             ACTGact.tgagccttgcg..aataa..TTCCTAA................TTTAAAGAG.........CGAtttgttcgtgtggctcgagttaGAT
+URS000075990F_8364/1-65             CCTGACGCCGAGCCTGACG..TGCAA..TGCTTTG................TGT.CAAC...........GTtttgttcgttcggctcgcgttaAGC
+URS00007E41AB_7668/1-85             ........CGAGCTCAACGT..GCAA..AACTTGAGATAAGGTCAGCTGTTCGGCTGGCCGCTACATGCTGTTttgttcgttcggctcgcgtcaaAT
+URS0000D543FD_7654/1-85             ........CGAGCTCAGCGT..GCAA..AACTTTCGTTTAGGTCAGCTGTTTGGCCGACCGCTCCATGCTGTTttgttcgttcggctcgcgtcaaAT
+URS0000364CB9_7227/11-79            AATTact.tgggccaagggaatgcaa..actGTGATC.............ATCCCGA............AAGtttgttcgtttggcttaagttaTTT
+URS0000D52D86_7240/26-94            AATTact.tgggccaagggaatgcaa..actGTGATC.............ATCCCGA............AAGtttgttcgtttggcttaagttaTTT
+URS0000614E9D_7237/9-80             AATTact.tgggccaggggaattcaa..actGTGATCGCA..........ATGCAAA............AAGtttgttcgtttggcttaagttaTTT
+URS0000D4F72E_7176/21-93            AGTTACT.CAAGCCGGACGTA.ACCGAAACTTGGCTCTG...........CTGTGGA...........AGAGtttgttcgtttggctcgagttaTGC
+URS0000D5295A_7159/13-102           AGTTACT.TAAGCCCAACGT..ACAGAAACTTGAATCTGAATGCC....GTTCTAGATTGGCTTGCTAGAAGtttgttcgtttggctcgagttaTGC
+URS000058CF0D_7165/23-91            GATTACT.TAAGCCACGCGT..ACAGAAACTTTTTA..............GAATGAA...........AGAGtttgttcgtttggctcgagttaTGC
+#=GC SS_cons                        (((.(((.((((((...((...((((...((.......................................)).)))).))...))))))))).))).
+//

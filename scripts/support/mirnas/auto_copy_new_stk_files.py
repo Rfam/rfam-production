@@ -1,10 +1,7 @@
-import argparse
 import os
 import shutil
 
-from scripts.support.mirnas.mirna_config import STK_DIRS
-
-COPY_DIR = "/nfs/production/agb/rfam/RELEASES/14.9/microrna/batch3_chunk2_searches"
+from scripts.support.mirnas.mirna_config import STK_DIRS, COPY_DIR
 
 
 def create_new_dir(mirna):
@@ -22,40 +19,30 @@ def create_new_dir(mirna):
 
 def copy_file(mirna):
     """
-
+    Copy the .stk file to the new miRNA family search directory
     :param mirna: MiRBase ID
     """
     check = create_new_dir(mirna)
-    checkout_dir = os.path.join(COPY_DIR, mirna)
+    new_search_dir = os.path.join(COPY_DIR, mirna)
     if check:
-        for new_stk_dir in STK_DIRS:
-            if os.path.exists(os.path.join(new_stk_dir, mirna)):
-                stk_file = "{mirna_id}.stk".format(mirna_id=mirna)
-                updated_mirna_loc = os.path.join(new_stk_dir, mirna)
-                updated_seed = os.path.join(updated_mirna_loc, stk_file)
-                if os.path.exists(os.path.join(checkout_dir, stk_file)):
-                    # rename .stk file SEED
-                    os.rename(os.path.join(checkout_dir, stk_file), os.path.join(checkout_dir, "SEED"))
-                shutil.copyfile(updated_seed, os.path.join(checkout_dir, "SEED"))
+        stk_file = "{mirna_id}.stk".format(mirna_id=mirna)
+        for stk_dir in STK_DIRS:
+            stk_file = os.path.join(stk_dir, stk_file)
+            if os.path.exists(stk_file):
+                # create file named SEED and copy .stk contents
+                with open(os.path.join(new_search_dir, "SEED"), 'w') as new_seed_file:
+                    pass
+                shutil.copyfile(stk_file, os.path.join(new_search_dir, "SEED"))
             else:
                 continue
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--input", help="List of miRNA IDs")
-
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = parse_arguments()
     mirna_ids = []
-    for dir in STK_DIRS:
-        for file_name in dir:
-            id = file_name.replace('.stk', '')
-            mirna_ids.append(id)
+    for directory in STK_DIRS:
+        filenames = next(os.walk(directory), (None, None, []))[2]
+        for file_name in filenames:
+            mirna_id = file_name.replace('.stk', '')
+            mirna_ids.append(mirna_id)
     for mirna_id in mirna_ids:
         copy_file(mirna_id)
-    else:
-        print("Please provide an input.")

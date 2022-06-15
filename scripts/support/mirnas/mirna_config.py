@@ -8,6 +8,7 @@ SEARCH_DIRS = ["/nfs/production/agb/rfam/RELEASES/14.3/miRNA_relabelled/batch1_c
 
 STK_DIRS = ["/nfs/production/agb/rfam/microrna/batch3/fixed", "/nfs/production/agb/rfam/microrna/batch3/one_seed"]
             # "/nfs/production/agb/rfam/microrna/batch4"]
+COPY_DIR = "/nfs/production/agb/rfam/RELEASES/14.9/microrna/batch3_chunk2_searches"
 
 UPDATE_DIR = "/nfs/production/agb/rfam/RELEASES/14.9/microrna/update_families"
 NEW_DIR = "/nfs/production/agb/rfam/RELEASES/14.9/microrna/new_families"

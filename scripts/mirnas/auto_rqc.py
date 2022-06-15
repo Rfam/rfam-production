@@ -4,8 +4,8 @@ import subprocess
 
 import time
 
-from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, get_mirna_ids)
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, NEW_DIR
+from scripts.mirnas.update_mirnas_helpers import (get_rfam_accs, get_mirna_ids)
+from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, NEW_DIR
 
 families_with_seed_error = []
 ignore_seed = []

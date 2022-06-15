@@ -3,7 +3,7 @@ import argparse
 import subprocess
 import time
 
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP
+from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP
 
 checked_in = []
 not_checked_in = []

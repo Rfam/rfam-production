@@ -3,8 +3,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import get_mirna_dict
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, NEW_DIR, MEMORY, CPU, LSF_GROUP
+from scripts.mirnas.update_mirnas_helpers import get_mirna_dict
+from scripts.mirnas.mirna_config import UPDATE_DIR, NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 
 def rfmake_serial(family_dir, threshold):

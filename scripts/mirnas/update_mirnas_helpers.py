@@ -1,7 +1,7 @@
 import csv
 import json
 
-from scripts.support.mirnas.mirna_config import MIRNAS_CSV
+from scripts.mirnas.mirna_config import MIRNAS_CSV
 
 
 def get_mirna_dict(csv_file=None):

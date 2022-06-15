@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from scripts.support.mirnas.mirna_config import STK_DIRS, COPY_DIR
+from scripts.mirnas.mirna_config import STK_DIRS, COPY_DIR
 
 
 def create_new_dir(mirna):

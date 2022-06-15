@@ -2,8 +2,8 @@ import os
 import argparse
 import subprocess
 
-from scripts.support.mirnas.mirna_config import NEW_DIR, MEMORY, CPU, LSF_GROUP, ENV_PATH, DESC_GEN_PATH
-from scripts.support.mirnas.update_mirnas_helpers import get_mirna_ids
+from scripts.mirnas.mirna_config import NEW_DIR, MEMORY, CPU, LSF_GROUP, ENV_PATH, DESC_GEN_PATH
+from scripts.mirnas.update_mirnas_helpers import get_mirna_ids
 
 
 def auto_desc_make(mirna_id, wiki_links_file=None):

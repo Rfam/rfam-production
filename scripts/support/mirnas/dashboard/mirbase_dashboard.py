@@ -22,7 +22,8 @@ from utils import RfamDB
 from microrna_progress import updated_families, new_commits
 
 
-SEARCH_DIR = '/nfs/production/agb/rfam/RELEASES/14.8/microrna/searches'
+SEARCH_DIRS = ['/nfs/production/agb/rfam/RELEASES/14.8/microrna/searches',
+               '/nfs/production/agb/rfam/RELEASES/14.9/microrna/searches']
 HTML_REPORTS = '/nfs/public/rw/xfam/rfam/' + 'searches/mirbase'
 OUTPUT_FILENAME = 'mirbase-dashboard.tsv'
 BLACK_LIST = [
@@ -283,7 +284,7 @@ def format_rfam_ids(overlaps):
 def get_id_matches(mirbase_id):
     """
     In case there are no overlaps, check for ID matches.
-    For newly created families (not yet in the search index), run a query against RfamLive. 
+    For newly created families (not yet in the search index), run a query against RfamLive.
     """
     url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query="{}"%20AND%20entry_type:%22Family%22&fields=name&format=json'
     data = requests.get(url.format(mirbase_id))

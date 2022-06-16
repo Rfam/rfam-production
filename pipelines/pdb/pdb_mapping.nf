@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process setup_files {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "$params.pdb_files", mode: "copy"
 
     input:
     val(_flag)
@@ -10,13 +10,13 @@ process setup_files {
     path("pdb_seqres.txt")
 
     """
-    rm -f $baseDir/PDB_RFAM_X_Y.tbl
-    rm -f $baseDir/pdb_seqres.txt
-    rm -rf $baseDir/Rfam.cm*
+    rm -f $params.pdb_files/PDB_RFAM_X_Y.tbl
+    rm -f $params.pdb_files/pdb_seqres.txt
+    rm -rf $params.pdb_files/Rfam.cm*
     wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
     gunzip Rfam.cm.gz
-    mv Rfam.cm $baseDir
-    cmpress $baseDir/Rfam.cm
+    mv Rfam.cm $params.pdb_files
+    cmpress $params.pdb_files/Rfam.cm
     wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
@@ -44,12 +44,12 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $baseDir/Rfam.cm $query
+    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $params.pdb_files/Rfam.cm $query
     """
 }
 
 process combine_cmscan_results {
-    publishDir "$baseDir", mode: "copy"
+    publishDir "$params.pdb_files", mode: "copy"
     
     input:
     path('raw*.tbl')
@@ -72,7 +72,7 @@ process create_text_file_for_db {
     path('pdb_full_region_*.txt')
     
     """
-    python ${params.rfamprod}/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
+    python $params.rfamprod/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
     """
 }
 
@@ -84,10 +84,10 @@ process import_db_and_generate_clan_files {
     path('CL*.txt')
 
     """
-    bash $baseDir/check_not_empty.sh $query 
-    python $baseDir/pdb_full_region_table.py --file $query
+    bash $params.pdb_scripts/check_not_empty.sh $query
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query
     mkdir -p $params.pdb_files/clan_competition/sorted
-    python ${params.rfamprod}/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
+    python $params.rfamprod/scripts/release/clan_file_generator.py --dest-dir . --cc-type PDB
     """
 }
 
@@ -115,7 +115,7 @@ process run_clan_competition {
     path('*')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $params.pdb_files/clan_competition/sorted --pdb
+    python $params.rfamprod/scripts/processing/clan_competition.py --input $params.pdb_files/clan_competition/sorted --pdb
     """
 }
 
@@ -129,7 +129,7 @@ process get_new_families {
     path('pdb_families_*.txt')
 
     """
-    python $baseDir/pdb_families.py
+    python $params.pdb_scripts/pdb_families.py
     """
 }
 
@@ -143,7 +143,7 @@ process get_ftp_file {
     path('pdb_full_region_updated_*.txt')
 
     """
-    python $baseDir/pdb_ftp_file.py --dest-dir .
+    python $params.pdb_scripts/pdb_ftp_file.py --dest-dir .
     """
 }
 
@@ -174,12 +174,12 @@ process create_validate_xml_families {
     val('xml')
 
     """
-    source ${params.rfamprod}/django_settings.sh
+    source $params.rfamprod/django_settings.sh
     rm -rf $params.pdb_files/text_search/families
     mkdir -p $params.pdb_files/text_search/families
-    python ${params.rfamprod}/scripts/export/rfam_xml_dumper.py --type F --out $params.pdb_files/text_search/families --db rfam-rel
-    python ${params.rfamprod}/scripts/validation/xml_validator.py --input $params.pdb_files/text_search/families --log
-    bash $baseDir/check_empty.sh "$params.pdb_files/text_search/families/error.log"
+    python $params.rfamprod/scripts/export/rfam_xml_dumper.py --type F --out $params.pdb_files/text_search/families --db rfam-rel
+    python $params.rfamprod/scripts/validation/xml_validator.py --input $params.pdb_files/text_search/families --log
+    bash $params.pdb_scripts/check_empty.sh "$params.pdb_files/text_search/families/error.log"
     """
 }
 
@@ -219,7 +219,7 @@ process sync_rel_db {
     val('done')
 
     """
-    python $baseDir/pdb_full_region_table.py --file $query --database rfam-rel -nqc
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database rfam-rel -nqc
     """
 }
 
@@ -230,8 +230,8 @@ process sync_web_production_db {
     output:
     val('synced')
     """
-    python $baseDir/pdb_full_region_table.py --file $query --database pg -nqc
-    python $baseDir/pdb_full_region_table.py --file $query --database fb1 -nqc
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database pg -nqc
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database fb1 -nqc
     """
 }
 
@@ -243,7 +243,7 @@ process clan_compete_rel_web {
     val('done')
 
     """
-    python ${params.rfamprod}/scripts/processing/clan_competition.py --input $params.pdb_files/clan_competition/sorted --pdb --sync
+    python $params.rfamprod/scripts/processing/clan_competition.py --input $params.pdb_files/clan_competition/sorted --pdb --sync
     """
 
 }
@@ -320,7 +320,7 @@ workflow {
 
 workflow.onComplete = {
 
-def process = ["python", "pdb_mapping/send_notification.py"].execute()
+def process = ["python", "$params.pdb_scripts/send_notification.py"].execute()
 process.waitFor()
 println process.err.text
 println process.text
@@ -336,7 +336,7 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail(to: $params.email, subject: 'PDB pipeline execution', body: msg)
+sendMail(to: ${params.email}, subject: 'PDB pipeline execution', body: msg)
 println msg
 
 }

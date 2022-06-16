@@ -1,7 +1,7 @@
 import requests
 import datetime
 
-from config.rfam_local import SLACK_WEBHOOK
+from config.rfam_local import SLACK_WEBHOOK, PDB_FILES
 
 
 def send_notification():
@@ -11,7 +11,7 @@ def send_notification():
     slack_message = ""
     webhook_url = SLACK_WEBHOOK
     today_date = str(datetime.date.today())
-    with open('pdb_mapping/pdb_families_{0}.txt'.format(today_date), 'r') as f:
+    with open('{pdb_files}/pdb_families_{date}.txt'.format(pdb_files=PDB_FILES, date=today_date), 'r') as f:
         for line in f:
             slack_message += line
     slack_json = {

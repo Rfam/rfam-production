@@ -4,12 +4,11 @@ import re
 import mysql.connector
 import requests
 
+from dashboard_config import SEARCH_DIR
 from utils import RfamDB
 from microrna_progress import updated_families, new_commits
 from dashboard_exceptions import SpeciesFileNotFound
 from getters import get_family_location, get_report_url, get_rfam_id, get_mirbase_id
-
-SEARCH_DIR = '/nfs/production/agb/rfam/microrna/searches'
 
 
 def run_rfmake(location, score):

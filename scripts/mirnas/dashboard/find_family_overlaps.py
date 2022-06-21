@@ -14,7 +14,7 @@ import re
 from utils import db_utils as db
 from scripts.processing import clan_competition as cc
 
-from mirbase_dashboard import HTML_REPORTS
+from dashboard_config import HTML_REPORTS
 from getters import get_output_url, get_family_location
 from format_dashboard import get_google_sheets_data
 

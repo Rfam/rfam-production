@@ -17,10 +17,8 @@ from utils import db_utils as db
 
 import requests
 
-from mirbase_dashboard import HTML_REPORTS
-from scripts.mirnas.dashboard.getters import get_output_url
-
-OUTPUT_FILENAME = 'rfam-non-mirna-families-matching-mirbase.tsv'
+from dashboard_config import HTML_REPORTS, COMPARE_OUTPUT_FILENAME
+from getters import get_output_url
 
 
 def get_last_modified_date(rfam_acc):
@@ -115,7 +113,7 @@ def get_rnacentral_description(urs_taxid):
 
 def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
     mirbase_xrefs = get_rnacentral_mirbase_xrefs()
-    filename = os.path.join(HTML_REPORTS, OUTPUT_FILENAME)
+    filename = os.path.join(HTML_REPORTS, COMPARE_OUTPUT_FILENAME)
     header = ['Family', 'Rfam ID', 'RNA type', 'Rfam description', 'RNAcentral ID', 'miRBase ID', 'RNAcentral description', 'Last updated: ' + '{}'.format(time.strftime("%d/%m/%Y %H:%M"))]
     f_out = open(filename, 'w')
     f_out.write('\t'.join(header) + '\n')
@@ -151,8 +149,8 @@ def display_non_mirna_matching_accs(non_mirna_matching_accs, cmscan_data):
 
     3. Follow instructions in Readme.
 
-    """.format(path=filename, url=get_output_url(OUTPUT_FILENAME),
-               filename=OUTPUT_FILENAME))
+    """.format(path=filename, url=get_output_url(COMPARE_OUTPUT_FILENAME),
+               filename=COMPARE_OUTPUT_FILENAME))
 
     print('')
 

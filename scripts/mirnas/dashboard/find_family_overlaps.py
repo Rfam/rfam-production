@@ -6,7 +6,6 @@ Usage:
 python find_family_overlaps.py <document_id> <sheet_id>
 """
 
-
 import csv
 import os
 import argparse
@@ -16,13 +15,13 @@ from utils import db_utils as db
 from scripts.processing import clan_competition as cc
 
 from mirbase_dashboard import HTML_REPORTS
-from scripts.mirnas.dashboard.getters import get_output_url, get_family_location
-from scripts.mirnas.dashboard.format_dashboard import get_google_sheets_data
+from getters import get_output_url, get_family_location
+from format_dashboard import get_google_sheets_data
 
 # human and mouse tax ids
 ESSENTIAL_TAXIDS = [9606, 10090]
 OUTPUT_FILENAME = 'mirbase-dashboard-update.tsv'
-UPDATE_THRESHOLD = 85 # 85% of hits must match
+UPDATE_THRESHOLD = 85  # 85% of hits must match
 
 
 def parse_outlist_file(outlist_file):
@@ -334,8 +333,10 @@ def analyse_family_overlap(f_out, accessions, mirna_id):
 
         species_file = os.path.join(family_dir, "species")
         # find which tax id is missing from essential species
-        new_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file).values())))]
-        old_family_taxids = [str(x) for x in list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc))))]
+        new_family_taxids = [str(x) for x in list(
+            set(ESSENTIAL_TAXIDS).intersection(set(extract_tax_ids_from_species_file(species_file).values())))]
+        old_family_taxids = [str(x) for x in
+                             list(set(ESSENTIAL_TAXIDS).intersection(set(db.fetch_family_tax_ids(rfam_acc))))]
 
         if len(new_family_taxids) == 1:
             new_family_taxids_str = new_family_taxids[0]
@@ -347,14 +348,14 @@ def analyse_family_overlap(f_out, accessions, mirna_id):
         elif len(old_family_taxids) == 2:
             old_family_taxids_str = ', '.join(old_family_taxids)
 
-        if total_num_outlist_hits == 0: # only seed, no full region hits
+        if total_num_outlist_hits == 0:  # only seed, no full region hits
             mirbase_overlap = 0
         else:
-            mirbase_overlap = (float(overlap_count) * 100)/total_num_outlist_hits
-        if total_num_old_family_hits == 0: # only seed, no full region hits
+            mirbase_overlap = (float(overlap_count) * 100) / total_num_outlist_hits
+        if total_num_old_family_hits == 0:  # only seed, no full region hits
             rfam_overlap = 0
         else:
-            rfam_overlap = (float(overlap_count) * 100)/total_num_old_family_hits
+            rfam_overlap = (float(overlap_count) * 100) / total_num_old_family_hits
 
         id_match = compare_ids(mirna_id, rfam_acc_metadata['rfam_id'])
 

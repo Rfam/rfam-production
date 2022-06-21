@@ -5,7 +5,7 @@ import string
 
 import requests
 
-from scripts.mirnas.dashboard.mirbase_dashboard import HTML_REPORTS, OUTPUT_FILENAME, SEARCH_DIR
+from mirbase_dashboard import HTML_REPORTS, OUTPUT_FILENAME, SEARCH_DIR
 
 
 def get_output_path():

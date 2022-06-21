@@ -10,12 +10,13 @@ import argparse
 import csv
 import os
 
-from scripts.mirnas.dashboard.compute_dashboard_entries import run_rfmake, get_overlaps, is_inconsistent_ss, \
+from compute_dashboard_entries import run_rfmake, get_overlaps, is_inconsistent_ss, \
     get_id_matches, get_action
-from scripts.mirnas.dashboard.format_dashboard import get_header_line, get_input_data, format_rfam_overlaps, \
+from exceptions import SpeciesFileNotFound
+from format_dashboard import get_header_line, get_input_data, format_rfam_overlaps, \
     format_mirbase_url, format_rfam_ids, get_summary, get_google_sheets_data
 from microrna_progress import updated_families, new_commits
-from scripts.mirnas.dashboard.getters import get_output_path, get_output_url, get_family_location, get_report_url, \
+from getters import get_output_path, get_output_url, get_family_location, get_report_url, \
     get_mirbase_alignments, get_mirbase_id, get_mirbase_acc
 
 SEARCH_DIR = '/nfs/production/agb/rfam/microrna/searches'
@@ -27,13 +28,6 @@ BLACK_LIST = [
     'MIPF0000901__mir-3470',
     'MIPF0001768__mir-7407',  # rfmake running
 ]  # giant families that cause crashes
-
-
-class SpeciesFileNotFound(Exception):
-    """
-    Raised when rfmake fails.
-    """
-    pass
 
 
 def qc_check(new, updated):

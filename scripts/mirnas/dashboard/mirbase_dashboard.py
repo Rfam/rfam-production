@@ -12,7 +12,7 @@ import os
 
 from compute_dashboard_entries import run_rfmake, get_overlaps, is_inconsistent_ss, \
     get_id_matches, get_action
-from exceptions import SpeciesFileNotFound
+from dashboard_exceptions import SpeciesFileNotFound
 from format_dashboard import get_header_line, get_input_data, format_rfam_overlaps, \
     format_mirbase_url, format_rfam_ids, get_summary, get_google_sheets_data
 from microrna_progress import updated_families, new_commits

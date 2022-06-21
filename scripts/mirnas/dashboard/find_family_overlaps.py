@@ -15,9 +15,9 @@ import re
 from utils import db_utils as db
 from scripts.processing import clan_competition as cc
 
-from mirbase_dashboard import get_family_location, get_google_sheets_data, \
-                              get_output_url, HTML_REPORTS
-
+from mirbase_dashboard import HTML_REPORTS
+from scripts.mirnas.dashboard.getters import get_output_url, get_family_location
+from scripts.mirnas.dashboard.format_dashboard import get_google_sheets_data
 
 # human and mouse tax ids
 ESSENTIAL_TAXIDS = [9606, 10090]

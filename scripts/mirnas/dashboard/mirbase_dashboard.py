@@ -19,7 +19,6 @@ from microrna_progress import updated_families, new_commits
 from getters import get_output_path, get_output_url, get_family_location, get_report_url, \
     get_mirbase_alignments, get_mirbase_id, get_mirbase_acc
 
-SEARCH_DIR = '/nfs/production/agb/rfam/microrna/searches'
 HTML_REPORTS = '/nfs/public/rw/xfam/rfam/' + 'searches/mirbase'
 OUTPUT_FILENAME = 'mirbase-dashboard.tsv'
 BLACK_LIST = [

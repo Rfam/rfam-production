@@ -3,7 +3,7 @@ import os
 import tempfile
 import time
 
-from scripts.mirnas.dashboard.getters import get_rfam_id
+from getters import get_rfam_id
 
 
 def format_output_line(fields):

@@ -17,8 +17,8 @@ from utils import db_utils as db
 
 import requests
 
-from mirbase_dashboard import get_output_url, HTML_REPORTS
-
+from mirbase_dashboard import HTML_REPORTS
+from scripts.mirnas.dashboard.getters import get_output_url
 
 OUTPUT_FILENAME = 'rfam-non-mirna-families-matching-mirbase.tsv'
 

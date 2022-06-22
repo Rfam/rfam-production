@@ -93,15 +93,15 @@ A precomputed file `mirbase-cmscan.tblout` is included in the repository.
 
     - Commit new file for the record
 
-1. Run `python compare_rfam_mirbase.py` to analyse a precomputed file or `python compare_rfam_mirbase.py <tblout>` to analyse a different file
+2. Run `python compare_rfam_mirbase.py` to analyse a precomputed file or `python compare_rfam_mirbase.py <tblout>` to analyse a different file
 
     - The script will print a list of Rfam microRNA families without miRBase hits. At the time of writing it includes only 2 families.
     - The script will show a URL where the output file with Rfam non-microRNA families matching miRBase can be accessed
 
-1. Download the newly generated file to your computer
+3. Download the newly generated file to your computer
 
-1. In Google Sheets, create a new sheet by duplicating the current `Family updates` sheet
+4. In Google Sheets, create a new sheet by duplicating the current `Rfam non-miRNA families matching miRBase` sheet
 
-1. Go to File > Import > Upload and select the new file
+5. Go to File > Import > Upload and select the new file
 
-1. Select `Replace current sheet` and make sure `Convert text to numbers, dates and formulas` is selected
+6. Select `Replace current sheet` and make sure `Convert text to numbers, dates and formulas` is selected

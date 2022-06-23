@@ -44,7 +44,7 @@ process download_gca {
   path("${proteome}.fa")
 
   """
-  ncbi_url.py $info $gca | xargs -I {} wget -O - {} | gzip -d | head -1 > ${proteome}.fa
+  ncbi_url.py $info $gca | xargs -I {} wget -O - {} | gzip -d > ${proteome}.fa
   """
 }
 
@@ -60,7 +60,7 @@ process download_ena {
   tuple val(proteome), path("${proteome}-${accession}.fa")
 
   """
-  curl 'https://www.ebi.ac.uk/ena/browser/api/fasta/${accession}?download=true' | head -1 > ${proteome}-${accession}.fa
+  curl 'https://www.ebi.ac.uk/ena/browser/api/fasta/${accession}?download=true' > ${proteome}-${accession}.fa
   """
 }
 

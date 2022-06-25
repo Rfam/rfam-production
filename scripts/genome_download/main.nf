@@ -9,9 +9,9 @@ process fetch_ncbi_locations {
   grep '^#' initial | tail -1 | sed 's|# ||' > info
   grep -v '^#' initial >> info
   {
-    curl '$params.genbank_old_assembly_info' 
-    curl '$params.refseq_assembly_info' 
-    curl '$params.refseq_old_assembly_info' 
+    curl '$params.genbank_old_assembly_info'
+    curl '$params.refseq_assembly_info'
+    curl '$params.refseq_old_assembly_info'
   } | grep -v '^#' >> info
   parse_assembly_info.py info ncbi.pickle
   """
@@ -22,61 +22,81 @@ process find_genomes {
   path(to_skip)
 
   output:
-  path("ncbi.csv"), emit: ncbi
-  path("ena.csv"), emit: ena
+  path("ncbi/*.jsonl"), emit: ncbi
+  path("ena/*.jsonl"), emit: ena
 
   """
   curl '$params.proteome_xml' > summary.xml
-  proteomes_to_genomes.py --ignorable $to_skip summary.xml
+  proteomes_to_genomes.py --ignorable $to_skip summary.xml .
+
+  mkdir ncbi
+  split -n l/500 ncbi.jsonl --additional-suffix='.jsonl' ncbi/
+
+  mkdir ena
+  split -n l/10 ena.jsonl --additional-suffix='.jsonl' ena/
   """
 }
 
-process download_gca {
-  tag { "$proteome" }
+process download_ncbi {
+  tag { "$gca_file.baseName" }
   maxForks 20
   errorStrategy 'ignore'
   publishDir 'genomes'
 
   input:
-  tuple val(proteome), val(kind), val(gca), path(info)
+  tuple path(gca_file), path(info)
 
   output:
-  path("${proteome}.fa")
+  path("*.fa")
 
   """
-  ncbi_url.py $info $gca | xargs -I {} wget -O - {} | gzip -d > ${proteome}.fa
+  mkdir complete
+  ncbi_urls.py $info $gca_file complete | xargs -L 2 -P 4 wget -O
+  gzip -d complete/*.fa.gz
+  select_ids.py $gca_file complete/
   """
 }
 
 process download_ena {
-  tag { "$proteome-$accession" }
+  tag { "$ena_file.baseName" }
   maxForks 10
   errorStrategy 'ignore'
 
   input:
-  tuple val(proteome), val(kind), val(accession)
+  path(ena_file)
 
   output:
-  tuple val(proteome), path("${proteome}-${accession}.fa")
+  path('*.fa')
 
   """
-  curl 'https://www.ebi.ac.uk/ena/browser/api/fasta/${accession}?download=true' > ${proteome}-${accession}.fa
+  download_ena.py $ena_file
   """
 }
 
-process merge_ena_fasta {
-  tag { "$proteome" }
-  errorStrategy 'ignore'
+process merge_and_split {
   publishDir 'genomes'
 
   input:
-  tuple val(proteome), path('parts*.fa')
+  path('genomes*.fa')
 
   output:
-  path("${proteome}.fa")
-  
+  path('rfamseq')
+
   """
-  cat parts*.fa > ${proteome}.fa
+  mkdir rfamseq to-rev
+  find . -name 'genomes*.fa' | xargs -I {} cat {} > merged.fa
+
+  pushd rfamseq
+  esl-randomize-sqfile.pl -O r100_rfamseq${params.version}.fa -L -N 100 ../merged.fa 1.0
+  popd
+
+  pushd to-rev
+  esl-randomize-sqfile.pl -O rev-rfamseq${params.version}.fa -L -N 10 ../merged.fa 0.1
+  popd
+
+  find to-rev -name '*.fa' -print '%f\\n" | xargs -I {} esl-shuffle -r -o rfamseq/{} to-rev/{}
+  find rfam-seq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${version}-all.seqstat
+  find rfam-seq -name '*.fa' | xargs gzip
   """
 }
 
@@ -84,21 +104,23 @@ workflow genome_download {
   main:
     fetch_ncbi_locations | set { ncbi }
 
-    Channel.fromPath(params.ignore_upi) \
-    | find_genomes \
-    | splitCsv \
-    | branch {
-      ncbi: it[1] == 'ncbi'
-      ena: it[1] == 'other'
-    } \
-    | set { to_download }
+    Channel.fromPath(params.ignore_upi) | find_genomes
 
-    to_download.ncbi | combine(ncbi) | download_gca
+    find_genomes.out.ncbi \
+    | flatten \
+    | combine(ncbi) \
+    | download_ncbi
+    | set { ncbi }
 
-    to_download.ena \
+    find_genomes.out.ena \
+    | flatten \
     | download_ena \
-    | groupTuple \
-    | merge_ena_fasta
+    | set { ena }
+
+    ncbi.mix(ena) \
+    | collect \
+    | merge_genomes \
+    | build_random_chunks \
 }
 
 workflow {

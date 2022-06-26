@@ -20,9 +20,13 @@ class EnaIssue(Exception):
 
 
 def generate_records(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
+    seen = False
     for record in SeqIO.parse(handle, 'fasta'):
         record.id = record.id.split('|')[2]
         yield record
+        seen = True
+    if not seen:
+        raise ValueError("Did not parse any sequences")
 
 
 def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
@@ -35,8 +39,10 @@ def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
 
         info = sp.check_output(["file", '--mime-type', tmp.name])
         if b'application/gzip' in info:
-            text = sp.check_output(['zcat', '-f', tmp.name])
-            yield from generate_records(StringIO(text.decode()))
+            with tempfile.NamedTemporaryFile() as decomp:
+                sp.run(['zcat', '-f', tmp.name], check=True, stdout=decomp)
+                decomp.flush()
+                yield from generate_records(decomp)
         elif b'text/plain' in info:
             yield from generate_records(tmp)
         else:

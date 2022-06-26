@@ -2,7 +2,7 @@ process fetch_ncbi_locations {
   errorStrategy 'finish'
 
   output:
-  path('ncbi.pickle')
+  path('ncbi.db')
 
   """
   curl '$params.genbank_assembly_info' > initial
@@ -13,7 +13,7 @@ process fetch_ncbi_locations {
     curl '$params.refseq_assembly_info'
     curl '$params.refseq_old_assembly_info'
   } | grep -v '^#' >> info
-  parse_assembly_info.py info ncbi.pickle
+  parse_assembly_info.py info ncbi.db
   """
 }
 
@@ -40,8 +40,7 @@ process find_genomes {
 process download_ncbi {
   tag { "$gca_file.baseName" }
   maxForks 20
-  errorStrategy 'ignore'
-  publishDir 'genomes'
+  publishDir "genomes/ncbi/${gca_file.baseName}"
 
   input:
   tuple path(gca_file), path(info)
@@ -50,6 +49,8 @@ process download_ncbi {
   path("*.fa")
 
   """
+  set -euo pipefail
+
   mkdir complete
   ncbi_urls.py $info $gca_file complete | xargs -L 2 -P 4 wget -O
   gzip -d complete/*.fa.gz
@@ -60,7 +61,7 @@ process download_ncbi {
 process download_ena {
   tag { "$ena_file.baseName" }
   maxForks 10
-  errorStrategy 'ignore'
+  publishDir 'genomes/ena'
 
   input:
   path(ena_file)
@@ -75,6 +76,7 @@ process download_ena {
 
 process merge_and_split {
   publishDir 'genomes'
+  container ''
 
   input:
   path('genomes*.fa')
@@ -83,44 +85,47 @@ process merge_and_split {
   path('rfamseq')
 
   """
+  set -euo pipefail
+
   mkdir rfamseq to-rev
   find . -name 'genomes*.fa' | xargs -I {} cat {} > merged.fa
 
   pushd rfamseq
-  esl-randomize-sqfile.pl -O r100_rfamseq${params.version}.fa -L -N 100 ../merged.fa 1.0
+  esl-randomize-sqfile.pl -O r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -L -N ${params.rfam_seq.main_chunks} ../merged.fa 1.0
   popd
 
   pushd to-rev
-  esl-randomize-sqfile.pl -O rev-rfamseq${params.version}.fa -L -N 10 ../merged.fa 0.1
+  esl-randomize-sqfile.pl -O rev-rfamseq${params.version}.fa -L -N ${params.rfam_seq.rev_chunks} ../merged.fa ${params.rfam_seq.rev_fraction}
   popd
 
   find to-rev -name '*.fa' -print '%f\\n" | xargs -I {} esl-shuffle -r -o rfamseq/{} to-rev/{}
-  find rfam-seq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${version}-all.seqstat
+  find rfam-seq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${params.version}-all.seqstat
   find rfam-seq -name '*.fa' | xargs gzip
   """
 }
 
 workflow genome_download {
   main:
-    fetch_ncbi_locations | set { ncbi }
+    fetch_ncbi_locations | set { ncbi_info }
 
     Channel.fromPath(params.ignore_upi) | find_genomes
 
     find_genomes.out.ncbi \
     | flatten \
-    | combine(ncbi) \
+    | take(5) \
+    | combine(ncbi_info) \
     | download_ncbi
     | set { ncbi }
 
     find_genomes.out.ena \
     | flatten \
+    | take(3) \
     | download_ena \
     | set { ena }
 
-    ncbi.mix(ena) \
-    | collect \
-    | merge_genomes \
-    | build_random_chunks \
+    /* ncbi.mix(ena) \ */
+    /* | collect \ */
+    /* | merge_and_split */
 }
 
 workflow {

@@ -112,20 +112,18 @@ workflow genome_download {
 
     find_genomes.out.ncbi \
     | flatten \
-    | take(5) \
     | combine(ncbi_info) \
     | download_ncbi
     | set { ncbi }
 
     find_genomes.out.ena \
     | flatten \
-    | take(3) \
     | download_ena \
     | set { ena }
 
-    /* ncbi.mix(ena) \ */
-    /* | collect \ */
-    /* | merge_and_split */
+    ncbi.mix(ena) \
+    | collect \
+    | merge_and_split
 }
 
 workflow {

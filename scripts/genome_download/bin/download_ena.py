@@ -51,10 +51,7 @@ def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
         if not line.startswith('CON'):
             continue
         raw_contigs = line[3:].strip()
-        start, stop = raw_contigs.split('-', 1)
-        if start != stop:
-            raise ValueError(f"Cannot yet handle multiple contigs: {accession}")
-        yield from fetch_ena_fasta(start)
+        yield from fetch_ena_fasta(raw_contigs)
 
 
 def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

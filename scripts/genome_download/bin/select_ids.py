@@ -60,8 +60,11 @@ def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[
     for line in gca_file:
         row = json.loads(line)
         upi = row['upi']
+        if upi in ignore:
+            continue
+
         path = base / f'{upi}.fa'
-        if not path.exists() and upi not in ignore:
+        if not path.exists():
             raise ValueError(f"Failed to find genome for {upi} at {path}")
 
         final_path = out / f'{upi}.fa'

@@ -47,8 +47,14 @@ def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     response = requests.get(ENA_EMBL_URL.format(accession=accession))
     response.raise_for_status()
     handle = StringIO(response.text)
-    for record in SeqIO.parse(handle, 'embl'):
-        pass
+    for line in handle:
+        if not line.startswith('CON'):
+            continue
+        raw_contigs = line[3:].strip()
+        start, stop = raw_contigs.split('-', 1)
+        if start != stop:
+            raise ValueError(f"Cannot yet handle multiple contigs: {accession}")
+        yield from fetch_ena_fasta(start)
 
 
 def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

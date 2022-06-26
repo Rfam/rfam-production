@@ -39,7 +39,7 @@ def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
 
         info = sp.check_output(["file", '--mime-type', tmp.name])
         if b'application/gzip' in info:
-            with tempfile.NamedTemporaryFile() as decomp:
+            with tempfile.NamedTemporaryFile('w+') as decomp:
                 sp.run(['zcat', '-f', tmp.name], check=True, stdout=decomp)
                 decomp.flush()
                 yield from generate_records(decomp)

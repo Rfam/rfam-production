@@ -5,13 +5,19 @@ from io import StringIO
 import tempfile
 import typing as ty
 from pathlib import Path
+import subprocess as sp
+import requests
 
 import click
 from Bio import SeqIO
 
-ENA_URL = "https://www.ebi.ac.uk/ena/browser/api/fasta/{accession}?download=true"
+ENA_FASTA_URL = "https://www.ebi.ac.uk/ena/browser/api/fasta/{accession}?download=true"
+ENA_EMBL_URL = "https://www.ebi.ac.uk/ena/browser/api/embl/{accession}?download=true"
 
-import subprocess as sp
+
+class EnaIssue(Exception):
+    pass
+
 
 def generate_records(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
     for record in SeqIO.parse(handle, 'fasta'):
@@ -19,9 +25,12 @@ def generate_records(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
         yield record
 
 
-def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     with tempfile.NamedTemporaryFile('w+') as tmp:
-        sp.check_call(["wget", "-O", tmp.name, ENA_URL.format(accession=accession)])
+        try:
+            sp.check_call(["wget", "-O", tmp.name, ENA_FASTA_URL.format(accession=accession)])
+        except:
+            raise EnaIssue
         tmp.flush()
 
         info = sp.check_output(["file", '--mime-type', tmp.name])
@@ -32,6 +41,21 @@ def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
             yield from generate_records(tmp)
         else:
             raise ValueError(f"Do not know how handle {accession}")
+
+
+def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    response = requests.get(ENA_EMBL_URL.format(accession=accession))
+    response.raise_for_status()
+    handle = StringIO(response.text)
+    for record in SeqIO.parse(handle, 'embl'):
+        pass
+
+
+def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    try:
+        yield from fetch_ena_fasta(accession)
+    except EnaIssue:
+        yield from fetch_using_ena_embl(accession)
 
 
 def fetch(accessions: ty.Iterable[str]) -> ty.Iterable[SeqIO.SeqRecord]:

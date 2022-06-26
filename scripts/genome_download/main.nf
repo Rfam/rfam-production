@@ -42,7 +42,9 @@ process download_ncbi {
   maxForks 10
   publishDir "genomes/ncbi/${gca_file.baseName}"
   memory '5GB'
-  errorStrategy 'finish'
+  memory { 4.GB * task.attempt }
+  errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'finish' }
+  maxRetries 4
 
   input:
   tuple path(gca_file), path(info)
@@ -57,8 +59,10 @@ process download_ncbi {
   ncbi_urls.py $info $gca_file complete urls ena-only.jsonl
   xargs -a urls -L 2 -P 4 wget -O
   gzip -d complete/*.fa.gz
-  select_ids.py $gca_file complete/
-  download_ena.py ena_only.jsonl
+  select_ids.py --ignore-file ena-only.jsonl $gca_file complete/
+  if [[ -e ena-only.jsonl ]]; then
+    download_ena.py ena-only.jsonl
+  fi
   """
 }
 
@@ -67,6 +71,7 @@ process download_ena {
   maxForks 10
   publishDir 'genomes/ena'
   memory '5GB'
+  errorStrategy 'finish'
 
   input:
   path(ena_file)

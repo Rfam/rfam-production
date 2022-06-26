@@ -37,18 +37,31 @@ def select_ids(path: Path, allowed: ty.Set[str]) -> ty.Iterable[SeqIO.SeqRecord]
         yield from download_ena.fetch(missing)
 
 
+def load_ignore(handle: ty.IO) -> ty.Set[str]:
+    ignore = set()
+    for line in handle:
+        data = json.loads(line)
+        ignore.add(data['upi'])
+    return ignore
+
+
 @click.command()
+@click.option('--ignore-file', type=click.Path())
 @click.argument('gca-file', type=click.File('r'))
 @click.argument('directory', type=click.Path())
 @click.argument('output', default='.', type=click.Path())
-def main(gca_file, directory, output):
+def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[str]=None):
     base = Path(directory)
     out = Path(output)
+    ignore = set()
+    if ignore_file and Path(ignore_file).exists():
+        with open(ignore_file, 'r') as raw:
+            ignore = load_ignore(raw)
     for line in gca_file:
         row = json.loads(line)
         upi = row['upi']
         path = base / f'{upi}.fa'
-        if not path.exists():
+        if not path.exists() and upi not in ignore:
             raise ValueError(f"Failed to find genome for {upi} at {path}")
 
         final_path = out / f'{upi}.fa'

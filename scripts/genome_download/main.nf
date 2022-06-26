@@ -39,8 +39,10 @@ process find_genomes {
 
 process download_ncbi {
   tag { "$gca_file.baseName" }
-  maxForks 20
+  maxForks 10
   publishDir "genomes/ncbi/${gca_file.baseName}"
+  memory '5GB'
+  errorStrategy 'finish'
 
   input:
   tuple path(gca_file), path(info)
@@ -64,6 +66,7 @@ process download_ena {
   tag { "$ena_file.baseName" }
   maxForks 10
   publishDir 'genomes/ena'
+  memory '5GB'
 
   input:
   path(ena_file)

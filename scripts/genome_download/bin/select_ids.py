@@ -4,9 +4,6 @@ import shutil
 import json
 from pathlib import Path
 import typing as ty
-import tempfile
-import subprocess as sp
-from io import StringIO
 
 from Bio import SeqIO
 

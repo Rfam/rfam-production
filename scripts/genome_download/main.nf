@@ -52,9 +52,11 @@ process download_ncbi {
   set -euo pipefail
 
   mkdir complete
-  ncbi_urls.py $info $gca_file complete | xargs -L 2 -P 4 wget -O
+  ncbi_urls.py $info $gca_file complete urls ena-only.jsonl
+  xargs -a urls -L 2 -P 4 wget -O
   gzip -d complete/*.fa.gz
   select_ids.py $gca_file complete/
+  download_ena.py ena_only.jsonl
   """
 }
 

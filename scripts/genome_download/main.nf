@@ -129,7 +129,7 @@ process merge_and_split {
 
 workflow genome_download {
   main:
-    fetch_ncbi_locations | set { ncbi_info }
+    Channle.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
 
     Channel.fromPath(params.ignore_upi) | find_genomes
 

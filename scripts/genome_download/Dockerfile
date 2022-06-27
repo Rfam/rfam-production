@@ -2,8 +2,10 @@ from python:3.10.5-buster
 
 # Modified from: https://github.com/python-poetry/poetry/discussions/1879
 
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
     curl \
+    jq \
     gzip  \
     wget
 

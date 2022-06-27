@@ -1,18 +1,20 @@
 process fetch_ncbi_locations {
   errorStrategy 'finish'
 
+  input:
+  path(urls)
+
   output:
   path('ncbi.db')
 
   """
-  curl '$params.genbank_assembly_info' > initial
-  grep '^#' initial | tail -1 | sed 's|# ||' > info
-  grep -v '^#' initial >> info
-  {
-    curl '$params.genbank_old_assembly_info'
-    curl '$params.refseq_assembly_info'
-    curl '$params.refseq_old_assembly_info'
-  } | grep -v '^#' >> info
+  mkdir summaries
+  pushd summaries
+  xargs -P 4 -a "$urls" wget --no-verbose 
+  popd
+  find summaries -type f | xargs cat > merged
+  grep '^#' merged | tail -1 | sed 's|# ||' > info
+  grep -v '^#' merged >> info
   parse_assembly_info.py info ncbi.db
   """
 }

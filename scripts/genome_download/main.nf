@@ -62,10 +62,12 @@ process download_ncbi {
   # It turns out that not all files which are specified by NCBI will actually
   # exist. This can be dealt with by falling back to ENA based lookup
   find complete -name '*.fa.gz' -empty > missing
-  xargs -a missing rm
-  xargs -a missing -I {} basename {} \
-  | cut -d. -f1 \
-  | xargs -I {} jq 'select(.upi == "{}") | .accession = null | .kind = "ena"' $gca_file >> ena-only.jsonl
+  if [[ -s missing ]]; then
+    xargs -a missing rm
+    xargs -a missing -I {} basename {} \
+    | cut -d. -f1 \
+    | xargs -I {} jq 'select(.upi == "{}") | .accession = null | .kind = "ena"' $gca_file >> ena-only.jsonl
+  fi
 
   gzip -d complete/*.fa.gz
   select_ids.py --ignore-file ena-only.jsonl $gca_file complete/

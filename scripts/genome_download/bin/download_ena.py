@@ -42,7 +42,7 @@ def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
             with tempfile.NamedTemporaryFile('w+') as decomp:
                 sp.run(['zcat', '-f', tmp.name], check=True, stdout=decomp)
                 decomp.flush()
-                yield from generate_records(decomp)
+                yield from generate_records(decomp.name)
         elif b'text/plain' in info:
             yield from generate_records(tmp)
         else:

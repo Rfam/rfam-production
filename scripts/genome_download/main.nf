@@ -66,7 +66,7 @@ process download_ncbi {
     xargs -a missing rm
     xargs -a missing -I {} basename {} \
     | cut -d. -f1 \
-    | xargs -I {} jq 'select(.upi == "{}") | .accession = null | .kind = "ena"' $gca_file >> ena-only.jsonl
+    | xargs -I {} jq -c 'select(.upi == "{}") | .accession = null | .kind = "ena"' $gca_file >> ena-only.jsonl
   fi
 
   gzip -d complete/*.fa.gz

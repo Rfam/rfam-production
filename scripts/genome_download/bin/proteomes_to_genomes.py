@@ -44,6 +44,12 @@ def only_matching_node(kind: str, query: str, root: ET.Element):
         return None
     return nodes
 
+def is_gca_only(accession: str, ids: ty.List[str]) -> bool:
+    if len(ids) != 1:
+        return False
+    versionless = accession.split('.', 1)[0]
+    return versionless == ids[0]
+
 
 def xml_to_ncbi(root: ET.Element) -> ty.Optional[ty.Dict[str, ty.Any]]:
     result = only_matching_node('ncbi', './/pro:genomeAssembly/pro:genomeAssembly', root)
@@ -56,10 +62,14 @@ def xml_to_ncbi(root: ET.Element) -> ty.Optional[ty.Dict[str, ty.Any]]:
         return None
 
     components = all_matching_nodes('ena', './/pro:component/pro:genomeAccession', root)
-    if not components:
+    if not components: 
         result['ids'] = ['*']
     else:
-        result['ids'] = [c['accession'] for c in components]
+        accessions = [c['accession'] for c in components]
+        if is_gca_only(result['accession'], accessions):
+            result['ids'] = ['*']
+        else:
+            result['ids'] = accessions
 
     return result
 

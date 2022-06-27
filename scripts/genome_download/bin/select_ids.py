@@ -70,6 +70,10 @@ def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[
             return
 
         allowed = {id for id in row['ids']}
+        if row['accession'].split('.', 1)[0] in allowed:
+            shutil.copyfile(path, final_path)
+            return
+
         with open(final_path, 'w') as f:
             SeqIO.write(select_ids(path, allowed), f, 'fasta')
 

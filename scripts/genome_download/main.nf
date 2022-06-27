@@ -57,7 +57,7 @@ process download_ncbi {
 
   mkdir complete
   ncbi_urls.py $info $gca_file complete urls ena-only.jsonl
-  xargs -a urls -L 2 -P 4 wget -O || true
+  xargs -a urls -L 2 -P 4 wget --no-verbose -O || true
 
   # It turns out that not all files which are specified by NCBI will actually
   # exist. This can be dealt with by falling back to ENA based lookup

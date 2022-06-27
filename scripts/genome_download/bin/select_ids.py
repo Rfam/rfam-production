@@ -4,6 +4,9 @@ import shutil
 import json
 from pathlib import Path
 import typing as ty
+import logging
+import tempfile
+import subprocess as sp
 
 from Bio import SeqIO
 
@@ -11,27 +14,48 @@ import click
 
 import download_ena
 
+LOGGER = logging.getLogger(__name__)
+
+NCBI_SEQ_URL = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text'
+
 
 def versionless(record: SeqIO.SeqRecord) -> str:
     return record.id.split('.', 1)[0]
+
+
+def ncbi_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    with tempfile.NamedTemporaryFile('w+') as tmp:
+        sp.check_call(["wget", "--no-verbose", "-O", tmp.name, NCBI_SEQ_URL.format(accession=accession)])
+        yield from download_ena.generate_records(tmp.name)
 
 
 def select_ids(path: Path, allowed: ty.Set[str]) -> ty.Iterable[SeqIO.SeqRecord]:
     seen = set()
     with path.open('r') as raw:
         for record in SeqIO.parse(raw, 'fasta'):
+            LOGGER.info("Checking if %s is allowed", record.id)
             for key in [record.id, versionless(record)]:
+                LOGGER.debug("Trying key %s", key)
                 if key not in allowed:
+                    LOGGER.debug("Skipping %s", key)
                     continue
                 if key in seen:
                     raise ValueError(f"Duplicate ids in fasta file at {path}")
+                LOGGER.debug("Keeping %s", key)
                 seen.add(key)
                 yield record
                 break
 
     if len(seen) != len(allowed):
         missing = allowed - seen
-        yield from download_ena.fetch(missing)
+        LOGGER.info("Missing %i ids: %s, using lookup", len(missing), missing)
+        for accession in missing:
+            LOGGER.info("Looking up %s", accession)
+            try:
+                yield from ncbi_fasta(accession)
+            except:
+                LOGGER.info("Failed to fetch %s from NCBI, trying ENA", accession)
+                yield from download_ena.fetch_accession(accession)
 
 
 def load_ignore(handle: ty.IO) -> ty.Set[str]:
@@ -48,6 +72,7 @@ def load_ignore(handle: ty.IO) -> ty.Set[str]:
 @click.argument('directory', type=click.Path())
 @click.argument('output', default='.', type=click.Path())
 def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[str]=None):
+    logging.basicConfig(level=logging.INFO)
     base = Path(directory)
     out = Path(output)
     ignore = set()
@@ -57,7 +82,9 @@ def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[
     for line in gca_file:
         row = json.loads(line)
         upi = row['upi']
+        LOGGER.info("Checking %s", upi)
         if upi in ignore:
+            LOGGER.debug("Skipping %s", upi)
             continue
 
         path = base / f'{upi}.fa'
@@ -66,11 +93,13 @@ def main(gca_file: ty.IO, directory: str, output: str, ignore_file: ty.Optional[
 
         final_path = out / f'{upi}.fa'
         if row['ids'] == ['*']:
+            LOGGER.info("Using all ids for %s", upi)
             shutil.copyfile(path, final_path)
             return
 
         allowed = {id for id in row['ids']}
         if row['accession'].split('.', 1)[0] in allowed:
+            LOGGER.info("Versionless match, using all ids for %s", upi)
             shutil.copyfile(path, final_path)
             return
 

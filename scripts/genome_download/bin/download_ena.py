@@ -22,7 +22,7 @@ class EnaIssue(Exception):
     pass
 
 
-def generate_records(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
+def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecord]:
     seen = False
     for record in SeqIO.parse(handle, 'fasta'):
         record.id = record.id.split('|')[2]
@@ -65,11 +65,11 @@ def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
         if not line.startswith('CON'):
             continue
         raw_contigs = line[3:].strip()
-        LOGGER.debug("Found contins %s", raw_contigs)
+        LOGGER.debug("Found contigs %s", raw_contigs)
         yield from fetch_ena_fasta(raw_contigs)
 
 
-def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+def fetch_accession(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Fetching ENA data for %s", accession)
     try:
         yield from fetch_ena_fasta(accession)
@@ -78,15 +78,17 @@ def fetch_ena(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
         yield from fetch_using_ena_embl(accession)
 
 
-def fetch(accessions: ty.Iterable[str]) -> ty.Iterable[SeqIO.SeqRecord]:
+def fetch_accessions(accessions: ty.Iterable[str]) -> ty.Iterable[SeqIO.SeqRecord]:
     for accession in accessions:
-        yield from fetch_ena(accession)
+        LOGGER.info("Fetching %s from ENA", accession)
+        yield from fetch_accession(accession)
 
 
 @click.command()
 @click.argument('ena_file', type=click.File('r'))
 @click.argument('output', default='.', type=click.Path())
 def main(ena_file, output):
+    logging.basicConfig(level=logging.INFO)
     base = Path(output)
     for line in ena_file:
         data = json.loads(line)
@@ -94,7 +96,7 @@ def main(ena_file, output):
         path = base / f"{upi}.fa"
         assert data['accession'] is None
         with path.open('w') as out:
-            SeqIO.write(fetch(data['ids']), out, 'fasta')
+            SeqIO.write(fetch_accessions(data['ids']), out, 'fasta')
 
 
 if __name__ == '__main__':

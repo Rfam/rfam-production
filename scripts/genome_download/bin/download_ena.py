@@ -32,7 +32,7 @@ def generate_records(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
 def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     with tempfile.NamedTemporaryFile('w+') as tmp:
         try:
-            sp.check_call(["wget", "-O", tmp.name, ENA_FASTA_URL.format(accession=accession)])
+            sp.check_call(["wget", "--no-verbose", "-O", tmp.name, ENA_FASTA_URL.format(accession=accession)])
         except:
             raise EnaIssue
         tmp.flush()

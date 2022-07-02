@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import shutil
 import json
 from pathlib import Path
@@ -24,7 +25,7 @@ def versionless(record: SeqIO.SeqRecord) -> str:
 
 
 def ncbi_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    with tempfile.NamedTemporaryFile('w+') as tmp:
+    with tempfile.NamedTemporaryFile('w+', dir=os.curdir) as tmp:
         sp.check_call(["wget", "--no-verbose", "-O", tmp.name, NCBI_SEQ_URL.format(accession=accession)])
         yield from download_ena.generate_records(tmp.name)
 
@@ -50,12 +51,12 @@ def select_ids(path: Path, allowed: ty.Set[str]) -> ty.Iterable[SeqIO.SeqRecord]
         missing = allowed - seen
         LOGGER.info("Missing %i ids: %s, using lookup", len(missing), missing)
         for accession in missing:
-            LOGGER.info("Looking up %s", accession)
+            LOGGER.info("Looking up %s with ENA", accession)
             try:
-                yield from ncbi_fasta(accession)
+               yield from download_ena.fetch_accession(accession)
             except:
-                LOGGER.info("Failed to fetch %s from NCBI, trying ENA", accession)
-                yield from download_ena.fetch_accession(accession)
+                LOGGER.info("Failed to fetch %s from ENA, trying NCBI", accession)
+                yield from ncbi_fasta(accession)
 
 
 def load_ignore(handle: ty.IO) -> ty.Set[str]:

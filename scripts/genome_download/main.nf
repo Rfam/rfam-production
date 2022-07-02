@@ -1,4 +1,5 @@
 process fetch_ncbi_locations {
+  queue 'short'
   errorStrategy 'finish'
 
   input:
@@ -10,7 +11,7 @@ process fetch_ncbi_locations {
   """
   mkdir summaries
   pushd summaries
-  xargs -P 4 -a "$urls" wget --no-verbose 
+  xargs -P 4 -a "../$urls" wget --no-verbose
   popd
   find summaries -type f | xargs cat > merged
   grep '^#' merged | tail -1 | sed 's|# ||' > info
@@ -20,6 +21,8 @@ process fetch_ncbi_locations {
 }
 
 process find_genomes {
+  queue 'short'
+
   input:
   path(to_skip)
 
@@ -41,11 +44,12 @@ process find_genomes {
 
 process download_ncbi {
   tag { "$gca_file.baseName" }
-  maxForks 10
+  maxForks 30
+  queue 'short'
   publishDir "genomes/ncbi/${gca_file.baseName}"
   memory '5GB'
   memory { 4.GB * task.attempt }
-  errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'finish' }
+  errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'ignore' }
   maxRetries 4
 
   input:
@@ -84,6 +88,7 @@ process download_ena {
   maxForks 10
   publishDir 'genomes/ena'
   memory '5GB'
+  queue 'short'
   errorStrategy 'finish'
 
   input:
@@ -114,11 +119,11 @@ process merge_and_split {
   find . -name 'genomes*.fa' | xargs -I {} cat {} > merged.fa
 
   pushd rfamseq
-  esl-randomize-sqfile.pl -O r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -L -N ${params.rfam_seq.main_chunks} ../merged.fa 1.0
+  esl-ssplit.pl -v --oroot r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -n -r -z ../merged.fa ${params.rfam_seq.main_chunks}
   popd
 
   pushd to-rev
-  esl-randomize-sqfile.pl -O rev-rfamseq${params.version}.fa -L -N ${params.rfam_seq.rev_chunks} ../merged.fa ${params.rfam_seq.rev_fraction}
+  esl-ssplit.pl -v --oroot rev-rfamseq${params.version}.fa -n -r -z ../merged.fa ${params.rfam_seq.rev_fraction}
   popd
 
   find to-rev -name '*.fa' -print '%f\\n" | xargs -I {} esl-shuffle -r -o rfamseq/{} to-rev/{}
@@ -129,7 +134,7 @@ process merge_and_split {
 
 workflow genome_download {
   main:
-    Channle.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
+    Channel.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
 
     Channel.fromPath(params.ignore_upi) | find_genomes
 

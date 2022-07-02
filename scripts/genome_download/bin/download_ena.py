@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import json
 from io import StringIO
 import tempfile
@@ -34,7 +35,7 @@ def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecor
 
 def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Attempt to get ena fasta for %s", accession)
-    with tempfile.NamedTemporaryFile('w+') as tmp:
+    with tempfile.NamedTemporaryFile('w+', dir=os.curdir) as tmp:
         try:
             sp.check_call(["wget", "--no-verbose", "-O", tmp.name, ENA_FASTA_URL.format(accession=accession)])
         except:
@@ -45,7 +46,7 @@ def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
         info = sp.check_output(["file", '--mime-type', tmp.name])
         if b'application/gzip' in info:
             LOGGER.debug("Decompressing file for %s", accession)
-            with tempfile.NamedTemporaryFile('w+') as decomp:
+            with tempfile.NamedTemporaryFile('w+', dir=os.curdir) as decomp:
                 sp.run(['zcat', '-f', tmp.name], check=True, stdout=decomp)
                 decomp.flush()
                 yield from generate_records(decomp.name)

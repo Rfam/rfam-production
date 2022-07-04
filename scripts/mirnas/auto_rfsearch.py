@@ -60,7 +60,8 @@ def parse_arguments():
     mutually_exclusive.add_argument("--csv-input",
                                     help="CSV file with miRNA id, rfam accession number, "
                                          "threshold value of families to update")
-    parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment', action="store_true",
+    parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment',
+                        action="store_true",
                         default=False)
 
     return parser.parse_args()

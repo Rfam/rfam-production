@@ -1,4 +1,4 @@
-HTML_REPORTS = '/nfs/public/rw/xfam/rfam/' + 'searches/mirbase'
+HTML_REPORTS = '/nfs/public/rw/xfam/rfam/test' + 'searches/mirbase'
 OUTPUT_FILENAME = 'mirbase-dashboard.tsv'
 BLACK_LIST = [
     'MIPF0000338__mir-680'

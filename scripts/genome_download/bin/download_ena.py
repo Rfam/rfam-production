@@ -24,12 +24,14 @@ class EnaIssue(Exception):
 
 
 def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecord]:
-    seen = False
+    seen = set()
     for record in SeqIO.parse(handle, 'fasta'):
         if '|' in record.id:
             record.id = record.id.split('|')[2]
+        if record.id in seen:
+            raise ValueError(f"Duplicate id {record.id}")
         yield record
-        seen = True
+        seen.add(record.id)
     if not seen:
         raise ValueError("Did not parse any sequences")
 

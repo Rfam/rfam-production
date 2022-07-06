@@ -35,10 +35,12 @@ process find_genomes {
   proteomes_to_genomes.py --ignorable $to_skip summary.xml .
 
   mkdir ncbi
-  split -n l/500 ncbi.jsonl --additional-suffix='.jsonl' ncbi/
+  shuf ncbi.jsonl > ncbi-shuf.jsonl
+  split -n l/550 ncbi-shuf.jsonl --additional-suffix='.jsonl' ncbi/
 
   mkdir ena
-  split -n l/10 ena.jsonl --additional-suffix='.jsonl' ena/
+  shuf ena.jsonl > ena-shuf.jsonl
+  split -n l/10 ena-shuf.jsonl --additional-suffix='.jsonl' ena/
   """
 }
 

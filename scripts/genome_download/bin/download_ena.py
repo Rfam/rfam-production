@@ -26,7 +26,8 @@ class EnaIssue(Exception):
 def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecord]:
     seen = False
     for record in SeqIO.parse(handle, 'fasta'):
-        record.id = record.id.split('|')[2]
+        if '|' in record.id:
+            record.id = record.id.split('|')[2]
         yield record
         seen = True
     if not seen:

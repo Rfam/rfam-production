@@ -134,7 +134,7 @@ process merge_and_split {
   set -euo pipefail
 
   mkdir rfamseq to-rev
-  find . -name 'genomes*.fa' | xargs -I {} cat {} > merged.fa
+  find . -name 'genomes*.fa' | xargs cat > merged.fa
   esl-sfetch --index merged.fa
 
   pushd rfamseq

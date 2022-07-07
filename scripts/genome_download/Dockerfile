@@ -35,6 +35,10 @@ RUN \
     cd easel && \
     make install
 
+# Install seqkit, taken from:
+# https://github.com/nextstrain/docker-base/blob/master/Dockerfile
+RUN RUN curl -L https://github.com/shenwei356/seqkit/releases/download/v2.2.0/seqkit_linux_amd64.tar.gz | tar xz --no-same-owner -C /usr/local/bin
+
 RUN pip install "poetry==$POETRY_VERSION"
 
 COPY pyproject.toml poetry.lock ./

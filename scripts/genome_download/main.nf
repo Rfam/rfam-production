@@ -114,6 +114,8 @@ process validate_chunk {
   path("${short_name}.fa")
 
   """
+  set -euo pipefail
+
   find . -name 'genomes*.fa' | xargs -I {} seqkit rmdup -s {} | seqkit rmdup > unique.fa
   seqkit shuffle --two-pass unique.fa > ${short_name}.fa
   esl-sfetch --index ${short_name}.fa

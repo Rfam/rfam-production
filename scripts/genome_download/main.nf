@@ -58,7 +58,7 @@ process download_ncbi {
   tuple path(gca_file), path(info)
 
   output:
-  path("*.fa")
+  tuple val("ncbi-${gca_file.baseName}"), path("UP*.fa")
 
   """
   set -euo pipefail
@@ -97,10 +97,26 @@ process download_ena {
   path(ena_file)
 
   output:
-  path('*.fa')
+  tuple val("ena-${ena_file.baseName}"), path('UP*.fa')
 
   """
   download_ena.py $ena_file
+  """
+}
+
+process validate_chunk {
+  tag { "$short_name" }
+
+  input:
+  tuple val(short_name), path('genomes*.fa')
+
+  output:
+  path("${short_name}.fa")
+
+  """
+  find . -name 'genomes*.fa' | xargs -I {} seqkit rmdup -s {} > unique.fa
+  seqkit shuffle --two-pass unique.fa > ${short_name}.fa
+  esl-sfetch --index ${short_name}.fa
   """
 }
 
@@ -119,6 +135,7 @@ process merge_and_split {
 
   mkdir rfamseq to-rev
   find . -name 'genomes*.fa' | xargs -I {} cat {} > merged.fa
+  esl-sfetch --index merged.fa
 
   pushd rfamseq
   esl-ssplit.pl -v --oroot r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -n -r -z ../merged.fa ${params.rfam_seq.main_chunks}
@@ -129,8 +146,8 @@ process merge_and_split {
   popd
 
   find to-rev -name '*.fa' -print '%f\\n" | xargs -I {} esl-shuffle -r -o rfamseq/{} to-rev/{}
-  find rfam-seq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${params.version}-all.seqstat
-  find rfam-seq -name '*.fa' | xargs gzip
+  find rfamseq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${params.version}-all.seqstat
+  find rfamseq -name '*.fa' | xargs gzip
   """
 }
 
@@ -143,15 +160,16 @@ workflow genome_download {
     find_genomes.out.ncbi \
     | flatten \
     | combine(ncbi_info) \
-    | download_ncbi
+    | download_ncbi \
     | set { ncbi }
 
-    find_genomes.out.ena \
+    find_genomes.out.ena
     | flatten \
     | download_ena \
     | set { ena }
 
     ncbi.mix(ena) \
+    | validate_chunk \
     | collect \
     | merge_and_split
 }

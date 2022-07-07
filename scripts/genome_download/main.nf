@@ -49,9 +49,8 @@ process download_ncbi {
   maxForks 30
   queue 'short'
   publishDir "genomes/ncbi/${gca_file.baseName}"
-  memory '5GB'
-  memory { 4.GB * task.attempt }
-  errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'ignore' }
+  memory { 6.GB * task.attempt }
+  errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' }
   maxRetries 4
 
   input:

@@ -1,5 +1,5 @@
 process add_all_3d {
-    container ''
+    container 'docker://rfam/rfam-3d-seed-alignments:latest'
 
     output:
     val('done')
@@ -9,6 +9,6 @@ process add_all_3d {
     """
 
 }
-workflow ftp {
+workflow {
     add_all_3d()
 }

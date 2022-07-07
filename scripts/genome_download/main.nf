@@ -105,6 +105,7 @@ process download_ena {
 }
 
 process validate_chunk {
+  queue 'short'
   tag { "$short_name" }
 
   input:
@@ -120,34 +121,63 @@ process validate_chunk {
   """
 }
 
-process merge_and_split {
-  publishDir 'genomes'
-  container ''
+process merge_chunks {
+  queue 'short'
 
   input:
   path('genomes*.fa')
 
   output:
-  path('rfamseq')
+  tuple path('merged.fa'), path('merged.fa.ssi')
 
   """
   set -euo pipefail
 
-  mkdir rfamseq to-rev
   find . -name 'genomes*.fa' | xargs cat > merged.fa
+  esl-seqstat -a merged.fa > merged.seqstat
   esl-sfetch --index merged.fa
+  """
+}
 
+process build_rfamseq {
+  queue 'short'
+  container ''
+  publishDir 'genomes/rfamseq'
+
+  input:
+  tuple path(merged), path(ssi)
+
+  output:
+  path('rfamseq/*')
+
+  """
+  mkdir rfamseq
   pushd rfamseq
-  esl-ssplit.pl -v --oroot r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -n -r -z ../merged.fa ${params.rfam_seq.main_chunks}
+  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
+  esl-seqstat ../$merged > rfamseq.all.seqstat
+  gzip *.fa
   popd
+  """
+}
 
+process build_rev {
+  queue 'short'
+  container ''
+  publishDir 'genomes/rfamseq'
+
+  input:
+  tuple path(merged), path(ssi)
+
+  output:
+  path 'to-rev/*', emit: to_rev
+
+  """
+  mkdir to-rev
   pushd to-rev
-  esl-ssplit.pl -v --oroot rev-rfamseq${params.version}.fa -n -r -z ../merged.fa ${params.rfam_seq.rev_fraction}
+  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot rev-rfamseq${params.version}.fa -n -r -z ../${merged} ${params.rfam_seq.rev_fraction}
+  find . -name '*.fa' | xargs cat | esl-seqstat - > rev-rfamseq${params.version}-all.seqstat
+  gzip *.fa
   popd
-
-  find to-rev -name '*.fa' -print '%f\\n" | xargs -I {} esl-shuffle -r -o rfamseq/{} to-rev/{}
-  find rfamseq -name 'rev-*.fa' | xargs cat | esl-seqstat - > rfamseq/rev-rfamseq${params.version}-all.seqstat
-  find rfamseq -name '*.fa' | xargs gzip
   """
 }
 
@@ -171,7 +201,8 @@ workflow genome_download {
     ncbi.mix(ena) \
     | validate_chunk \
     | collect \
-    | merge_and_split
+    | merge_chunks \
+    | (build_rfamseq & build_rev)
 }
 
 workflow {

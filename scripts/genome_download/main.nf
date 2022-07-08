@@ -163,7 +163,6 @@ process build_rfamseq {
 
 process build_rev {
   queue 'short'
-  container ''
   publishDir 'genomes/rfamseq'
 
   input:
@@ -173,9 +172,10 @@ process build_rev {
   path 'to-rev/*', emit: to_rev
 
   """
+  seqkit sample -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
   mkdir to-rev
   pushd to-rev
-  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot rev-rfamseq${params.version}.fa -n -r -z ../${merged} ${params.rfam_seq.rev_fraction}
+  seqkit split -p ${params.rfam_seq.rev_chunks} -e '.fa' ../sampled.fa
   find . -name '*.fa' | xargs cat | esl-seqstat - > rev-rfamseq${params.version}-all.seqstat
   gzip *.fa
   popd

@@ -144,6 +144,7 @@ process build_rfamseq {
   queue 'short'
   container ''
   publishDir 'genomes/rfamseq'
+  errorStrategy 'finish'
 
   input:
   tuple path(merged), path(ssi)
@@ -151,11 +152,13 @@ process build_rfamseq {
   output:
   path('rfamseq/*')
 
+  script:
+  name = "r${params.rfam_seq.main_chunks}_rfamseq${params.version}"
   """
   mkdir rfamseq
   pushd rfamseq
-  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot r${params.rfam_seq.main_chunks}_rfamseq${params.version}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
-  esl-seqstat ../$merged > rfamseq.all.seqstat
+  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot ${name}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
+  for((i = 1; i < ${params.rfam_seq.main_chunks})); do mv ${name}.fa.\$i ${name}_\$i.fa; done
   gzip *.fa
   popd
   """
@@ -164,6 +167,7 @@ process build_rfamseq {
 process build_rev {
   queue 'short'
   publishDir 'genomes/rfamseq'
+  errorStrategy 'finish'
 
   input:
   tuple path(merged), path(ssi)
@@ -172,11 +176,14 @@ process build_rev {
   path 'to-rev/*', emit: to_rev
 
   """
-  seqkit sample -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
+  export SEED=\$RANDOM
+  echo \$SEED
+  seqkit sample --rand-seed \$SEED -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
   mkdir to-rev
   pushd to-rev
-  seqkit split -p ${params.rfam_seq.rev_chunks} -e '.fa' ../sampled.fa
-  find . -name '*.fa' | xargs cat | esl-seqstat - > rev-rfamseq${params.version}-all.seqstat
+  seqkit split2 -p ${params.rfam_seq.rev_chunks} -e '.fa' ../sampled.fa
+  for((i = 1; i < ${params.rfam_seq.rev_chunks})); do mv sampled.fa.\$i rev-rfamseq${params.version}_\$i.fa; done
+  esl-seqstat ../sampled.fa > rev-rfamseq${params.version}-all.seqstat
   gzip *.fa
   popd
   """

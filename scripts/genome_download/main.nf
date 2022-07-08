@@ -158,7 +158,7 @@ process build_rfamseq {
   mkdir rfamseq
   pushd rfamseq
   /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot ${name}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
-  for((i = 1; i < ${params.rfam_seq.main_chunks})); do mv ${name}.fa.\$i ${name}_\$i.fa; done
+  for((i = 1; i < ${params.rfam_seq.main_chunks}; i++)); do mv ${name}.fa.\$i ${name}_\$i.fa; done
   gzip *.fa
   popd
   """
@@ -176,13 +176,16 @@ process build_rev {
   path 'to-rev/*', emit: to_rev
 
   """
+  mkdir to-rev
   export SEED=\$RANDOM
   echo \$SEED
   seqkit sample --rand-seed \$SEED -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
-  mkdir to-rev
+  seqkit split2 --out-dir to-rev -p ${params.rfam_seq.rev_chunks} sampled.fa
   pushd to-rev
-  seqkit split2 -p ${params.rfam_seq.rev_chunks} -e '.fa' ../sampled.fa
-  for((i = 1; i < ${params.rfam_seq.rev_chunks})); do mv sampled.fa.\$i rev-rfamseq${params.version}_\$i.fa; done
+  for((i = 1; i <= ${params.rfam_seq.rev_chunks}; i++)); do 
+    pretty_count="$(printf '%03i' \$i)"
+    esl-shuffle -r sampled.part_\$pretty_count.fa > rev-rfamseq${params.version}_\$i.fa
+  done
   esl-seqstat ../sampled.fa > rev-rfamseq${params.version}-all.seqstat
   gzip *.fa
   popd

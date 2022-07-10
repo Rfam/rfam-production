@@ -95,15 +95,8 @@ def is_allowed(xml: ET.Element, to_skip: ty.Set[str]) -> bool:
     if upi is None:
         raise ValueError("Invalid xml, empty upi")
 
-    is_reference = xml.find('pro:isReferenceProteome', NS)
-    if is_reference is None:
-        raise ValueError("Invalid xml, no isReferenceProteome")
-    is_reference = is_reference.text
-    if is_reference is None:
-        raise ValueError("Invalid xml, empty isReferenceProteome")
-
-    return (upi not in to_skip
-            and is_reference.lower() == "true")
+    return upi not in to_skip
+            
 
 
 def handle_proteome(xml: ET.Element) -> ty.Iterable[ty.Dict[str, str]]:
@@ -134,6 +127,7 @@ def handle_proteome(xml: ET.Element) -> ty.Iterable[ty.Dict[str, str]]:
 @click.argument('summary', type=click.Path())
 @click.argument('output', default='.', type=click.Path())
 def main(summary, output, ignorable=None):
+    logging.basicConfig(level=logging.INFO)
     to_skip = set()
     if ignorable:
         to_skip.update(l.strip() for l in ignorable)
@@ -144,7 +138,7 @@ def main(summary, output, ignorable=None):
     proteomes = xml.getroot()
     for proteome in proteomes:
         if not is_allowed(proteome, to_skip):
-            LOGGER.info("Skipping proteome %s", proteome.find('pro:upid', NS))
+            LOGGER.info("Skipping proteome %s", proteome.find('pro:upid', NS).text)
             continue
         results = handle_proteome(proteome)
         for info in results:

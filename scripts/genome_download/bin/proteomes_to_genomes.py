@@ -62,7 +62,7 @@ def xml_to_ncbi(root: ET.Element) -> ty.Optional[ty.Dict[str, ty.Any]]:
         return None
 
     components = all_matching_nodes('ena', './/pro:component/pro:genomeAccession', root)
-    if not components: 
+    if not components:
         result['ids'] = ['*']
     else:
         accessions = [c['accession'] for c in components]
@@ -87,7 +87,26 @@ def xml_to_all_components(root: ET.Element) -> ty.Optional[ty.Dict[str, ty.Any]]
     }
 
 
-def handle_proteome(xml: ET.Element, to_skip: ty.Set[str]) -> ty.Iterable[ty.Dict[str, str]]:
+def is_allowed(xml: ET.Element, to_skip: ty.Set[str]) -> bool:
+    upi = xml.find('pro:upid', NS)
+    if upi is None:
+        raise ValueError("Invalid xml, no upid")
+    upi = upi.text
+    if upi is None:
+        raise ValueError("Invalid xml, empty upi")
+
+    is_reference = xml.find('pro:isReferenceProteome', NS)
+    if is_reference is None:
+        raise ValueError("Invalid xml, no isReferenceProteome")
+    is_reference = is_reference.text
+    if is_reference is None:
+        raise ValueError("Invalid xml, empty isReferenceProteome")
+
+    return (upi not in to_skip
+            and is_reference.lower() == "true")
+
+
+def handle_proteome(xml: ET.Element) -> ty.Iterable[ty.Dict[str, str]]:
     methods = [
         xml_to_ncbi,
         xml_to_all_components,
@@ -98,8 +117,6 @@ def handle_proteome(xml: ET.Element, to_skip: ty.Set[str]) -> ty.Iterable[ty.Dic
     upi = upi.text
     if upi is None:
         raise ValueError("Invalid xml, empty upi")
-    if upi in to_skip:
-        return
 
     for method in methods:
         result = method(xml)
@@ -126,7 +143,10 @@ def main(summary, output, ignorable=None):
     xml = ET.parse(summary)
     proteomes = xml.getroot()
     for proteome in proteomes:
-        results = handle_proteome(proteome, to_skip)
+        if not is_allowed(proteome, to_skip):
+            LOGGER.info("Skipping proteome %s", proteome.find('pro:upid', NS))
+            continue
+        results = handle_proteome(proteome)
         for info in results:
             out = handles.get(info['kind'], None)
             if not out:

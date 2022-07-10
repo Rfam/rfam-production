@@ -80,6 +80,14 @@ def xml_to_all_components(root: ET.Element) -> ty.Optional[ty.Dict[str, ty.Any]]
         results = all_matching_nodes('ena', './/pro:component/pro:genomeAccession', root)
     if results is None:
         return None
+    if len(results) == 1:
+        if results[0]['accession'].startswith('GCA'):
+            return {
+                "kind": "ncbi",
+                'accession': results[0]['accession'],
+                "ids": ["*"]
+            }
+
     return {
         'kind': 'ena',
         'accession': None,

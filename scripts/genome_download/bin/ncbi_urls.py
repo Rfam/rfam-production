@@ -21,8 +21,8 @@ def ftp_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
     return f"{path}/{name}_genomic.fna.gz"
 
 
-def determine_latest(db: SqliteDict, id: str) -> str:
-    if id in db:
+def add_version_if_missing(db: SqliteDict, id: str) -> str:
+    if '.' in id:
         return id
     possible = {}
     pattern = re.compile(f"^{id}.(\d+)$")
@@ -45,7 +45,7 @@ def main(ncbi_file, gca_file, directory, url_file, ena_only):
         base = Path(directory)
         for line in gca_file:
             row = json.loads(line)
-            gca = determine_latest(ncbi, row['accession'])
+            gca = add_version_if_missing(ncbi, row['accession'])
             save_path = base / f"{row['upi']}.fa.gz"
             url = ftp_path(ncbi, gca)
             if url is None:

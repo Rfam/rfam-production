@@ -183,7 +183,7 @@ process build_rev {
   seqkit split2 --out-dir to-rev -p ${params.rfam_seq.rev_chunks} sampled.fa
   pushd to-rev
   for((i = 1; i <= ${params.rfam_seq.rev_chunks}; i++)); do 
-    pretty_count="$(printf '%03i' \$i)"
+    pretty_count="\$(printf '%03i' \$i)"
     esl-shuffle -r sampled.part_\$pretty_count.fa > rev-rfamseq${params.version}_\$i.fa
   done
   esl-seqstat ../sampled.fa > rev-rfamseq${params.version}-all.seqstat

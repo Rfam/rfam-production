@@ -30,6 +30,18 @@ def ncbi_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
         yield from download_ena.generate_records(tmp.name)
 
 
+def ncbi_lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    try:
+        LOGGER.info("Trying to fetch %s from NCBI", accession)
+        yield from ncbi_fasta(accession)
+    except:
+        LOGGER.info("Trying to find contigs from %s", accession)
+        contigs = list(download_ena.fetch_contigs(accession))
+        for contig in contigs:
+            LOGGER.info("Fetching contig %s from NCBI", contig)
+            yield from ncbi_fasta(contig)
+
+
 def select_ids(path: Path, allowed: ty.Set[str]) -> ty.Iterable[SeqIO.SeqRecord]:
     seen = set()
     with path.open('r') as raw:
@@ -56,7 +68,7 @@ def select_ids(path: Path, allowed: ty.Set[str]) -> ty.Iterable[SeqIO.SeqRecord]
                yield from download_ena.fetch_accession(accession)
             except:
                 LOGGER.info("Failed to fetch %s from ENA, trying NCBI", accession)
-                yield from ncbi_fasta(accession)
+                yield from ncbi_lookup(accession)
 
 
 def load_ignore(handle: ty.IO) -> ty.Set[str]:

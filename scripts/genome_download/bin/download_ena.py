@@ -8,6 +8,7 @@ import typing as ty
 from pathlib import Path
 import subprocess as sp
 import logging
+from functools import lru_cache
 
 import requests
 import click
@@ -60,7 +61,8 @@ def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
             raise ValueError(f"Do not know how handle {accession}")
 
 
-def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+@lru_cache
+def fetch_contigs(accession: str) -> ty.Iterable[str]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
     response = requests.get(ENA_EMBL_URL.format(accession=accession))
     response.raise_for_status()
@@ -68,9 +70,13 @@ def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     for line in handle:
         if not line.startswith('CON'):
             continue
-        raw_contigs = line[3:].strip()
-        LOGGER.debug("Found contigs %s", raw_contigs)
-        yield from fetch_ena_fasta(raw_contigs)
+        yield line[3:].strip()
+
+
+def fetch_using_ena_embl(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    for raw_contig in fetch_contigs(accession):
+        LOGGER.debug("Found contigs %s", raw_contig)
+        yield from fetch_ena_fasta(raw_contig)
 
 
 def fetch_accession(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

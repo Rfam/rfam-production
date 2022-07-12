@@ -5,6 +5,7 @@ process add_all_3d {
     val('done')
 
     """
+    git clone $params.3d_repo
     add_3d.py all --nocache
     """
 

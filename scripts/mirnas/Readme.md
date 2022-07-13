@@ -15,8 +15,7 @@ Use the following scripts if you wish to run the processes individually.
     This takes in a CSV file with the miRNA ID, Rfam accession number, threshold. It runs `rfco.pl`, and copies the SEED to the family directory. 
 
 2. Launch `rfsearch.pl` for the families, given the input CSV:
-
-    `precompute.py`
+    `auto_rfsearch.py`
 
 3. Launch `rfmake.pl` with the threshold per family, given the input CSV:
     `auto_rfmake.py`
@@ -39,7 +38,7 @@ Use the following scripts if you wish to run the processes individually.
 1. Create new directory and copy the SEED, for each family:
     `copy_seed.py`
 2. Launch `rfsearch.pl` jobs:
-    `precompute.py`
+    `auto_rfsearch.py`
 3. Launch `rfmake.pl` jobs:
    `auto_rfmake.py`
 4. Generate the correct DESC file, by updating the DESC template:

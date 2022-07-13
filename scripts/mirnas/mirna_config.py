@@ -18,3 +18,4 @@ DESC_GEN_PATH = "/nfs/production/agb/users/rfamprod/code/rfam-production/scripts
 MEMORY = 8000
 CPU = 4
 LSF_GROUP = "/rfam_srch"
+QUEUE = "short"

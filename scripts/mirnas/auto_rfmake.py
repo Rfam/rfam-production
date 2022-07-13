@@ -25,8 +25,8 @@ def rfmake(family_dir, entry_id, threshold):
     :param entry_id: ID of the family to update, miRBase ID or Rfam accession number
     :param threshold: manually selected threshold
     """
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
-           "-J {job_name} \"cd {family_dir} && rfmake.pl -t {threshold} -forcethr -a\"")
+    cmd = ("bsub -M {mem} -q bigmem -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
+           "-J {job_name} \"cd {family_dir} && rfmake.pl -t {threshold} -forcethr -a -local\"")
     lsf_err_file = os.path.join(family_dir, "auto_rfmake.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfmake.out")
     subprocess.call(

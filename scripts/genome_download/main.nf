@@ -90,7 +90,8 @@ process download_ena {
   publishDir 'genomes/ena'
   memory '5GB'
   queue 'short'
-  errorStrategy 'finish'
+  errorStrategy 'retry'
+  maxRetries 4
 
   input:
   path(ena_file)
@@ -150,7 +151,7 @@ process build_rfamseq {
   tuple path(merged), path(ssi)
 
   output:
-  path('rfamseq/*')
+  path('*.fa.gz')
 
   script:
   name = "r${params.rfam_seq.main_chunks}_rfamseq${params.version}"
@@ -159,7 +160,7 @@ process build_rfamseq {
   pushd rfamseq
   /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot ${name}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
   for((i = 1; i < ${params.rfam_seq.main_chunks}; i++)); do mv ${name}.fa.\$i ${name}_\$i.fa; done
-  gzip *.fa
+  find . -name '*.fa' | xargs -P 4 -I {} gzip {}
   popd
   """
 }
@@ -173,7 +174,7 @@ process build_rev {
   tuple path(merged), path(ssi)
 
   output:
-  path 'to-rev/*', emit: to_rev
+  path 'rev-rfamseq*', emit: to_rev
 
   """
   mkdir to-rev
@@ -182,12 +183,12 @@ process build_rev {
   seqkit sample --rand-seed \$SEED -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
   seqkit split2 --out-dir to-rev -p ${params.rfam_seq.rev_chunks} sampled.fa
   pushd to-rev
-  for((i = 1; i <= ${params.rfam_seq.rev_chunks}; i++)); do 
+  for((i = 1; i < ${params.rfam_seq.rev_chunks}; i++)); do 
     pretty_count="\$(printf '%03i' \$i)"
     esl-shuffle -r sampled.part_\$pretty_count.fa > rev-rfamseq${params.version}_\$i.fa
   done
   esl-seqstat ../sampled.fa > rev-rfamseq${params.version}-all.seqstat
-  gzip *.fa
+  find . -name '*.fa' | xargs -P 4 -I {} gzip {}
   popd
   """
 }

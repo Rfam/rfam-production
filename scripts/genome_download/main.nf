@@ -87,7 +87,7 @@ process download_ncbi {
 process download_ena {
   tag { "$ena_file.baseName" }
   maxForks 10
-  publishDir 'genomes/ena'
+  publishDir 'genomes/ena', mode: 'copy'
   memory '5GB'
   queue 'short'
   errorStrategy 'retry'
@@ -124,27 +124,28 @@ process validate_chunk {
 }
 
 process merge_chunks {
+  publishDir 'genomes/rfamseq', mode: 'copy'
   queue 'short'
 
   input:
   path('genomes*.fa')
 
   output:
-  tuple path('merged.fa'), path('merged.fa.ssi')
+  tuple path("rfamseq_${params.version}.fa"), path("rfamseq_${params.version}.fa.ssi")
 
   """
   set -euo pipefail
 
-  find . -name 'genomes*.fa' | xargs cat > merged.fa
-  esl-seqstat -a merged.fa > merged.seqstat
-  esl-sfetch --index merged.fa
+  find . -name 'genomes*.fa' | xargs cat > rfamseq_${params.version}.fa
+  esl-seqstat -a rfamseq_${params.version}.fa > rfamseq_${params.version}.seqstat
+  esl-sfetch --index rfamseq_${params.version}.fa
   """
 }
 
 process build_rfamseq {
   queue 'short'
   container ''
-  publishDir 'genomes/rfamseq'
+  publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
 
   input:
@@ -167,7 +168,7 @@ process build_rfamseq {
 
 process build_rev {
   queue 'short'
-  publishDir 'genomes/rfamseq'
+  publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
 
   input:

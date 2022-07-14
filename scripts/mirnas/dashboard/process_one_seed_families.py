@@ -13,9 +13,9 @@ import os
 import re
 import tempfile
 
-
-from mirbase_dashboard import get_family_location, get_google_sheets_data, \
-                              get_output_url, HTML_REPORTS
+from dashboard_config import HTML_REPORTS
+from getters import get_output_url, get_family_location
+from format_dashboard import get_google_sheets_data
 from find_family_overlaps import parse_outlist_file
 
 

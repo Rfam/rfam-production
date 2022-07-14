@@ -4,8 +4,8 @@ import subprocess
 
 import time
 
-from scripts.support.mirnas.update_mirnas_helpers import (get_rfam_accs, get_mirna_ids)
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, MEMORY, CPU, LSF_GROUP, NEW_DIR
+from scripts.mirnas.update_mirnas_helpers import (get_rfam_accs, get_mirna_ids)
+from scripts.mirnas.mirna_config import UPDATE_DIR, CPU, LSF_GROUP, NEW_DIR, QUEUE
 
 families_with_seed_error = []
 ignore_seed = []
@@ -64,11 +64,11 @@ def run_qc_check(family):
     lsf_err_file = os.path.join(family_dir, "auto_rqc.err")
     lsf_out_file = os.path.join(family_dir, "auto_rqc.out")
     job_name = os.path.basename(family)
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
+    cmd = ("bsub -q {q} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -J {job_name} "
            "\"cd {dir} && rqc-all.pl {family}\"")
     subprocess.call(
         cmd.format(
-            mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
+            q=QUEUE, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP,
             job_name=job_name, dir=DIR_TO_USE, family=family), shell=True)
 
 

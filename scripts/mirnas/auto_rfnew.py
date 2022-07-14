@@ -2,8 +2,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import get_mirna_ids
-from scripts.support.mirnas.mirna_config import NEW_DIR, MEMORY, CPU, LSF_GROUP
+from scripts.mirnas.update_mirnas_helpers import get_mirna_ids
+from scripts.mirnas.mirna_config import NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 
 def auto_rfnew(mirnas):

@@ -2,8 +2,8 @@ import json
 import os
 import argparse
 import subprocess
-from scripts.support.mirnas.update_mirnas_helpers import get_rfam_accs, get_mirna_ids
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS, MEMORY, CPU, LSF_GROUP, NEW_DIR
+from scripts.mirnas.update_mirnas_helpers import get_rfam_accs, get_mirna_ids
+from scripts.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS, MEMORY, CPU, LSF_GROUP, NEW_DIR, QUEUE
 
 
 def add_ref_sequentially(reference, mirna_ids=None, rfam_accessions=None):
@@ -37,14 +37,14 @@ def call_add_ref_cmd(fam_dir, ref):
     :param fam_dir: family directory, from which to call the command
     :param ref: PubMed reference ID for the DESC, by default the latest MiRBase paper 30423142
     """
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
+    cmd = ("bsub -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} -q {queue}"
            " \"cd {family_dir} && add_ref.pl {ref}\"")
     lsf_err_file = os.path.join(fam_dir, "auto_add_ref.err")
     lsf_out_file = os.path.join(fam_dir, "auto_add_ref.out")
     subprocess.call(
         cmd.format(
-            mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP, family_dir=fam_dir,
-            ref=ref), shell=True)
+            mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=CPU, lsf_group=LSF_GROUP, queue=QUEUE,
+            family_dir=fam_dir, ref=ref), shell=True)
 
 
 def auto_add_ref(reference, rfam_accessions=None, thresholds_file=None):

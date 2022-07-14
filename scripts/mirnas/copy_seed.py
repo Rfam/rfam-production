@@ -1,11 +1,10 @@
 import argparse
-import json
 import os
 import shutil
 import subprocess
 
-from scripts.support.mirnas.update_mirnas_helpers import get_mirna_dict, get_mirna_ids
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS, NEW_DIR
+from scripts.mirnas.update_mirnas_helpers import get_mirna_dict, get_mirna_ids
+from scripts.mirnas.mirna_config import UPDATE_DIR, SEARCH_DIRS, NEW_DIR
 
 
 def create_new_dir(mirna):
@@ -47,8 +46,8 @@ def copy_seed_file(mirna, new=False):
     if mirna.find("relabelled") == -1:
         mirna_dir = mirna + "_relabelled"
     if new:
-        check = create_new_dir(mirna)
-        checkout_dir = os.path.join(NEW_DIR, mirna)
+        check = create_new_dir(mirna_dir)
+        checkout_dir = os.path.join(NEW_DIR, mirna_dir)
     else:
         rfam_acc = mirnas_dict[mirna].keys()[0]
         check = checkout_family(rfam_acc)

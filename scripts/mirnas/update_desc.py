@@ -3,8 +3,8 @@ import fileinput
 import os
 import sys
 
-from scripts.support.mirnas.update_mirnas_helpers import get_rfam_accs
-from scripts.support.mirnas.mirna_config import UPDATE_DIR
+from scripts.mirnas.update_mirnas_helpers import get_rfam_accs
+from scripts.mirnas.mirna_config import UPDATE_DIR
 
 field_options = {
     'AU': 'AU   Griffiths-Jones SR; 0000-0001-6043-807X\n',

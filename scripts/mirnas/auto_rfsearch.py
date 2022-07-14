@@ -2,8 +2,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.support.mirnas.update_mirnas_helpers import get_rfam_accs
-from scripts.support.mirnas.mirna_config import UPDATE_DIR, MEMORY, LSF_GROUP
+from scripts.mirnas.update_mirnas_helpers import get_rfam_accs
+from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY
 
 
 def launch_new_rfsearch(family_dir, cpu):
@@ -27,12 +27,11 @@ def launch_new_rfsearch(family_dir, cpu):
     for file_type in file_extensions:
         subprocess.call("rm -f %s/*.%s" % (family_dir, file_type), shell=True)
 
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -n {cpu} -g {lsf_group} "
-           "-J {job_name} \"cd {family_dir} && rfsearch.pl -t 25 -cnompi -q production-rh74 -relax {option}\"")
+    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} -q bigmem "
+           "-J {job_name} \"cd {family_dir} && rfsearch.pl -t 25 --scpu 0 -cnompi -relax {option}\"")
     subprocess.call(
-        cmd.format(
-            mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=cpu, lsf_group=LSF_GROUP,
-            job_name=job_name, family_dir=family_dir, option=option), shell=True)
+        cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=cpu, job_name=job_name,
+                   family_dir=family_dir, option=option), shell=True)
 
 
 def remove_all_gaps(family_dir):
@@ -61,7 +60,8 @@ def parse_arguments():
     mutually_exclusive.add_argument("--csv-input",
                                     help="CSV file with miRNA id, rfam accession number, "
                                          "threshold value of families to update")
-    parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment', action="store_true",
+    parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment',
+                        action="store_true",
                         default=False)
 
     return parser.parse_args()

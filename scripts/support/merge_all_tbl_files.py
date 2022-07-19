@@ -189,4 +189,4 @@ if __name__ == '__main__':
         merge_batch_search_tbls(result_dir)
 
     else:
-        print "Wrong option selected"
+        print("Wrong option selected")

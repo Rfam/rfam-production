@@ -249,6 +249,7 @@ process clan_compete_rel_web {
 }
 
 process add_all_3d {
+    publishDir "$params.pdb_files", mode: "copy"
     container 'docker://rfam/rfam-3d-seed-alignments:latest'
     errorStrategy 'finish'
 
@@ -355,7 +356,7 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail(to: ${params.email}, subject: 'PDB pipeline execution', body: msg)
+sendMail{to: ${params.email}, subject: 'PDB pipeline execution', body: msg}
 println msg
 
 }

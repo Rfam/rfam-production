@@ -261,7 +261,7 @@ process add_all_3d {
     """
     git clone $params.seed_repo
     cd rfam-3d-seed-alignments
-    python add_3d.py all --nocache
+    python add_3d.py all --nocache > add_3d_output.txt
     """
 
 }

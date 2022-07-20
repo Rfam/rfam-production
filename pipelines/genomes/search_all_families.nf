@@ -10,7 +10,7 @@ process check_out_and_copy {
 
     """
     rfco.pl $family
-    cp $family $params.test_rfamseq/copies/
+    cp -r $family $params.test_rfamseq/copies/
     """
 
 }
@@ -24,7 +24,8 @@ process run_searches {
     path('search.err')
 
     """
-    bsub -q short -o $family/search.out -e $family/search.err "rfsearch.pl -t 25 --scpu 0 -cnompi -ignoresm"
+    bsub -q short -o $params.test_rfamseq/$family/search.out -e $params.test_rfamseq/$family/search.err
+    "cd $params.test_rfamseq/$family && rfsearch.pl -t 25 --scpu 0 -cnompi -ignoresm"
     """
 }
 
@@ -41,7 +42,7 @@ process run_makes {
 workflow {
     Channel.fromPath(params.file)
     .splitText()
-    .map { file(it)}
+    .map { it -> it.trim()}
     .view { "value: $it" } \
     | check_out_and_copy
     | run_searches

@@ -24,7 +24,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "14.0"  # release version
+DB_RELEASE = "14.8"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS

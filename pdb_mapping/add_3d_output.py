@@ -13,14 +13,16 @@ def write_3d_output():
         contents = output.readlines()
         for line in contents:
             if "Created data/output" in line:
-                summary.join(line + '\n')
+                summary += line
 
     today_date = str(datetime.date.today())
     pdb_txt = "{dir}/pdb_families_{date}.txt".format(dir=pdb_files, date=today_date)
 
     with open(pdb_txt, "a") as pdb_file:
-        pdb_file.write("Added 3D information into the seed of below families: \n")
+        pdb_file.write("\nAdded 3D information into the seed of below families: \n")
         pdb_file.write(summary + "\n")
+        pdb_file.write("To see the full output of the rfam-3d-add-seed-alignments script please see: {file}"
+                       .format(file=add_3d_output))
 
 
 if __name__ == '__main__':

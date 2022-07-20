@@ -1,6 +1,6 @@
 import datetime
 
-from pdb_config import add_3d_output
+from pdb_config import add_3d_output, pdb_files
 
 
 def write_3d_output():
@@ -16,7 +16,7 @@ def write_3d_output():
                 summary.join(line + '\n')
 
     today_date = str(datetime.date.today())
-    pdb_txt = "pdb_families_{0}.txt".format(today_date)
+    pdb_txt = "{dir}/pdb_families_{date}.txt".format(dir=pdb_files, date=today_date)
 
     with open(pdb_txt, "a") as pdb_file:
         pdb_file.write("Added 3D information into the seed of below families: \n")

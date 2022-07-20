@@ -248,6 +248,25 @@ process clan_compete_rel_web {
 
 }
 
+process add_all_3d {
+    publishDir "$params.pdb_files", mode: "copy"
+    container 'docker://rfam/rfam-3d-seed-alignments:latest'
+    errorStrategy 'finish'
+
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    git clone $params.seed_repo
+    cd rfam-3d-seed-alignments
+    python add_3d.py all --nocache > add_3d_output.txt
+    """
+
+}
+
 workflow pdb_mapping {
     take: start
     emit:
@@ -310,7 +329,8 @@ workflow mapping_and_updates {
         ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(pdb_mapping.out.pdb_txt)
-        clan_compete_rel_web(sync_rel_web.out.synced) \
+        clan_compete_rel_web(sync_rel_web.out.synced)
+        add_all_3d(pdb_mapping.out.new_families) \
         | set { done }
 }
 
@@ -336,7 +356,7 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail(to: ${params.email}, subject: 'PDB pipeline execution', body: msg)
+sendMail{to: ${params.email}, subject: 'PDB pipeline execution', body: msg}
 println msg
 
 }

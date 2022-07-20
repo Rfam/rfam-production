@@ -83,18 +83,17 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
     :param rfmake: If True, run rfmake after rfsearch completes. Default False
     """
 
-    rfam_acc = os.path.basename(family_dir)
     lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
-    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q bigmem "
+    cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -q bigmem "
            "\"cd %s && rfsearch.pl -cnompi -q short -relax -scpu 0\"")
 
     if rfmake is True:
-        cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s "
+        cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -q bigmem "
                "\"cd %s && rfsearch.pl -cnompi -q short -relax -scpu 0 && rfmake.pl -local\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
-                           CPU, rfam_acc, family_dir), shell=True)
+                           CPU, family_dir), shell=True)
 
 
 def validate(file_name, dest_dir):

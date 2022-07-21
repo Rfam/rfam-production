@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 
 
 def load_rfam_accessions_from_file(file_of_accessions):
@@ -22,7 +23,8 @@ def validate(file_name, all_families_dir):
     :param file_name: .txt with list of Rfam accessions
     :param all_families_dir: destination directory to checkout the families
     """
-    validation_file = os.path.join(all_families_dir, "validation.log")
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    validation_file = os.path.join(all_families_dir, "validation_{time}.log".format(time=timestr))
     accessions = load_rfam_accessions_from_file(file_name)
     with open(validation_file, 'w') as vf:
         for acc in accessions:

@@ -84,11 +84,11 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
     lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -q bigmem "
-           "\"cd %s && rfsearch.pl --scpu 0 -cnompi -q short -relax\"")
+           "\"cd %s && rfsearch.pl -scpu 0 -cnompi -q short\"")
 
     if rfmake is True:
         cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -q bigmem "
-               "\"cd %s && rfsearch.pl --scpu 0 -cnompi -q short -relax && rfmake.pl -local\"")
+               "\"cd %s && rfsearch.pl -scpu 0 -cnompi -q short && rfmake.pl -local\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file, family_dir), shell=True)
 

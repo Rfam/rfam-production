@@ -7,7 +7,7 @@ def split_file(num_lines, filename):
     :param num_lines: number of lines to split by
     :param filename: large file name
     """
-    lines_per_file = num_lines
+    lines_per_file = int(num_lines)
     small_file = None
     with open(filename) as big_file:
         for line_num, line in enumerate(big_file):

@@ -199,6 +199,11 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
             accession=accessions[0], components=ALL_CHROMOSOMES
         )
 
+    if len(components) == 1:
+        versionless = accessions[0].split('.', 1)[0]
+        if versionless == components[0]:
+            return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
+
     return GenomeInfo(
         accession=accessions[0],
         components=SelectedComponents(components),

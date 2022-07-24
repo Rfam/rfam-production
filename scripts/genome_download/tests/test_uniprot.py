@@ -336,6 +336,17 @@ from rfamseq import uniprot
             ]),
         ),
     )),
+    (Path('tests/data/UP000035680.xml'), uniprot.ProteomeInfo(
+        upi='UP000035680',
+        taxid='75913',
+        is_reference=False,
+        is_representative=True,
+        genome_info=uniprot.GenomeInfo(
+            accession="GCA_001028725.1",
+            components=uniprot.ALL_CHROMOSOMES,
+        ),
+    )),
+
 ])
 def test_parses_expected_data(path: Path, expected: uniprot.ProteomeInfo):
     data = list(uniprot.proteomes(path, set()))

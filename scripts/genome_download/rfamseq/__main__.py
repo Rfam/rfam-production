@@ -44,7 +44,7 @@ def cli():
 @click.argument("output", type=click.Path())
 def download_cmd(ncbi_info: str, proteome_file: str, output: str):
     out = Path(output)
-    with SqliteDict(ncbi_info) as db:
+    with SqliteDict(ncbi_info, flag='r') as db:
         for line in proteome_file:
             raw = json.loads(line)
             proteome = cattrs.structure(raw, uniprot.ProteomeInfo)

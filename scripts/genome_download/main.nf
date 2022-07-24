@@ -109,10 +109,10 @@ process lookup_taxonomy_info {
 }
 
 process download {
-  tag { "$gca_file.baseName" }
+  tag { "$proteome_file.baseName" }
   maxForks 30
   queue 'short'
-  publishDir "genomes/fasta/${gca_file.baseName}", mode: "copy"
+  publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy"
   memory { 6.GB * task.attempt }
   errorStrategy 'ignore'
   /* errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' } */

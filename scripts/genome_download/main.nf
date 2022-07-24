@@ -122,7 +122,7 @@ process download {
   tuple path(proteome_file), path(info)
 
   output:
-  tuple val("${gca_file.baseName}"), path("UP*.fa"), path("UP*.jsonl")
+  tuple val("${proteome_file.baseName}"), path("UP*.fa"), path("UP*.jsonl")
 
   """
   rfamseq download $info $proteome_file .

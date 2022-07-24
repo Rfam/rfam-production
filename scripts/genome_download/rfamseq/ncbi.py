@@ -82,7 +82,7 @@ class NcbiSequenceSummary:
 class NcbiAssemblyInfo:
     taxid: int = field(metadata={"ncbi_name": "Taxid"})
     assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})
-    organism_name: str = field(metadata={"ncbi_name": "Taxid"})
+    organism_name: str = field(metadata={"ncbi_name": "Organism name"})
     bio_sample: ty.Optional[str] = field(metadata={"ncbi_name": "BioSample"})
     bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
     wgs_project: ty.Optional[str] = field(metadata={"ncbi_name": "WGS project"})
@@ -130,6 +130,8 @@ def assembly_info_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
 
 def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, str]]:
     for field in attrs.fields(NcbiAssemblyInfo):
+        if field.name == 'sequence_info':
+            continue
         prefix = f"# {field.metadata['ncbi_name']}:"
         if not line.startswith(prefix):
             continue
@@ -140,9 +142,12 @@ def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, str]]:
 
 def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
     header = {}
-    for line in handle:
+    location = handle.tell()
+    while line := handle.readline():
         if line.startswith("# Sequence-Name"):
+            handle.seek(location)
             return header
+        location = handle.tell()
         result = parse_header_line(line)
         if result:
             name, value = result
@@ -155,20 +160,36 @@ def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
 def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
     raw_header = handle.readline()
     assert raw_header.startswith("# Sequence-Name"), "Not at header"
+    raw_header = raw_header[2:]
     header = raw_header.split("\t")
-    reader = csv.DictReader(handle, fieldnames=header)
+    reader = csv.DictReader(handle, delimiter="\t", fieldnames=header)
     sequences = []
     for row in reader:
+        print(row)
         sequences.append(
             NcbiSequenceInfo(
                 genbank_accession=row["GenBank-Accn"],
                 name=row["Sequence-Name"],
                 role=cattrs.structure(row["Sequence-Role"], SequenceRole),
-                molecule_type=maybe(row["Assigned-Molecule"]),
+                molecule_type=maybe(row["Assigned-Molecule-Location/Type"]),
                 length=int(row["Sequence-Length"]),
             )
         )
     return sequences
+
+
+def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
+    header = parse_header(handle)
+    sequences = parse_sequence_lines(handle)
+    return NcbiAssemblyInfo(
+        taxid=int(header["taxid"]),
+        assembly_name=header["assembly_name"],
+        organism_name=header["organism_name"],
+        bio_sample=header.get("bio_sample", None),
+        bio_project=header.get("bio_project", None),
+        wgs_project=header.get("wgs_project", None),
+        sequence_info=sequences,
+    )
 
 
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
@@ -176,17 +197,7 @@ def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
     if not path:
         raise ValueError(f"Failed to build path to {accession}")
     with wget.wget(path) as handle:
-        header = parse_header(handle)
-        sequences = parse_sequence_lines(handle)
-        return NcbiAssemblyInfo(
-            taxid=int(header["taxid"]),
-            assembly_name=header["assembly_name"],
-            organism_name=header["organism_name"],
-            bio_sample=header.get("bio_sample", None),
-            bio_project=header.get("bio_project", None),
-            wgs_project=header.get("wgs_project", None),
-            sequence_info=sequences,
-        )
+        return parse_assembly_info(handle)
 
 
 def parse_doc_sum(entry: ET.Element) -> NcbiSequenceInfo:

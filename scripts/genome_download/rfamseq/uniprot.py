@@ -153,7 +153,6 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
 
     components: ty.List[Component] = []
     saw_genome = False
-    descriptions = {}
     for component in root.findall("pro:component", NS):
         name = component.attrib.get("name", "")
         if "unplaced" in name.lower():
@@ -161,7 +160,6 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
             continue
 
         comp_accs = all_matching_node_text("pro:genomeAccession", component)
-        desc_text = all_matching_node_text("pro:description", component)
         if not comp_accs:
             raise ValueError(f"Missing component accession of {upid}")
         if name == "Genome":
@@ -171,39 +169,53 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
             raise ValueError(f"Cannot handle >1 accession unless it is a genome {upid}")
 
         components.extend(comp_accs)
-        if desc_text:
-            assert len(desc_text) == 1
-            descriptions[comp_accs[0]] = desc_text[0]
 
+    # Handle the case where there is not overarching genome assembly to work
+    # with and just a series of components to fetch.
     if not accessions:
+
+        # If the only component is a GCA_ sequence then use that and all
+        # components.
         if len(components) == 1:
             possible_gca = components[0]
             if isinstance(possible_gca, str) and possible_gca.startswith("GCA_"):
                 return GenomeInfo(
                     accession=possible_gca, components=ALL_CHROMOSOMES
                 )
+
+            # If there is one component marked as a genome use that and all
+            # chromosomes in it.
             if saw_genome:
                 if not isinstance(possible_gca, str):
                     raise ValueError(f"Invalid state for seeing genome in {upid}")
                 return GenomeInfo(
                     accession=possible_gca, components=ALL_CHROMOSOMES
                 )
+
+        # Otherwise only use the given components
         return GenomeInfo(
             accession=None,
             components=SelectedComponents(components),
         )
 
     assert len(accessions) == 1, f"Multiple genomes, impossibility in {upid}"
+
+    # If not given any components then assume we want all sequences
     if not components:
         return GenomeInfo(
             accession=accessions[0], components=ALL_CHROMOSOMES
         )
 
+    # Handle being asked for a single component that is the versionless version
+    # of the genome accession. We assume that we want all sequences in the
+    # genome.
     if len(components) == 1:
         versionless = accessions[0].split('.', 1)[0]
         if versionless == components[0]:
             return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
 
+    # Use the simple case of just using the requested components of the given
+    # genome
     return GenomeInfo(
         accession=accessions[0],
         components=SelectedComponents(components),

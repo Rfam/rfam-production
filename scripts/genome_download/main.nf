@@ -56,7 +56,7 @@ process find_genomes {
   path("parts/*.jsonl"), emit: chunks
 
   """
-  rnaseq proteomes2genomes --ignore $to_skip $summary summary.jsonl
+  rfamseq proteomes2genomes --ignore $to_skip $summary summary.jsonl
 
   mkdir parts
   shuf summary.jsonl > summary-shuf.jsonl

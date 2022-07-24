@@ -1,0 +1,50 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214540</upid>
+  <taxonomy>1983562</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_002237195.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_002237195.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_002237195.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="3">
+    <description>Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes</description>
+    <genomeAccession>KY354243</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2017" name="J. Virol." volume="0" first="0" last="0">
+      <title>A Diverse Range of Novel RNA Viruses in Geographically Distinct Honey Bee Populations.</title>
+      <authorList>
+        <person name="Remnant E.J."/>
+        <person name="Mang S."/>
+        <person name="Gabriele B."/>
+        <person name="Blacquiere T."/>
+        <person name="Holmes E.C."/>
+        <person name="Beekman M."/>
+        <person name="Ashe A."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <panproteome>UP000214540</panproteome>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="0"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Unknown"/>
+  </scores>
+</proteome>
+
+</proteomes>

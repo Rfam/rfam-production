@@ -14,15 +14,15 @@ def ftp_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
     if accession not in info:
         return None
     else:
-        path = info[accession]['ftp_path']
+        path = info[accession]["ftp_path"]
 
-    parts = path.split('/')
+    parts = path.split("/")
     name = parts[-1]
     return f"{path}/{name}_genomic.fna.gz"
 
 
 def add_version_if_missing(db: SqliteDict, id: str) -> str:
-    if '.' in id:
+    if "." in id:
         return id
     possible = {}
     pattern = re.compile(f"^{id}.(\d+)$")
@@ -35,32 +35,32 @@ def add_version_if_missing(db: SqliteDict, id: str) -> str:
 
 
 @click.command()
-@click.argument('ncbi-file', type=click.Path())
-@click.argument('gca_file', type=click.File('r'))
-@click.argument('directory', type=click.Path())
-@click.argument('url-file', default='-', type=click.File('w'))
-@click.argument('ena-only', default='ena-only.jsonl', type=click.File('w'))
+@click.argument("ncbi-file", type=click.Path())
+@click.argument("gca_file", type=click.File("r"))
+@click.argument("directory", type=click.Path())
+@click.argument("url-file", default="-", type=click.File("w"))
+@click.argument("ena-only", default="ena-only.jsonl", type=click.File("w"))
 def main(ncbi_file, gca_file, directory, url_file, ena_only):
     with SqliteDict(ncbi_file) as ncbi:
         base = Path(directory)
         for line in gca_file:
             row = json.loads(line)
-            gca = add_version_if_missing(ncbi, row['accession'])
+            gca = add_version_if_missing(ncbi, row["accession"])
             save_path = base / f"{row['upi']}.fa.gz"
             url = ftp_path(ncbi, gca)
             if url is None:
                 if gca.startswith("GCF_"):
                     raise ValueError(f"Somehow missing a RefSeq genome: {row}")
                 ena_info = dict(row)
-                ena_info['accession'] = None
+                ena_info["accession"] = None
                 json.dump(ena_info, ena_only)
-                ena_only.write('\n')
+                ena_only.write("\n")
             else:
                 url_file.write(str(save_path))
-                url_file.write('\n')
+                url_file.write("\n")
                 url_file.write(url)
-                url_file.write('\n')
+                url_file.write("\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

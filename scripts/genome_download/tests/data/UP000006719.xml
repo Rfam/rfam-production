@@ -1,0 +1,72 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000006719</upid>
+  <taxonomy>230407</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>true</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>9B21</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000879395.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000879395.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000879395.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="11">
+    <description>RefStrain</description>
+    <genomeAccession>AB179636</genomeAccession>
+    <genomeAccession>AB179637</genomeAccession>
+    <genomeAccession>AB179638</genomeAccession>
+    <genomeAccession>AB179639</genomeAccession>
+    <genomeAccession>AB179640</genomeAccession>
+    <genomeAccession>AB179641</genomeAccession>
+    <genomeAccession>AB179642</genomeAccession>
+    <genomeAccession>AB179643</genomeAccession>
+    <genomeAccession>AY277888</genomeAccession>
+    <genomeAccession>AY277889</genomeAccession>
+    <genomeAccession>AY277890</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2004" name="J. Gen. Virol." volume="85" first="3437" last="3448">
+      <title>Complete genome sequence of Mycoreovirus-1/Cp9B21, a member of a novel genus within the family Reoviridae, isolated from the chestnut blight fungus Cryphonectria parasitica.</title>
+      <authorList>
+        <person name="Suzuki N."/>
+        <person name="Supyani S."/>
+        <person name="Maruyama K."/>
+        <person name="Hillman B.I."/>
+      </authorList>
+      <dbReference type="PubMed" id="15483262"/>
+      <dbReference type="DOI" id="10.1099/vir.0.80293-0"/>
+    </citation>
+  </reference>
+  <reference>
+    <citation type="journal article" date="2004" name="J. Virol." volume="78" first="892" last="898">
+      <title>A reovirus of the fungus Cryphonectria parasitica that is infectious as particles and related to the coltivirus genus of animal pathogens.</title>
+      <authorList>
+        <person name="Hillman B.I."/>
+        <person name="Supyani S."/>
+        <person name="Kondo H."/>
+        <person name="Suzuki N."/>
+      </authorList>
+      <dbReference type="PubMed" id="14694120"/>
+      <dbReference type="DOI" id="10.1128/jvi.78.2.892-898.2004"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="0"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Unknown"/>
+  </scores>
+</proteome>
+
+</proteomes>

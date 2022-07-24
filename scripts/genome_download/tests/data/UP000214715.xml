@@ -1,0 +1,44 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214715</upid>
+  <taxonomy>1497851</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>SPG24</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001736955.2</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001736955.2</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001736955.2</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="34">
+    <description>Bacillus phage SPG24 DNA, contig00001 sequence.</description>
+    <genomeAccession>AB930182</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="submission" date="2014-04" db="EMBL/GenBank/DDBJ databases">
+      <title>Whole genome of SPG24 was analyzed in behalf of its correct identification and originality.</title>
+      <authorList>
+        <person name="Lee O.H."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="1"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="99"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Outlier (low value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

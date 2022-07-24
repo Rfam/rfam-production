@@ -1,0 +1,52 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214376</upid>
+  <taxonomy>1655653</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001190255.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001190255.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001190255.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="5">
+    <description>Microviridae Fen418_41</description>
+    <genomeAccession>KM589505</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2015" name="Front Microbiol" volume="6" first="375" last="375">
+      <title>Diversity and comparative genomics of Microviridae in Sphagnum- dominated peatlands.</title>
+      <authorList>
+        <person name="Quaiser A."/>
+        <person name="Dufresne A."/>
+        <person name="Ballaud F."/>
+        <person name="Roux S."/>
+        <person name="Zivanovic Y."/>
+        <person name="Colombet J."/>
+        <person name="Sime-Ngando T."/>
+        <person name="Francez A.J."/>
+      </authorList>
+      <dbReference type="PubMed" id="25972855"/>
+      <dbReference type="DOI" id="10.3389/fmicb.2015.00375"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="1"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="1457"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

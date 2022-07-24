@@ -1,0 +1,52 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214542</upid>
+  <taxonomy>1307954</taxonomy>
+  <modified>2021-06-02</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>false</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000870385.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000870385.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000870385.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="126">
+    <description>Maruca vitrata MNPV</description>
+    <genomeAccession>EF125867</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2008" name="J. Gen. Virol." volume="89" first="2315" last="2330">
+      <title>Genomic and host range studies of Maruca vitrata nucleopolyhedrovirus.</title>
+      <authorList>
+        <person name="Chen Y.R."/>
+        <person name="Wu C.Y."/>
+        <person name="Lee S.T."/>
+        <person name="Wu Y.J."/>
+        <person name="Lo C.F."/>
+        <person name="Tsai M.F."/>
+        <person name="Wang C.H."/>
+      </authorList>
+      <dbReference type="PubMed" id="18753242"/>
+      <dbReference type="DOI" id="10.1099/vir.0.2008/001412-0"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="1"/>
+  <panproteome>UP000214366</panproteome>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="74"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Close to standard (low value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

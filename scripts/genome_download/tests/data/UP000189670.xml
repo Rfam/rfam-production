@@ -1,0 +1,56 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000189670</upid>
+  <taxonomy>890399</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>Araruama</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000516475.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000516475.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000516475.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unassembled WGS sequence" proteinCount="9976">
+    <description>Candidatus Magnetoglobus multicellularis str. Araruama</description>
+    <biosampleId>SAMN02597425</biosampleId>
+    <genomeAccession>ATBP01000000</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="submission" date="2012-11" db="EMBL/GenBank/DDBJ databases">
+      <authorList>
+        <person name="Vasconcelos A.T.R."/>
+        <person name="Motta C."/>
+        <person name="Almeida L.G.P."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="1"/>
+  <scores name="busco">
+    <property name="completed" value="469"/>
+    <property name="completedSingle" value="463"/>
+    <property name="completedDuplicated" value="6"/>
+    <property name="total" value="599"/>
+    <property name="fragmented" value="35"/>
+    <property name="missing" value="95"/>
+    <property name="score" value="84"/>
+    <property name="lineage" value="desulfobacterales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="160"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Outlier (high value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

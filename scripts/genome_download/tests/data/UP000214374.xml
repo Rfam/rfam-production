@@ -1,0 +1,51 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214374</upid>
+  <taxonomy>2170140</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000863905.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000863905.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000863905.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="6">
+    <description>Chaetoceros protobacilladnavirus 1 DNA</description>
+    <genomeAccession>AB193315</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2005" name="Appl. Environ. Microbiol." volume="71" first="3528" last="3535">
+      <title>Previously unknown virus infects marine diatom.</title>
+      <authorList>
+        <person name="Nagasaki K."/>
+        <person name="Tomaru Y."/>
+        <person name="Takao Y."/>
+        <person name="Nishida K."/>
+        <person name="Shirai Y."/>
+        <person name="Suzuki H."/>
+        <person name="Nagumo T."/>
+      </authorList>
+      <dbReference type="PubMed" id="16000758"/>
+      <dbReference type="DOI" id="10.1128/aem.71.7.3528-3535.2005"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="1"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="4482"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Outlier (high value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

@@ -1,0 +1,52 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214656</upid>
+  <taxonomy>1654339</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001019975.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001019975.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001019975.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="2">
+    <description>Genome</description>
+    <genomeAccession>KP774592</genomeAccession>
+    <genomeAccession>KP774593</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2015" name="Front Microbiol" volume="6" first="406" last="406">
+      <title>Molecular characterization of a bipartite double-stranded RNA virus and its satellite-like RNA co-infecting the phytopathogenic fungus Sclerotinia sclerotiorum.</title>
+      <authorList>
+        <person name="Liu L."/>
+        <person name="Wang Q."/>
+        <person name="Cheng J."/>
+        <person name="Fu Y."/>
+        <person name="Jiang D."/>
+        <person name="Li G."/>
+        <person name="Xie J."/>
+      </authorList>
+      <dbReference type="PubMed" id="25999933"/>
+      <dbReference type="DOI" id="10.3389/fmicb.2015.00406"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="0"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Unknown"/>
+  </scores>
+</proteome>
+
+</proteomes>

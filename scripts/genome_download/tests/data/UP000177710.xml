@@ -1,0 +1,73 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000177710</upid>
+  <taxonomy>1797226</taxonomy>
+  <modified>2020-01-23</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>false</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001767955.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001767955.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001767955.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unassembled WGS sequence" proteinCount="1333">
+    <description>Alphaproteobacteria bacterium RIFCSPLOWO2_01_FULL_40_26</description>
+    <biosampleId>SAMN04315040</biosampleId>
+    <genomeAccession>MEMO01000000</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2016" name="Nat. Commun." volume="7" first="13219" last="13219">
+      <title>Thousands of microbial genomes shed light on interconnected biogeochemical processes in an aquifer system.</title>
+      <authorList>
+        <person name="Anantharaman K."/>
+        <person name="Brown C.T."/>
+        <person name="Hug L.A."/>
+        <person name="Sharon I."/>
+        <person name="Castelle C.J."/>
+        <person name="Probst A.J."/>
+        <person name="Thomas B.C."/>
+        <person name="Singh A."/>
+        <person name="Wilkins M.J."/>
+        <person name="Karaoz U."/>
+        <person name="Brodie E.L."/>
+        <person name="Williams K.H."/>
+        <person name="Hubbard S.S."/>
+        <person name="Banfield J.F."/>
+      </authorList>
+      <dbReference type="PubMed" id="27774985"/>
+      <dbReference type="DOI" id="10.1038/ncomms13219"/>
+    </citation>
+  </reference>
+  <redundantProteome upid="UP000179212" similarity="0.958"/>
+  <redundantProteome upid="UP000176357" similarity="0.985"/>
+  <redundantProteome upid="UP000176660" similarity="0.975"/>
+  <redundantProteome upid="UP000178629" similarity="0.983"/>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="busco">
+    <property name="completed" value="357"/>
+    <property name="completedSingle" value="357"/>
+    <property name="completedDuplicated" value="0"/>
+    <property name="total" value="432"/>
+    <property name="fragmented" value="15"/>
+    <property name="missing" value="60"/>
+    <property name="score" value="86"/>
+    <property name="lineage" value="alphaproteobacteria_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="11282"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Close to standard (low value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

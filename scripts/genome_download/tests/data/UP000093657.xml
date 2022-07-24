@@ -1,0 +1,57 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000093657</upid>
+  <taxonomy>1849840</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>3S-1</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001675455.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001675455.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001675455.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unassembled WGS sequence" proteinCount="4187">
+    <description>Methylosinus sp. 3S-1</description>
+    <biosampleId>SAMN05001384</biosampleId>
+    <genomeAccession>LXWX01000000</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="submission" date="2016-05" db="EMBL/GenBank/DDBJ databases">
+      <title>Draft genome sequence of Methylosinus sp. strain 3S-1, an isolate from rice root in a low nitrogen paddy field.</title>
+      <authorList>
+        <person name="Shinoda R."/>
+        <person name="Bao Z."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <panproteome>UP000093657</panproteome>
+  <scores name="busco">
+    <property name="completed" value="605"/>
+    <property name="completedSingle" value="603"/>
+    <property name="completedDuplicated" value="2"/>
+    <property name="total" value="639"/>
+    <property name="fragmented" value="3"/>
+    <property name="missing" value="31"/>
+    <property name="score" value="95"/>
+    <property name="lineage" value="rhizobiales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="38"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

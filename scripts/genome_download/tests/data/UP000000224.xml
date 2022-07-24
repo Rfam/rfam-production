@@ -1,0 +1,84 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000000224</upid>
+  <taxonomy>1249480</taxonomy>
+  <modified>2020-10-31</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>false</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000310245.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000310245.1</genomeAssemblyUrl>
+    <genomeRepresentation>partial</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000310245.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Plasmid" proteinCount="1">
+    <description>Candidatus Sulfuricurvum sp. RIFRC-1 plasmid</description>
+    <biosampleId>SAMN01162293</biosampleId>
+    <genomeAccession>CP003921</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome" proteinCount="2352">
+    <description>Candidatus Sulfuricurvum sp. RIFRC-1</description>
+    <biosampleId>SAMN01162293</biosampleId>
+    <genomeAccession>CP003920</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="submission" date="2012-09" db="EMBL/GenBank/DDBJ databases">
+      <authorList>
+        <person name="Bartels D."/>
+        <person name="Handley K."/>
+        <person name="O'Loughlin E.J."/>
+        <person name="Glass E.M."/>
+        <person name="Paczian T."/>
+        <person name="Brulc J."/>
+        <person name="Desai N."/>
+        <person name="Domanus M."/>
+        <person name="D'Souza M."/>
+        <person name="Gilbert J.A."/>
+        <person name="Long P.E."/>
+        <person name="Skinner K."/>
+        <person name="Wilkening J."/>
+        <person name="Williams K."/>
+        <person name="Antonopoulos D."/>
+        <person name="Kemner K.M."/>
+        <person name="Meyer F."/>
+      </authorList>
+    </citation>
+  </reference>
+  <redundantProteome upid="UP000177773" similarity="0.913"/>
+  <redundantProteome upid="UP000177298" similarity="0.912"/>
+  <redundantProteome upid="UP000182621" similarity="0.91"/>
+  <redundantProteome upid="UP000263305" similarity="0.955"/>
+  <redundantProteome upid="UP000177645" similarity="0.941"/>
+  <redundantProteome upid="UP000178939" similarity="0.907"/>
+  <redundantProteome upid="UP000183136" similarity="0.928"/>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="busco">
+    <property name="completed" value="613"/>
+    <property name="completedSingle" value="603"/>
+    <property name="completedDuplicated" value="10"/>
+    <property name="total" value="628"/>
+    <property name="fragmented" value="4"/>
+    <property name="missing" value="11"/>
+    <property name="score" value="98"/>
+    <property name="lineage" value="campylobacterales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="88"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

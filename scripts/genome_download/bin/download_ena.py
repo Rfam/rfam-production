@@ -26,9 +26,9 @@ class EnaIssue(Exception):
 
 def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecord]:
     seen_ids = set()
-    for record in SeqIO.parse(handle, 'fasta'):
-        if '|' in record.id:
-            record.id = record.id.split('|')[2]
+    for record in SeqIO.parse(handle, "fasta"):
+        if "|" in record.id:
+            record.id = record.id.split("|")[2]
         if record.id in seen_ids:
             raise ValueError(f"Duplicate id {record.id}")
         yield record
@@ -39,22 +39,30 @@ def generate_records(handle: ty.Union[ty.IO, str]) -> ty.Iterable[SeqIO.SeqRecor
 
 def fetch_ena_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Attempt to get ena fasta for %s", accession)
-    with tempfile.NamedTemporaryFile('w+', dir=os.curdir) as tmp:
+    with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as tmp:
         try:
-            sp.check_call(["wget", "--no-verbose", "-O", tmp.name, ENA_FASTA_URL.format(accession=accession)])
+            sp.check_call(
+                [
+                    "wget",
+                    "--no-verbose",
+                    "-O",
+                    tmp.name,
+                    ENA_FASTA_URL.format(accession=accession),
+                ]
+            )
         except:
             LOGGER.warn("Fasta lookup failed for %s", accession)
             raise EnaIssue
         tmp.flush()
 
-        info = sp.check_output(["file", '--mime-type', tmp.name])
-        if b'application/gzip' in info:
+        info = sp.check_output(["file", "--mime-type", tmp.name])
+        if b"application/gzip" in info:
             LOGGER.debug("Decompressing file for %s", accession)
-            with tempfile.NamedTemporaryFile('w+', dir=os.curdir) as decomp:
-                sp.run(['zcat', '-f', tmp.name], check=True, stdout=decomp)
+            with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as decomp:
+                sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)
                 decomp.flush()
                 yield from generate_records(decomp.name)
-        elif b'text/plain' in info:
+        elif b"text/plain" in info:
             LOGGER.info("Parsing fasta file for %s", accession)
             yield from generate_records(tmp)
         else:
@@ -68,7 +76,7 @@ def fetch_contigs(accession: str) -> ty.Iterable[str]:
     response.raise_for_status()
     handle = StringIO(response.text)
     for line in handle:
-        if not line.startswith('CON'):
+        if not line.startswith("CON"):
             continue
         yield line[3:].strip()
 
@@ -95,19 +103,19 @@ def fetch_accessions(accessions: ty.Iterable[str]) -> ty.Iterable[SeqIO.SeqRecor
 
 
 @click.command()
-@click.argument('ena_file', type=click.File('r'))
-@click.argument('output', default='.', type=click.Path())
+@click.argument("ena_file", type=click.File("r"))
+@click.argument("output", default=".", type=click.Path())
 def main(ena_file, output):
     logging.basicConfig(level=logging.INFO)
     base = Path(output)
     for line in ena_file:
         data = json.loads(line)
-        upi = data['upi']
+        upi = data["upi"]
         path = base / f"{upi}.fa"
-        assert data['accession'] is None
-        with path.open('w') as out:
-            SeqIO.write(fetch_accessions(data['ids']), out, 'fasta')
+        assert data["accession"] is None
+        with path.open("w") as out:
+            SeqIO.write(fetch_accessions(data["ids"]), out, "fasta")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

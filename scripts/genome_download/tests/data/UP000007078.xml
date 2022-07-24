@@ -1,0 +1,47 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000007078</upid>
+  <taxonomy>766184</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>true</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>Isolate MD1-073</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="2">
+    <description>Torque teno midi virus 1 DNA</description>
+    <genomeAccession>AB290918</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2007" name="J. Gen. Virol." volume="88" first="1939" last="1944">
+      <title>Identification and genomic characterization of a novel human torque teno virus of 3.2 kb.</title>
+      <authorList>
+        <person name="Ninomiya M."/>
+        <person name="Nishizawa T."/>
+        <person name="Takahashi M."/>
+        <person name="Lorenzo F.R."/>
+        <person name="Shimosegawa T."/>
+        <person name="Okamoto H."/>
+      </authorList>
+      <dbReference type="PubMed" id="17554026"/>
+      <dbReference type="DOI" id="10.1099/vir.0.82895-0"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="581"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Close to standard (high value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

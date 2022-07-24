@@ -1,0 +1,71 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000000212</upid>
+  <taxonomy>1234679</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>LMA28</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000317975.2</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000317975.2</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000317975.2</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Chromosome" proteinCount="3539">
+    <description>Carnobacterium maltaromaticum LMA28 complete genome</description>
+    <biosampleId>SAMEA2272423</biosampleId>
+    <genomeAccession>HE999757</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2013" name="Genome Announc 1" volume="0" first="0" last="0">
+      <title>Complete Chromosome Sequence of Carnobacterium maltaromaticum LMA 28.</title>
+      <authorList>
+        <person name="Cailliez-Grimal C."/>
+        <person name="Chaillou S."/>
+        <person name="Anba-Mondoloni J."/>
+        <person name="Loux V."/>
+        <person name="Afzal M.I."/>
+        <person name="Rahman A."/>
+        <person name="Kergourlay G."/>
+        <person name="Champomier-Verges M.C."/>
+        <person name="Zagorec M."/>
+        <person name="Dalgaard P."/>
+        <person name="Leisner J.J."/>
+        <person name="Prevost H."/>
+        <person name="Revol-Junelles A.M."/>
+        <person name="Borges F."/>
+      </authorList>
+      <dbReference type="PubMed" id="23405327"/>
+      <dbReference type="DOI" id="10.1128/genomea.00115-12"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <panproteome>UP000000212</panproteome>
+  <scores name="busco">
+    <property name="completed" value="396"/>
+    <property name="completedSingle" value="384"/>
+    <property name="completedDuplicated" value="12"/>
+    <property name="total" value="402"/>
+    <property name="fragmented" value="6"/>
+    <property name="missing" value="0"/>
+    <property name="score" value="100"/>
+    <property name="lineage" value="lactobacillales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="90"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Close to standard (high value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

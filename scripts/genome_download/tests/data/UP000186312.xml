@@ -1,0 +1,60 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000186312</upid>
+  <taxonomy>1868284</taxonomy>
+  <modified>2020-07-23</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>false</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_001729985.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001729985.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_001729985.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unassembled WGS sequence" proteinCount="3374">
+    <description>Endozoicomonas sp. (ex Bugula neritina AB1)</description>
+    <biosampleId>SAMN03766369</biosampleId>
+    <genomeAccession>MDLD01000000</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="2016" name="Sci. Rep." volume="6" first="34362" last="34362">
+      <title>Single sample resolution of rare microbial dark matter in a marine invertebrate metagenome.</title>
+      <authorList>
+        <person name="Miller I.J."/>
+        <person name="Weyna T.R."/>
+        <person name="Vanee N."/>
+        <person name="Fong S."/>
+        <person name="Lim-Fong G.E."/>
+      </authorList>
+      <dbReference type="PubMed" id="27681823"/>
+      <dbReference type="DOI" id="10.1038/srep34362"/>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="busco">
+    <property name="completed" value="574"/>
+    <property name="completedSingle" value="524"/>
+    <property name="completedDuplicated" value="50"/>
+    <property name="total" value="619"/>
+    <property name="fragmented" value="1"/>
+    <property name="missing" value="44"/>
+    <property name="score" value="92"/>
+    <property name="lineage" value="oceanospirillales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="695"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

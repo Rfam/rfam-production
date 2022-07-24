@@ -1,0 +1,47 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000214710</upid>
+  <taxonomy>2560515</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_002184215.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_002184215.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_002184215.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="5">
+    <description>Grapevine enamovirus-1 isolate SE-BR, partial genome.</description>
+    <genomeAccession>KY820716</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="submission" date="2017-03" db="EMBL/GenBank/DDBJ databases">
+      <title>Molecular characterization of Grapevine enamo-like virus, a novel putative member of the genus Enamovirus.</title>
+      <authorList>
+        <person name="Silva J.M.F."/>
+        <person name="Fajardo T.V.M."/>
+        <person name="Al Rwahnih M."/>
+        <person name="Blawid R."/>
+        <person name="Nagata T."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="82"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

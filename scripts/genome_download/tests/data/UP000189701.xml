@@ -1,0 +1,53 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000189701</upid>
+  <taxonomy>4096</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>false</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <genomeAssembly>
+    <genomeAssemblySource>Refseq</genomeAssemblySource>
+    <genomeAssembly>GCF_000393655.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ncbi.nlm.nih.gov/assembly/GCF_000393655.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ncbi.nlm.nih.gov/assembly/GCF_000393655.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unplaced" proteinCount="41235">
+    <description>Nicotiana sylvestris</description>
+    <biosampleId>SAMN02981529</biosampleId>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chloroplast Pltd" proteinCount="171">
+    <description>Nicotiana sylvestris</description>
+    <biosampleId>SAMN02981529</biosampleId>
+    <genomeAccession>NC_007500</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="busco">
+    <property name="completed" value="5782"/>
+    <property name="completedSingle" value="3921"/>
+    <property name="completedDuplicated" value="1861"/>
+    <property name="total" value="5950"/>
+    <property name="fragmented" value="72"/>
+    <property name="missing" value="96"/>
+    <property name="score" value="98"/>
+    <property name="lineage" value="solanales_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="40"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

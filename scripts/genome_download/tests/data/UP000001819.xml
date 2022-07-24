@@ -1,0 +1,94 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome xmlns="http://uniprot.org/proteomes">
+  <upid>UP000001819</upid>
+  <taxonomy>46245</taxonomy>
+  <modified>2021-12-25</modified>
+  <isReferenceProteome>true</isReferenceProteome>
+  <isRepresentativeProteome>true</isRepresentativeProteome>
+  <strain>MV2-25 / Tucson 14011-0121.94</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>Refseq</genomeAssemblySource>
+    <genomeAssembly>GCF_009870125.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ncbi.nlm.nih.gov/assembly/GCF_009870125.1/</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ncbi.nlm.nih.gov/assembly/GCF_009870125.1/</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Unplaced" proteinCount="29">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome 2" proteinCount="5520">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046679</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome 3" proteinCount="4634">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046680</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome 4" proteinCount="4227">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046681</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome 5" proteinCount="306">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046682</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Chromosome X" proteinCount="8268">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046683</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <component name="Mitochondrion MT" proteinCount="1">
+    <description>Drosophila pseudoobscura</description>
+    <biosampleId>SAMN13616452</biosampleId>
+    <genomeAccession>NC_046603</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>Refseq</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <annotationScore normalizedAnnotationScore="2"/>
+  <scores name="busco">
+    <property name="completed" value="3279"/>
+    <property name="completedSingle" value="2131"/>
+    <property name="completedDuplicated" value="1148"/>
+    <property name="total" value="3285"/>
+    <property name="fragmented" value="2"/>
+    <property name="missing" value="4"/>
+    <property name="score" value="99"/>
+    <property name="lineage" value="diptera_odb10"/>
+  </scores>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="31"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Close to standard (high value)"/>
+  </scores>
+</proteome>
+
+</proteomes>

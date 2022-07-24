@@ -328,7 +328,7 @@ workflow genome_download {
 
     summary_xml | combine(to_ignore) | find_genomes
 
-    find_genomes.out.chunks | flatten | download
+    find_genomes.out.chunks | flatten | combine(ncbi_info) | download
 
     /* find_genomes.out.ncbi \ */
     /* | flatten \ */

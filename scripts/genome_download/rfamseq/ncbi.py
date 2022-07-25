@@ -27,6 +27,7 @@ import requests
 from attrs import define, field
 from sqlitedict import SqliteDict
 from Bio import SeqIO
+from ratelimit import limits, sleep_and_retry
 
 from rfamseq import wget, fasta
 
@@ -225,6 +226,8 @@ def esummary(accessions: ty.List[str]):
     return data
 
 
+@sleep_and_retry
+@limits(3, period=1)
 def efetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Trying efetch for %s", accession)
     url = NCBI_SEQ_URL.format(accession=accession)

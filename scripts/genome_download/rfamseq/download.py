@@ -89,10 +89,20 @@ def sequences_by_components(info: SqliteDict, proteome: uniprot.ProteomeInfo) ->
     assert isinstance(
         genome.components, uniprot.SelectedComponents
     ), f"Invalid components for {proteome}"
+    ids = []
     for component in genome.components:
         assert isinstance(component, str), f"Invalid component in {proteome}"
-        LOGGER.info("Trying to lookup %s", component)
-        yield from lookup_sequences(info, component)
+        ids.append(component)
+
+    ids = ",".join(ids)
+    LOGGER.info("Trying to lookup all ids as a batch: %s", ids)
+    try:
+        yield from ncbi.efetch_fasta(ids)
+    except:
+        LOGGER.info("Failed to efetch all ids, will try individual lookup")
+        for component in genome.components:
+            assert isinstance(component, str), f"Invalid component in {proteome}"
+            yield from lookup_sequences(info, component)
 
 
 def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:

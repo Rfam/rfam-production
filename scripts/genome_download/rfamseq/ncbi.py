@@ -44,15 +44,18 @@ class UnknownGCF(Exception):
     Raised if an Unknown GCF id is given
     """
 
-    pass
-
 
 class InvalidGenomeId(Exception):
     """
     Raised if given a non GCA/GCF id.
     """
 
-    pass
+
+class UnknownGenomeId(Exception):
+    """
+    Raised if the genome id looks valid but NCBI assembly data does not know
+    about it.
+    """
 
 
 @enum.unique
@@ -198,7 +201,7 @@ def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
     LOGGER.info("Getting NCBI assembly informatino for %s", accession)
     path = assembly_info_path(info, accession)
     if not path:
-        raise ValueError(f"Failed to build path to {accession}")
+        raise UnknownGenomeId(accession)
     with wget.wget(path) as handle:
         return parse_assembly_info(handle)
 

@@ -83,18 +83,22 @@ def lookup_sequences(info: SqliteDict, accession: str) -> Records:
                 yield from ena.fetch_fasta(contig)
 
 
+def sequences_by_components(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
+    LOGGER.info("Looking up each component for %s", proteome.upi)
+    genome = proteome.genome_info
+    assert isinstance(
+        genome.components, uniprot.SelectedComponents
+    ), f"Invalid components for {proteome}"
+    for component in genome.components:
+        assert isinstance(component, str), f"Invalid component in {proteome}"
+        LOGGER.info("Trying to lookup %s", component)
+        yield from lookup_sequences(info, component)
+
+
 def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
     genome = proteome.genome_info
     if genome.accession is None:
-        LOGGER.info("Looking up each component for %s", proteome.upi)
-        assert isinstance(
-            genome.components, uniprot.SelectedComponents
-        ), f"Invalid components for {proteome}"
-        for component in genome.components:
-            assert isinstance(component, str), f"Invalid component in {proteome}"
-            LOGGER.info("Trying to lookup %s", component)
-            yield from lookup_sequences(info, component)
-
+        yield from sequences_by_components(info, proteome)
     elif isinstance(genome.accession, str):
         LOGGER.info("Extracting based on genome %s", genome.accession)
         if isinstance(genome.components, uniprot.All):
@@ -104,7 +108,12 @@ def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
         elif isinstance(genome.components, uniprot.SelectedComponents):
             LOGGER.info("Extracting selected components for %s", genome.accession)
 
-            ncbi_info = ncbi.assembly_info(info, genome.accession)
+            try:
+                ncbi_info = ncbi.assembly_info(info, genome.accession)
+            except ncbi.UnknownGenomeId:
+                yield from sequences_by_components(info, proteome)
+                return
+
             wgs_accessions = None
             if ncbi_info.wgs_project:
                 resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)

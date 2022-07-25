@@ -59,6 +59,14 @@ class SequenceInfo:
         return "%05i" % version
 
 
+def lookup_fasta(info: SqliteDict, accession: str) -> Records:
+    LOGGER.info("Trying to fetch %s from NCBI", accession)
+    try:
+        yield from ncbi.fetch_fasta(info, accession)
+    except wget.FetchError:
+        yield from ena.fetch_fasta(accession)
+
+
 def lookup_sequences(info: SqliteDict, accession: str) -> Records:
     LOGGER.info("Trying to fetch %s from NCBI", accession)
     try:
@@ -86,18 +94,29 @@ def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
             assert isinstance(component, str), f"Invalid component in {proteome}"
             LOGGER.info("Trying to lookup %s", component)
             yield from lookup_sequences(info, component)
-    elif isinstance(genome.accession, str):
-        ncbi_info = ncbi.assembly_info(info, genome.accession)
 
+    elif isinstance(genome.accession, str):
+        LOGGER.info("Extracting based on genome %s", genome.accession)
         if isinstance(genome.components, uniprot.All):
             LOGGER.info("Using all components in %s", genome.accession)
             yield from lookup_sequences(info, genome.accession)
 
         elif isinstance(genome.components, uniprot.SelectedComponents):
+            LOGGER.info("Extracting selected components for %s", genome.accession)
+
+            ncbi_info = ncbi.assembly_info(info, genome.accession)
+            wgs_accessions = None
+            if ncbi_info.wgs_project:
+                resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
+                if resolved:
+                    wgs_accessions = { ncbi_info.wgs_project: resolved }
+
             comp_set = fasta_filter.ComponentSet.from_selected(
-                ncbi_info.sequence_info, genome.components
+                ncbi_info.sequence_info, genome.components,
+                wgs_accessions,
             )
             records = lookup_sequences(info, genome.accession)
+
             for classification in fasta_filter.filter(records, comp_set):
                 if isinstance(classification, fasta_filter.Extra):
                     LOGGER.info(

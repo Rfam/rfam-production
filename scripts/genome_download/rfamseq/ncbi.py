@@ -19,6 +19,7 @@ import logging
 import typing as ty
 import enum
 from xml.etree import ElementTree as ET
+from io import StringIO
 
 import attrs
 import cattrs
@@ -34,6 +35,8 @@ LOGGER = logging.getLogger(__name__)
 NCBI_SEQ_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text"
 
 NCBI_SUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=nucleotide&id={accessions}"
+
+NCBI_WGS_URL = "https://www.ncbi.nlm.nih.gov/Traces/wgs/{accession}/contigs/tsv"
 
 
 class UnknownGCF(Exception):
@@ -165,7 +168,6 @@ def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
     reader = csv.DictReader(handle, delimiter="\t", fieldnames=header)
     sequences = []
     for row in reader:
-        print(row)
         sequences.append(
             NcbiSequenceInfo(
                 genbank_accession=row["GenBank-Accn"],
@@ -193,6 +195,7 @@ def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
 
 
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
+    LOGGER.info("Getting NCBI assembly informatino for %s", accession)
     path = assembly_info_path(info, accession)
     if not path:
         raise ValueError(f"Failed to build path to {accession}")
@@ -201,7 +204,7 @@ def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
 
 
 def parse_doc_sum(entry: ET.Element) -> NcbiSequenceInfo:
-    pass
+    raise ValueError("Not yet implemented")
 
 
 def esummary(accessions: ty.List[str]):
@@ -245,3 +248,20 @@ def fetch_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord
         yield from ftp_fasta(info, accession)
     else:
         yield from efetch_fasta(accession)
+
+
+def resolve_wgs(accession: str) -> ty.Optional[ty.List[str]]:
+    LOGGER.info("Trying to resolve WGS set %s", accession)
+    response = requests.get(NCBI_WGS_URL.format(accession=accession))
+    try:
+        response.raise_for_status()
+    except:
+        LOGGER.info("Request to resolve wgs set failed")
+        return None
+
+    reader = csv.DictReader(StringIO(response.text), delimiter='\t')
+    accessions = [r['accession'] for r in reader]
+    if not accessions:
+        LOGGER.info("Failed to get load any accessions from response")
+        return None
+    return accessions

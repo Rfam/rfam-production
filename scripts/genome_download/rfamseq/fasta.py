@@ -26,7 +26,6 @@ def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
     """
 
     seen_ids = set()
-    print(handle)
     for record in SeqIO.parse(handle, "fasta"):
         if "|" in record.id:
             record.id = record.id.split("|")[2]

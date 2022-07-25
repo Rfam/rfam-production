@@ -47,7 +47,7 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
             )
         except Exception as err:
             LOGGER.warn("Failed fetching %s", url)
-            LOGGER.exception(err)
+            LOGGER.debug(err)
             raise FetchError()
         tmp.flush()
         tmp.seek(0)

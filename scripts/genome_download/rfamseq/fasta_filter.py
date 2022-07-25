@@ -15,6 +15,7 @@ limitations under the License.
 
 from __future__ import annotations
 
+import re
 import typing as ty
 import logging
 import collections as coll
@@ -47,6 +48,14 @@ class Extra:
 RecordTypes = ty.Union[Missing, Found, Extra]
 
 
+def wgs_matches(wgs_accession: ty.Dict[str, ty.List[str]], component: str) -> ty.List[str]:
+    for short_wgs, accessions in wgs_accession.items():
+        pattern = re.compile(f"{short_wgs}\\d+")
+        if re.match(pattern, component):
+            return accessions
+    return []
+
+
 @frozen
 class ComponentSet:
     components: ty.Union[uniprot.All, ty.Dict[str, ty.Set[str]]]
@@ -64,6 +73,7 @@ class ComponentSet:
         cls,
         sequence_info: ty.List[ncbi.NcbiSequenceInfo],
         selected: uniprot.SelectedComponents,
+        wgs_accessions: ty.Optional[ty.Dict[str, ty.List[str]]],
     ) -> ComponentSet:
         components = coll.defaultdict(set)
         allow_unplaced = False
@@ -75,6 +85,9 @@ class ComponentSet:
                 continue
             components[component].add(component)
             components[component].add(utils.versionless(component))
+
+            if wgs_accessions and (matches := wgs_matches(wgs_accessions, component)):
+                components[component].update(matches)
 
         if allow_unplaced:
             for info in sequence_info:

@@ -20,6 +20,7 @@ import typing as ty
 import enum
 from xml.etree import ElementTree as ET
 from io import StringIO
+from functools import lru_cache
 
 import attrs
 import cattrs
@@ -71,11 +72,11 @@ class SequenceRole(enum.Enum):
 
 @define
 class NcbiSequenceInfo:
-    genbank_accession: str
-    name: str
-    role: SequenceRole
-    molecule_type: ty.Optional[str]
-    length: int
+    genbank_accession: str = field(metadata={'ncbi_name': 'GenBank-Accn'})
+    name: str = field(metadata={'ncbi_name': 'Sequence-Name'})
+    role: SequenceRole = field(metadata={'ncbi_name': 'Sequence-Role'})
+    molecule_type: ty.Optional[str] = field(metadata={'ncbi_name': 'Assigned-Molecule-Location/Type'})
+    length: ty.Optional[int] = field(metadata={'ncbi_name': 'Sequence-Length'})
 
 
 @define
@@ -100,6 +101,22 @@ def maybe(raw: str) -> ty.Optional[str]:
     if raw == "na":
         return None
     return raw
+
+
+@lru_cache
+def sequence_header(raw_headers: ty.Tuple[str]) -> ty.List[str]:
+    mapping = {}
+    for name, field in attrs.fields_dict(NcbiSequenceInfo).items():
+        ncbi_name = field.metadata['ncbi_name']
+        mapping[ncbi_name] = name
+
+    headers = []
+    for raw in raw_headers:
+        if raw in mapping:
+            headers.append(mapping[raw])
+        else:
+            headers.append(raw)
+    return headers
 
 
 def add_version_if_missing(info: SqliteDict, id: str) -> str:
@@ -135,7 +152,7 @@ def assembly_info_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
     return ftp_path(info, accession, "assembly_report.txt")
 
 
-def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, str]]:
+def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, ty.Optional[str]]]:
     for field in attrs.fields(NcbiAssemblyInfo):
         if field.name == 'sequence_info':
             continue
@@ -143,7 +160,7 @@ def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, str]]:
         if not line.startswith(prefix):
             continue
         _, value = line.split(":", 1)
-        return (field.name, value.strip())
+        return (field.name, maybe(value.strip()))
     return None
 
 
@@ -167,20 +184,14 @@ def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
 def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
     raw_header = handle.readline()
     assert raw_header.startswith("# Sequence-Name"), "Not at header"
-    raw_header = raw_header[2:]
-    header = raw_header.split("\t")
+    header = sequence_header(tuple(raw_header[2:].strip().split("\t")))
     reader = csv.DictReader(handle, delimiter="\t", fieldnames=header)
     sequences = []
     for row in reader:
-        sequences.append(
-            NcbiSequenceInfo(
-                genbank_accession=row["GenBank-Accn"],
-                name=row["Sequence-Name"],
-                role=cattrs.structure(row["Sequence-Role"], SequenceRole),
-                molecule_type=maybe(row["Assigned-Molecule-Location/Type"]),
-                length=int(row["Sequence-Length"]),
-            )
-        )
+        converted = {}
+        for key, value in row.items():
+            converted[key] = maybe(value)
+        sequences.append(cattrs.structure(converted, NcbiSequenceInfo))
     return sequences
 
 

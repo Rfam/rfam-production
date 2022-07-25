@@ -60,17 +60,18 @@ class SequenceInfo:
 
 
 def lookup_fasta(info: SqliteDict, accession: str) -> Records:
-    LOGGER.info("Trying to fetch %s from NCBI", accession)
     try:
+        LOGGER.info("Trying to fetch %s from NCBI", accession)
         yield from ncbi.fetch_fasta(info, accession)
     except wget.FetchError:
+        LOGGER.info("Failed to fetch %s from NCBI, trying ENA", accession)
         yield from ena.fetch_fasta(accession)
 
 
 def lookup_sequences(info: SqliteDict, accession: str) -> Records:
     LOGGER.info("Trying to fetch %s from NCBI", accession)
     try:
-        yield from ncbi.fetch_fasta(info, accession)
+        yield from lookup_fasta(info, accession)
     except wget.FetchError:
         LOGGER.info("Trying to find contigs from %s", accession)
         contigs = list(ena.fetch_contigs(accession))

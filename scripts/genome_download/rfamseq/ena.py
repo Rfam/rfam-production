@@ -37,7 +37,7 @@ class MissingContigs(Exception):
 
 
 def fetch(template: str, **data) -> ty.Iterable[SeqIO.SeqRecord]:
-    url = template.format(data)
+    url = template.format(**data)
     LOGGER.debug("Fetching %s", url)
     with wget.wget(url) as handle:
         yield from fasta.parse(handle)
@@ -63,11 +63,15 @@ def fetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     yield from fetch(ENA_FASTA_URL, accession=accession)
 
 
-def fetch_wgs_sequences(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    LOGGER.info("Fetching the wgs fasta set for %s", accession)
+def wgs_fasta_url(accession: str) -> str:
     prefix = accession[0:3].lower()
     name = accession[0:6].upper()
-    yield from fetch(ENA_WGS_FASTA_URL, prefix=prefix, name=name)
+    return ENA_WGS_FASTA_URL.format(prefix=prefix, name=name)
+
+
+def fetch_wgs_sequences(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    LOGGER.info("Fetching the wgs fasta set for %s", accession)
+    yield from fetch(wgs_fasta_url(accession))
 
 
 def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

@@ -13,24 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import re
 import csv
-import logging
-import typing as ty
 import enum
-from xml.etree import ElementTree as ET
-from io import StringIO
+import logging
+import re
+import typing as ty
 from functools import lru_cache
+from io import StringIO
+from xml.etree import ElementTree as ET
 
 import attrs
 import cattrs
 import requests
 from attrs import define, field
-from sqlitedict import SqliteDict
 from Bio import SeqIO
 from ratelimit import limits, sleep_and_retry
+from sqlitedict import SqliteDict
 
-from rfamseq import wget, fasta
+from rfamseq import fasta, wget
 
 LOGGER = logging.getLogger(__name__)
 
@@ -72,11 +72,13 @@ class SequenceRole(enum.Enum):
 
 @define
 class NcbiSequenceInfo:
-    genbank_accession: str = field(metadata={'ncbi_name': 'GenBank-Accn'})
-    name: str = field(metadata={'ncbi_name': 'Sequence-Name'})
-    role: SequenceRole = field(metadata={'ncbi_name': 'Sequence-Role'})
-    molecule_type: ty.Optional[str] = field(metadata={'ncbi_name': 'Assigned-Molecule-Location/Type'})
-    length: ty.Optional[int] = field(metadata={'ncbi_name': 'Sequence-Length'})
+    genbank_accession: str = field(metadata={"ncbi_name": "GenBank-Accn"})
+    name: str = field(metadata={"ncbi_name": "Sequence-Name"})
+    role: SequenceRole = field(metadata={"ncbi_name": "Sequence-Role"})
+    molecule_type: ty.Optional[str] = field(
+        metadata={"ncbi_name": "Assigned-Molecule-Location/Type"}
+    )
+    length: ty.Optional[int] = field(metadata={"ncbi_name": "Sequence-Length"})
 
 
 @define
@@ -107,7 +109,7 @@ def maybe(raw: str) -> ty.Optional[str]:
 def sequence_header(raw_headers: ty.Tuple[str]) -> ty.List[str]:
     mapping = {}
     for name, field in attrs.fields_dict(NcbiSequenceInfo).items():
-        ncbi_name = field.metadata['ncbi_name']
+        ncbi_name = field.metadata["ncbi_name"]
         mapping[ncbi_name] = name
 
     headers = []
@@ -154,7 +156,7 @@ def assembly_info_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
 
 def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, ty.Optional[str]]]:
     for field in attrs.fields(NcbiAssemblyInfo):
-        if field.name == 'sequence_info':
+        if field.name == "sequence_info":
             continue
         prefix = f"# {field.metadata['ncbi_name']}:"
         if not line.startswith(prefix):
@@ -276,8 +278,8 @@ def resolve_wgs(accession: str) -> ty.Optional[ty.List[str]]:
         LOGGER.info("Request to resolve wgs set failed")
         return None
 
-    reader = csv.DictReader(StringIO(response.text), delimiter='\t')
-    accessions = [r['accession'] for r in reader]
+    reader = csv.DictReader(StringIO(response.text), delimiter="\t")
+    accessions = [r["accession"] for r in reader]
     if not accessions:
         LOGGER.info("Failed to get load any accessions from response")
         return None

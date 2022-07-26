@@ -15,12 +15,12 @@ limitations under the License.
 
 import typing as ty
 
-# import tempfile
-# from sqlitedict import SqliteDict
-
 import pytest
 
 from rfamseq import ncbi
+
+# import tempfile
+# from sqlitedict import SqliteDict
 
 
 # @pytest.fixture(scope='module')
@@ -30,44 +30,51 @@ from rfamseq import ncbi
 #             yield db
 
 
-@pytest.mark.parametrize('path,expected', [
-    ('tests/data/GCA_000597845.1_ASM59784v1_assembly_report.txt',
-        ncbi.NcbiAssemblyInfo(
-            taxid=562,
-            assembly_name='ASM59784v1',
-            organism_name='Escherichia coli (E. coli)',
-            bio_sample='SAMN02647163',
-            bio_project='PRJNA238952',
-            wgs_project=None,
-            sequence_info=[
-                ncbi.NcbiSequenceInfo(
-                    genbank_accession='CP007265.1',
-                    name='ANONYMOUS',
-                    role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
-                    molecule_type='Chromosome',
-                    length=4758629,
-                )
-            ]
-        )),
-    ('tests/data/GCA_001963235.1_ViralProj361950_assembly_report.txt',
-        ncbi.NcbiAssemblyInfo(
-            taxid=1919083,
-            assembly_name='ViralProj361950',
-            organism_name='Cynomolgus cytomegalovirus (viruses)',
-            bio_sample=None,
-            bio_project='PRJNA485481',
-            wgs_project=None,
-            sequence_info=[
-                ncbi.NcbiSequenceInfo(
-                    genbank_accession='KX689265.1',
-                    name='NC_033176.1',
-                    role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
-                    molecule_type='Segment',
-                    length=None,
-                )
-            ]
-        )),
-])
+@pytest.mark.parametrize(
+    "path,expected",
+    [
+        (
+            "tests/data/GCA_000597845.1_ASM59784v1_assembly_report.txt",
+            ncbi.NcbiAssemblyInfo(
+                taxid=562,
+                assembly_name="ASM59784v1",
+                organism_name="Escherichia coli (E. coli)",
+                bio_sample="SAMN02647163",
+                bio_project="PRJNA238952",
+                wgs_project=None,
+                sequence_info=[
+                    ncbi.NcbiSequenceInfo(
+                        genbank_accession="CP007265.1",
+                        name="ANONYMOUS",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Chromosome",
+                        length=4758629,
+                    )
+                ],
+            ),
+        ),
+        (
+            "tests/data/GCA_001963235.1_ViralProj361950_assembly_report.txt",
+            ncbi.NcbiAssemblyInfo(
+                taxid=1919083,
+                assembly_name="ViralProj361950",
+                organism_name="Cynomolgus cytomegalovirus (viruses)",
+                bio_sample=None,
+                bio_project="PRJNA485481",
+                wgs_project=None,
+                sequence_info=[
+                    ncbi.NcbiSequenceInfo(
+                        genbank_accession="KX689265.1",
+                        name="NC_033176.1",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Segment",
+                        length=None,
+                    )
+                ],
+            ),
+        ),
+    ],
+)
 def test_can_parse_assemblies(path, expected):
-    with open(path, 'r') as raw:
+    with open(path, "r") as raw:
         assert ncbi.parse_assembly_info(raw) == expected

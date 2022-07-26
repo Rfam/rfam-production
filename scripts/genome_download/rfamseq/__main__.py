@@ -13,17 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from pathlib import Path
 import json
 import logging
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import attrs
 import cattrs
 import click
-from sqlitedict import SqliteDict
-
 from Bio import SeqIO
+from sqlitedict import SqliteDict
 
 from rfamseq import download, uniprot
 
@@ -44,7 +43,7 @@ def cli():
 @click.argument("output", type=click.Path())
 def download_cmd(ncbi_info: str, proteome_file: str, output: str):
     out = Path(output)
-    with SqliteDict(ncbi_info, flag='r') as db:
+    with SqliteDict(ncbi_info, flag="r") as db:
         for line in proteome_file:
             raw = json.loads(line)
             proteome = cattrs.structure(raw, uniprot.ProteomeInfo)

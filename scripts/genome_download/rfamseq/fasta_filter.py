@@ -15,16 +15,15 @@ limitations under the License.
 
 from __future__ import annotations
 
+import collections as coll
+import logging
 import re
 import typing as ty
-import logging
-import collections as coll
 
-from attrs import frozen, define
+from attrs import define, frozen
 from Bio import SeqIO
 
-from rfamseq import utils, uniprot, fasta, ncbi
-
+from rfamseq import fasta, ncbi, uniprot, utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +47,9 @@ class Extra:
 RecordTypes = ty.Union[Missing, Found, Extra]
 
 
-def wgs_matches(wgs_accession: ty.Dict[str, ty.List[str]], component: str) -> ty.List[str]:
+def wgs_matches(
+    wgs_accession: ty.Dict[str, ty.List[str]], component: str
+) -> ty.List[str]:
     for short_wgs, accessions in wgs_accession.items():
         pattern = re.compile(f"{short_wgs}\\d+")
         if re.match(pattern, component):

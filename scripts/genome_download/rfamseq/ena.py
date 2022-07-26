@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import typing as ty
 import logging
+import typing as ty
 from functools import lru_cache
 
 from Bio import SeqIO
 
-from rfamseq import wget, fasta
+from rfamseq import fasta, wget
 
 LOGGER = logging.getLogger(__name__)
 

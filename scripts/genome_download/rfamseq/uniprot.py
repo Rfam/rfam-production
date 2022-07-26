@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from pathlib import Path
+import logging
 import typing as ty
 import xml.etree.ElementTree as ET
-import logging
+from pathlib import Path
 
-from attrs import define, field
 import cattrs
+from attrs import define, field
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,9 +91,9 @@ class GenomeInfo:
 
     @property
     def version(self) -> ty.Optional[str]:
-        if not self.accession or '.' not in self.accession:
+        if not self.accession or "." not in self.accession:
             return None
-        return self.accession.split('.', 1)[1]
+        return self.accession.split(".", 1)[1]
 
 
 @define
@@ -179,18 +179,14 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         if len(components) == 1:
             possible_gca = components[0]
             if isinstance(possible_gca, str) and possible_gca.startswith("GCA_"):
-                return GenomeInfo(
-                    accession=possible_gca, components=ALL_CHROMOSOMES
-                )
+                return GenomeInfo(accession=possible_gca, components=ALL_CHROMOSOMES)
 
             # If there is one component marked as a genome use that and all
             # chromosomes in it.
             if saw_genome:
                 if not isinstance(possible_gca, str):
                     raise ValueError(f"Invalid state for seeing genome in {upid}")
-                return GenomeInfo(
-                    accession=possible_gca, components=ALL_CHROMOSOMES
-                )
+                return GenomeInfo(accession=possible_gca, components=ALL_CHROMOSOMES)
 
         # Otherwise only use the given components
         return GenomeInfo(
@@ -202,15 +198,13 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
 
     # If not given any components then assume we want all sequences
     if not components:
-        return GenomeInfo(
-            accession=accessions[0], components=ALL_CHROMOSOMES
-        )
+        return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
 
     # Handle being asked for a single component that is the versionless version
     # of the genome accession. We assume that we want all sequences in the
     # genome.
     if len(components) == 1:
-        versionless = accessions[0].split('.', 1)[0]
+        versionless = accessions[0].split(".", 1)[0]
         if versionless == components[0]:
             return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
 

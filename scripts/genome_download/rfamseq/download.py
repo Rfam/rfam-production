@@ -13,15 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import typing as ty
 import logging
+import typing as ty
 
 from attrs import define
-
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ncbi, ena, wget, uniprot, fasta_filter
+from rfamseq import ena, fasta_filter, ncbi, uniprot, wget
 
 LOGGER = logging.getLogger(__name__)
 
@@ -84,7 +83,9 @@ def lookup_sequences(info: SqliteDict, accession: str) -> Records:
                 yield from ena.fetch_fasta(contig)
 
 
-def sequences_by_components(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
+def sequences_by_components(
+    info: SqliteDict, proteome: uniprot.ProteomeInfo
+) -> Records:
     LOGGER.info("Looking up each component for %s", proteome.upi)
     genome = proteome.genome_info
     assert isinstance(
@@ -129,10 +130,11 @@ def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
             if ncbi_info.wgs_project:
                 resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
                 if resolved:
-                    wgs_accessions = { ncbi_info.wgs_project: resolved }
+                    wgs_accessions = {ncbi_info.wgs_project: resolved}
 
             comp_set = fasta_filter.ComponentSet.from_selected(
-                ncbi_info.sequence_info, genome.components,
+                ncbi_info.sequence_info,
+                genome.components,
                 wgs_accessions,
             )
             records = lookup_sequences(info, genome.accession)

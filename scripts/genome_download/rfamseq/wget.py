@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import logging
-import typing as ty
+import os
 import subprocess as sp
 import tempfile
+import typing as ty
 from contextlib import contextmanager
 
 LOGGER = logging.getLogger(__name__)

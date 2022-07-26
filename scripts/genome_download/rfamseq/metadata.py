@@ -15,13 +15,13 @@ limitations under the License.
 
 from __future__ import annotations
 
-import typing as ty
 import enum
+import typing as ty
 
 from attrs import define
 from Bio import SeqIO
 
-from rfamseq import ncbi, ena, wget, uniprot, fasta_filter
+from rfamseq import ena, fasta_filter, ncbi, uniprot, wget
 
 
 @enum.unique
@@ -93,14 +93,14 @@ class FromFasta:
     @classmethod
     def from_record(cls, record: SeqIO.SeqRecord) -> FromFasta:
         accession = record.id
-        version = '1'
-        parts = accession.split('.', 1)
+        version = "1"
+        parts = accession.split(".", 1)
         if len(parts) == 2:
             accession, version = parts
         return cls(
             rfamseq_acc=record.id,
             accession=accession,
-            version='%05s' % version,
+            version="%05s" % version,
             description=record.description,
         )
 

@@ -14,6 +14,7 @@ limitations under the License.
 """
 
 import logging
+import re
 import typing as ty
 
 from attrs import define
@@ -23,6 +24,8 @@ from sqlitedict import SqliteDict
 from rfamseq import ena, fasta_filter, ncbi, uniprot, wget
 
 LOGGER = logging.getLogger(__name__)
+
+WGS_PATTERN = re.compile(r"^([A-Z]{4,6})\d{2,}")
 
 Records = ty.Iterable[SeqIO.SeqRecord]
 
@@ -107,6 +110,10 @@ def sequences_by_components(
             yield from lookup_sequences(info, component)
 
 
+def wgs_sequences(wgs: str) -> Records:
+    yield from ena.fetch_wgs_sequences(wgs)
+
+
 def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
     genome = proteome.genome_info
     if genome.accession is None:
@@ -160,6 +167,14 @@ def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
                         genome.accession,
                         classification.accession,
                     )
+                    missing = classification.accession
+                    if match := re.match(WGS_PATTERN, missing):
+                        LOGGER.info("Accession %s looks like a wgs set", missing)
+                        try:
+                            yield from ena.fetch_wgs_sequences(match.group(1))
+                            continue
+                        except:
+                            LOGGER.info("Failed to download WGS sequences")
                     yield from lookup_sequences(info, classification.accession)
                 else:
                     raise ValueError(

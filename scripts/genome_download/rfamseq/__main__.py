@@ -15,7 +15,6 @@ limitations under the License.
 
 import json
 import logging
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import attrs
@@ -30,11 +29,19 @@ LOGGER = logging.getLogger(__name__)
 
 
 @click.group()
-def cli():
+@click.option("--log-file", default=None, type=click.Path())
+@click.option(
+    "--log-level",
+    default="info",
+    type=click.Choice(
+        ["critical", "error", "warn", "info", "debug"], case_sensitive=False
+    ),
+)
+def cli(log_level="info", log_file=None):
     """
     Main entry point for updating rfamseq for Rfam.
     """
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(filename=log_file, level=getattr(logging, log_level.upper()))
 
 
 @cli.command("download")

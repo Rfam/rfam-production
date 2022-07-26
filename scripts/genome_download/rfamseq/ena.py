@@ -25,12 +25,22 @@ LOGGER = logging.getLogger(__name__)
 
 ENA_FASTA_URL = "https://www.ebi.ac.uk/ena/browser/api/fasta/{accession}?download=true"
 ENA_EMBL_URL = "https://www.ebi.ac.uk/ena/browser/api/embl/{accession}?download=true"
+ENA_WGS_FASTA_URL = (
+    "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/{prefix}/{name}.fasta.gz"
+)
 
 
 class MissingContigs(Exception):
     """
     Raised if there are no contigs in the EMBL file.
     """
+
+
+def fetch(template: str, **data) -> ty.Iterable[SeqIO.SeqRecord]:
+    url = template.format(data)
+    LOGGER.debug("Fetching %s", url)
+    with wget.wget(url) as handle:
+        yield from fasta.parse(handle)
 
 
 @lru_cache
@@ -50,9 +60,14 @@ def fetch_contigs(accession: str) -> ty.List[str]:
 
 def fetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Fetching %s fasta from ENA", accession)
-    url = ENA_FASTA_URL.format(accession=accession)
-    with wget.wget(url) as handle:
-        yield from fasta.parse(handle)
+    yield from fetch(ENA_FASTA_URL, accession=accession)
+
+
+def fetch_wgs_sequences(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+    LOGGER.info("Fetching the wgs fasta set for %s", accession)
+    prefix = accession[0:3].lower()
+    name = accession[0:6].upper()
+    yield from fetch(ENA_WGS_FASTA_URL, prefix=prefix, name=name)
 
 
 def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

@@ -212,7 +212,7 @@ def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
 
 
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
-    LOGGER.info("Getting NCBI assembly informatino for %s", accession)
+    LOGGER.info("Getting NCBI assembly information for %s", accession)
     path = assembly_info_path(info, accession)
     if not path:
         raise UnknownGenomeId(accession)

@@ -43,7 +43,8 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
                     "-O",
                     tmp.name,
                     url,
-                ]
+                ],
+                stderr=sp.DEVNULL,
             )
         except Exception as err:
             LOGGER.warn("Failed fetching %s", url)

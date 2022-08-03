@@ -63,6 +63,7 @@ class Genome:
     common_name: ty.Optional[str]
     kingdom: str
 
+
 @define
 class RfamSeq:
     rfamseq_acc: str
@@ -106,27 +107,37 @@ class FromFasta:
             description=record.description,
         )
 
-def build(version: str, pinfo: uniprot.ProteomeInfo, assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo], records: ty.List[FromFasta]) -> Metadata:
+
+def build(
+    version: str,
+    pinfo: uniprot.ProteomeInfo,
+    assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo],
+    records: ty.List[FromFasta],
+) -> Metadata:
     genseq = []
     rfamseq = []
     for info in records:
-        genseq.append(GenSeq(
-            rfamseq_acc=info.rfamseq_acc,
-            chromosome_name=None,
-            chromosome_type=None,
-            version=version,
-        ))
+        genseq.append(
+            GenSeq(
+                rfamseq_acc=info.rfamseq_acc,
+                chromosome_name=None,
+                chromosome_type=None,
+                version=version,
+            )
+        )
 
-        rfamseq.append(RfamSeq(
-            rfamseq_acc=info.rfamseq_acc,
-            accession=info.accession,
-            version=info.version,
-            ncbi_id=int(pinfo.taxid),
-            mol_type=MoleculeType.GENOMIC_DNA,
-            length=info.length,
-            description=info.description,
-            source='UNIPROT; ENA',
-        ))
+        rfamseq.append(
+            RfamSeq(
+                rfamseq_acc=info.rfamseq_acc,
+                accession=info.accession,
+                version=info.version,
+                ncbi_id=int(pinfo.taxid),
+                mol_type=MoleculeType.GENOMIC_DNA,
+                length=info.length,
+                description=info.description,
+                source="UNIPROT; ENA",
+            )
+        )
 
     wgs_acc = None
     if assembly_info:

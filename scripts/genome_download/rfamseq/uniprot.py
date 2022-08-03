@@ -66,7 +66,7 @@ class SelectedComponents:
     accessions: ty.List[Component] = field()
 
     @accessions.validator
-    def check_accessions(self, attribute, value):
+    def _check_accessions(self, attribute, value):
         assert value, "Cannot create empty selected components"
         for v in value:
             assert isinstance(v, Component)
@@ -87,6 +87,7 @@ Components = ty.Union[All, SelectedComponents]
 @define
 class GenomeInfo:
     accession: ty.Optional[str]
+    description: ty.Optional[str]
     components: Components
 
     @property
@@ -102,7 +103,14 @@ class ProteomeInfo:
     taxid: str
     is_reference: bool
     is_representative: bool
+    proteome_description: ty.Optional[str]
     genome_info: GenomeInfo
+
+    @property
+    def description(self) -> ty.Optional[str]:
+        if self.proteome_description:
+            return self.proteome_description
+        return genome_info.description
 
 
 def node_text(node: ty.Optional[ET.Element]) -> ty.Optional[str]:
@@ -152,6 +160,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         raise ValueError(f"Cannot handle >1 genome accession in {upid}")
 
     components: ty.List[Component] = []
+    description = None
     saw_genome = False
     for component in root.findall("pro:component", NS):
         name = component.attrib.get("name", "")
@@ -164,6 +173,9 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
             raise ValueError(f"Missing component accession of {upid}")
         if name == "Genome":
             saw_genome = True
+            descriptions = all_matching_node_text("pro:description", component)
+            if descriptions and len(descriptions) == 1:
+                description = descriptions[0]
 
         if len(comp_accs) > 1 and name != "Genome":
             raise ValueError(f"Cannot handle >1 accession unless it is a genome {upid}")
@@ -179,18 +191,19 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         if len(components) == 1:
             possible_gca = components[0]
             if isinstance(possible_gca, str) and possible_gca.startswith("GCA_"):
-                return GenomeInfo(accession=possible_gca, components=ALL_CHROMOSOMES)
+                return GenomeInfo(accession=possible_gca, description=description,components=ALL_CHROMOSOMES)
 
             # If there is one component marked as a genome use that and all
             # chromosomes in it.
             if saw_genome:
                 if not isinstance(possible_gca, str):
                     raise ValueError(f"Invalid state for seeing genome in {upid}")
-                return GenomeInfo(accession=possible_gca, components=ALL_CHROMOSOMES)
+                return GenomeInfo(accession=possible_gca, description=description,components=ALL_CHROMOSOMES)
 
         # Otherwise only use the given components
         return GenomeInfo(
             accession=None,
+            description=description, 
             components=SelectedComponents(components),
         )
 
@@ -198,7 +211,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
 
     # If not given any components then assume we want all sequences
     if not components:
-        return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
+        return GenomeInfo(accession=accessions[0], description=description, components=ALL_CHROMOSOMES)
 
     # Handle being asked for a single component that is the versionless version
     # of the genome accession. We assume that we want all sequences in the
@@ -206,18 +219,27 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     if len(components) == 1:
         versionless = accessions[0].split(".", 1)[0]
         if versionless == components[0]:
-            return GenomeInfo(accession=accessions[0], components=ALL_CHROMOSOMES)
+            return GenomeInfo(accession=accessions[0], description=description, components=ALL_CHROMOSOMES)
 
     # Use the simple case of just using the requested components of the given
     # genome
     return GenomeInfo(
         accession=accessions[0],
+        description=description,
         components=SelectedComponents(components),
     )
 
 
+def find_description(xml: ET.Element) -> ty.Optional[str]:
+    try:
+        return proteome_value(xml, 'pro:description')
+    except:
+        return None
+
+
 def proteome(xml: ET.Element) -> ProteomeInfo:
     upi = proteome_value(xml, "pro:upid")
+    ginfo = genome_info(upi, xml)
     return ProteomeInfo(
         upi=upi,
         taxid=proteome_value(xml, "pro:taxonomy"),
@@ -225,7 +247,8 @@ def proteome(xml: ET.Element) -> ProteomeInfo:
         is_representative=proteome_value(
             xml, "pro:isRepresentativeProteome", convert=as_bool
         ),
-        genome_info=genome_info(upi, xml),
+        proteome_description=find_description(xml),
+        genome_info=ginfo,
     )
 
 
@@ -233,7 +256,10 @@ def proteomes(path: Path, ignore: ty.Set[str]) -> ty.Iterable[ProteomeInfo]:
     xml = ET.parse(path)
     proteomes = xml.getroot()
     for element in proteomes:
-        upid = element.find("pro:upid", NS).text
+        try:
+            upid = element.find("pro:upid", NS).text
+        except:
+            upid = None
         if upid in ignore:
             LOGGER.info("Skipping upid as requested")
             continue

@@ -50,8 +50,10 @@ from rfamseq import uniprot
                 taxid="9606",
                 is_reference=True,
                 is_representative=True,
+                proteome_description='''Homo sapiens (Homo sapiens sapiens) or modern humans are the only living species of the evolutionary branch of great apes known as hominids. Divergence of early humans from chimpanzees and gorillas is estimated to have occurred between 4 and 8 million years ago. The genus Homo (Homo habilis) appeared in Africa around 2.3 million years ago and shows the first signs of stone tool usage. The exact lineage of Homo species ie: H. habilis/H. ergaster to H. erectus to H. rhodesiensis/H.heidelbergensis to H. sapiens is still hotly disputed. However, continuing evolution and in particular larger brain size and complexity culminates in Homo sapiens. The first anatomically modern humans appear in the fossil record around 200,000 years ago. Modern humans migrated across the globe essentially as hunter-gatherers until around 12,000 years ago when the practice of agriculture and animal domestication enabled large populations to grow leading to the development of civilizations.''',
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000001405.27",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CM000663",
@@ -92,8 +94,10 @@ from rfamseq import uniprot
                 taxid="3885",
                 is_reference=False,
                 is_representative=True,
+                proteome_description='The common bean is most widely cultivated of all beans in temperate regions, and is widely cultivated in semitropical regions. In some regions of the world dry beans furnish a large portion of the protein needs of low and middle class families.',
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000499845.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CM002288",
@@ -120,8 +124,10 @@ from rfamseq import uniprot
                 taxid="6279",
                 is_reference=True,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000002995",
+                    description=None,
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
             ),
@@ -133,8 +139,10 @@ from rfamseq import uniprot
                 taxid="652674",
                 is_reference=True,
                 is_representative=False,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000861105.1",
+                    description="Hepatitis E virus ORF1, ORF2, ORF3,complete cds's; methyltransferase, Y domain, papain-like protease, poly-proline hing",
                     components=uniprot.SelectedComponents(accessions=["L08816"]),
                 ),
             ),
@@ -146,8 +154,10 @@ from rfamseq import uniprot
                 taxid="230407",
                 is_reference=True,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000879395.1",
+                    description='RefStrain',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB179636",
@@ -173,8 +183,10 @@ from rfamseq import uniprot
                 taxid="766184",
                 is_reference=True,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="AB290918",
+                    description='Torque teno midi virus 1 DNA',
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
             ),
@@ -186,8 +198,10 @@ from rfamseq import uniprot
                 taxid="2813240",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_017348405.1",
+                    description='Mycobacterium phage prophiGD12-2',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "MW584207",
@@ -203,8 +217,10 @@ from rfamseq import uniprot
                 taxid="1234679",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000317975.2",
+                    description='Carnobacterium maltaromaticum LMA28 complete genome',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "HE999757",
@@ -220,8 +236,10 @@ from rfamseq import uniprot
                 taxid="1249480",
                 is_reference=False,
                 is_representative=False,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000310245.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CP003921",
@@ -238,8 +256,10 @@ from rfamseq import uniprot
                 taxid="399742",
                 is_reference=False,
                 is_representative=False,
+                proteome_description='Enterobacter sp. 638 was isolated in association with poplar, Populus trichocarpa x deltoids, and represents a commonly found endophytic bacterium associated with this tree. Endophytes are bacteria that live within the tissue of a plant without substantively harming it. They can help promote plant growth in several ways, including helping the host overcome toxic effects of environmental pollution. Some Enterobacteriales can affect nodule formation by legumes, fix nitrogen and produce plant hormones. The family Enterobacteriacae includes free-living, commensal and pathogenic bacteria associated with host species ranging from plants to humans (adapted from http://genome.jgi-psf.org/ent_6/ent_6.home.html).',
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000016325.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CP000653",
@@ -256,8 +276,10 @@ from rfamseq import uniprot
                 taxid="2022783",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002210635.1",
+                    description='Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY965444",
@@ -273,8 +295,10 @@ from rfamseq import uniprot
                 taxid="1497851",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001736955.2",
+                    description='Bacillus phage SPG24 DNA, contig00001 sequence.',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB930182",
@@ -290,8 +314,10 @@ from rfamseq import uniprot
                 taxid="2560515",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002184215.1",
+                    description='Grapevine enamovirus-1 isolate SE-BR, partial genome.',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY820716",
@@ -307,8 +333,10 @@ from rfamseq import uniprot
                 taxid="1654339",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001019975.1",
+                    description='Genome',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KP774592",
@@ -325,8 +353,10 @@ from rfamseq import uniprot
                 taxid="1307954",
                 is_reference=False,
                 is_representative=False,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000870385.1",
+                    description='Maruca vitrata MNPV',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "EF125867",
@@ -342,8 +372,10 @@ from rfamseq import uniprot
                 taxid="46245",
                 is_reference=True,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCF_009870125.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             uniprot.UNPLACED,
@@ -365,8 +397,14 @@ from rfamseq import uniprot
                 taxid="9305",
                 is_reference=True,
                 is_representative=True,
+                proteome_description='''The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal. 
+
+The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
+
+The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_902635505.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AFEY01000000",
@@ -382,8 +420,10 @@ from rfamseq import uniprot
                 taxid="4565",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_900519105.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB042240",
@@ -401,8 +441,10 @@ from rfamseq import uniprot
                 taxid="1849840",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001675455.1",
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "LXWX01000000",
@@ -418,8 +460,10 @@ from rfamseq import uniprot
                 taxid="1983562",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002237195.1",
+                    description='Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes',
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY354243",
@@ -435,9 +479,26 @@ from rfamseq import uniprot
                 taxid="75913",
                 is_reference=False,
                 is_representative=True,
+                proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001028725.1",
+                    description=None,
                     components=uniprot.ALL_CHROMOSOMES,
+                ),
+            ),
+        ),
+        (
+            Path("tests/data/UP000000408.xml"),
+            uniprot.ProteomeInfo(
+                upi="UP000000408",
+                taxid="650136",
+                is_reference=True,
+                is_representative=False,
+                proteome_description=None,
+                genome_info=uniprot.GenomeInfo(
+                    accession="GCA_000857805.1",
+                    description='Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65',
+                    components=uniprot.SelectedComponents(accessions=['AJ011380'])
                 ),
             ),
         ),

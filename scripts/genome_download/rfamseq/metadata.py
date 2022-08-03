@@ -106,7 +106,7 @@ class FromFasta:
             description=record.description,
         )
 
-def build(version: str, pinfo: uniprot.ProteomeInfo, assembly_info: ncbi.NcbiAssemblyInfo, records: ty.List[FromFasta]) -> Metadata:
+def build(version: str, pinfo: uniprot.ProteomeInfo, assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo], records: ty.List[FromFasta]) -> Metadata:
     genseq = []
     rfamseq = []
     for info in records:
@@ -128,14 +128,26 @@ def build(version: str, pinfo: uniprot.ProteomeInfo, assembly_info: ncbi.NcbiAss
             source='UNIPROT; ENA',
         ))
 
+    wgs_acc = None
+    if assembly_info:
+        wgs_acc = assembly_info.wgs_project
+
+    assembly_name = None
+    if assembly_info:
+        assembly_name = assembly_info.assembly_name
+
+    study_ref = None
+    if assembly_info:
+        study_ref = assembly_info.bio_project
+
     genome = Genome(
         upid=pinfo.upi,
         assembly_acc=pinfo.genome_info.accession,
-        wgs_acc=assembly_info.wgs_project,
-        assembly_name=assembly_info.assembly_name,
+        wgs_acc=wgs_acc,
+        assembly_name=assembly_name,
         assembly_level=None,
         assembly_version=pinfo.genome_info.version,
-        study_ref=assembly_info.bio_project,
+        study_ref=study_ref,
         description=pinfo.description,
         total_length=-1,
         ungapped_length=-1,

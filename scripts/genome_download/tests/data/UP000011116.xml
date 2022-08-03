@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="35907" xmlns="http://uniprot.org/proteome">
   <upid>UP000011116</upid>
   <taxonomy>112509</taxonomy>
-  <modified>2022-01-18</modified>
+  <modified>2022-04-02</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>cv. Morex</strain>
@@ -46,21 +46,21 @@
       <dbReference type="DOI" id="10.1038/nature11543"/>
     </citation>
   </reference>
-  <annotationScore normalizedAnnotationScore="1"/>
+  <annotationScore normalizedAnnotationScore="2"/>
   <scores name="busco">
-    <property name="completed" value="4312"/>
-    <property name="completedSingle" value="925"/>
-    <property name="completedDuplicated" value="3387"/>
+    <property name="completed" value="4604"/>
+    <property name="completedSingle" value="4105"/>
+    <property name="completedDuplicated" value="499"/>
     <property name="total" value="4896"/>
-    <property name="fragmented" value="107"/>
-    <property name="missing" value="477"/>
-    <property name="score" value="90"/>
+    <property name="fragmented" value="19"/>
+    <property name="missing" value="273"/>
+    <property name="score" value="94"/>
     <property name="lineage" value="poales_odb10"/>
   </scores>
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="73"/>
+    <property name="proteomeCount" value="81"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Outlier (high value)"/>
   </scores>

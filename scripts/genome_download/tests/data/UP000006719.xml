@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="11" xmlns="http://uniprot.org/proteome">
   <upid>UP000006719</upid>
   <taxonomy>230407</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>true</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>9B21</strain>

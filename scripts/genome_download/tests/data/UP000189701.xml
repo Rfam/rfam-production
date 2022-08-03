@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="41406" xmlns="http://uniprot.org/proteome">
   <upid>UP000189701</upid>
   <taxonomy>4096</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>
@@ -30,6 +30,23 @@
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
+  <reference>
+    <citation type="journal article" date="2013" name="Genome Biol." volume="14" first="R60.1" last="R60.17">
+      <title>Reference genomes and transcriptomes of Nicotiana sylvestris and Nicotiana tomentosiformis.</title>
+      <authorList>
+        <person name="Sierro N."/>
+        <person name="Battey J.N."/>
+        <person name="Ouadi S."/>
+        <person name="Bovet L."/>
+        <person name="Goepfert S."/>
+        <person name="Bakaher N."/>
+        <person name="Peitsch M.C."/>
+        <person name="Ivanov N.V."/>
+      </authorList>
+      <dbReference type="PubMed" id="23773524"/>
+      <dbReference type="DOI" id="10.1186/gb-2013-14-6-r60"/>
+    </citation>
+  </reference>
   <annotationScore normalizedAnnotationScore="2"/>
   <scores name="busco">
     <property name="completed" value="5782"/>
@@ -44,9 +61,9 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="40"/>
+    <property name="proteomeCount" value="50"/>
     <property name="stdCdss" value="0.0"/>
-    <property name="status" value="Standard"/>
+    <property name="status" value="Outlier (high value)"/>
   </scores>
 </proteome>
 

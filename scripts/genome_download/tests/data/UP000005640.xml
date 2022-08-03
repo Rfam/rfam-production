@@ -1,9 +1,9 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="79740" xmlns="http://uniprot.org/proteome">
   <upid>UP000005640</upid>
   <description>Homo sapiens (Homo sapiens sapiens) or modern humans are the only living species of the evolutionary branch of great apes known as hominids. Divergence of early humans from chimpanzees and gorillas is estimated to have occurred between 4 and 8 million years ago. The genus Homo (Homo habilis) appeared in Africa around 2.3 million years ago and shows the first signs of stone tool usage. The exact lineage of Homo species ie: H. habilis/H. ergaster to H. erectus to H. rhodesiensis/H.heidelbergensis to H. sapiens is still hotly disputed. However, continuing evolution and in particular larger brain size and complexity culminates in Homo sapiens. The first anatomically modern humans appear in the fossil record around 200,000 years ago. Modern humans migrated across the globe essentially as hunter-gatherers until around 12,000 years ago when the practice of agriculture and animal domestication enabled large populations to grow leading to the development of civilizations.</description>
   <taxonomy>9606</taxonomy>
-  <modified>2022-02-03</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>true</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>
@@ -16,84 +16,84 @@
     <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     <genomeAnnotationUrl>http://www.ensembl.org/Homo_sapiens/Info/Annotation</genomeAnnotationUrl>
   </genomeAnnotation>
-  <component name="Chromosome 1" proteinCount="6487">
+  <component name="Chromosome 1" proteinCount="6490">
     <description>Homo sapiens chromosome 1, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000663</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 2" proteinCount="5218">
+  <component name="Chromosome 2" proteinCount="5222">
     <description>Homo sapiens chromosome 2, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000664</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 3" proteinCount="4749">
+  <component name="Chromosome 3" proteinCount="4752">
     <description>Homo sapiens chromosome 3, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000665</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 4" proteinCount="2947">
+  <component name="Chromosome 4" proteinCount="2953">
     <description>Homo sapiens chromosome 4, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000666</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 5" proteinCount="3346">
+  <component name="Chromosome 5" proteinCount="3351">
     <description>Homo sapiens chromosome 5, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000667</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 6" proteinCount="4044">
+  <component name="Chromosome 6" proteinCount="4046">
     <description>Homo sapiens chromosome 6, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000668</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 7" proteinCount="3542">
+  <component name="Chromosome 7" proteinCount="3551">
     <description>Homo sapiens chromosome 7, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000669</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 8" proteinCount="2928">
+  <component name="Chromosome 8" proteinCount="2929">
     <description>Homo sapiens chromosome 8, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000670</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 9" proteinCount="2514">
+  <component name="Chromosome 9" proteinCount="2523">
     <description>Homo sapiens chromosome 9, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000671</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 10" proteinCount="2660">
+  <component name="Chromosome 10" proteinCount="2663">
     <description>Homo sapiens chromosome 10, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000672</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 11" proteinCount="5160">
+  <component name="Chromosome 11" proteinCount="5161">
     <description>Homo sapiens chromosome 11, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000673</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 12" proteinCount="4687">
+  <component name="Chromosome 12" proteinCount="4688">
     <description>Homo sapiens chromosome 12, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000674</genomeAccession>
     <genomeAnnotation>
@@ -107,28 +107,28 @@
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 14" proteinCount="3039">
+  <component name="Chromosome 14" proteinCount="3043">
     <description>Homo sapiens chromosome 14, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000676</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 15" proteinCount="2733">
+  <component name="Chromosome 15" proteinCount="2735">
     <description>Homo sapiens chromosome 15, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000677</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 16" proteinCount="4063">
+  <component name="Chromosome 16" proteinCount="4066">
     <description>Homo sapiens chromosome 16, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000678</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 17" proteinCount="5351">
+  <component name="Chromosome 17" proteinCount="5355">
     <description>Homo sapiens chromosome 17, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000679</genomeAccession>
     <genomeAnnotation>
@@ -142,14 +142,14 @@
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 19" proteinCount="6164">
+  <component name="Chromosome 19" proteinCount="6165">
     <description>Homo sapiens chromosome 19, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000681</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 20" proteinCount="1701">
+  <component name="Chromosome 20" proteinCount="1703">
     <description>Homo sapiens chromosome 20, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000682</genomeAccession>
     <genomeAnnotation>
@@ -163,14 +163,14 @@
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 22" proteinCount="1765">
+  <component name="Chromosome 22" proteinCount="1769">
     <description>Homo sapiens chromosome 22, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000684</genomeAccession>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome X" proteinCount="2465">
+  <component name="Chromosome X" proteinCount="2469">
     <description>Homo sapiens chromosome X, GRCh38 reference primary assembly.</description>
     <genomeAccession>CM000685</genomeAccession>
     <genomeAnnotation>
@@ -191,7 +191,7 @@
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Unplaced" proteinCount="1347">
+  <component name="Unplaced" proteinCount="995">
     <description>HUMAN_unplaced</description>
     <genomeAnnotation>
       <genomeAnnotationSource>Ensembl</genomeAnnotationSource>

@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="5663" xmlns="http://uniprot.org/proteome">
   <upid>UP000033569</upid>
   <taxonomy>1609137</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>NRRL F-4428</strain>
@@ -48,7 +48,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="1657"/>
+    <property name="proteomeCount" value="1770"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Close to standard (low value)"/>
   </scores>

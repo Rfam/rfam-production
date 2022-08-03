@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="6" xmlns="http://uniprot.org/proteome">
   <upid>UP000214374</upid>
   <taxonomy>2170140</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>

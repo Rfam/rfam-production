@@ -1,5 +1,5 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="703" xmlns="http://uniprot.org/proteome">
   <upid>UP000177381</upid>
   <taxonomy>1801900</taxonomy>
   <modified>2020-01-23</modified>

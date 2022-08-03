@@ -1,5 +1,5 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="36286" xmlns="http://uniprot.org/proteome">
   <upid>UP000007648</upid>
   <description>The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal. 
 
@@ -7,7 +7,7 @@ The species is restricted to the Australian island of Tasmania and is at risk of
 
 The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.</description>
   <taxonomy>9305</taxonomy>
-  <modified>2022-01-18</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>true</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>
@@ -81,9 +81,9 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="212"/>
+    <property name="proteomeCount" value="346"/>
     <property name="stdCdss" value="0.0"/>
-    <property name="status" value="Standard"/>
+    <property name="status" value="Outlier (high value)"/>
   </scores>
 </proteome>
 

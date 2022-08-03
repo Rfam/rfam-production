@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="16626" xmlns="http://uniprot.org/proteome">
   <upid>UP000035680</upid>
   <taxonomy>75913</taxonomy>
-  <modified>2022-01-18</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>
@@ -31,7 +31,7 @@
       </authorList>
     </citation>
   </reference>
-  <annotationScore normalizedAnnotationScore="2"/>
+  <annotationScore normalizedAnnotationScore="1"/>
   <scores name="busco">
     <property name="completed" value="2157"/>
     <property name="completedSingle" value="2052"/>
@@ -45,7 +45,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="68"/>
+    <property name="proteomeCount" value="82"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Standard"/>
   </scores>

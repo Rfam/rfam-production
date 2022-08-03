@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="15190" xmlns="http://uniprot.org/proteome">
   <upid>UP000006672</upid>
   <taxonomy>6279</taxonomy>
-  <modified>2022-01-18</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>true</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>FR3</strain>
@@ -13,7 +13,7 @@
     <genomeAnnotationSource>WormBase</genomeAnnotationSource>
     <genomeAnnotationUrl>http://metazoa.ensembl.org/Brugia_malayi/Info/Annotation/</genomeAnnotationUrl>
   </genomeAnnotation>
-  <component name="Unassembled WGS sequence" proteinCount="10205">
+  <component name="Unassembled WGS sequence" proteinCount="15190">
     <description>Unassembled WGS sequence2</description>
     <biosampleId>SAMN02953652</biosampleId>
     <genomeAccession>GCA_000002995</genomeAccession>
@@ -115,7 +115,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="34"/>
+    <property name="proteomeCount" value="35"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Close to standard (low value)"/>
   </scores>

@@ -1,5 +1,5 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="2421" xmlns="http://uniprot.org/proteome">
   <upid>UP000186774</upid>
   <taxonomy>1895694</taxonomy>
   <modified>2021-10-28</modified>
@@ -54,7 +54,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="6637"/>
+    <property name="proteomeCount" value="6862"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Outlier (low value)"/>
   </scores>

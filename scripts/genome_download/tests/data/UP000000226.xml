@@ -1,9 +1,9 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="30501" xmlns="http://uniprot.org/proteome">
   <upid>UP000000226</upid>
   <description>The common bean is most widely cultivated of all beans in temperate regions, and is widely cultivated in semitropical regions. In some regions of the world dry beans furnish a large portion of the protein needs of low and middle class families.</description>
   <taxonomy>3885</taxonomy>
-  <modified>2022-01-18</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>cv. G19833</strain>
@@ -17,7 +17,7 @@
     <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000499845.1</genomeAnnotationUrl>
   </genomeAnnotation>
-  <component name="Chromosome 1" proteinCount="3018">
+  <component name="Chromosome 1" proteinCount="3023">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 1, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002288</genomeAccession>
@@ -25,7 +25,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 2" proteinCount="3711">
+  <component name="Chromosome 2" proteinCount="3713">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 2, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002289</genomeAccession>
@@ -33,7 +33,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 3" proteinCount="3327">
+  <component name="Chromosome 3" proteinCount="3331">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 3, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002290</genomeAccession>
@@ -49,7 +49,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 5" proteinCount="2093">
+  <component name="Chromosome 5" proteinCount="2095">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 5, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002292</genomeAccession>
@@ -57,7 +57,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 6" proteinCount="2471">
+  <component name="Chromosome 6" proteinCount="2472">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 6, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002293</genomeAccession>
@@ -65,7 +65,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 7" proteinCount="3133">
+  <component name="Chromosome 7" proteinCount="3134">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 7, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002294</genomeAccession>
@@ -73,7 +73,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 8" proteinCount="3279">
+  <component name="Chromosome 8" proteinCount="3283">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 8, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002295</genomeAccession>
@@ -81,7 +81,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 9" proteinCount="2976">
+  <component name="Chromosome 9" proteinCount="2979">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 9, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002296</genomeAccession>
@@ -89,7 +89,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 10" proteinCount="1871">
+  <component name="Chromosome 10" proteinCount="1872">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 10, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002297</genomeAccession>
@@ -97,7 +97,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 11" proteinCount="2443">
+  <component name="Chromosome 11" proteinCount="2447">
     <description>Phaseolus vulgaris cultivar G19833 chromosome 11, whole genome shotgun sequence.</description>
     <biosampleId>SAMN02981484</biosampleId>
     <genomeAccession>CM002298</genomeAccession>
@@ -177,9 +177,9 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="81"/>
+    <property name="proteomeCount" value="31"/>
     <property name="stdCdss" value="0.0"/>
-    <property name="status" value="Standard"/>
+    <property name="status" value="Outlier (high value)"/>
   </scores>
 </proteome>
 

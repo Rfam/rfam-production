@@ -1,5 +1,5 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="2353" xmlns="http://uniprot.org/proteome">
   <upid>UP000000224</upid>
   <taxonomy>1249480</taxonomy>
   <modified>2020-10-31</modified>
@@ -54,13 +54,13 @@
       </authorList>
     </citation>
   </reference>
+  <redundantProteome upid="UP000177645" similarity="0.941"/>
   <redundantProteome upid="UP000177773" similarity="0.913"/>
+  <redundantProteome upid="UP000183136" similarity="0.928"/>
   <redundantProteome upid="UP000177298" similarity="0.912"/>
+  <redundantProteome upid="UP000178939" similarity="0.907"/>
   <redundantProteome upid="UP000182621" similarity="0.91"/>
   <redundantProteome upid="UP000263305" similarity="0.955"/>
-  <redundantProteome upid="UP000177645" similarity="0.941"/>
-  <redundantProteome upid="UP000178939" similarity="0.907"/>
-  <redundantProteome upid="UP000183136" similarity="0.928"/>
   <annotationScore normalizedAnnotationScore="2"/>
   <scores name="busco">
     <property name="completed" value="613"/>
@@ -75,7 +75,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="88"/>
+    <property name="proteomeCount" value="86"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Standard"/>
   </scores>

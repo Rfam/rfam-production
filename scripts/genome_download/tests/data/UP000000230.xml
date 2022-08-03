@@ -1,9 +1,9 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="715" xmlns="http://uniprot.org/proteome">
   <upid>UP000000230</upid>
   <description>Enterobacter sp. 638 was isolated in association with poplar, Populus trichocarpa x deltoids, and represents a commonly found endophytic bacterium associated with this tree. Endophytes are bacteria that live within the tissue of a plant without substantively harming it. They can help promote plant growth in several ways, including helping the host overcome toxic effects of environmental pollution. Some Enterobacteriales can affect nodule formation by legumes, fix nitrogen and produce plant hormones. The family Enterobacteriacae includes free-living, commensal and pathogenic bacteria associated with host species ranging from plants to humans (adapted from http://genome.jgi-psf.org/ent_6/ent_6.home.html).</description>
   <taxonomy>399742</taxonomy>
-  <modified>2020-10-12</modified>
+  <modified>2022-04-29</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>false</isRepresentativeProteome>
   <strain>638</strain>
@@ -17,7 +17,7 @@
     <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000016325.1</genomeAnnotationUrl>
   </genomeAnnotation>
-  <component name="Chromosome" proteinCount="4113">
+  <component name="Chromosome" proteinCount="715">
     <description>Enterobacter sp. 638</description>
     <biosampleId>SAMN02598394</biosampleId>
     <genomeAccession>CP000653</genomeAccession>
@@ -25,7 +25,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Plasmid pENTE01" proteinCount="123">
+  <component name="Plasmid pENTE01" proteinCount="0">
     <description>Enterobacter sp. 638 plasmid pENTE01</description>
     <biosampleId>SAMN02598394</biosampleId>
     <genomeAccession>CP000654</genomeAccession>
@@ -50,7 +50,7 @@
       <dbReference type="DOI" id="10.1371/journal.pgen.1000943"/>
     </citation>
   </reference>
-  <annotationScore normalizedAnnotationScore="2"/>
+  <annotationScore normalizedAnnotationScore="1"/>
   <panproteome>UP000006872</panproteome>
   <scores name="busco">
     <property name="completed" value="440"/>
@@ -65,7 +65,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="2501"/>
+    <property name="proteomeCount" value="2533"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Close to standard (low value)"/>
   </scores>

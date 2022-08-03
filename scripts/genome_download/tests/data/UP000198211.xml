@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="34747" xmlns="http://uniprot.org/proteome">
   <upid>UP000198211</upid>
   <taxonomy>4795</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>zdho120</strain>
@@ -56,9 +56,9 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="46"/>
+    <property name="proteomeCount" value="95"/>
     <property name="stdCdss" value="0.0"/>
-    <property name="status" value="Close to standard (high value)"/>
+    <property name="status" value="Outlier (high value)"/>
   </scores>
 </proteome>
 

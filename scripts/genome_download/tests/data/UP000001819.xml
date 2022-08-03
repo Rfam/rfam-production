@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="22219" xmlns="http://uniprot.org/proteome">
   <upid>UP000001819</upid>
   <taxonomy>46245</taxonomy>
-  <modified>2021-12-25</modified>
+  <modified>2022-03-31</modified>
   <isReferenceProteome>true</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>MV2-25 / Tucson 14011-0121.94</strain>
@@ -16,14 +16,14 @@
     <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     <genomeAnnotationUrl>https://www.ncbi.nlm.nih.gov/assembly/GCF_009870125.1/</genomeAnnotationUrl>
   </genomeAnnotation>
-  <component name="Unplaced" proteinCount="29">
+  <component name="Unplaced" proteinCount="30">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAnnotation>
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 2" proteinCount="5520">
+  <component name="Chromosome 2" proteinCount="5517">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAccession>NC_046679</genomeAccession>
@@ -31,7 +31,7 @@
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 3" proteinCount="4634">
+  <component name="Chromosome 3" proteinCount="4633">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAccession>NC_046680</genomeAccession>
@@ -39,7 +39,7 @@
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 4" proteinCount="4227">
+  <component name="Chromosome 4" proteinCount="3867">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAccession>NC_046681</genomeAccession>
@@ -47,7 +47,7 @@
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome 5" proteinCount="306">
+  <component name="Chromosome 5" proteinCount="304">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAccession>NC_046682</genomeAccession>
@@ -55,7 +55,7 @@
       <genomeAnnotationSource>Refseq</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Chromosome X" proteinCount="8268">
+  <component name="Chromosome X" proteinCount="7786">
     <description>Drosophila pseudoobscura</description>
     <biosampleId>SAMN13616452</biosampleId>
     <genomeAccession>NC_046683</genomeAccession>
@@ -85,9 +85,9 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="31"/>
+    <property name="proteomeCount" value="61"/>
     <property name="stdCdss" value="0.0"/>
-    <property name="status" value="Close to standard (high value)"/>
+    <property name="status" value="Outlier (high value)"/>
   </scores>
 </proteome>
 

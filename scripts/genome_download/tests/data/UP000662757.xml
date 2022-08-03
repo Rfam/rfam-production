@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="87" xmlns="http://uniprot.org/proteome">
   <upid>UP000662757</upid>
   <taxonomy>2813240</taxonomy>
-  <modified>2022-02-07</modified>
+  <modified>2022-03-27</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <genomeAssembly>
@@ -26,7 +26,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="6673"/>
+    <property name="proteomeCount" value="6684"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Standard"/>
   </scores>

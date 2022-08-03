@@ -1,8 +1,8 @@
 <proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
-<proteome xmlns="http://uniprot.org/proteomes">
+<proteome proteinCount="130673" xmlns="http://uniprot.org/proteome">
   <upid>UP000019116</upid>
   <taxonomy>4565</taxonomy>
-  <modified>2022-02-03</modified>
+  <modified>2022-04-13</modified>
   <isReferenceProteome>false</isReferenceProteome>
   <isRepresentativeProteome>true</isRepresentativeProteome>
   <strain>cv. Chinese Spring</strain>
@@ -24,7 +24,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Mitochondrion" proteinCount="33">
+  <component name="Mitochondrion" proteinCount="37">
     <description>Triticum aestivum mitochondrial DNA</description>
     <biosampleId>SAMEA3663800</biosampleId>
     <genomeAccession>AP008982</genomeAccession>
@@ -32,7 +32,7 @@
       <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
     </genomeAnnotation>
   </component>
-  <component name="Unplaced" proteinCount="130563">
+  <component name="Unplaced" proteinCount="130559">
     <description>Unplaced</description>
     <biosampleId>SAMEA3663800</biosampleId>
     <genomeAnnotation>
@@ -130,7 +130,7 @@
   <scores name="cpd">
     <property name="averageCds" value="0"/>
     <property name="confidence" value="0"/>
-    <property name="proteomeCount" value="73"/>
+    <property name="proteomeCount" value="81"/>
     <property name="stdCdss" value="0.0"/>
     <property name="status" value="Outlier (high value)"/>
   </scores>

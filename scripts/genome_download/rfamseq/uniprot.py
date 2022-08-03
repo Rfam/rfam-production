@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 NS = {
     "uni": "http://uniprot.org/uniprot",
-    "pro": "http://uniprot.org/proteomes",
+    "pro": "http://uniprot.org/proteome",
 }
 
 T = ty.TypeVar("T")

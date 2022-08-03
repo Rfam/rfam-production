@@ -23,7 +23,7 @@ import click
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import download, uniprot
+from rfamseq import download, uniprot, metadata
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,10 +45,11 @@ def cli(log_level="info", log_file=None):
 
 
 @cli.command("download")
+@click.argument("version")
 @click.argument("ncbi-info", type=click.Path())
 @click.argument("proteome-file", default="-", type=click.File("r"))
 @click.argument("output", type=click.Path())
-def download_cmd(ncbi_info: str, proteome_file: str, output: str):
+def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
     out = Path(output)
     with SqliteDict(ncbi_info, flag="r") as db:
         for line in proteome_file:
@@ -60,14 +61,14 @@ def download_cmd(ncbi_info: str, proteome_file: str, output: str):
             fasta_out = out / f"{proteome.upi}.fa"
             with fasta_out.open("w") as fasta:
                 for sequence in download.sequences(db, proteome):
-                    fetched.append(sequence.id)
+                    fetched.append((sequence.id, sequence.description))
                     SeqIO.write(sequence, fasta, "fasta")
 
-            # metadata_out = out / f"{proteome.upi}.json"
-            # with metadata_out.open("w") as metadata:
-            #     for info in download.metadata(proteome, fetched):
-            #         json.dump(attrs.asdict(info), metadata)
-            #         metadata.write("\n")
+            metadata_out = out / f"{proteome.upi}.json"
+            with metadata_out.open("w") as meta:
+                info = metadata.build(version, proteome, fetched)
+                json.dump(attrs.asdict(info), meta)
+                meta.write("\n")
 
 
 @cli.command("proteomes2genomes")

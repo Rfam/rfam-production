@@ -40,8 +40,8 @@ class MoleculeType(enum.Enum):
 @define
 class GenSeq:
     rfamseq_acc: str
-    chromosome_name: str
-    chromosome_type: str
+    chromosome_name: ty.Optional[str]
+    chromosome_type: ty.Optional[str]
     version: str
 
 
@@ -62,11 +62,10 @@ class Genome:
     common_name: ty.Optional[str]
     kingdom: str
 
-
 @define
 class RfamSeq:
     rfamseq_acc: str
-    accesion: str
+    accession: str
     version: str
     ncbi_id: int
     mol_type: MoleculeType
@@ -80,12 +79,12 @@ class Metadata:
     upid: str
     genseq: ty.List[GenSeq]
     rfamseq: ty.List[RfamSeq]
-    genome: Genome
 
 
 @define
 class FromFasta:
     rfamseq_acc: str
+    length: int
     accession: str
     version: str
     description: str
@@ -99,19 +98,36 @@ class FromFasta:
             accession, version = parts
         return cls(
             rfamseq_acc=record.id,
+            length=len(record.seq),
             accession=accession,
             version="%05s" % version,
             description=record.description,
         )
 
+def build(version: str, pinfo: uniprot.ProteomeInfo, records: ty.List[FromFasta]) -> Metadata:
+    genseq = []
+    rfamseq = []
+    for info in records:
+        genseq.append(GenSeq(
+            rfamseq_acc=info.rfamseq_acc,
+            chromosome_name=None,
+            chromosome_type=None,
+            version=version,
+        ))
 
-# def build(pinfo: uniprot.ProteomeInfo, records: ty.List[FromFasta]) -> Metdata:
-#     return Metadata(
-#         upid=pinfo.upi,
-#         genseq=genseq,
-#         rfamseq=rfamseq,
-#         genome=Genome(
-#             assembly_acc=pinfo.genome.accession,
-#             assembly_version=pinfo.genome.version
-#         )
-#     )
+        rfamseq.append(RfamSeq(
+            rfamseq_acc=info.rfamseq_acc,
+            accession=info.accession,
+            version=info.version,
+            ncbi_id=int(pinfo.taxid),
+            mol_type=MoleculeType.GENOMIC_DNA,
+            length=info.length,
+            description=info.description,
+            source='UNIPROT; ENA',
+        ))
+
+    return Metadata(
+        upid=pinfo.upi,
+        genseq=genseq,
+        rfamseq=rfamseq
+    )

@@ -67,32 +67,6 @@ process find_genomes {
   """
 }
 
-// process find_genomes {
-//   queue 'short'
-//
-//   input:
-//   tuple path(summary), path(to_skip)
-//
-//   output:
-//   path("summary.jsonl"), emit: summary
-//   path("ncbi/*.jsonl"), emit: ncbi
-//   path("ena/*.jsonl"), emit: ena
-//
-//   """
-//   proteomes_to_genomes.py --ignorable $to_skip $summary .
-//
-//   mkdir ncbi
-//   shuf ncbi.jsonl > ncbi-shuf.jsonl
-//   split -n l/${params.ncbi_chunks} ncbi-shuf.jsonl --additional-suffix='.jsonl' ncbi/
-//
-//   mkdir ena
-//   shuf ena.jsonl > ena-shuf.jsonl
-//   split -n l/${params.ena_chunks} ena-shuf.jsonl --additional-suffix='.jsonl' ena/
-//
-//   cat ncbi.jsonl ena.jsonl > summary.jsonl
-//   """
-// }
-
 process lookup_taxonomy_info {
   queue 'short'
   publishDir 'genomes/metadata', mode: 'copy'
@@ -122,73 +96,12 @@ process download {
   tuple path(proteome_file), path(info)
 
   output:
-  tuple val("${proteome_file.baseName}"), path("UP*.fa")
+  tuple val("${proteome_file.baseName}"), path("UP*.fa"), path("UP*.jsonl")
 
   """
   rfamseq download $info $proteome_file .
   """
 }
-
-// process download_ncbi {
-//   tag { "$gca_file.baseName" }
-//   maxForks 30
-//   queue 'short'
-//   publishDir "genomes/ncbi/${gca_file.baseName}"
-//   memory { 6.GB * task.attempt }
-//   errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' }
-//   maxRetries 4
-//
-//   input:
-//   tuple path(gca_file), path(info)
-//
-//   output:
-//   tuple val("ncbi-${gca_file.baseName}"), path("UP*.fa"), path("metadata.db")
-//
-//   """
-//   set -euo pipefail
-//
-//   mkdir complete
-//   ncbi_urls.py $info $gca_file complete urls ena-only.jsonl
-//   xargs -a urls -L 2 -P 4 wget --no-verbose -O || true
-//
-//   # It turns out that not all files which are specified by NCBI will actually
-//   # exist. This can be dealt with by falling back to ENA based lookup for any
-//   # empty downloads
-//   find complete -name '*.fa.gz' -empty > missing
-//   if [[ -s missing ]]; then
-//     xargs -a missing rm
-//     xargs -a missing -I {} basename {} \
-//     | cut -d. -f1 \
-//     | xargs -I {} jq -c 'select(.upi == "{}") | .accession = null | .kind = "ena"' $gca_file >> ena-only.jsonl
-//   fi
-//
-//   gzip -d complete/*.fa.gz
-//   select_ids.py --ignore-file ena-only.jsonl $gca_file complete/ metadata.db .
-//   if [[ -e ena-only.jsonl ]]; then
-//     download_ena.py ena-only.jsonl metadata.db .
-//   fi
-//   """
-// }
-//
-// process download_ena {
-//   tag { "$ena_file.baseName" }
-//   maxForks 10
-//   publishDir 'genomes/ena', mode: 'copy'
-//   memory '5GB'
-//   queue 'short'
-//   errorStrategy 'retry'
-//   maxRetries 4
-//
-//   input:
-//   path(ena_file)
-//
-//   output:
-//   tuple val("ena-${ena_file.baseName}"), path('UP*.fa'), path("metadata.db")
-//
-//   """
-//   download_ena.py $ena_file metadata.db .
-//   """
-// }
 
 process validate_chunk {
   queue 'short'
@@ -207,45 +120,6 @@ process validate_chunk {
   find . -name 'genomes*.fa' | xargs -I {} seqkit rmdup -s {} | seqkit rmdup > unique.fa
   seqkit shuffle --two-pass unique.fa > ${short_name}.fa
   esl-sfetch --index ${short_name}.fa
-  """
-}
-
-process generate_rfamseq_metadata {
-  queue 'short'
-  publishDir 'genomes/metadata', mode: 'copy'
-  tag { "$short_name" }
-
-  input:
-  tuple val(short_name), path(fasta), path(info)
-
-  output:
-  path("rfamseq.${short_name}.tsv")
-
-  """
-  set -euo pipefail
-
-  esl-seqstat -a --dna "$fasta" \
-  | grep '^=' \
-  | seqstat2rfamseq.py $info - rfamseq.${short_name}.tsv
-  """
-}
-
-process generate_genseq_metadata {
-  queue 'short'
-  publishDir 'genomes/metadata', mode: 'copy'
-  tag { "$short_name" }
-
-  input:
-  tuple val(short_name), path(fasta), path(info)
-
-  output:
-  path("rfamseq.${short_name}.tsv")
-
-  """
-  set -euo pipefail
-
-  grep '^>' '$fasta' \
-  | fasta2genseq.py $info $params.version - geseq.${short_name}.tsv
   """
 }
 

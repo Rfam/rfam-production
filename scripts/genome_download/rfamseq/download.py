@@ -13,11 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from __future__ import annotations
+
+import enum
 import logging
 import re
 import typing as ty
 
-from attrs import define
+from attrs import define, frozen
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
@@ -70,7 +73,7 @@ def lookup_fasta(info: SqliteDict, accession: str) -> Records:
         yield from ena.fetch_fasta(accession)
 
 
-def lookup_sequences(info: SqliteDict, accession: str) -> Records:
+def lookup_by_accession(info: SqliteDict, accession: str) -> Records:
     LOGGER.info("Trying to fetch %s from NCBI", accession)
     try:
         yield from lookup_fasta(info, accession)
@@ -107,80 +110,195 @@ def sequences_by_components(
         LOGGER.info("Failed to efetch all ids, will try individual lookup")
         for component in genome.components:
             assert isinstance(component, str), f"Invalid component in {proteome}"
-            yield from lookup_sequences(info, component)
+            yield from lookup_by_accession(info, component)
 
 
 def wgs_sequences(wgs: str) -> Records:
     yield from ena.fetch_wgs_sequences(wgs)
 
 
-def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
-    genome = proteome.genome_info
-    if genome.accession is None:
-        yield from sequences_by_components(info, proteome)
-    elif isinstance(genome.accession, str):
+def lookup_with_fallback(info: SqliteDict, proteome, ncbi_info: ncbi.NcbiAssemblyInfo) -> Records:
+    genome = proteome.genome
+    wgs_accessions = None
+    if ncbi_info.wgs_project:
+        resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
+        if resolved:
+            wgs_accessions = {ncbi_info.wgs_project: resolved}
+
+    comp_set = fasta_filter.ComponentSet.from_selected(
+        ncbi_info.sequence_info,
+        genome.components,
+        wgs_accessions,
+    )
+    records = lookup_by_accession(info, genome.accession)
+
+    for classification in fasta_filter.filter(records, comp_set):
+        if isinstance(classification, fasta_filter.Extra):
+            LOGGER.info(
+                "Accession %s contains extra record %s",
+                genome.accession,
+                classification.extra.id,
+            )
+            continue
+        elif isinstance(classification, fasta_filter.Found):
+            LOGGER.info(
+                "Found expected record %s in %s",
+                classification.record.id,
+                genome.accession,
+            )
+            yield classification.record
+        elif isinstance(classification, fasta_filter.Missing):
+            LOGGER.info(
+                "Accession %s did not contain %s",
+                genome.accession,
+                classification.accession,
+            )
+            missing = classification.accession
+            if match := re.match(WGS_PATTERN, missing):
+                LOGGER.info("Accession %s looks like a wgs set", missing)
+                try:
+                    yield from ena.fetch_wgs_sequences(match.group(1))
+                    continue
+                except:
+                    LOGGER.info("Failed to download WGS sequences")
+            yield from lookup_by_accession(info, classification.accession)
+        else:
+            raise ValueError(
+                f"Impossible state with {classification} for {proteome}"
+            )
+
+@enum.unique
+class DownloadMethod(enum.Enum):
+    BY_COMPONENT = "LOOKUP_EACH_COMPONENT"
+    LOOKUP_GENOME_ACCESSION = "LOOKUP_GENOME_ACCESSION"
+    FALLBACK = "LOOKUP_WITH_FALLBACK"
+
+    def fetch(self, info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ty.Optional[ncbi.NcbiAssemblyInfo]=None) -> Records:
+        if self is DownloadMethod.BY_COMPONENT:
+            yield from sequences_by_components(info, proteome)
+        elif self is DownloadMethod.LOOKUP_GENOME_ACCESSION:
+            assert isinstance(proteome.genome_info.accession, str), "Invalid genome_info"
+            yield from lookup_by_accession(info, proteome.genome_info.accession)
+        elif self is DownloadMethod.FALLBACK:
+            assert isinstance(ncbi_info, ncbi.NcbiAssemblyInfo), "Must give ncbi_info"
+            yield from lookup_with_fallback(info, proteome, ncbi_info)
+        else:
+            raise ValueError("Cannot fetch with method %s", self)
+
+
+@frozen
+class GenomeDownload:
+    method: DownloadMethod
+    proteome: uniprot.ProteomeInfo
+    assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo]
+
+    @classmethod
+    def by_components(cls, proteome: uniprot.ProteomeInfo) -> GenomeDownload:
+        LOGGER.info("Fetching proteome %s by listed components", proteome)
+        return cls(DownloadMethod.BY_COMPONENT, proteome, None)
+
+    @classmethod
+    def by_lookup(cls, proteome: uniprot.ProteomeInfo) -> GenomeDownload:
+        LOGGER.info("Using all sequences listed in %s", proteome.genome.accession)
+        return cls(DownloadMethod.LOOKUP_GENOME_ACCESSION, proteome, None)
+
+    @classmethod
+    def build(cls, info: SqliteDict, proteome: uniprot.ProteomeInfo) -> GenomeDownload:
+        genome = proteome.genome_info
+        if genome.accession is None:
+            return cls.by_components(proteome)
+
+        if not isinstance(genome.accession, str):
+            raise ValueError(f"Unknown type of genome accession {genome}")
+
         LOGGER.info("Extracting based on genome %s", genome.accession)
         if isinstance(genome.components, uniprot.All):
-            LOGGER.info("Using all components in %s", genome.accession)
-            yield from lookup_sequences(info, genome.accession)
+            return cls.by_lookup(proteome)
 
-        elif isinstance(genome.components, uniprot.SelectedComponents):
-            LOGGER.info("Extracting selected components for %s", genome.accession)
+        if not isinstance(genome.components, uniprot.SelectedComponents):
+            raise ValueError(f"Unknown type of components {genome.components}")
 
-            try:
-                ncbi_info = ncbi.assembly_info(info, genome.accession)
-            except ncbi.UnknownGenomeId:
-                yield from sequences_by_components(info, proteome)
-                return
+        LOGGER.info("Extracting selected components for %s", genome.accession)
 
-            wgs_accessions = None
-            if ncbi_info.wgs_project:
-                resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
-                if resolved:
-                    wgs_accessions = {ncbi_info.wgs_project: resolved}
+        try:
+            ncbi_info = ncbi.assembly_info(info, genome.accession)
+        except ncbi.UnknownGenomeId:
+            return cls.by_components(proteome)
 
-            comp_set = fasta_filter.ComponentSet.from_selected(
-                ncbi_info.sequence_info,
-                genome.components,
-                wgs_accessions,
-            )
-            records = lookup_sequences(info, genome.accession)
+        return cls(DownloadMethod.FALLBACK, proteome, ncbi_info)
 
-            for classification in fasta_filter.filter(records, comp_set):
-                if isinstance(classification, fasta_filter.Extra):
-                    LOGGER.info(
-                        "Accession %s contains extra record %s",
-                        genome.accession,
-                        classification.extra.id,
-                    )
-                    continue
-                elif isinstance(classification, fasta_filter.Found):
-                    LOGGER.info(
-                        "Found expected record %s in %s",
-                        classification.record.id,
-                        genome.accession,
-                    )
-                    yield classification.record
-                elif isinstance(classification, fasta_filter.Missing):
-                    LOGGER.info(
-                        "Accession %s did not contain %s",
-                        genome.accession,
-                        classification.accession,
-                    )
-                    missing = classification.accession
-                    if match := re.match(WGS_PATTERN, missing):
-                        LOGGER.info("Accession %s looks like a wgs set", missing)
-                        try:
-                            yield from ena.fetch_wgs_sequences(match.group(1))
-                            continue
-                        except:
-                            LOGGER.info("Failed to download WGS sequences")
-                    yield from lookup_sequences(info, classification.accession)
-                else:
-                    raise ValueError(
-                        f"Impossible state with {classification} for {proteome}"
-                    )
-        else:
-            raise ValueError("Impossible state")
-    else:
-        raise ValueError(f"Unknown type of accession {genome}")
+    def records(self, info: SqliteDict) -> Records:
+        LOGGER.info("Fetching sequences method %s", self.method.name)
+        yield from self.method.fetch(info, self.proteome)
+
+
+# def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
+#     genome = proteome.genome_info
+#     if genome.accession is None:
+#         yield from sequences_by_components(info, proteome)
+#     elif isinstance(genome.accession, str):
+#         LOGGER.info("Extracting based on genome %s", genome.accession)
+#         if isinstance(genome.components, uniprot.All):
+#             LOGGER.info("Using all components in %s", genome.accession)
+#             yield from lookup_sequences(info, genome.accession)
+
+#         elif isinstance(genome.components, uniprot.SelectedComponents):
+#             LOGGER.info("Extracting selected components for %s", genome.accession)
+
+#             try:
+#                 ncbi_info = ncbi.assembly_info(info, genome.accession)
+#             except ncbi.UnknownGenomeId:
+#                 yield from sequences_by_components(info, proteome)
+#                 return
+
+#             wgs_accessions = None
+#             if ncbi_info.wgs_project:
+#                 resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
+#                 if resolved:
+#                     wgs_accessions = {ncbi_info.wgs_project: resolved}
+
+#             comp_set = fasta_filter.ComponentSet.from_selected(
+#                 ncbi_info.sequence_info,
+#                 genome.components,
+#                 wgs_accessions,
+#             )
+#             records = lookup_sequences(info, genome.accession)
+
+#             for classification in fasta_filter.filter(records, comp_set):
+#                 if isinstance(classification, fasta_filter.Extra):
+#                     LOGGER.info(
+#                         "Accession %s contains extra record %s",
+#                         genome.accession,
+#                         classification.extra.id,
+#                     )
+#                     continue
+#                 elif isinstance(classification, fasta_filter.Found):
+#                     LOGGER.info(
+#                         "Found expected record %s in %s",
+#                         classification.record.id,
+#                         genome.accession,
+#                     )
+#                     yield classification.record
+#                 elif isinstance(classification, fasta_filter.Missing):
+#                     LOGGER.info(
+#                         "Accession %s did not contain %s",
+#                         genome.accession,
+#                         classification.accession,
+#                     )
+#                     missing = classification.accession
+#                     if match := re.match(WGS_PATTERN, missing):
+#                         LOGGER.info("Accession %s looks like a wgs set", missing)
+#                         try:
+#                             yield from ena.fetch_wgs_sequences(match.group(1))
+#                             continue
+#                         except:
+#                             LOGGER.info("Failed to download WGS sequences")
+#                     yield from lookup_sequences(info, classification.accession)
+#                 else:
+#                     raise ValueError(
+#                         f"Impossible state with {classification} for {proteome}"
+#                     )
+#         else:
+#             raise ValueError("Impossible state")
+#     else:
+#         raise ValueError(f"Unknown type of accession {genome}")

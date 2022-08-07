@@ -59,14 +59,15 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
 
             fetched = []
             fasta_out = out / f"{proteome.upi}.fa"
+            genome = download.GenomeDownload.build(db, proteome)
             with fasta_out.open("w") as fasta:
-                for sequence in download.sequences(db, proteome):
+                for sequence in genome.records(db):
                     fetched.append((sequence.id, sequence.description))
                     SeqIO.write(sequence, fasta, "fasta")
 
             metadata_out = out / f"{proteome.upi}.json"
             with metadata_out.open("w") as meta:
-                info = metadata.build(version, proteome, fetched)
+                info = metadata.build(version, proteome, genome.assembly_info, fetched)
                 json.dump(attrs.asdict(info), meta)
                 meta.write("\n")
 

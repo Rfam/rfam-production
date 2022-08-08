@@ -151,6 +151,7 @@ def build(
     if assembly_info:
         study_ref = assembly_info.bio_project
 
+    kingdom = pinfo.lineage_info.kingdom()
     genome = Genome(
         upid=pinfo.upi,
         assembly_acc=pinfo.genome_info.accession,

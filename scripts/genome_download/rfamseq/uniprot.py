@@ -13,13 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import re
 import logging
 import typing as ty
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from functools import lru_cache
 
 import cattrs
-from attrs import define, field
+from attrs import define, field, frozen
+import requests
 
 LOGGER = logging.getLogger(__name__)
 
@@ -96,6 +99,17 @@ class GenomeInfo:
             return None
         return self.accession.split(".", 1)[1]
 
+@frozen
+class LineageInfo:
+    ncbi_id: int
+    species: str
+    tax_string: str
+    tree_display_name: str
+    align_display_name: str
+
+    def kingdom(self) -> str:
+        return self.tax_string.split('; ', 1)[0]
+
 
 @define
 class ProteomeInfo:
@@ -105,6 +119,7 @@ class ProteomeInfo:
     is_representative: bool
     proteome_description: ty.Optional[str]
     genome_info: GenomeInfo
+    lineage_info: LineageInfo
 
     @property
     def description(self) -> ty.Optional[str]:
@@ -251,18 +266,52 @@ def find_description(xml: ET.Element) -> ty.Optional[str]:
         return None
 
 
+@lru_cache
+def lineage_info(taxid: str) -> LineageInfo:
+    response = requests.get(f"https://rest.uniprot.org/taxonomy/{taxid}.json")
+    response.raise_for_status()
+    data = response.json()
+    parents = []
+    for taxon in reversed(data['lineage']):
+        if taxon.get('hidden', False):
+            continue
+        if taxon['scientificName'] == "cellular organisms":
+            continue
+        parents.append(taxon)
+    tax_string = '; '.join(l["scientificName"] for l in parents)
+    tax_string += '.'
+
+    species = data['scientificName']
+    # species = re.sub(r"\s*[(].+?[)]$", '', species)
+    # assert species, "Somehow created an empty species"
+    if (common_name := data.get('commonName', None)) and 'virus' not in tax_string:
+        species = f"{species} ({common_name.lower()})"
+
+    tree_name = species.replace(" ", "_")
+    return LineageInfo(
+        ncbi_id=data['taxonId'],
+        species=species,
+        tax_string=tax_string,
+        tree_display_name=tree_name,
+        align_display_name=f"{tree_name}[{data['taxonId']}]",
+    )
+
+
 def proteome(xml: ET.Element) -> ProteomeInfo:
     upi = proteome_value(xml, "pro:upid")
     ginfo = genome_info(upi, xml)
+    taxid = proteome_value(xml, "pro:taxonomy")
+    linfo = lineage_info(taxid)
     return ProteomeInfo(
         upi=upi,
-        taxid=proteome_value(xml, "pro:taxonomy"),
+        taxid=taxid,
         is_reference=proteome_value(xml, "pro:isReferenceProteome", convert=as_bool),
         is_representative=proteome_value(
             xml, "pro:isRepresentativeProteome", convert=as_bool
         ),
         proteome_description=find_description(xml),
         genome_info=ginfo,
+        lineage_info=linfo,
     )
 
 

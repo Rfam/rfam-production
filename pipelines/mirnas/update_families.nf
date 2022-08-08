@@ -73,7 +73,7 @@ process qc_checks {
 workflow update_families {
     take: mirnas_csv
     main: 
-        checkout_copy_seed(mirnas_csv) | set {copied}
+        checkout_copy_seed(mirnas_csv)
         run_searches(mirnas_csv, checkout_copy_seed.out.copied)
         run_makes(mirna_csv, run_searches.out.searches_done)
         add_refs_to_desc(mirna_csv, run_makes.out.make_done)

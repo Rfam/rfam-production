@@ -229,7 +229,7 @@ class GenomeDownload:
 
     def records(self, info: SqliteDict) -> Records:
         LOGGER.info("Fetching sequences method %s", self.method.name)
-        yield from self.method.fetch(info, self.proteome)
+        yield from self.method.fetch(info, self.proteome, ncbi_info=info)
 
 
 # def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:

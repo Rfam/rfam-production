@@ -99,7 +99,7 @@ process download {
   tuple val("${proteome_file.baseName}"), path("UP*.fa"), path("UP*.jsonl")
 
   """
-  rfamseq download $info $proteome_file .
+  rfamseq download ${params.version} $info $proteome_file .
   """
 }
 

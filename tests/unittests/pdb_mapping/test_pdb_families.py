@@ -1,6 +1,5 @@
 import unittest
-from unittest.mock import patch
-import mysql.connector
+from mock import patch
 
 from pdb_mapping.pdb_families import list_new_families
 
@@ -17,15 +16,15 @@ class PdbTest(unittest.TestCase):
         conn = mock_connect.return_value
         cursor = conn.cursor.return_value
         list_new_families()
-        self.assertEqual(3, cursor.execute.call_count)
+        self.assertEqual(5, cursor.execute.call_count)
         cursor.execute.assert_called_with(new_families_query)
 
     @patch('pdb_mapping.pdb_families.RfamDB.connect')
     def test_list_new_families_raises_mysql_error(self, mock_connect):
         conn = mock_connect.return_value
         cursor = conn.cursor.return_value
-        cursor.execute.side_effect = mysql.connector.Error
-        with self.assertRaises(mysql.connector.Error):
+        cursor.execute.side_effect = Exception
+        with self.assertRaises(Exception):
             list_new_families()
 
     @patch('pdb_mapping.pdb_families.RfamDB.connect')

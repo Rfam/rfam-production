@@ -17,7 +17,6 @@ import json
 import logging
 from pathlib import Path
 
-import attrs
 import cattrs
 import click
 from Bio import SeqIO

@@ -214,29 +214,11 @@ def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
     LOGGER.info("Getting NCBI assembly information for %s", accession)
     path = assembly_info_path(info, accession)
+    print(path)
     if not path:
         raise UnknownGenomeId(accession)
     with wget.wget(path) as handle:
         return parse_assembly_info(handle)
-
-
-def parse_doc_sum(entry: ET.Element) -> NcbiSequenceInfo:
-    raise ValueError("Not yet implemented")
-
-
-def esummary(accessions: ty.List[str]):
-    accs = ",".join(accessions)
-    response = requests.get(NCBI_SUMMARY_URL.format(accessions=accs))
-    response.raise_for_status()
-    root = ET.fromstring(response.content)
-    data = {}
-    for entry in root:
-        if entry.tag == "DocSum":
-            accession, info = parse_doc_sum(entry)
-            data[accession] = info
-        else:
-            raise ValueError("Unknown type of element %s" % entry.tag)
-    return data
 
 
 @sleep_and_retry

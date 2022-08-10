@@ -13,16 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import re
 import logging
 import typing as ty
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 import cattrs
-from attrs import define, field, frozen
 import requests
+from attrs import define, field, frozen
 
 LOGGER = logging.getLogger(__name__)
 
@@ -99,6 +98,7 @@ class GenomeInfo:
             return None
         return self.accession.split(".", 1)[1]
 
+
 @frozen
 class LineageInfo:
     ncbi_id: int
@@ -108,7 +108,7 @@ class LineageInfo:
     align_display_name: str
 
     def kingdom(self) -> str:
-        return self.tax_string.split('; ', 1)[0]
+        return self.tax_string.split("; ", 1)[0]
 
 
 @define
@@ -125,7 +125,7 @@ class ProteomeInfo:
     def description(self) -> ty.Optional[str]:
         if self.proteome_description:
             return self.proteome_description
-        return genome_info.description
+        return self.genome_info.description
 
 
 def node_text(node: ty.Optional[ET.Element]) -> ty.Optional[str]:
@@ -261,7 +261,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
 
 def find_description(xml: ET.Element) -> ty.Optional[str]:
     try:
-        return proteome_value(xml, "pro:description")
+        return proteome_value(xml, "pro:description").strip()
     except:
         return None
 
@@ -272,24 +272,25 @@ def lineage_info(taxid: str) -> LineageInfo:
     response.raise_for_status()
     data = response.json()
     parents = []
-    for taxon in reversed(data['lineage']):
-        if taxon.get('hidden', False):
+    should_hide = False
+    for taxon in reversed(data["lineage"]):
+        if taxon["taxonId"] == 2759:  # Hide in euks
+            should_hide = True
+        if should_hide and taxon.get("hidden", False):
             continue
-        if taxon['scientificName'] == "cellular organisms":
+        if taxon["scientificName"] == "cellular organisms":
             continue
         parents.append(taxon)
-    tax_string = '; '.join(l["scientificName"] for l in parents)
-    tax_string += '.'
+    tax_string = "; ".join(l["scientificName"] for l in parents)
+    tax_string += "."
 
-    species = data['scientificName']
-    # species = re.sub(r"\s*[(].+?[)]$", '', species)
-    # assert species, "Somehow created an empty species"
-    if (common_name := data.get('commonName', None)) and 'virus' not in tax_string:
+    species = data["scientificName"]
+    if (common_name := data.get("commonName", None)) and "virus" not in tax_string:
         species = f"{species} ({common_name.lower()})"
 
     tree_name = species.replace(" ", "_")
     return LineageInfo(
-        ncbi_id=data['taxonId'],
+        ncbi_id=data["taxonId"],
         species=species,
         tax_string=tax_string,
         tree_display_name=tree_name,

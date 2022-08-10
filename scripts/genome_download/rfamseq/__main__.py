@@ -23,7 +23,7 @@ import click
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import download, uniprot, metadata
+from rfamseq import download, metadata, uniprot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,13 +62,13 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             genome = download.GenomeDownload.build(db, proteome)
             with fasta_out.open("w") as fasta:
                 for sequence in genome.records(db):
-                    fetched.append((sequence.id, sequence.description))
+                    fetched.append(metadata.FromFasta.from_record(sequence))
                     SeqIO.write(sequence, fasta, "fasta")
 
             metadata_out = out / f"{proteome.upi}.jsonl"
             with metadata_out.open("w") as meta:
                 info = metadata.build(version, proteome, genome.assembly_info, fetched)
-                json.dump(attrs.asdict(info), meta)
+                json.dump(cattrs.unstructure(info), meta)
                 meta.write("\n")
 
 
@@ -83,7 +83,7 @@ def p2g_cmd(xml, output, ignore=None):
 
     for proteome in uniprot.proteomes(Path(xml), to_skip):
         LOGGER.info("Working on %s", proteome.upi)
-        data = attrs.asdict(proteome)
+        data = cattrs.unstructure(proteome)
         output.write(json.dumps(data))
         output.write("\n")
 

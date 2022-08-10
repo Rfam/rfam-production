@@ -41,6 +41,46 @@ from rfamseq import uniprot
 
 
 @pytest.mark.parametrize(
+    "taxid,expected",
+    [
+        (
+            "562",
+            uniprot.LineageInfo(
+                ncbi_id=562,
+                species="Escherichia coli",
+                tax_string="Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales; Enterobacteriaceae; Escherichia.",
+                tree_display_name="Escherichia_coli",
+                align_display_name="Escherichia_coli[562]",
+            )
+        ),
+        (
+            "9606",
+            uniprot.LineageInfo(
+                ncbi_id=9606,
+                species="Homo sapiens (human)",
+                tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
+                tree_display_name="Homo_sapiens_(human)",
+                align_display_name="Homo_sapiens_(human)[9606]",
+            ),
+        ),
+
+        (
+            "10090",
+            uniprot.LineageInfo(
+                ncbi_id=10090,
+                species="Mus musculus (mouse)",
+                tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae; Murinae; Mus; Mus.",
+                tree_display_name="Mus_musculus_(mouse)",
+                align_display_name="Mus_musculus_(mouse)[10090]",
+            ),
+        ),
+    ]
+)
+def test_can_get_correct_lineage(taxid, expected):
+    assert uniprot.lineage_info(taxid) == expected
+
+
+@pytest.mark.parametrize(
     "path,expected",
     [
         (
@@ -85,6 +125,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                ncbi_id=9606,
+                species="Homo sapiens (human)",
+                tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
+                tree_display_name="Homo_sapiens_(human)",
+                align_display_name="Homo_sapiens_(human)[9606]",
+            ),
             ),
         ),
         (
@@ -115,6 +162,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=3885,
+                    species='Phaseolus vulgaris (kidney bean)',
+                    tax_string='Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; eudicotyledons; Gunneridae; Pentapetalae; rosids; fabids; Fabales; Fabaceae; Papilionoideae; 50 kb inversion clade; NPAAA clade; indigoferoid/millettioid clade; Phaseoleae; Phaseolus.',
+                    tree_display_name='Phaseolus_vulgaris_(kidney_bean)',
+                    align_display_name='Phaseolus_vulgaris_(kidney_bean)[3885]',
+                ),
             ),
         ),
         (
@@ -129,6 +183,13 @@ from rfamseq import uniprot
                     accession="GCA_000002995",
                     description=None,
                     components=uniprot.ALL_CHROMOSOMES,
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=6279,
+                    species='Brugia malayi (filarial nematode worm)',
+                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Spirurina; Spiruromorpha; Filarioidea; Onchocercidae; Brugia.',
+                    tree_display_name='Brugia_malayi_(filarial_nematode_worm)',
+                    align_display_name='Brugia_malayi_(filarial_nematode_worm)[6279]',
                 ),
             ),
         ),
@@ -145,6 +206,13 @@ from rfamseq import uniprot
                     description="Hepatitis E virus ORF1, ORF2, ORF3,complete cds's; methyltransferase, Y domain, papain-like protease, poly-proline hing",
                     components=uniprot.SelectedComponents(accessions=["L08816"]),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=652674,
+                    species='Hepatitis E virus genotype 1 (isolate Human/China/HeBei/1987)',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirus; Hepatitis E virus.',
+                    tree_display_name='Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)',
+                    align_display_name='Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)[652674]',
+                )
             ),
         ),
         (
@@ -174,6 +242,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=230407,
+                    species='Cryphonectria parasitica mycoreovirus 1 (strain 9B21)',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Reoviridae; Spinareovirinae; Mycoreovirus; Mycoreovirus 1.',
+                    tree_display_name='Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)',
+                    align_display_name='Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)[230407]',
+                ),
             ),
         ),
         (
@@ -188,6 +263,13 @@ from rfamseq import uniprot
                     accession="AB290918",
                     description='Torque teno midi virus 1 DNA',
                     components=uniprot.ALL_CHROMOSOMES,
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=766184,
+                    species='Torque teno midi virus 1 (isolate MD1-073)',
+                    tax_string='Viruses; Anelloviridae; Gammatorquevirus.',
+                    tree_display_name='Torque_teno_midi_virus_1_(isolate_MD1-073)',
+                    align_display_name='Torque_teno_midi_virus_1_(isolate_MD1-073)[766184]',
                 ),
             ),
         ),
@@ -208,6 +290,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=2813240,
+                    species='Mycobacterium phage prophiGD12-2',
+                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Siphoviridae; unclassified Siphoviridae.',
+                    tree_display_name='Mycobacterium_phage_prophiGD12-2',
+                    align_display_name='Mycobacterium_phage_prophiGD12-2[2813240]'
+                ),
             ),
         ),
         (
@@ -220,12 +309,19 @@ from rfamseq import uniprot
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000317975.2",
-                    description='Carnobacterium maltaromaticum LMA28 complete genome',
+                    description=None,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "HE999757",
                         ]
                     ),
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1234679,
+                    species='Carnobacterium maltaromaticum LMA28',
+                    tax_string='Bacteria; Terrabacteria group; Firmicutes; Bacilli; Lactobacillales; Carnobacteriaceae; Carnobacterium; Carnobacterium maltaromaticum.',
+                    tree_display_name='Carnobacterium_maltaromaticum_LMA28',
+                    align_display_name='Carnobacterium_maltaromaticum_LMA28[1234679]',
                 ),
             ),
         ),
@@ -247,6 +343,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1249480,
+                    species='Candidatus Sulfuricurvum sp. RIFRC-1',
+                    tax_string='Bacteria; Proteobacteria; delta/epsilon subdivisions; Epsilonproteobacteria; Campylobacterales; Thiovulaceae; Sulfuricurvum.',
+                    tree_display_name='Candidatus_Sulfuricurvum_sp._RIFRC-1',
+                    align_display_name='Candidatus_Sulfuricurvum_sp._RIFRC-1[1249480]',
+                ),
             ),
         ),
         (
@@ -267,6 +370,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=399742,
+                    species='Enterobacter sp. (strain 638)',
+                    tax_string='Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales; Enterobacteriaceae; Enterobacter; unclassified Enterobacter.',
+                    tree_display_name='Enterobacter_sp._(strain_638)',
+                    align_display_name='Enterobacter_sp._(strain_638)[399742]',
+                ),
             ),
         ),
         (
@@ -285,6 +395,13 @@ from rfamseq import uniprot
                             "KY965444",
                         ]
                     ),
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=2022783,
+                    species='Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota',
+                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Peploviricota; Herviviricetes; Herpesvirales; Herpesviridae; Gammaherpesvirinae; Rhadinovirus; unclassified Rhadinovirus.',
+                    tree_display_name='Common_bottlenose_dolphin_gammaherpesvirus_1_strain_Sarasota',
+                    align_display_name='Common_bottlenose_dolphin_gammaherpesvirus_1_strai',
                 ),
             ),
         ),
@@ -305,6 +422,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1497851,
+                    species='Bacillus phage SPG24',
+                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Herelleviridae; Bastillevirinae; Nitunavirus; Bacillus virus SPG24.',
+                    tree_display_name='Bacillus_phage_SPG24',
+                    align_display_name='Bacillus_phage_SPG24[1497851]',
+                ),
             ),
         ),
         (
@@ -323,6 +447,13 @@ from rfamseq import uniprot
                             "KY820716",
                         ]
                     ),
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=2560515,
+                    species='Grapevine enamovirus 1',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Sobelivirales; Solemoviridae; Enamovirus.',
+                    tree_display_name='Grapevine_enamovirus_1',
+                    align_display_name='Grapevine_enamovirus_1[2560515]',
                 ),
             ),
         ),
@@ -344,6 +475,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1654339,
+                    species='Sclerotinia sclerotiorum botybirnavirus 1',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Botybirnavirus; unclassified Botybirnavirus.',
+                    tree_display_name='Sclerotinia_sclerotiorum_botybirnavirus_1',
+                    align_display_name='Sclerotinia_sclerotiorum_botybirnavirus_1[1654339]',
+                ),
             ),
         ),
         (
@@ -363,6 +501,13 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1307954,
+                    species='Maruca vitrata nucleopolyhedrovirus',
+                    tax_string='Viruses; Naldaviricetes; Lefavirales; Baculoviridae; Alphabaculovirus.',
+                    tree_display_name='Maruca_vitrata_nucleopolyhedrovirus',
+                    align_display_name='Maruca_vitrata_nucleopolyhedrovirus[1307954]',
+                )
             ),
         ),
         (
@@ -388,31 +533,45 @@ from rfamseq import uniprot
                         ]
                     ),
                 ),
-            ),
-        ),
-        (
-            Path("tests/data/UP000007648.xml"),
-            uniprot.ProteomeInfo(
-                upi="UP000007648",
-                taxid="9305",
-                is_reference=True,
-                is_representative=True,
-                proteome_description='''The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal. 
-
-The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
-
-The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
-                genome_info=uniprot.GenomeInfo(
-                    accession="GCA_902635505.1",
-                    description=None,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
-                            "AFEY01000000",
-                        ]
-                    ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=46245,
+                    species='Drosophila pseudoobscura pseudoobscura (fruit fly)',
+                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Endopterygota; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila; Sophophora.',
+                    tree_display_name='Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)',
+                    align_display_name='Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)[46245]',
                 ),
             ),
         ),
+        # (
+        #     Path("tests/data/UP000007648.xml"),
+        #     uniprot.ProteomeInfo(
+        #         upi="UP000007648",
+        #         taxid="9305",
+        #         is_reference=True,
+        #         is_representative=True,
+        #         proteome_description='''The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal.
+
+# The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
+
+# The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
+        #         genome_info=uniprot.GenomeInfo(
+        #             accession="GCA_902635505.1",
+        #             description=None,
+        #             components=uniprot.SelectedComponents(
+        #                 accessions=[
+        #                     "AFEY01000000",
+        #                 ]
+        #             ),
+        #         ),
+        #         lineage_info=uniprot.LineageInfo(
+        #             ncbi_id=9305,
+        #             species='Sarcophilus harrisii (tasmanian devil)',
+        #             tax_string='Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Metatheria; Dasyuromorphia; Dasyuridae; Sarcophilus.',
+        #             tree_display_name='Sarcophilus_harrisii_(tasmanian_devil)',
+        #             align_display_name='Sarcophilus_harrisii_(tasmanian_devil)[9305]',
+        #         ),
+        #     ),
+        # ),
         (
             Path("tests/data/UP000019116.xml"),
             uniprot.ProteomeInfo(
@@ -431,6 +590,13 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
                             uniprot.UNPLACED,
                         ]
                     ),
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=4565,
+                    species='Triticum aestivum (wheat)',
+                    tax_string='Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; Liliopsida; Poales; Poaceae; BOP clade; Pooideae; Triticodae; Triticeae; Triticinae; Triticum.',
+                    tree_display_name='Triticum_aestivum_(wheat)',
+                    align_display_name='Triticum_aestivum_(wheat)[4565]',
                 ),
             ),
         ),
@@ -451,6 +617,13 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1849840,
+                    species='Methylosinus sp. 3S-1',
+                    tax_string='Bacteria; Proteobacteria; Alphaproteobacteria; Hyphomicrobiales; Methylocystaceae; Methylosinus; unclassified Methylosinus.',
+                    tree_display_name='Methylosinus_sp._3S-1',
+                    align_display_name='Methylosinus_sp._3S-1[1849840]',
+                ),
             ),
         ),
         (
@@ -470,6 +643,13 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
                         ]
                     ),
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=1983562,
+                    species='Lake Sinai Virus SA1',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Magsaviricetes; Nodamuvirales; Sinhaliviridae; Sinaivirus; unclassified Sinaivirus.',
+                    tree_display_name='Lake_Sinai_Virus_SA1',
+                    align_display_name='Lake_Sinai_Virus_SA1[1983562]',
+                ),
             ),
         ),
         (
@@ -485,6 +665,13 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
                     description=None,
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=75913,
+                    species='Strongyloides venezuelensis (threadworm)',
+                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Tylenchina; Panagrolaimomorpha; Strongyloidoidea; Strongyloididae; Strongyloides.',
+                    tree_display_name='Strongyloides_venezuelensis_(threadworm)',
+                    align_display_name='Strongyloides_venezuelensis_(threadworm)[75913]',
+                ),
             ),
         ),
         (
@@ -499,6 +686,13 @@ The reference proteome of Sarcophilus harrisii is derived from the genome sequen
                     accession="GCA_000857805.1",
                     description='Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65',
                     components=uniprot.SelectedComponents(accessions=['AJ011380'])
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=650136,
+                    species='Porcine teschovirus 1 (isolate Pig/United Kingdom/F65/1967)',
+                    tax_string='Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Teschovirus; Teschovirus A; teschovirus A1.',
+                    tree_display_name='Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)',
+                    align_display_name='Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)[650136]',
                 ),
             ),
         ),

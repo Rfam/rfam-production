@@ -117,19 +117,26 @@ def wgs_sequences(wgs: str) -> Records:
     yield from ena.fetch_wgs_sequences(wgs)
 
 
-def lookup_with_fallback(info: SqliteDict, proteome, ncbi_info: ncbi.NcbiAssemblyInfo) -> Records:
-    genome = proteome.genome
+def lookup_with_fallback(
+    info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyInfo
+) -> Records:
+    genome = proteome.genome_info
     wgs_accessions = None
     if ncbi_info.wgs_project:
         resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
         if resolved:
             wgs_accessions = {ncbi_info.wgs_project: resolved}
 
+    assert isinstance(
+        genome.components, uniprot.SelectedComponents
+    ), f"Invalid components type {genome}"
     comp_set = fasta_filter.ComponentSet.from_selected(
         ncbi_info.sequence_info,
         genome.components,
         wgs_accessions,
     )
+
+    assert genome.accession, f"Missing genome accession in {proteome}"
     records = lookup_by_accession(info, genome.accession)
 
     for classification in fasta_filter.filter(records, comp_set):
@@ -163,9 +170,8 @@ def lookup_with_fallback(info: SqliteDict, proteome, ncbi_info: ncbi.NcbiAssembl
                     LOGGER.info("Failed to download WGS sequences")
             yield from lookup_by_accession(info, classification.accession)
         else:
-            raise ValueError(
-                f"Impossible state with {classification} for {proteome}"
-            )
+            raise ValueError(f"Impossible state with {classification} for {proteome}")
+
 
 @enum.unique
 class DownloadMethod(enum.Enum):
@@ -173,11 +179,18 @@ class DownloadMethod(enum.Enum):
     LOOKUP_GENOME_ACCESSION = "LOOKUP_GENOME_ACCESSION"
     FALLBACK = "LOOKUP_WITH_FALLBACK"
 
-    def fetch(self, info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ty.Optional[ncbi.NcbiAssemblyInfo]=None) -> Records:
+    def fetch(
+        self,
+        info: SqliteDict,
+        proteome: uniprot.ProteomeInfo,
+        ncbi_info: ty.Optional[ncbi.NcbiAssemblyInfo] = None,
+    ) -> Records:
         if self is DownloadMethod.BY_COMPONENT:
             yield from sequences_by_components(info, proteome)
         elif self is DownloadMethod.LOOKUP_GENOME_ACCESSION:
-            assert isinstance(proteome.genome_info.accession, str), "Invalid genome_info"
+            assert isinstance(
+                proteome.genome_info.accession, str
+            ), "Invalid genome_info"
             yield from lookup_by_accession(info, proteome.genome_info.accession)
         elif self is DownloadMethod.FALLBACK:
             assert isinstance(ncbi_info, ncbi.NcbiAssemblyInfo), "Must give ncbi_info"
@@ -199,7 +212,7 @@ class GenomeDownload:
 
     @classmethod
     def by_lookup(cls, proteome: uniprot.ProteomeInfo) -> GenomeDownload:
-        LOGGER.info("Using all sequences listed in %s", proteome.genome.accession)
+        LOGGER.info("Using all sequences listed in %s", proteome.genome_info.accession)
         return cls(DownloadMethod.LOOKUP_GENOME_ACCESSION, proteome, None)
 
     @classmethod
@@ -229,7 +242,7 @@ class GenomeDownload:
 
     def records(self, info: SqliteDict) -> Records:
         LOGGER.info("Fetching sequences method %s", self.method.name)
-        yield from self.method.fetch(info, self.proteome, ncbi_info=info)
+        yield from self.method.fetch(info, self.proteome, ncbi_info=self.assembly_info)
 
 
 # def sequences(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:

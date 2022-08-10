@@ -21,14 +21,14 @@ def validate(file_name, all_families_dir):
     Check the lsf output file and log files to validate if the process completed successfully
 
     :param file_name: .txt with list of Rfam accessions
-    :param all_families_dir: destination directory to checkout the families
+    :param all_families_dir: destination directory to check out the families
     """
     timestr = time.strftime("%Y%m%d-%H%M%S")
     validation_file = os.path.join(all_families_dir, "validation_{time}.log".format(time=timestr))
     accessions = load_rfam_accessions_from_file(file_name)
     with open(validation_file, 'w') as vf:
         for acc in accessions:
-            if not is_valid(all_families_dir, acc):
+            if not is_successful(all_families_dir, acc):
                 vf.write(acc + '\n')
 
     if os.path.getsize(validation_file) == 0:
@@ -38,11 +38,11 @@ def validate(file_name, all_families_dir):
         print ("Validation process found errors! Check validation.log for families with errors")
 
 
-def is_valid(all_families_dir, rfam_acc):
+def is_successful(all_families_dir, rfam_acc):
     """
-    Checks if the job ran successfully by checking if .err file is empty and
-    that 'Success' keyword exists in .out file. As an additional sanity check, we
-    look for the rfsearch.log file as an indication that rfsearch actually ran.
+    Checks if the job ran successfully by checking if .err file is empty and that
+    'Success' keyword exists in .out file.
+    Also check for the rfsearch.log file as an indication that rfsearch actually ran.
 
     :return: True if the family passes validation, False otherwise
     """

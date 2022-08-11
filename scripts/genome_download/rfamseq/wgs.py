@@ -41,6 +41,12 @@ def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
     return (prefix, int(minimal))
 
 
+def wgs_id(length: int, prefix: str, index: int) -> str:
+    padding = length - len(prefix)
+    pattern = f"{prefix}%0{padding}i"
+    return pattern % index
+
+
 @enum.unique
 class WgsSequenceKind(enum.Enum):
     SCAFFOLD = "WGS_SCAFLD"
@@ -53,21 +59,25 @@ class WgsInfo:
     kind: WgsSequenceKind
     start: int
     stop: int
+    id_length: int
 
     @classmethod
     def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsInfo:
         prefix, start = wgs_endpoint(endpoint)
-        return cls(wgs_id=prefix, kind=kind, start=start, stop=start)
+        return cls(wgs_id=prefix, kind=kind, start=start, stop=start,
+            id_length=len(endpoint))
 
     @classmethod
     def from_range(cls, kind: WgsSequenceKind, range: str) -> WgsInfo:
-        start, stop = range.split('-', 1)
-        prefix1, start = wgs_endpoint(start)
-        prefix2, stop = wgs_endpoint(stop)
+        raw_start, raw_stop = range.split('-', 1)
+        prefix1, start = wgs_endpoint(raw_start)
+        prefix2, stop = wgs_endpoint(raw_stop)
 
-        assert prefix1 == prefix2, "Cannot create range across prefixes {range}"
+        assert prefix1 == prefix2, f"Cannot create range across prefixes {range}"
+        assert len(raw_start) == len(raw_stop), f"Cannot create range with bad lengths {range}"
 
-        return cls(wgs_id=prefix1, kind=kind, start=start, stop=stop)
+        return cls(wgs_id=prefix1, kind=kind, start=start, stop=stop,
+                id_length=len(raw_start))
 
     @classmethod
     def build(cls, kind: WgsSequenceKind, range: str) -> WgsInfo:
@@ -75,9 +85,25 @@ class WgsInfo:
             return cls.from_endpoint(kind, range)
         return cls.from_range(kind, range)
 
+    def record_id(self) -> str:
+        return wgs_id(self.id_length, self.wgs_id, 0)
+
+    def as_range(self) -> str:
+        start = wgs_id(self.id_length, self.wgs_id, self.start)
+        stop = wgs_id(self.id_length, self.wgs_id, self.stop)
+        if self.start == self.stop:
+            return start
+        return f"{start}-{stop}"
+
     def ids(self) -> ty.Iterable[str]:
         for index in range(self.start, self.stop + 1):
-            yield f"{self.wgs_id}%07i" % index
+            yield wgs_id(self.id_length, self.wgs_id, index)
+
+    def __contains__(self, accession: str) -> bool:
+        for id in self.ids():
+            if id == accession:
+                return True
+        return False
 
 
 @frozen
@@ -91,6 +117,16 @@ class WgsSummary:
 
         for id in self.ncbi_ids:
             yield id
+
+    def record_ids(self) -> ty.Set[str]:
+        return {wgs.record_id() for wgs in self.ena_info}
+
+    def __contains__(self, accession: str) -> bool:
+        for id in self.ids():
+            if id == accession:
+                return True
+        return False
+
 
 
 def resolve_ena_wgs(accession: str) -> ty.List[WgsInfo]:

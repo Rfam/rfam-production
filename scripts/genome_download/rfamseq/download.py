@@ -125,11 +125,10 @@ def lookup_with_fallback(
 
     wgs_accessions = None
     if ncbi_info.wgs_project:
-        resolved = wgs.resolve_wgs(ncbi_info.wgs_project)
-        if resolved:
+        wgs_accessions = wgs.resolve_wgs(ncbi_info.wgs_project)
+        if wgs_accessions:
             LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
-            LOGGER.debug("Found %s", resolved)
-            wgs_accessions = {ncbi_info.wgs_project: resolved.ids()}
+            LOGGER.debug("Found %s", wgs_accessions)
         else:
             LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
 

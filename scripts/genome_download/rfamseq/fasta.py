@@ -17,8 +17,10 @@ import typing as ty
 
 from Bio import SeqIO
 
+Records = ty.Iterable[SeqIO.SeqRecord]
 
-def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
+
+def parse(handle: ty.IO) -> Records:
     """
     Parses a fasta file and removes any entries with duplicate ids, handle ids
     that use the '|' style and use the third section as the id and ensure that

@@ -45,7 +45,6 @@ def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
 class WgsSequenceKind(enum.Enum):
     SCAFFOLD = "WGS_SCAFLD"
     SEQUENCE = "WGS"
-    CONTIG = "CON"
 
 
 @frozen

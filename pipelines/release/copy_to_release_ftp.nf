@@ -1,31 +1,32 @@
-nextflow.enable.dsl=2
+params.ftp_dir = "$params.ftp_site/$params.releasex"
 
-process generate_seed_files {
-    memory '10GB'
+process copy_to_release_ftp {
+    queue 'datamover'
 
     output:
     val('done)')
 
     """
-    rm -rf ${params.release_ftp}/seed/
-    mkdir -p ${params.release_ftp}/seed/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir "${params.release_ftp}/seed"
+    mkdir $params.ftp_dir
+    cd $params.release_ftp
+    cp -r fasta_files/ $params.ftp_dir
+    cp -r database_files/ $params.ftp_dir
+    cp -r rfam2go/ $params.ftp_dir
+    cp Rfam.full_region.gz $params.ftp_dir
+    cp Rfam.clanin $params.ftp_dir
+    cp Rfam.pdb.gz $params.ftp_dir
+    cp tree/Rfam.seed_tree.tar.gz $params.ftp_dir
+    cp cm/Rfam.cm.gz $params.ftp_dir
+    cp cm/Rfam.tar.gz $params.ftp_dir
+    cp seed/Rfam.seed.gz $params.ftp_dir
+    cp seed/Rfam.seed_tree.tar.gz $params.ftp_dir
+
+    cp -r $params.releases_dir/genome_browser_hub/ $params.ftp_dir
+    cp $params.releases_dir/COPYING $params.ftp_dir
+    cp $params.releases_dir/USERMAN $params.ftp_dir
+    cp $params.releases_dir/README $params.ftp_dir
     """
 
-}
-
-workflow copy_to_release_ftp {
-    emit:
-        done
-    main:
-        copy_seed_files \
-        copy_cm_files \
-        copy_genome_browser \
-        copy_fasta \
-        copy_tree \
-        copy_files \
-
-        | set { done }
 }
 
 workflow {

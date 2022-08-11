@@ -143,7 +143,9 @@ class ComponentSet:
     def __iter__(self):
         if isinstance(self.components, uniprot.All):
             return iter(())
-        return iter(self.components.keys())
+        yield from self.components.keys()
+        if self.wgs_sets:
+            yield from self.wgs_sets.ids()
 
 
 def filter(

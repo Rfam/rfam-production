@@ -20,20 +20,6 @@ process fetch_ncbi_locations {
   """
 }
 
-process fetch_uniprot_taxonomy {
-  memory '2GB'
-  queue 'short'
-  errorStrategy 'finish'
-
-  output:
-  path('taxonomy.tsv')
-
-  """
-  curl 'https://rest.uniprot.org/taxonomy/stream?compressed=true&fields=id%2Ccommon_name%2Cscientific_name%2Clineage&format=tsv&query=%2A' > taxonomy.tsv.gz
-  gzip -d taxonomy.tsv.gz
-  """
-}
-
 process download_all_proteomes {
   queue 'short'
 

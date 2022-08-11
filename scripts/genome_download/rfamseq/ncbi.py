@@ -255,7 +255,9 @@ def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
 
 def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
     raw_header = handle.readline()
-    assert raw_header.startswith("# Sequence-Name"), "Not at header"
+    if not raw_header.startswith("# Sequence-Name"):
+        LOGGER.info("Assembly file appears to be empty")
+        return []
     header = sequence_header(tuple(raw_header[2:].strip().split("\t")))
     reader = csv.DictReader(handle, delimiter="\t", fieldnames=header)
     sequences = []
@@ -267,9 +269,11 @@ def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
     return sequences
 
 
-def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
+def parse_assembly_info(handle: ty.IO) -> ty.Optional[NcbiAssemblyInfo]:
     header = parse_header(handle)
     sequences = parse_sequence_lines(handle)
+    if not sequences:
+        return None
     return NcbiAssemblyInfo(
         taxid=int(header["taxid"]),
         assembly_name=header["assembly_name"],
@@ -284,11 +288,13 @@ def parse_assembly_info(handle: ty.IO) -> NcbiAssemblyInfo:
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
     LOGGER.info("Getting NCBI assembly information for %s", accession)
     path = assembly_info_path(info, accession)
-    print(path)
     if not path:
         raise UnknownGenomeId(accession)
     with wget.wget(path) as handle:
-        return parse_assembly_info(handle)
+        ainfo = parse_assembly_info(handle)
+        if not ainfo:
+            raise UnknownGenomeId(accession)
+        return ainfo
 
 
 @sleep_and_retry

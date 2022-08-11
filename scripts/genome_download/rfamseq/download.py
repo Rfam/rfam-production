@@ -236,12 +236,14 @@ class GenomeDownload:
             raise ValueError(f"Unknown type of components {genome.components}")
 
         LOGGER.info("Extracting selected components for %s", genome.accession)
-
         try:
             ncbi_info = ncbi.assembly_info(info, genome.accession)
         except ncbi.UnknownGenomeId:
             return cls.by_components(proteome)
 
+        # If we are fetching a genome which has a single component, and that
+        # component is the WGS project assigned the genome in the NCBI assembly
+        # info, we c
         return cls(DownloadMethod.FALLBACK, proteome, ncbi_info)
 
     def records(self, info: SqliteDict) -> Records:

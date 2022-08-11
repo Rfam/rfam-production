@@ -128,6 +128,17 @@ class ComponentSet:
             wgs_sets=wgs_accessions,
         )
 
+    def wgs_project(self, accession: str) -> ty.Optional[str]:
+        if isinstance(self.components, uniprot.All):
+            return None
+        if not self.wgs_sets:
+            return None
+
+        if accession in self.wgs_sets:
+            return self.wgs_sets.wgs_id
+
+        return None
+
     def normalize(self, accession: str) -> ty.Optional[str]:
         if isinstance(self.components, uniprot.All):
             return accession
@@ -157,6 +168,7 @@ class ComponentSet:
     def __iter__(self):
         if isinstance(self.components, uniprot.All):
             return iter(())
+
         yield from self.components.keys()
         if self.wgs_sets:
             yield from self.wgs_sets.ids()
@@ -173,15 +185,25 @@ def filter(
     """
 
     seen = set()
+    seen_wgs = set()
     for record in records:
         LOGGER.info("Checking if %s is allowed", record.id)
         normalized_id = requested.normalize(record.id)
         if normalized_id:
             seen.add(normalized_id)
+            if wgs_id := requested.wgs_project(normalized_id):
+                seen_wgs.add(wgs_id)
             yield Found(matching_accession=record.id, record=record)
         else:
             yield Extra(extra=record)
 
+        # import sys
+        # sys.exit()
+
     for accession in requested:
-        if accession not in seen:
-            yield Missing(accession=accession)
+        if accession in seen:
+            continue
+        wgs_project = requested.wgs_project(accession)
+        if wgs_project in seen_wgs:
+            continue
+        yield Missing(accession=accession)

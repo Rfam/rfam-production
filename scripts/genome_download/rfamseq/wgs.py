@@ -165,28 +165,28 @@ class WgsSequence:
         return False
 
 
-WgsInfo = ty.Union[WgsSequence, ContigInfo]
-
-
 @frozen
 class WgsSummary:
-    ena_info: ty.List[WgsInfo]
+    wgs_id: str
+    contigs: ty.Optional[ContigInfo]
+    sequences: ty.List[WgsSequence]
     ncbi_ids: ty.List[str]
 
     def ids(self) -> ty.Iterable[str]:
-        for wgs in self.ena_info:
+        if self.contigs:
+            yield from self.contigs.ids()
+
+        for wgs in self.sequences:
             yield from wgs.ids()
 
         for id in self.ncbi_ids:
             yield id
 
     def record_ids(self) -> ty.Set[str]:
-        return {
-            wgs.record_id() for wgs in self.ena_info if isinstance(wgs, WgsSequence)
-        }
+        return {wgs.record_id() for wgs in self.sequences}
 
     def within_one_version(self, accession: str) -> bool:
-        for info in self.ena_info:
+        for info in self.sequences:
             if isinstance(info, ContigInfo):
                 continue
             if info.within_one_version(accession):
@@ -200,10 +200,13 @@ class WgsSummary:
         return False
 
 
-def resolve_ena_wgs(accession: str) -> ty.List[WgsInfo]:
+def resolve_ena_wgs(
+    accession: str,
+) -> ty.Tuple[ty.Optional[ContigInfo], ty.List[WgsSequence]]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
     url = ena.ENA_EMBL_URL.format(accession=accession)
-    info = []
+    contigs = None
+    info: ty.List[WgsSequence] = []
     with wget.wget(url) as handle:
         for line in handle:
             prefix = line[0:3]
@@ -215,17 +218,20 @@ def resolve_ena_wgs(accession: str) -> ty.List[WgsInfo]:
                 info.append(WgsSequence.build(kind, line[3:].strip()))
             except InvalidWgsAccession as err:
                 if kind is WgsSequenceKind.CONTIG:
-                    info.append(ContigInfo.build(line[3:].strip()))
+                    contigs = ContigInfo.build(line[3:].strip())
                 else:
                     raise err
 
-    return info
+    return (contigs, info)
 
 
 def resolve_wgs(accession: str) -> ty.Optional[WgsSummary]:
-    ena_info = resolve_ena_wgs(accession)
+    (contigs, ena_info) = resolve_ena_wgs(accession)
     ncbi_ids = ncbi.resolve_wgs(accession)
-    if not ncbi_ids and not ena_info:
+    if not ncbi_ids and not ena_info and not contigs:
         return None
 
-    return WgsSummary(ena_info=ena_info, ncbi_ids=(ncbi_ids or []))
+    wgs_id = ena_info[0].wgs_id
+    return WgsSummary(
+        wgs_id=wgs_id, contigs=contigs, sequences=ena_info, ncbi_ids=(ncbi_ids or [])
+    )

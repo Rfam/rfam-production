@@ -51,6 +51,7 @@ def wgs_id(length: int, prefix: str, index: int) -> str:
 class WgsSequenceKind(enum.Enum):
     SCAFFOLD = "WGS_SCAFLD"
     SEQUENCE = "WGS"
+    CONTIG = "CON"
 
 
 @frozen

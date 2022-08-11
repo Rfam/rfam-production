@@ -58,7 +58,7 @@ class WgsInfo:
     @classmethod
     def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsInfo:
         prefix, start = wgs_endpoint(endpoint)
-        return cls(wgs_id=prefix, kind=kind, start=start, stop=start + 1)
+        return cls(wgs_id=prefix, kind=kind, start=start, stop=start)
 
     @classmethod
     def from_range(cls, kind: WgsSequenceKind, range: str) -> WgsInfo:

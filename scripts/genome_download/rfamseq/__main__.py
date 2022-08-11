@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import csv
 import json
 import logging
 from pathlib import Path
@@ -22,7 +23,7 @@ import click
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import download, metadata, uniprot
+from rfamseq import download, metadata, uniprot, ncbi
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,6 +87,29 @@ def p2g_cmd(xml, output, ignore=None):
         output.write(json.dumps(data))
         output.write("\n")
 
+
+@cli.command("parse-assembly-summary")
+@click.argument("filename", default='-', type=click.File("r"))
+@click.argument("output", type=click.Path())
+def parse_assembly_info(filename, output):
+    reader = csv.DictReader(filename, delimiter="\t")
+    with SqliteDict(output, flag="r") as db:
+        count = 0
+        for index, row in enumerate(reader):
+            count += 1
+            summary = ncbi.NcbiAssemblySummary.from_ncbi_row(row)
+            if summary.assembly_accession in db:
+                raise ValueError("Multiple mappings to %s" % summary.assembly_accession)
+            db[summary.assembly_accession] = summary
+            if index % 100000 == 0:
+                db.commit()
+        db.commit()
+
+        if count == 0:
+            raise ValueError("Did not load any assemblies")
+
+    with SqliteDict(output) as db:
+        assert len(db) == count, "Did not load all assembiles"
 
 if __name__ == "__main__":
     cli()

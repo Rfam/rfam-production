@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from __future__ import annotations
+
 import csv
 import enum
 import logging
@@ -96,6 +98,72 @@ class NcbiAssemblyInfo:
     bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
     wgs_project: ty.Optional[str] = field(metadata={"ncbi_name": "WGS project"})
     sequence_info: ty.List[NcbiSequenceInfo]
+
+
+@enum.unique
+class RefseqCategory(enum.Enum):
+    REFERENCE_GENOME = "reference genome"
+    REPRESENTATIVE_GENOME = "representative genome"
+
+
+@enum.unique
+class AssemblyVersionStatus(enum.Enum):
+    LATEST = "latest"
+    REPLACED = "replaced"
+    SUPPRESSED = "suppressed"
+
+
+@enum.unique
+class AssemblyLevel(enum.Enum):
+    COMPLETE_GENOME = "Complete genome"
+    CHROMOSOME = "Chromosome"
+    SCAFFOLD = "Scaffold"
+    CONTIG = "Contif"
+
+
+@enum.unique
+class AssemblyReleaseType(enum.Enum):
+    MAJOR = "Major"
+    MINOR = "Minor"
+    PATCH = "Patch"
+
+
+@enum.unique
+class GenomeAssemblyRep(enum.Enum):
+    FULL = "Full"
+    PARTIAL = "Partial"
+
+
+@frozen
+class NcbiAssemblySummary:
+    assembly_accession: str
+    bioproject: str
+    biosample: str
+    wgs_master: ty.Optional[str]
+    refseq_category: ty.Optional[RefseqCategory]
+    taxid: int
+    species_taxid: int
+    organism_name: str
+    infraspecific_name: ty.Optional[str]
+    isolate: ty.Optional[str]
+    version_status: AssemblyVersionStatus
+    assembly_level: AssemblyLevel
+    release_type: AssemblyReleaseType
+    genome_rep: GenomeAssemblyRep
+    seq_rel_date: str
+    asm_name: str
+    submitter: str
+    gbrs_paired_asm: ty.Optional[str]
+    paired_asm_comp: ty.Optional[str]
+    ftp_path: ty.Optional[str]
+    excluded_from_refseq: str
+    relation_to_type_material: str
+    asm_not_live_date: ty.Optional[str]
+
+    @classmethod
+    def from_ncbi_row(cls, row: ty.Dict[str, str]) -> NcbiAssemblySummary:
+        updated = {k: maybe(v) for k, v in row.items()}
+        return cattrs.structure(updated, cls)
 
 
 def maybe(raw: str) -> ty.Optional[str]:

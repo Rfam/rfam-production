@@ -1,0 +1,47 @@
+<proteomes xmlns="https://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://uniprot.org/uniprot https://www.uniprot.org/docs/proteome.xsd">
+<proteome proteinCount="1" xmlns="http://uniprot.org/proteome">
+  <upid>UP000000408</upid>
+  <taxonomy>650136</taxonomy>
+  <modified>2022-03-27</modified>
+  <isReferenceProteome>true</isReferenceProteome>
+  <isRepresentativeProteome>false</isRepresentativeProteome>
+  <strain>Isolate Pig/United Kingdom/F65/1967</strain>
+  <genomeAssembly>
+    <genomeAssemblySource>ENA/EMBL</genomeAssemblySource>
+    <genomeAssembly>GCA_000857805.1</genomeAssembly>
+    <genomeAssemblyUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000857805.1</genomeAssemblyUrl>
+    <genomeRepresentation>full</genomeRepresentation>
+  </genomeAssembly>
+  <genomeAnnotation>
+    <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    <genomeAnnotationUrl>https://www.ebi.ac.uk/ena/browser/view/GCA_000857805.1</genomeAnnotationUrl>
+  </genomeAnnotation>
+  <component name="Genome" proteinCount="1">
+    <description>Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65</description>
+    <genomeAccession>AJ011380</genomeAccession>
+    <genomeAnnotation>
+      <genomeAnnotationSource>ENA/EMBL</genomeAnnotationSource>
+    </genomeAnnotation>
+  </component>
+  <reference>
+    <citation type="journal article" date="1999" name="J. Gen. Virol." volume="80" first="1929" last="1941">
+      <title>Sequence analysis of a porcine enterovirus serotype 1 isolate: relationships with other picornaviruses.</title>
+      <authorList>
+        <person name="Doherty M."/>
+        <person name="Todd D."/>
+        <person name="McFerran N."/>
+        <person name="Hoey E.M."/>
+      </authorList>
+    </citation>
+  </reference>
+  <annotationScore normalizedAnnotationScore="4"/>
+  <scores name="cpd">
+    <property name="averageCds" value="0"/>
+    <property name="confidence" value="0"/>
+    <property name="proteomeCount" value="3591"/>
+    <property name="stdCdss" value="0.0"/>
+    <property name="status" value="Standard"/>
+  </scores>
+</proteome>
+
+</proteomes>

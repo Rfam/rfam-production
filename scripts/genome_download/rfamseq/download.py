@@ -24,7 +24,7 @@ from attrs import define, frozen
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, fasta_filter, ncbi, uniprot, wget
+from rfamseq import ena, fasta_filter, ncbi, uniprot, wget, wgs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,11 +121,17 @@ def lookup_with_fallback(
     info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyInfo
 ) -> Records:
     genome = proteome.genome_info
+    assert genome.accession, f"Missing genome accession in {proteome}"
+
     wgs_accessions = None
     if ncbi_info.wgs_project:
-        resolved = ncbi.resolve_wgs(ncbi_info.wgs_project)
+        resolved = wgs.resolve_wgs(ncbi_info.wgs_project)
         if resolved:
-            wgs_accessions = {ncbi_info.wgs_project: resolved}
+            LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
+            LOGGER.debug("Found %s", resolved)
+            wgs_accessions = {ncbi_info.wgs_project: resolved.ids()}
+        else:
+            LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
 
     assert isinstance(
         genome.components, uniprot.SelectedComponents
@@ -136,7 +142,6 @@ def lookup_with_fallback(
         wgs_accessions,
     )
 
-    assert genome.accession, f"Missing genome accession in {proteome}"
     records = lookup_by_accession(info, genome.accession)
 
     for classification in fasta_filter.filter(records, comp_set):

@@ -20,12 +20,11 @@ import re
 import typing as ty
 from functools import lru_cache
 from io import StringIO
-from xml.etree import ElementTree as ET
 
 import attrs
 import cattrs
 import requests
-from attrs import define, field
+from attrs import field, frozen
 from Bio import SeqIO
 from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
@@ -70,7 +69,7 @@ class SequenceRole(enum.Enum):
     ALTERNATE_SCAFFOLD = "alt-scaffold"
 
 
-@define
+@frozen
 class NcbiSequenceInfo:
     genbank_accession: str = field(metadata={"ncbi_name": "GenBank-Accn"})
     name: str = field(metadata={"ncbi_name": "Sequence-Name"})
@@ -81,14 +80,14 @@ class NcbiSequenceInfo:
     length: ty.Optional[int] = field(metadata={"ncbi_name": "Sequence-Length"})
 
 
-@define
+@frozen
 class NcbiSequenceSummary:
     accession: str
     title: str
     length: int
 
 
-@define
+@frozen
 class NcbiAssemblyInfo:
     taxid: int = field(metadata={"ncbi_name": "Taxid"})
     assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})

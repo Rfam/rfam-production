@@ -260,6 +260,17 @@ def test_wgs_generates_expected_ids(info, expected):
                 wgs.ContigInfo(prefix="KE", start=150405, stop=150411),
             ],
         ),
+        # (
+        #     "SCMI01",
+        #     [
+        #         wgs.WgsSequence(
+        #             wgs_id='SCMI01',
+        #             kind=wgs.WgsSequenceKind.SEQUENCE,
+        #             start=1,
+        #             stop=2911
+        #             id_length=len("SCMI01000001"),
+        #     ]
+        # ),
     ],
 )
 def test_can_resolve_wgs_ids_with_ena(accession, expected):

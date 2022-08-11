@@ -62,6 +62,10 @@ class ContigInfo:
     stop: int
 
     @classmethod
+    def from_range(cls, raw: str) -> ContifInfo:
+        pass
+
+    @classmethod
     def build(cls, raw: str) -> ContigInfo:
         raw_start, raw_stop = raw.split("-", 1)
         if not (match := re.match(CONTIG_PATTERN, raw_start)):
@@ -168,13 +172,13 @@ class WgsSequence:
 @frozen
 class WgsSummary:
     wgs_id: str
-    contigs: ty.Optional[ContigInfo]
+    contigs: ty.List[ContigInfo]
     sequences: ty.List[WgsSequence]
     ncbi_ids: ty.List[str]
 
     def ids(self) -> ty.Iterable[str]:
-        if self.contigs:
-            yield from self.contigs.ids()
+        for contig in self.contigs:
+            yield from contig.ids()
 
         for wgs in self.sequences:
             yield from wgs.ids()
@@ -202,10 +206,10 @@ class WgsSummary:
 
 def resolve_ena_wgs(
     accession: str,
-) -> ty.Tuple[ty.Optional[ContigInfo], ty.List[WgsSequence]]:
+) -> ty.Tuple[ty.List[ContigInfo], ty.List[WgsSequence]]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
     url = ena.ENA_EMBL_URL.format(accession=accession)
-    contigs = None
+    contigs: ty.List[ContigInfo] = []
     info: ty.List[WgsSequence] = []
     with wget.wget(url) as handle:
         for line in handle:
@@ -217,10 +221,13 @@ def resolve_ena_wgs(
             try:
                 info.append(WgsSequence.build(kind, line[3:].strip()))
             except InvalidWgsAccession as err:
-                if kind is WgsSequenceKind.CONTIG:
-                    contigs = ContigInfo.build(line[3:].strip())
-                else:
+                if kind is not WgsSequenceKind.CONTIG:
                     raise err
+
+                value = line[3:].strip()
+                parts = value.split(";")
+                for part in parts:
+                    contigs.append(ContigInfo.build(part))
 
     return (contigs, info)
 

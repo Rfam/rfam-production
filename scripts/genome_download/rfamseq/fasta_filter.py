@@ -23,7 +23,7 @@ import typing as ty
 from attrs import frozen
 from Bio import SeqIO
 
-from rfamseq import fasta, ncbi, uniprot, utils, wgs
+from rfamseq import ncbi, uniprot, utils, wgs
 
 LOGGER = logging.getLogger(__name__)
 

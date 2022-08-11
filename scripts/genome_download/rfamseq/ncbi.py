@@ -208,7 +208,7 @@ def ftp_path(info: SqliteDict, accession: str, suffix: str) -> ty.Optional[str]:
         return None
 
     path = info[versioned]["ftp_path"]
-    if path == 'na':
+    if path == "na":
         LOGGER.info("Accession %s has na path", versioned)
         return None
     parts = path.split("/")
@@ -323,7 +323,9 @@ def fetch_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord
 
 def resolve_wgs(accession: str) -> ty.Optional[ty.List[str]]:
     LOGGER.info("Trying to resolve WGS set %s", accession)
-    response = requests.get(NCBI_WGS_URL.format(accession=accession))
+    url = NCBI_WGS_URL.format(accession=accession)
+    LOGGER.debug("Fetching %s", url)
+    response = requests.get(url)
     try:
         response.raise_for_status()
     except:

@@ -15,10 +15,10 @@ limitations under the License.
 
 from __future__ import annotations
 
+import collections as coll
 import logging
 import re
 import typing as ty
-import collections as coll
 
 from attrs import frozen
 from Bio import SeqIO
@@ -67,8 +67,10 @@ class ComponentSet:
     @classmethod
     def from_all(cls) -> ComponentSet:
         return cls(
-            components=uniprot.ALL_CHROMOSOMES, allow_unplaced=False, unplaced=set(),
-            wgs_sets=None
+            components=uniprot.ALL_CHROMOSOMES,
+            allow_unplaced=False,
+            unplaced=set(),
+            wgs_sets=None,
         )
 
     @classmethod
@@ -95,6 +97,18 @@ class ComponentSet:
             # something to search for and just rely on the wgs ids we have
             # determined.
             if wgs_accessions and component in wgs_accessions.record_ids():
+                continue
+
+            # If the given component is single version difference from the
+            # record id we already see in the wgs_accessions, we accept it.
+            # This is techinically wrong, however, there are cases where old
+            # versions dissappear. This is painful but there is generally a new exists,
+            # so we can get a close enough sequence.
+            #
+            # Example:
+            # UP000077684 (GCA_001645045.2) wants LWDE01000000, which is gone,
+            # but LWDE02 exists.
+            if wgs_accessions and wgs_accessions.within_one_version(component):
                 continue
 
             components[component].add(component)
@@ -159,7 +173,6 @@ def filter(
     """
 
     seen = set()
-    print(requested)
     for record in records:
         LOGGER.info("Checking if %s is allowed", record.id)
         normalized_id = requested.normalize(record.id)

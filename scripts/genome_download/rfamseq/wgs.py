@@ -15,29 +15,37 @@ limitations under the License.
 
 from __future__ import annotations
 
-import re
 import enum
-import typing as ty
 import logging
+import re
+import typing as ty
 
-from attrs import frozen
 import cattrs
+from attrs import frozen
 
-from rfamseq import ena, wget, ncbi
+from rfamseq import ena, ncbi, wget
 
 LOGGER = logging.getLogger(__name__)
 
 
 PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)\d+$")
 
+CONTIG_PATTERN = re.compile(r"(^[A-Z]+)(\d+)$")
+
+
+class InvalidWgsAccession(Exception):
+    """
+    Raised if the WGS accession is not formatted as expected.
+    """
+
 
 def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
     if not (match := re.match(PATTERN, raw)):
-        raise ValueError(f"Cannot parse {raw}")
+        raise InvalidWgsAccession(raw)
 
     prefix = match.group(1)
-    id = raw[len(prefix):]
-    minimal = re.sub('^0+', '', id) or '0'
+    id = raw[len(prefix) :]
+    minimal = re.sub("^0+", "", id) or "0"
     return (prefix, int(minimal))
 
 
@@ -45,6 +53,36 @@ def wgs_id(length: int, prefix: str, index: int) -> str:
     padding = length - len(prefix)
     pattern = f"{prefix}%0{padding}i"
     return pattern % index
+
+
+@frozen
+class ContigInfo:
+    prefix: str
+    start: int
+    stop: int
+
+    @classmethod
+    def build(cls, raw: str) -> ContigInfo:
+        raw_start, raw_stop = raw.split("-", 1)
+        if not (match := re.match(CONTIG_PATTERN, raw_start)):
+            raise ValueError(f"Cannot parse {raw}")
+        prefix = match.group(1)
+        start = match.group(2)
+
+        if not (match := re.match(CONTIG_PATTERN, raw_stop)):
+            raise ValueError(f"Cannot parse {raw}")
+
+        assert prefix == match.group(1), f"Mismatch prefix {raw}"
+        stop = match.group(2)
+
+        return cls(prefix=prefix, start=int(start), stop=int(stop))
+
+    def as_range(self) -> str:
+        return f"{self.prefix}{self.start}-{self.prefix}{self.stop}"
+
+    def ids(self) -> ty.Iterable[str]:
+        for index in range(self.start, self.stop + 1):
+            yield f"{self.prefix}{index}"
 
 
 @enum.unique
@@ -55,7 +93,7 @@ class WgsSequenceKind(enum.Enum):
 
 
 @frozen
-class WgsInfo:
+class WgsSequence:
     wgs_id: str
     kind: WgsSequenceKind
     start: int
@@ -63,28 +101,48 @@ class WgsInfo:
     id_length: int
 
     @classmethod
-    def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsInfo:
+    def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsSequence:
         prefix, start = wgs_endpoint(endpoint)
-        return cls(wgs_id=prefix, kind=kind, start=start, stop=start,
-            id_length=len(endpoint))
+        return cls(
+            wgs_id=prefix, kind=kind, start=start, stop=start, id_length=len(endpoint)
+        )
 
     @classmethod
-    def from_range(cls, kind: WgsSequenceKind, range: str) -> WgsInfo:
-        raw_start, raw_stop = range.split('-', 1)
+    def from_range(cls, kind: WgsSequenceKind, range: str) -> WgsSequence:
+        raw_start, raw_stop = range.split("-", 1)
         prefix1, start = wgs_endpoint(raw_start)
         prefix2, stop = wgs_endpoint(raw_stop)
 
         assert prefix1 == prefix2, f"Cannot create range across prefixes {range}"
-        assert len(raw_start) == len(raw_stop), f"Cannot create range with bad lengths {range}"
+        assert len(raw_start) == len(
+            raw_stop
+        ), f"Cannot create range with bad lengths {range}"
 
-        return cls(wgs_id=prefix1, kind=kind, start=start, stop=stop,
-                id_length=len(raw_start))
+        return cls(
+            wgs_id=prefix1, kind=kind, start=start, stop=stop, id_length=len(raw_start)
+        )
 
     @classmethod
-    def build(cls, kind: WgsSequenceKind, range: str) -> WgsInfo:
-        if '-' not in range:
+    def build(cls, kind: WgsSequenceKind, range: str) -> WgsSequence:
+        if "-" not in range:
             return cls.from_endpoint(kind, range)
         return cls.from_range(kind, range)
+
+    def within_one_version(self, accession: str) -> bool:
+        accession = re.sub(r"0+$", "", accession)
+        pattern = re.compile(r"([A-Z]+)0+(\d+)S?$")
+        if not (acc_match := re.search(pattern, accession)):
+            return False
+        if not (match := re.search(pattern, self.wgs_id)):
+            return False
+
+        if not match.group(1) == acc_match.group(1):
+            return False
+
+        current = int(match.group(2))
+        suggested = int(acc_match.group(2))
+
+        return abs(current - suggested) == 1
 
     def record_id(self) -> str:
         return wgs_id(self.id_length, self.wgs_id, 0)
@@ -107,6 +165,9 @@ class WgsInfo:
         return False
 
 
+WgsInfo = ty.Union[WgsSequence, ContigInfo]
+
+
 @frozen
 class WgsSummary:
     ena_info: ty.List[WgsInfo]
@@ -120,14 +181,23 @@ class WgsSummary:
             yield id
 
     def record_ids(self) -> ty.Set[str]:
-        return {wgs.record_id() for wgs in self.ena_info}
+        return {
+            wgs.record_id() for wgs in self.ena_info if isinstance(wgs, WgsSequence)
+        }
+
+    def within_one_version(self, accession: str) -> bool:
+        for info in self.ena_info:
+            if isinstance(info, ContigInfo):
+                continue
+            if info.within_one_version(accession):
+                return True
+        return False
 
     def __contains__(self, accession: str) -> bool:
         for id in self.ids():
             if id == accession:
                 return True
         return False
-
 
 
 def resolve_ena_wgs(accession: str) -> ty.List[WgsInfo]:
@@ -141,7 +211,14 @@ def resolve_ena_wgs(accession: str) -> ty.List[WgsInfo]:
                 kind = cattrs.structure(prefix, WgsSequenceKind)
             except:
                 continue
-            info.append(WgsInfo.build(kind, line[3:].strip()))
+            try:
+                info.append(WgsSequence.build(kind, line[3:].strip()))
+            except InvalidWgsAccession as err:
+                if kind is WgsSequenceKind.CONTIG:
+                    info.append(ContigInfo.build(line[3:].strip()))
+                else:
+                    raise err
+
     return info
 
 

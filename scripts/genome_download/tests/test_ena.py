@@ -19,9 +19,18 @@ import pytest
 from rfamseq import ena
 
 
-@pytest.mark.parametrize('accession,expected', [
-    ('CABU01000000', 'ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz'),
-    ('CABU01', 'ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz'),
-])
+@pytest.mark.parametrize(
+    "accession,expected",
+    [
+        (
+            "CABU01000000",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+        ),
+        (
+            "CABU01",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+        ),
+    ],
+)
 def test_can_generate_expected_wgs_fasta_url(accession, expected):
     assert ena.wgs_fasta_url(accession) == expected

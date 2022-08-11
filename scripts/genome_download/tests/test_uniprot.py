@@ -51,7 +51,7 @@ from rfamseq import uniprot
                 tax_string="Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales; Enterobacteriaceae; Escherichia.",
                 tree_display_name="Escherichia_coli",
                 align_display_name="Escherichia_coli[562]",
-            )
+            ),
         ),
         (
             "9606",
@@ -63,7 +63,6 @@ from rfamseq import uniprot
                 align_display_name="Homo_sapiens_(human)[9606]",
             ),
         ),
-
         (
             "10090",
             uniprot.LineageInfo(
@@ -74,7 +73,7 @@ from rfamseq import uniprot
                 align_display_name="Mus_musculus_(mouse)[10090]",
             ),
         ),
-    ]
+    ],
 )
 def test_can_get_correct_lineage(taxid, expected):
     assert uniprot.lineage_info(taxid) == expected
@@ -90,7 +89,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 taxid="9606",
                 is_reference=True,
                 is_representative=True,
-                proteome_description='''Homo sapiens (Homo sapiens sapiens) or modern humans are the only living species of the evolutionary branch of great apes known as hominids. Divergence of early humans from chimpanzees and gorillas is estimated to have occurred between 4 and 8 million years ago. The genus Homo (Homo habilis) appeared in Africa around 2.3 million years ago and shows the first signs of stone tool usage. The exact lineage of Homo species ie: H. habilis/H. ergaster to H. erectus to H. rhodesiensis/H.heidelbergensis to H. sapiens is still hotly disputed. However, continuing evolution and in particular larger brain size and complexity culminates in Homo sapiens. The first anatomically modern humans appear in the fossil record around 200,000 years ago. Modern humans migrated across the globe essentially as hunter-gatherers until around 12,000 years ago when the practice of agriculture and animal domestication enabled large populations to grow leading to the development of civilizations.''',
+                proteome_description="""Homo sapiens (Homo sapiens sapiens) or modern humans are the only living species of the evolutionary branch of great apes known as hominids. Divergence of early humans from chimpanzees and gorillas is estimated to have occurred between 4 and 8 million years ago. The genus Homo (Homo habilis) appeared in Africa around 2.3 million years ago and shows the first signs of stone tool usage. The exact lineage of Homo species ie: H. habilis/H. ergaster to H. erectus to H. rhodesiensis/H.heidelbergensis to H. sapiens is still hotly disputed. However, continuing evolution and in particular larger brain size and complexity culminates in Homo sapiens. The first anatomically modern humans appear in the fossil record around 200,000 years ago. Modern humans migrated across the globe essentially as hunter-gatherers until around 12,000 years ago when the practice of agriculture and animal domestication enabled large populations to grow leading to the development of civilizations.""",
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000001405.27",
                     description=None,
@@ -126,12 +125,12 @@ def test_can_get_correct_lineage(taxid, expected):
                     ),
                 ),
                 lineage_info=uniprot.LineageInfo(
-                ncbi_id=9606,
-                species="Homo sapiens (human)",
-                tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
-                tree_display_name="Homo_sapiens_(human)",
-                align_display_name="Homo_sapiens_(human)[9606]",
-            ),
+                    ncbi_id=9606,
+                    species="Homo sapiens (human)",
+                    tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
+                    tree_display_name="Homo_sapiens_(human)",
+                    align_display_name="Homo_sapiens_(human)[9606]",
+                ),
             ),
         ),
         (
@@ -141,7 +140,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 taxid="3885",
                 is_reference=False,
                 is_representative=True,
-                proteome_description='The common bean is most widely cultivated of all beans in temperate regions, and is widely cultivated in semitropical regions. In some regions of the world dry beans furnish a large portion of the protein needs of low and middle class families.',
+                proteome_description="The common bean is most widely cultivated of all beans in temperate regions, and is widely cultivated in semitropical regions. In some regions of the world dry beans furnish a large portion of the protein needs of low and middle class families.",
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000499845.1",
                     description=None,
@@ -164,10 +163,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=3885,
-                    species='Phaseolus vulgaris (kidney bean)',
-                    tax_string='Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; eudicotyledons; Gunneridae; Pentapetalae; rosids; fabids; Fabales; Fabaceae; Papilionoideae; 50 kb inversion clade; NPAAA clade; indigoferoid/millettioid clade; Phaseoleae; Phaseolus.',
-                    tree_display_name='Phaseolus_vulgaris_(kidney_bean)',
-                    align_display_name='Phaseolus_vulgaris_(kidney_bean)[3885]',
+                    species="Phaseolus vulgaris (kidney bean)",
+                    tax_string="Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; eudicotyledons; Gunneridae; Pentapetalae; rosids; fabids; Fabales; Fabaceae; Papilionoideae; 50 kb inversion clade; NPAAA clade; indigoferoid/millettioid clade; Phaseoleae; Phaseolus.",
+                    tree_display_name="Phaseolus_vulgaris_(kidney_bean)",
+                    align_display_name="Phaseolus_vulgaris_(kidney_bean)[3885]",
                 ),
             ),
         ),
@@ -186,10 +185,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=6279,
-                    species='Brugia malayi (filarial nematode worm)',
-                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Spirurina; Spiruromorpha; Filarioidea; Onchocercidae; Brugia.',
-                    tree_display_name='Brugia_malayi_(filarial_nematode_worm)',
-                    align_display_name='Brugia_malayi_(filarial_nematode_worm)[6279]',
+                    species="Brugia malayi (filarial nematode worm)",
+                    tax_string="Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Spirurina; Spiruromorpha; Filarioidea; Onchocercidae; Brugia.",
+                    tree_display_name="Brugia_malayi_(filarial_nematode_worm)",
+                    align_display_name="Brugia_malayi_(filarial_nematode_worm)[6279]",
                 ),
             ),
         ),
@@ -208,11 +207,11 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=652674,
-                    species='Hepatitis E virus genotype 1 (isolate Human/China/HeBei/1987)',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirus; Hepatitis E virus.',
-                    tree_display_name='Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)',
-                    align_display_name='Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)[652674]',
-                )
+                    species="Hepatitis E virus genotype 1 (isolate Human/China/HeBei/1987)",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirus; Hepatitis E virus.",
+                    tree_display_name="Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)",
+                    align_display_name="Hepatitis_E_virus_genotype_1_(isolate_Human/China/HeBei/1987)[652674]",
+                ),
             ),
         ),
         (
@@ -225,7 +224,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000879395.1",
-                    description='RefStrain',
+                    description="RefStrain",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB179636",
@@ -244,10 +243,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=230407,
-                    species='Cryphonectria parasitica mycoreovirus 1 (strain 9B21)',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Reoviridae; Spinareovirinae; Mycoreovirus; Mycoreovirus 1.',
-                    tree_display_name='Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)',
-                    align_display_name='Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)[230407]',
+                    species="Cryphonectria parasitica mycoreovirus 1 (strain 9B21)",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Reoviridae; Spinareovirinae; Mycoreovirus; Mycoreovirus 1.",
+                    tree_display_name="Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)",
+                    align_display_name="Cryphonectria_parasitica_mycoreovirus_1_(strain_9B21)[230407]",
                 ),
             ),
         ),
@@ -261,15 +260,15 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="AB290918",
-                    description='Torque teno midi virus 1 DNA',
+                    description="Torque teno midi virus 1 DNA",
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=766184,
-                    species='Torque teno midi virus 1 (isolate MD1-073)',
-                    tax_string='Viruses; Anelloviridae; Gammatorquevirus.',
-                    tree_display_name='Torque_teno_midi_virus_1_(isolate_MD1-073)',
-                    align_display_name='Torque_teno_midi_virus_1_(isolate_MD1-073)[766184]',
+                    species="Torque teno midi virus 1 (isolate MD1-073)",
+                    tax_string="Viruses; Anelloviridae; Gammatorquevirus.",
+                    tree_display_name="Torque_teno_midi_virus_1_(isolate_MD1-073)",
+                    align_display_name="Torque_teno_midi_virus_1_(isolate_MD1-073)[766184]",
                 ),
             ),
         ),
@@ -283,7 +282,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_017348405.1",
-                    description='Mycobacterium phage prophiGD12-2',
+                    description="Mycobacterium phage prophiGD12-2",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "MW584207",
@@ -292,10 +291,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=2813240,
-                    species='Mycobacterium phage prophiGD12-2',
-                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Siphoviridae; unclassified Siphoviridae.',
-                    tree_display_name='Mycobacterium_phage_prophiGD12-2',
-                    align_display_name='Mycobacterium_phage_prophiGD12-2[2813240]'
+                    species="Mycobacterium phage prophiGD12-2",
+                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Siphoviridae; unclassified Siphoviridae.",
+                    tree_display_name="Mycobacterium_phage_prophiGD12-2",
+                    align_display_name="Mycobacterium_phage_prophiGD12-2[2813240]",
                 ),
             ),
         ),
@@ -318,10 +317,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1234679,
-                    species='Carnobacterium maltaromaticum LMA28',
-                    tax_string='Bacteria; Terrabacteria group; Firmicutes; Bacilli; Lactobacillales; Carnobacteriaceae; Carnobacterium; Carnobacterium maltaromaticum.',
-                    tree_display_name='Carnobacterium_maltaromaticum_LMA28',
-                    align_display_name='Carnobacterium_maltaromaticum_LMA28[1234679]',
+                    species="Carnobacterium maltaromaticum LMA28",
+                    tax_string="Bacteria; Terrabacteria group; Firmicutes; Bacilli; Lactobacillales; Carnobacteriaceae; Carnobacterium; Carnobacterium maltaromaticum.",
+                    tree_display_name="Carnobacterium_maltaromaticum_LMA28",
+                    align_display_name="Carnobacterium_maltaromaticum_LMA28[1234679]",
                 ),
             ),
         ),
@@ -345,10 +344,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1249480,
-                    species='Candidatus Sulfuricurvum sp. RIFRC-1',
-                    tax_string='Bacteria; Proteobacteria; delta/epsilon subdivisions; Epsilonproteobacteria; Campylobacterales; Thiovulaceae; Sulfuricurvum.',
-                    tree_display_name='Candidatus_Sulfuricurvum_sp._RIFRC-1',
-                    align_display_name='Candidatus_Sulfuricurvum_sp._RIFRC-1[1249480]',
+                    species="Candidatus Sulfuricurvum sp. RIFRC-1",
+                    tax_string="Bacteria; Proteobacteria; delta/epsilon subdivisions; Epsilonproteobacteria; Campylobacterales; Thiovulaceae; Sulfuricurvum.",
+                    tree_display_name="Candidatus_Sulfuricurvum_sp._RIFRC-1",
+                    align_display_name="Candidatus_Sulfuricurvum_sp._RIFRC-1[1249480]",
                 ),
             ),
         ),
@@ -359,7 +358,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 taxid="399742",
                 is_reference=False,
                 is_representative=False,
-                proteome_description='Enterobacter sp. 638 was isolated in association with poplar, Populus trichocarpa x deltoids, and represents a commonly found endophytic bacterium associated with this tree. Endophytes are bacteria that live within the tissue of a plant without substantively harming it. They can help promote plant growth in several ways, including helping the host overcome toxic effects of environmental pollution. Some Enterobacteriales can affect nodule formation by legumes, fix nitrogen and produce plant hormones. The family Enterobacteriacae includes free-living, commensal and pathogenic bacteria associated with host species ranging from plants to humans (adapted from http://genome.jgi-psf.org/ent_6/ent_6.home.html).',
+                proteome_description="Enterobacter sp. 638 was isolated in association with poplar, Populus trichocarpa x deltoids, and represents a commonly found endophytic bacterium associated with this tree. Endophytes are bacteria that live within the tissue of a plant without substantively harming it. They can help promote plant growth in several ways, including helping the host overcome toxic effects of environmental pollution. Some Enterobacteriales can affect nodule formation by legumes, fix nitrogen and produce plant hormones. The family Enterobacteriacae includes free-living, commensal and pathogenic bacteria associated with host species ranging from plants to humans (adapted from http://genome.jgi-psf.org/ent_6/ent_6.home.html).",
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000016325.1",
                     description=None,
@@ -372,10 +371,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=399742,
-                    species='Enterobacter sp. (strain 638)',
-                    tax_string='Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales; Enterobacteriaceae; Enterobacter; unclassified Enterobacter.',
-                    tree_display_name='Enterobacter_sp._(strain_638)',
-                    align_display_name='Enterobacter_sp._(strain_638)[399742]',
+                    species="Enterobacter sp. (strain 638)",
+                    tax_string="Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales; Enterobacteriaceae; Enterobacter; unclassified Enterobacter.",
+                    tree_display_name="Enterobacter_sp._(strain_638)",
+                    align_display_name="Enterobacter_sp._(strain_638)[399742]",
                 ),
             ),
         ),
@@ -389,7 +388,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002210635.1",
-                    description='Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota',
+                    description="Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY965444",
@@ -398,10 +397,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=2022783,
-                    species='Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota',
-                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Peploviricota; Herviviricetes; Herpesvirales; Herpesviridae; Gammaherpesvirinae; Rhadinovirus; unclassified Rhadinovirus.',
-                    tree_display_name='Common_bottlenose_dolphin_gammaherpesvirus_1_strain_Sarasota',
-                    align_display_name='Common_bottlenose_dolphin_gammaherpesvirus_1_strai',
+                    species="Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota",
+                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Peploviricota; Herviviricetes; Herpesvirales; Herpesviridae; Gammaherpesvirinae; Rhadinovirus; unclassified Rhadinovirus.",
+                    tree_display_name="Common_bottlenose_dolphin_gammaherpesvirus_1_strain_Sarasota",
+                    align_display_name="Common_bottlenose_dolphin_gammaherpesvirus_1_strai",
                 ),
             ),
         ),
@@ -415,7 +414,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001736955.2",
-                    description='Bacillus phage SPG24 DNA, contig00001 sequence.',
+                    description="Bacillus phage SPG24 DNA, contig00001 sequence.",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB930182",
@@ -424,10 +423,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1497851,
-                    species='Bacillus phage SPG24',
-                    tax_string='Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Herelleviridae; Bastillevirinae; Nitunavirus; Bacillus virus SPG24.',
-                    tree_display_name='Bacillus_phage_SPG24',
-                    align_display_name='Bacillus_phage_SPG24[1497851]',
+                    species="Bacillus phage SPG24",
+                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Herelleviridae; Bastillevirinae; Nitunavirus; Bacillus virus SPG24.",
+                    tree_display_name="Bacillus_phage_SPG24",
+                    align_display_name="Bacillus_phage_SPG24[1497851]",
                 ),
             ),
         ),
@@ -441,7 +440,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002184215.1",
-                    description='Grapevine enamovirus-1 isolate SE-BR, partial genome.',
+                    description="Grapevine enamovirus-1 isolate SE-BR, partial genome.",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY820716",
@@ -450,10 +449,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=2560515,
-                    species='Grapevine enamovirus 1',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Sobelivirales; Solemoviridae; Enamovirus.',
-                    tree_display_name='Grapevine_enamovirus_1',
-                    align_display_name='Grapevine_enamovirus_1[2560515]',
+                    species="Grapevine enamovirus 1",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Sobelivirales; Solemoviridae; Enamovirus.",
+                    tree_display_name="Grapevine_enamovirus_1",
+                    align_display_name="Grapevine_enamovirus_1[2560515]",
                 ),
             ),
         ),
@@ -467,7 +466,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001019975.1",
-                    description='Genome',
+                    description="Genome",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KP774592",
@@ -477,10 +476,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1654339,
-                    species='Sclerotinia sclerotiorum botybirnavirus 1',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Botybirnavirus; unclassified Botybirnavirus.',
-                    tree_display_name='Sclerotinia_sclerotiorum_botybirnavirus_1',
-                    align_display_name='Sclerotinia_sclerotiorum_botybirnavirus_1[1654339]',
+                    species="Sclerotinia sclerotiorum botybirnavirus 1",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Botybirnavirus; unclassified Botybirnavirus.",
+                    tree_display_name="Sclerotinia_sclerotiorum_botybirnavirus_1",
+                    align_display_name="Sclerotinia_sclerotiorum_botybirnavirus_1[1654339]",
                 ),
             ),
         ),
@@ -494,7 +493,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000870385.1",
-                    description='Maruca vitrata MNPV',
+                    description="Maruca vitrata MNPV",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "EF125867",
@@ -503,11 +502,11 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1307954,
-                    species='Maruca vitrata nucleopolyhedrovirus',
-                    tax_string='Viruses; Naldaviricetes; Lefavirales; Baculoviridae; Alphabaculovirus.',
-                    tree_display_name='Maruca_vitrata_nucleopolyhedrovirus',
-                    align_display_name='Maruca_vitrata_nucleopolyhedrovirus[1307954]',
-                )
+                    species="Maruca vitrata nucleopolyhedrovirus",
+                    tax_string="Viruses; Naldaviricetes; Lefavirales; Baculoviridae; Alphabaculovirus.",
+                    tree_display_name="Maruca_vitrata_nucleopolyhedrovirus",
+                    align_display_name="Maruca_vitrata_nucleopolyhedrovirus[1307954]",
+                ),
             ),
         ),
         (
@@ -535,10 +534,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=46245,
-                    species='Drosophila pseudoobscura pseudoobscura (fruit fly)',
-                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Endopterygota; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila; Sophophora.',
-                    tree_display_name='Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)',
-                    align_display_name='Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)[46245]',
+                    species="Drosophila pseudoobscura pseudoobscura (fruit fly)",
+                    tax_string="Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Endopterygota; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila; Sophophora.",
+                    tree_display_name="Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)",
+                    align_display_name="Drosophila_pseudoobscura_pseudoobscura_(fruit_fly)[46245]",
                 ),
             ),
         ),
@@ -550,10 +549,8 @@ def test_can_get_correct_lineage(taxid, expected):
         #         is_reference=True,
         #         is_representative=True,
         #         proteome_description='''The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal.
-
-# The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
-
-# The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
+        # The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
+        # The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
         #         genome_info=uniprot.GenomeInfo(
         #             accession="GCA_902635505.1",
         #             description=None,
@@ -593,10 +590,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=4565,
-                    species='Triticum aestivum (wheat)',
-                    tax_string='Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; Liliopsida; Poales; Poaceae; BOP clade; Pooideae; Triticodae; Triticeae; Triticinae; Triticum.',
-                    tree_display_name='Triticum_aestivum_(wheat)',
-                    align_display_name='Triticum_aestivum_(wheat)[4565]',
+                    species="Triticum aestivum (wheat)",
+                    tax_string="Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; Liliopsida; Poales; Poaceae; BOP clade; Pooideae; Triticodae; Triticeae; Triticinae; Triticum.",
+                    tree_display_name="Triticum_aestivum_(wheat)",
+                    align_display_name="Triticum_aestivum_(wheat)[4565]",
                 ),
             ),
         ),
@@ -619,10 +616,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1849840,
-                    species='Methylosinus sp. 3S-1',
-                    tax_string='Bacteria; Proteobacteria; Alphaproteobacteria; Hyphomicrobiales; Methylocystaceae; Methylosinus; unclassified Methylosinus.',
-                    tree_display_name='Methylosinus_sp._3S-1',
-                    align_display_name='Methylosinus_sp._3S-1[1849840]',
+                    species="Methylosinus sp. 3S-1",
+                    tax_string="Bacteria; Proteobacteria; Alphaproteobacteria; Hyphomicrobiales; Methylocystaceae; Methylosinus; unclassified Methylosinus.",
+                    tree_display_name="Methylosinus_sp._3S-1",
+                    align_display_name="Methylosinus_sp._3S-1[1849840]",
                 ),
             ),
         ),
@@ -636,7 +633,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002237195.1",
-                    description='Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes',
+                    description="Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes",
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY354243",
@@ -645,10 +642,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=1983562,
-                    species='Lake Sinai Virus SA1',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Magsaviricetes; Nodamuvirales; Sinhaliviridae; Sinaivirus; unclassified Sinaivirus.',
-                    tree_display_name='Lake_Sinai_Virus_SA1',
-                    align_display_name='Lake_Sinai_Virus_SA1[1983562]',
+                    species="Lake Sinai Virus SA1",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Magsaviricetes; Nodamuvirales; Sinhaliviridae; Sinaivirus; unclassified Sinaivirus.",
+                    tree_display_name="Lake_Sinai_Virus_SA1",
+                    align_display_name="Lake_Sinai_Virus_SA1[1983562]",
                 ),
             ),
         ),
@@ -667,10 +664,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=75913,
-                    species='Strongyloides venezuelensis (threadworm)',
-                    tax_string='Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Tylenchina; Panagrolaimomorpha; Strongyloidoidea; Strongyloididae; Strongyloides.',
-                    tree_display_name='Strongyloides_venezuelensis_(threadworm)',
-                    align_display_name='Strongyloides_venezuelensis_(threadworm)[75913]',
+                    species="Strongyloides venezuelensis (threadworm)",
+                    tax_string="Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Tylenchina; Panagrolaimomorpha; Strongyloidoidea; Strongyloididae; Strongyloides.",
+                    tree_display_name="Strongyloides_venezuelensis_(threadworm)",
+                    align_display_name="Strongyloides_venezuelensis_(threadworm)[75913]",
                 ),
             ),
         ),
@@ -684,15 +681,15 @@ def test_can_get_correct_lineage(taxid, expected):
                 proteome_description=None,
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000857805.1",
-                    description='Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65',
-                    components=uniprot.SelectedComponents(accessions=['AJ011380'])
+                    description="Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65",
+                    components=uniprot.SelectedComponents(accessions=["AJ011380"]),
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=650136,
-                    species='Porcine teschovirus 1 (isolate Pig/United Kingdom/F65/1967)',
-                    tax_string='Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Teschovirus; Teschovirus A; teschovirus A1.',
-                    tree_display_name='Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)',
-                    align_display_name='Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)[650136]',
+                    species="Porcine teschovirus 1 (isolate Pig/United Kingdom/F65/1967)",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Teschovirus; Teschovirus A; teschovirus A1.",
+                    tree_display_name="Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)",
+                    align_display_name="Porcine_teschovirus_1_(isolate_Pig/United_Kingdom/F65/1967)[650136]",
                 ),
             ),
         ),

@@ -23,7 +23,7 @@ import click
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import download, metadata, uniprot, ncbi
+from rfamseq import download, metadata, ncbi, uniprot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ def p2g_cmd(xml, output, ignore=None):
 
 
 @cli.command("parse-assembly-summary")
-@click.argument("filename", default='-', type=click.File("r"))
+@click.argument("filename", default="-", type=click.File("r"))
 @click.argument("output", type=click.Path())
 def parse_assembly_info(filename, output):
     reader = csv.DictReader(filename, delimiter="\t")
@@ -110,6 +110,7 @@ def parse_assembly_info(filename, output):
 
     with SqliteDict(output) as db:
         assert len(db) == count, "Did not load all assembiles"
+
 
 if __name__ == "__main__":
     cli()

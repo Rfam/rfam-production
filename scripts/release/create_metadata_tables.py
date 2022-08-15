@@ -75,7 +75,7 @@ def get_entries_from_file(json_file):
                 if field in data["genseq"][0] and not data["genseq"][0][field] is None:
                     genseq_entry.append(data["genseq"][0][field])
                 else:
-                    genseq_entry.append('\N')
+                    genseq_entry.append('NULL')
         else:
             print('No genseq data for {0}, {1}'.format(json_file, upid))
 
@@ -84,7 +84,7 @@ def get_entries_from_file(json_file):
                 if field in data["rfamseq"][0] and not data["rfamseq"][0][field] is None:
                     rfamseq_entry.append(data["rfamseq"][0][field])
                 else:
-                    rfamseq_entry.append('\\N')
+                    rfamseq_entry.append('NULL')
         else:
             print('No rfamseq data for {0}, {1}'.format(json_file, upid))
 
@@ -94,7 +94,7 @@ def get_entries_from_file(json_file):
                 if field in data["genome"] and not data["genome"][field] is None:
                     genome_entry.append(data["genome"][field])
                 else:
-                    genome_entry.append('\N')
+                    genome_entry.append('NULL')
         else:
             print('No genome data for {0}, {1}'.format(json_file, upid))
 
@@ -128,28 +128,20 @@ def import_data_to_db():
     """
     conn = RfamDB.connect()
     cursor = conn.cursor()
+    tables = ['genseq', 'rfamseq', 'genome']
     try:
-        with open('genseq_info_for_import.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                cursor.execute("""INSERT INTO genseq_temp(upid, rfamseq_acc, chromosome_name, chromosome_type, version)
-                                VALUES(%s, %s, %s, %s, %s) """, row)
+        for table in tables:
+            with open('{table}_info_for_import.txt'.format(table=table), 'r') as f:
+                reader = csv.reader(f, delimiter='\t')
+                for row in reader:
+                    row = ['NULL' if val == '' else val for val in row]
+                    row = [x.replace("'", "''") for x in row]
+                    out = "'" + "', '".join(str(item) for item in row) + "'"
+                    out = out.replace("'NULL'", 'NULL')
+                    query = "INSERT INTO " + table + " VALUES (" + out + ")"
+                    cursor.execute(query)
                 conn.commit()
-        with open('rfamseqseq_info_for_import.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                cursor.execute("""INSERT INTO rfamseq_temp(rfamseq_acc, accession, version, ncbi_id, mol_type, length, 
-                description, previous_acc, source) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s) """, row)
-                conn.commit()
-        with open('genome_info_for_import.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                cursor.execute("""INSERT INTO genome_temp(upid, assembly_acc, assembly_version, wgs_acc, 
-                assembly_name, assembly_level, study_ref, description, total_length, ungapped_length, circular, 
-                ncbi_id, scientific_name, common_name, kingdom, num_rfam_regions, num_families, is_reference, 
-                is_representative, created, updated) 
-                VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """, row)
-                conn.commit()
+
     except mysql.connector.Error as e:
         print("MySQL error has occurred: {0}".format(e))
         raise

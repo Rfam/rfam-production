@@ -75,7 +75,7 @@ def get_entries_from_file(json_file):
                 if field in data["genseq"][0] and not data["genseq"][0][field] is None:
                     genseq_entry.append(data["genseq"][0][field])
                 else:
-                    genseq_entry.append('\\N')
+                    genseq_entry.append('\N')
         else:
             print('No genseq data for {0}, {1}'.format(json_file, upid))
 
@@ -94,7 +94,7 @@ def get_entries_from_file(json_file):
                 if field in data["genome"] and not data["genome"][field] is None:
                     genome_entry.append(data["genome"][field])
                 else:
-                    genome_entry.append('\\N')
+                    genome_entry.append('\N')
         else:
             print('No genome data for {0}, {1}'.format(json_file, upid))
 

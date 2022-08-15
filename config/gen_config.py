@@ -13,6 +13,15 @@ limitations under the License.
 
 from config import rfam_local as cfl
 
+# Database table and fields
+
+GENSEQ_FIELDS = ['upid', 'rfamseq_acc', 'chromosome_name', 'chromosome_type', 'version']
+RFAMSEQ_FIELDS = ['rfamseq_acc', 'accession', 'version', 'ncbi_id', 'mol_type', 'length', 'description', 'previous_acc', 'source']
+GENOME_FIELDS = ['upid', 'assembly_acc', 'assembly_version', 'wgs_acc', 'assembly_name', 'assembly_level', 'study_ref',
+                 'description', 'total_length', 'ungapped_length', 'circular', 'ncbi_id', 'scientific_name',
+                 'common_name', 'kingdom', 'num_rfam_regions', 'num_families', 'is_reference', 'is_representative',
+                 'created', 'updated']
+
 # -----------------------------------CONSTANTS---------------------------------
 
 # ENA file formats

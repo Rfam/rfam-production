@@ -75,7 +75,7 @@ def get_entries_from_file(json_file):
                 if field in data["genseq"][0] and not data["genseq"][0][field] is None:
                     genseq_entry.append(data["genseq"][0][field])
                 else:
-                    genseq_entry.append('NULL')
+                    genseq_entry.append('')
         else:
             print('No genseq data for {0}, {1}'.format(json_file, upid))
 
@@ -84,7 +84,7 @@ def get_entries_from_file(json_file):
                 if field in data["rfamseq"][0] and not data["rfamseq"][0][field] is None:
                     rfamseq_entry.append(data["rfamseq"][0][field])
                 else:
-                    rfamseq_entry.append('NULL')
+                    rfamseq_entry.append('')
         else:
             print('No rfamseq data for {0}, {1}'.format(json_file, upid))
 
@@ -94,7 +94,7 @@ def get_entries_from_file(json_file):
                 if field in data["genome"] and not data["genome"][field] is None:
                     genome_entry.append(data["genome"][field])
                 else:
-                    genome_entry.append('NULL')
+                    genome_entry.append('')
         else:
             print('No genome data for {0}, {1}'.format(json_file, upid))
 
@@ -138,7 +138,7 @@ def import_data_to_db():
                     row = [x.replace("'", "''") for x in row]
                     out = "'" + "', '".join(str(item) for item in row) + "'"
                     out = out.replace("'NULL'", 'NULL')
-                    query = "INSERT INTO " + table + " VALUES (" + out + ")"
+                    query = "INSERT INTO " + table + "_temp VALUES (" + out + ")"
                     cursor.execute(query)
                 conn.commit()
 

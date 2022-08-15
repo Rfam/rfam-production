@@ -6,7 +6,7 @@ import argparse
 
 import mysql.connector
 
-import RfamDB
+from utils import RfamDB
 from config.gen_config import GENSEQ_FIELDS, RFAMSEQ_FIELDS, GENOME_FIELDS
 
 genseq = []

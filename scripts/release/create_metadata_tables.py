@@ -23,9 +23,10 @@ def generate_and_import(files_dir):
     # for all the files in given directory
     for subdir, dirs, files in os.walk(files_dir):
         for f in files:
+            filepath = os.path.join(subdir, f)
             if f.endswith(".jsonl"):
                 # get the entries from the file
-                genseq_entry, rfamseq_entry, genome_entry = get_entries_from_file(f)
+                genseq_entry, rfamseq_entry, genome_entry = get_entries_from_file(filepath)
                 # add to main list
                 genseq.append(genseq_entry)
                 rfamseq.append(rfamseq_entry)
@@ -57,7 +58,7 @@ def write_files(genseq, rfamseq, genome):
 
 def get_entries_from_file(json_file):
     """
-    get entries for the metadata tables from the .jsonl files
+    Get entries for the metadata tables from the .jsonl files
     :param json_file:
     :return: entry for each table
     """

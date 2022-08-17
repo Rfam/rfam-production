@@ -15,6 +15,7 @@ attrs = "^21.4.0"
 cattrs = "^22.1.0"
 flit-scm = "^1.7.0"
 ratelimit = "^2.2.1"
+PyPika = "^0.48.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

@@ -57,7 +57,7 @@ from rfamseq import uniprot
             uniprot.LineageInfo(
                 ncbi_id=9606,
                 species="Homo sapiens",
-                common_name='Human',
+                common_name="Human",
                 tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
             ),
         ),
@@ -66,7 +66,7 @@ from rfamseq import uniprot
             uniprot.LineageInfo(
                 ncbi_id=10090,
                 species="Mus musculus",
-                common_name='Mouse',
+                common_name="Mouse",
                 tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae; Murinae; Mus; Mus.",
             ),
         ),
@@ -124,7 +124,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=9606,
                     species="Homo sapiens",
-                    common_name='Human',
+                    common_name="Human",
                     tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo.",
                 ),
             ),
@@ -160,7 +160,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=3885,
                     species="Phaseolus vulgaris",
-                    common_name='Kidney bean',
+                    common_name="Kidney bean",
                     tax_string="Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; eudicotyledons; Gunneridae; Pentapetalae; rosids; fabids; Fabales; Fabaceae; Papilionoideae; 50 kb inversion clade; NPAAA clade; indigoferoid/millettioid clade; Phaseoleae; Phaseolus.",
                 ),
             ),
@@ -181,7 +181,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=6279,
                     species="Brugia malayi",
-                    common_name='Filarial nematode worm',
+                    common_name="Filarial nematode worm",
                     tax_string="Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Spirurina; Spiruromorpha; Filarioidea; Onchocercidae; Brugia.",
                 ),
             ),
@@ -202,7 +202,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=652674,
                     species="Hepatitis E virus genotype 1 (isolate Human/China/HeBei/1987)",
-                    common_name='HEV',
+                    common_name="HEV",
                     tax_string="Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirus; Hepatitis E virus.",
                 ),
             ),
@@ -237,7 +237,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=230407,
                     species="Cryphonectria parasitica mycoreovirus 1 (strain 9B21)",
-                    common_name='CpMYRV-1',
+                    common_name="CpMYRV-1",
                     tax_string="Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Reoviridae; Spinareovirinae; Mycoreovirus; Mycoreovirus 1.",
                 ),
             ),
@@ -517,7 +517,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=46245,
                     species="Drosophila pseudoobscura pseudoobscura",
-                    common_name='Fruit fly',
+                    common_name="Fruit fly",
                     tax_string="Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Endopterygota; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila; Sophophora.",
                 ),
             ),
@@ -572,7 +572,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=4565,
                     species="Triticum aestivum",
-                    common_name='Wheat',
+                    common_name="Wheat",
                     tax_string="Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta; Spermatophyta; Magnoliopsida; Liliopsida; Poales; Poaceae; BOP clade; Pooideae; Triticodae; Triticeae; Triticinae; Triticum.",
                 ),
             ),
@@ -643,7 +643,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=75913,
                     species="Strongyloides venezuelensis",
-                    common_name='Threadworm',
+                    common_name="Threadworm",
                     tax_string="Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Tylenchina; Panagrolaimomorpha; Strongyloidoidea; Strongyloididae; Strongyloides.",
                 ),
             ),
@@ -664,7 +664,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=650136,
                     species="Porcine teschovirus 1 (isolate Pig/United Kingdom/F65/1967)",
-                    common_name='PTV-1',
+                    common_name="PTV-1",
                     tax_string="Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Teschovirus; Teschovirus A; teschovirus A1.",
                 ),
             ),

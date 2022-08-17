@@ -279,7 +279,7 @@ def lineage_info(taxid: str) -> LineageInfo:
     tax_string += "."
 
     common_name = data.get("commonName", None)
-    if common_name == '':
+    if common_name == "":
         common_name = None
 
     return LineageInfo(

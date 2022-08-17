@@ -17,6 +17,7 @@ import csv
 import json
 import logging
 from pathlib import Path
+import typing as ty
 
 import cattrs
 import click
@@ -42,6 +43,41 @@ def cli(log_level="info", log_file=None):
     Main entry point for updating rfamseq for Rfam.
     """
     logging.basicConfig(filename=log_file, level=getattr(logging, log_level.upper()))
+
+
+@cli.command("build-metadata")
+@click.argument("version")
+@click.argument("ncbi-info", type=click.Path())
+@click.argument("proteome-file", default="-", type=click.File("r"))
+@click.argument("fasta-directory", type=click.Path(exists=True))
+@click.argument("output", type=click.Path())
+def build_metadata_cmd(
+    version: str,
+    ncbi_info: str,
+    proteome_file: ty.IO,
+    fasta_directory,
+    str,
+    output: str,
+):
+    out = Path(output)
+    fa_dir = Path(fasta_directory)
+    with SqliteDict(ncbi_info, flag="r") as db:
+        for line in proteome_file:
+            raw = json.loads(line)
+            proteome = cattrs.structure(raw, uniprot.ProteomeInfo)
+            LOGGER.info("Building metadata for %s", proteome.upi)
+
+            fetched = []
+            fasta = fa_dir / f"{proteome.upi}.fa"
+            for record in SeqIO.parse(fasta, "fasta"):
+                fetched.append(metadata.FromFasta.from_record(record))
+
+            metadata_out = out / f"{proteome.upi}.jsonl"
+            genome = download.GenomeDownload.build(db, proteome)
+            with metadata_out.open("w") as meta:
+                info = metadata.build(version, proteome, genome.assembly_info, fetched)
+                json.dump(cattrs.unstructure(info), meta)
+                meta.write("\n")
 
 
 @cli.command("download")

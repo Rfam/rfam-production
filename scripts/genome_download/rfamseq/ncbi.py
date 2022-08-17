@@ -93,7 +93,9 @@ class NcbiSequenceSummary:
 class NcbiAssemblyInfo:
     taxid: int = field(metadata={"ncbi_name": "Taxid"})
     assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})
-    assembly_level: ty.Optional[AssemblyLevel] = field(metadata={'ncbi_name': "Assembly level"})
+    assembly_level: ty.Optional[AssemblyLevel] = field(
+        metadata={"ncbi_name": "Assembly level"}
+    )
     organism_name: str = field(metadata={"ncbi_name": "Organism name"})
     bio_sample: ty.Optional[str] = field(metadata={"ncbi_name": "BioSample"})
     bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
@@ -168,7 +170,7 @@ class NcbiAssemblySummary:
 
 
 def maybe(raw: str) -> ty.Optional[str]:
-    if raw == "na" or raw == '':
+    if raw == "na" or raw == "":
         return None
     return raw
 
@@ -238,7 +240,9 @@ def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, ty.Optional[str]]]
 
 
 def parse_header(handle: ty.IO) -> ty.Dict[str, ty.Any]:
-    header: ty.Dict[str, ty.Any] = {f.name: None for f in attrs.fields(NcbiAssemblyInfo)}
+    header: ty.Dict[str, ty.Any] = {
+        f.name: None for f in attrs.fields(NcbiAssemblyInfo)
+    }
 
     seen = set()
     location = handle.tell()
@@ -281,7 +285,7 @@ def parse_assembly_info(handle: ty.IO) -> ty.Optional[NcbiAssemblyInfo]:
         LOGGER.info("No sequences found, returning no assembly info")
         return None
 
-    raw['sequence_info'] = sequences
+    raw["sequence_info"] = sequences
     return cattrs.structure(raw, NcbiAssemblyInfo)
 
 

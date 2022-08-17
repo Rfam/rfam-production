@@ -57,7 +57,7 @@ from rfamseq import ncbi
                         role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
                         molecule_type=None,
                         length=2066984,
-                    )
+                    ),
                 ],
             ),
         ),

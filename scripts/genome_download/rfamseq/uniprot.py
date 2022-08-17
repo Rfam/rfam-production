@@ -101,17 +101,14 @@ class GenomeInfo:
 class LineageInfo:
     ncbi_id: int
     species: str
+    common_name: ty.Optional[str]
     tax_string: str
-    tree_display_name: str
-    align_display_name: str
 
-    def kingdom(self) -> str:
-        return self.tax_string.split("; ", 1)[0]
 
 @frozen
 class ProteomeInfo:
     upi: str
-    taxid: str
+    taxid: int
     is_reference: bool
     is_representative: bool
     proteome_description: ty.Optional[str]
@@ -281,25 +278,21 @@ def lineage_info(taxid: str) -> LineageInfo:
     tax_string = "; ".join(l["scientificName"] for l in parents)
     tax_string += "."
 
-    species = data["scientificName"]
-    if (common_name := data.get("commonName", None)) and "virus" not in tax_string:
-        species = f"{species} ({common_name.lower()})"
+    common_name = data.get("commonName", None)
+    if common_name == '':
+        common_name = None
 
-    tree_name = species.replace(" ", "_")
     return LineageInfo(
         ncbi_id=data["taxonId"],
-        species=species,
+        species=data["scientificName"],
+        common_name=common_name,
         tax_string=tax_string,
-        tree_display_name=tree_name,
-        align_display_name=f"{tree_name}[{data['taxonId']}]",
     )
 
 
 def proteome(xml: ET.Element) -> ProteomeInfo:
     upi = proteome_value(xml, "pro:upid")
-    ginfo = genome_info(upi, xml)
-    taxid = proteome_value(xml, "pro:taxonomy")
-    linfo = lineage_info(taxid)
+    taxid = proteome_value(xml, "pro:taxonomy", convert=int)
     return ProteomeInfo(
         upi=upi,
         taxid=taxid,
@@ -308,8 +301,8 @@ def proteome(xml: ET.Element) -> ProteomeInfo:
             xml, "pro:isRepresentativeProteome", convert=as_bool
         ),
         proteome_description=find_description(xml),
-        genome_info=ginfo,
-        lineage_info=linfo,
+        genome_info=genome_info(upi, xml),
+        lineage_info=lineage_info(taxid),
     )
 
 

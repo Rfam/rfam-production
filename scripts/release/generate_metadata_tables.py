@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 import os
 
@@ -63,7 +64,11 @@ def import_data_to_db():
                         row = ['NULL' if val == '' else val for val in row]
                         row = [x.replace("'", "''") for x in row]
                         if table == 'genome':
-                            row[18] = '0'
+                            # set is_reference, is_representative to 0
+                            row[18] = row[19] = '0'
+                            # set created, updated to today's date
+                            entry_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            row[20] = row[21] = entry_date
                         out = "'" + "', '".join(str(item) for item in row) + "'"
                         out = out.replace("'NULL'", 'NULL')
                         query = "INSERT INTO " + table + "_temp VALUES (" + out + ")"

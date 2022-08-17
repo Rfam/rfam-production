@@ -32,6 +32,7 @@ def create_tables():
     try:
         cursor.execute("DROP TABLE IF EXISTS rfamseq_temp;")
         cursor.execute("CREATE TABLE rfamseq_temp LIKE rfamseq;")
+        cursor.execute("ALTER TABLE rfamseq_temp MODIFY description LONGTEXT;")
         cursor.execute("DROP TABLE IF EXISTS genseq_temp;")
         cursor.execute("CREATE TABLE genseq_temp LIKE genseq;")
         cursor.execute("DROP TABLE IF EXISTS genome_temp;")
@@ -56,11 +57,13 @@ def import_data_to_db():
             with open('{table}_info_for_import.txt'.format(table=table), 'r') as f:
                 reader = csv.reader(f, delimiter='\t')
                 for row in reader:
-                    row = ['NULL' if val == '' else val for val in row]
-                    row = [x.replace("'", "''") for x in row]
-                    if not row:
-                        print('Empty row')
+                    if len(row) == 0:
+                        print('Empty!', row)
                     else:
+                        row = ['NULL' if val == '' else val for val in row]
+                        row = [x.replace("'", "''") for x in row]
+                        if table == 'genome':
+                            row[18] = '0'
                         out = "'" + "', '".join(str(item) for item in row) + "'"
                         out = out.replace("'NULL'", 'NULL')
                         query = "INSERT INTO " + table + "_temp VALUES (" + out + ")"

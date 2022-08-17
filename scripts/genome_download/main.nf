@@ -38,8 +38,7 @@ process find_genomes {
   tuple path(summary), path(to_skip)
 
   output:
-  path("summary.jsonl"), emit: summary
-  path("parts/*.jsonl"), emit: chunks
+  path("parts/*.jsonl")
 
   """
   rfamseq proteomes2genomes --ignore $to_skip $summary summary.jsonl
@@ -97,8 +96,7 @@ process validate_chunk {
   tuple val(short_name), path('genomes*.fa')
 
   output:
-  path("${short_name}.fa"), emit: merged
-  tuple val(short_name), path("${short_name}.fa"), emit: for_metadata
+  path("${short_name}.fa")
 
   """
   set -euo pipefail
@@ -184,42 +182,17 @@ workflow genome_download {
     Channel.fromPath(params.ignore_upi) | set { to_ignore }
     Channel.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
 
-    download_all_proteomes | set { summary_xml }
-
-    summary_xml | combine(to_ignore) | find_genomes
-
-    find_genomes.out.chunks | flatten | combine(ncbi_info) | download
-
-    /* find_genomes.out.ncbi \ */
-    /* | flatten \ */
-    /* | combine(ncbi_info) \ */
-    /* | download_ncbi \ */
-    /* | set { ncbi } */
-
-    /* find_genomes.out.ena */
-    /* | flatten \ */
-    /* | download_ena \ */
-    /* | set { ena } */
-
-    /* find_genomes.out.summary \ */
-    /* | combine(fetch_uniprot_taxonomy()) \ */
-    /* | lookup_taxonomy_info */
-
-    /* ncbi.mix(ena) | set { chunks } */
-
-    /* chunks | generate_rfamseq_metadata */
-    /* chunks | generate_genseq_metadata */
-
-    /* chunks \ */
-    /* | map { s, gs, _ -> [s, gs] } \ */
-    /* | validate_chunk */
-
-    /* validate_chunk.out.genome | collect | merge_genome */
-
-    /* validate_chunk.out.merged */
-    /* | collect \ */
-    /* | merge_chunks \ */
-    /* | (build_rfamseq & build_rev) */
+    download_all_proteomes \
+    | combine(to_ignore) 
+    | find_genomes \
+    | flatten \
+    | combine(ncbi_info) \
+    | download \
+    | map { s, gs, _ -> [s, gs] } \
+    | validate_chunk \
+    | collect \
+    | merge_chunks \
+    | (build_rfamseq & build_rev)
 }
 
 workflow {

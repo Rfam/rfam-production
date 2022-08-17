@@ -1,0 +1,31 @@
+# Assembly name:  PG29_v5
+# Organism name:  Picea glauca (white spruce)
+# Isolate:  PG29
+# Taxid:          3330
+# BioSample:      SAMN01120252
+# BioProject:     PRJNA83435
+# Submitter:      The SMarTForests Project
+# Date:           2020-01-10
+# Assembly type:  haploid
+# Release type:   major
+# Assembly level: Scaffold
+# Genome representation: full
+# WGS project:    ALWZ05
+# Assembly method: ABySS v. 1.3.5; Tigmint v. 1.1.2; ARCS v. 1.0.3
+# Expected final version: yes
+# Genome coverage: 99.0x
+# Sequencing technology: Illumina HiSeq; Illumina MiSeq; 10X Genomics Chromium
+# GenBank assembly accession: GCA_000411955.6
+#
+## Assembly-Units:
+## GenBank Unit Accession	RefSeq Unit Accession	Assembly-Unit name
+## GCA_000411965.5		Primary Assembly
+#
+# Ordered by chromosome/plasmid; the chromosomes/plasmids are followed by
+# unlocalized scaffolds.
+# Unplaced scaffolds are listed at the end.
+# RefSeq is equal or derived from GenBank object.
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+scaffoldPg-05r180724s0000001	unplaced-scaffold	na	na	ALWZ05S0000001.1	<>	na	Primary Assembly	1717731	na
+scaffoldPg-05r180724s0000002	unplaced-scaffold	na	na	ALWZ05S0000002.1	<>	na	Primary Assembly	2066984	na

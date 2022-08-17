@@ -93,6 +93,7 @@ class NcbiSequenceSummary:
 class NcbiAssemblyInfo:
     taxid: int = field(metadata={"ncbi_name": "Taxid"})
     assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})
+    assembly_level: ty.Optional[AssemblyLevel] = field(metadata={'ncbi_name': "Assembly level"})
     organism_name: str = field(metadata={"ncbi_name": "Organism name"})
     bio_sample: ty.Optional[str] = field(metadata={"ncbi_name": "BioSample"})
     bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
@@ -115,10 +116,10 @@ class AssemblyVersionStatus(enum.Enum):
 
 @enum.unique
 class AssemblyLevel(enum.Enum):
-    COMPLETE_GENOME = "Complete genome"
+    COMPLETE_GENOME = "Complete Genome"
     CHROMOSOME = "Chromosome"
     SCAFFOLD = "Scaffold"
-    CONTIG = "Contif"
+    CONTIG = "Contig"
 
 
 @enum.unique
@@ -167,7 +168,7 @@ class NcbiAssemblySummary:
 
 
 def maybe(raw: str) -> ty.Optional[str]:
-    if raw == "na":
+    if raw == "na" or raw == '':
         return None
     return raw
 
@@ -236,8 +237,10 @@ def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, ty.Optional[str]]]
     return None
 
 
-def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
-    header = {}
+def parse_header(handle: ty.IO) -> ty.Dict[str, ty.Any]:
+    header: ty.Dict[str, ty.Any] = {f.name: None for f in attrs.fields(NcbiAssemblyInfo)}
+
+    seen = set()
     location = handle.tell()
     while line := handle.readline():
         if line.startswith("# Sequence-Name"):
@@ -247,13 +250,15 @@ def parse_header(handle: ty.IO) -> ty.Dict[str, str]:
         result = parse_header_line(line)
         if result:
             name, value = result
-            if name in header:
+            if name in seen:
                 raise ValueError(f"Multiple values for {name} found")
             header[name] = value
+            seen.add(name)
+
     return header
 
 
-def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
+def parse_sequence_lines(handle: ty.IO) -> ty.List[ty.Dict[str, ty.Optional[str]]]:
     raw_header = handle.readline()
     if not raw_header.startswith("# Sequence-Name"):
         LOGGER.info("Assembly file appears to be empty")
@@ -265,24 +270,19 @@ def parse_sequence_lines(handle: ty.IO) -> ty.List[NcbiSequenceInfo]:
         converted = {}
         for key, value in row.items():
             converted[key] = maybe(value)
-        sequences.append(cattrs.structure(converted, NcbiSequenceInfo))
+        sequences.append(converted)
     return sequences
 
 
 def parse_assembly_info(handle: ty.IO) -> ty.Optional[NcbiAssemblyInfo]:
-    header = parse_header(handle)
+    raw: ty.Dict[str, ty.Any] = parse_header(handle)
     sequences = parse_sequence_lines(handle)
     if not sequences:
+        LOGGER.info("No sequences found, returning no assembly info")
         return None
-    return NcbiAssemblyInfo(
-        taxid=int(header["taxid"]),
-        assembly_name=header["assembly_name"],
-        organism_name=header["organism_name"],
-        bio_sample=header.get("bio_sample", None),
-        bio_project=header.get("bio_project", None),
-        wgs_project=header.get("wgs_project", None),
-        sequence_info=sequences,
-    )
+
+    raw['sequence_info'] = sequences
+    return cattrs.structure(raw, NcbiAssemblyInfo)
 
 
 def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:

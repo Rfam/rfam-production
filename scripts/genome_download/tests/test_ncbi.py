@@ -34,10 +34,39 @@ from rfamseq import ncbi
     "path,expected",
     [
         (
+            "tests/data/GCA_000411955.6_PG29_v5_assembly_report.txt",
+            ncbi.NcbiAssemblyInfo(
+                taxid=3330,
+                assembly_name="PG29_v5",
+                assembly_level=ncbi.AssemblyLevel.SCAFFOLD,
+                organism_name="Picea glauca (white spruce)",
+                bio_sample="SAMN01120252",
+                bio_project="PRJNA83435",
+                wgs_project="ALWZ05",
+                sequence_info=[
+                    ncbi.NcbiSequenceInfo(
+                        genbank_accession="ALWZ05S0000001.1",
+                        name="scaffoldPg-05r180724s0000001",
+                        role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                        molecule_type=None,
+                        length=1717731,
+                    ),
+                    ncbi.NcbiSequenceInfo(
+                        genbank_accession="ALWZ05S0000002.1",
+                        name="scaffoldPg-05r180724s0000002",
+                        role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                        molecule_type=None,
+                        length=2066984,
+                    )
+                ],
+            ),
+        ),
+        (
             "tests/data/GCA_000597845.1_ASM59784v1_assembly_report.txt",
             ncbi.NcbiAssemblyInfo(
                 taxid=562,
                 assembly_name="ASM59784v1",
+                assembly_level=ncbi.AssemblyLevel.COMPLETE_GENOME,
                 organism_name="Escherichia coli (E. coli)",
                 bio_sample="SAMN02647163",
                 bio_project="PRJNA238952",
@@ -58,6 +87,7 @@ from rfamseq import ncbi
             ncbi.NcbiAssemblyInfo(
                 taxid=1919083,
                 assembly_name="ViralProj361950",
+                assembly_level=None,
                 organism_name="Cynomolgus cytomegalovirus (viruses)",
                 bio_sample=None,
                 bio_project="PRJNA485481",

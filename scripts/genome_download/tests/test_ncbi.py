@@ -103,6 +103,27 @@ from rfamseq import ncbi
                 ],
             ),
         ),
+        (
+            "tests/data/GCA_900105925.1_IMG-taxon_2639762615_annotated_assembly_assembly_report.txt",
+            ncbi.NcbiAssemblyInfo(
+                taxid=419479,
+                assembly_name="IMG-taxon 2639762615 annotated assembly",
+                assembly_level=ncbi.AssemblyLevel.CHROMOSOME,
+                organism_name="Jiangella alkaliphila (high GC Gram+)",
+                bio_sample="SAMN04488563",
+                bio_project="PRJEB16466",
+                wgs_project=None,
+                sequence_info=[
+                    ncbi.NcbiSequenceInfo(
+                        genbank_accession="LT629791.1",
+                        name="I",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Chromosome",
+                        length=7716600,
+                    )
+                ],
+            ),
+        ),
     ],
 )
 def test_can_parse_assemblies(path, expected):

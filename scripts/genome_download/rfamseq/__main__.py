@@ -16,8 +16,8 @@ limitations under the License.
 import csv
 import json
 import logging
-from pathlib import Path
 import typing as ty
+from pathlib import Path
 
 import cattrs
 import click
@@ -55,8 +55,7 @@ def build_metadata_cmd(
     version: str,
     ncbi_info: str,
     proteome_file: ty.IO,
-    fasta_directory,
-    str,
+    fasta_directory: str,
     output: str,
 ):
     out = Path(output)
@@ -75,7 +74,9 @@ def build_metadata_cmd(
             metadata_out = out / f"{proteome.upi}.jsonl"
             genome = download.GenomeDownload.build(db, proteome)
             with metadata_out.open("w") as meta:
-                info = metadata.build(version, proteome, genome.assembly_info, fetched)
+                info = metadata.Metadata.build(
+                    version, proteome, genome.assembly_info, fetched
+                )
                 json.dump(cattrs.unstructure(info), meta)
                 meta.write("\n")
 
@@ -103,7 +104,9 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
 
             metadata_out = out / f"{proteome.upi}.jsonl"
             with metadata_out.open("w") as meta:
-                info = metadata.build(version, proteome, genome.assembly_info, fetched)
+                info = metadata.Metadata.build(
+                    version, proteome, genome.assembly_info, fetched
+                )
                 json.dump(cattrs.unstructure(info), meta)
                 meta.write("\n")
 

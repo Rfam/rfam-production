@@ -77,12 +77,24 @@ class GenSeq:
     version: str
 
     @classmethod
-    def from_fasta(cls, upid: str, version: str, info: FromFasta) -> GenSeq:
+    def from_fasta(
+        cls,
+        upid: str,
+        version: str,
+        seq_info: ty.Optional[ncbi.NcbiSequenceInfo],
+        info: FromFasta,
+    ) -> GenSeq:
+        chromosome_name = None
+        chromosome_type = None
+        if seq_info:
+            chromosome_name = seq_info.name
+            chromosome_type = seq_info.molecule_type
+
         return cls(
             upid=upid,
             rfamseq_acc=info.rfamseq_acc,
-            chromosome_name=None,
-            chromosome_type=None,
+            chromosome_name=chromosome_name,
+            chromosome_type=chromosome_type,
             version=version,
         )
 
@@ -242,8 +254,11 @@ class Metadata:
         rfamseq = []
         total_length = 0
         for info in records:
+            seq_info = None
+            if assembly_info:
+                seq_info = assembly_info.info_for(info.rfamseq_acc)
             rfamseq.append(RfamSeq.from_fasta(int(pinfo.taxid), info))
-            genseq.append(GenSeq.from_fasta(pinfo.upi, version, info))
+            genseq.append(GenSeq.from_fasta(pinfo.upi, version, seq_info, info))
             total_length += info.length
 
         taxonomy = Taxonomy.from_lineage(pinfo.lineage_info)

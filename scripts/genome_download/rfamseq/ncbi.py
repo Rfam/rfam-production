@@ -102,6 +102,12 @@ class NcbiAssemblyInfo:
     wgs_project: ty.Optional[str] = field(metadata={"ncbi_name": "WGS project"})
     sequence_info: ty.List[NcbiSequenceInfo]
 
+    def info_for(self, accession: str) -> ty.Optional[NcbiSequenceInfo]:
+        for info in self.sequence_info:
+            if info.genbank_accession == accession:
+                return info
+        return None
+
 
 @enum.unique
 class RefseqCategory(enum.Enum):

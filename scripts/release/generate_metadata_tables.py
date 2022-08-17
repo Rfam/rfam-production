@@ -1,14 +1,9 @@
 import csv
 import datetime
-import json
-import os
-
-import argparse
 
 import mysql.connector
 
 from utils import RfamDB
-from config.gen_config import GENSEQ_FIELDS, RFAMSEQ_FIELDS, GENOME_FIELDS
 
 genseq = []
 rfamseq = []
@@ -59,7 +54,7 @@ def import_data_to_db():
                 reader = csv.reader(f, delimiter='\t')
                 for row in reader:
                     if len(row) == 0:
-                        print('Empty!', row)
+                        print('Empty row in ', table)
                     else:
                         row = ['NULL' if val == '' else val for val in row]
                         row = [x.replace("'", "''") for x in row]

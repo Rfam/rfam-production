@@ -21,7 +21,7 @@ from pathlib import Path
 
 import cattrs
 import requests
-from attrs import define, field, frozen
+from attrs import field, frozen
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,15 +32,13 @@ NS = {
 
 T = ty.TypeVar("T")
 
-MaybeStrs = ty.Optional[ty.List[str]]
 
-
-@define
+@frozen
 class All:
     all: bool
 
 
-@define
+@frozen
 class Unplaced:
     unplaced: bool
 
@@ -63,12 +61,12 @@ def structure_component(v: ty.Any, _) -> Component:
 cattrs.register_structure_hook(Component, structure_component)
 
 
-@define
+@frozen
 class SelectedComponents:
     accessions: ty.List[Component] = field()
 
     @accessions.validator
-    def _check_accessions(self, attribute, value):
+    def _check_accessions(self, _, value):
         assert value, "Cannot create empty selected components"
         for v in value:
             assert isinstance(v, Component)
@@ -86,7 +84,7 @@ class SelectedComponents:
 Components = ty.Union[All, SelectedComponents]
 
 
-@define
+@frozen
 class GenomeInfo:
     accession: ty.Optional[str]
     description: ty.Optional[str]
@@ -110,8 +108,7 @@ class LineageInfo:
     def kingdom(self) -> str:
         return self.tax_string.split("; ", 1)[0]
 
-
-@define
+@frozen
 class ProteomeInfo:
     upi: str
     taxid: str

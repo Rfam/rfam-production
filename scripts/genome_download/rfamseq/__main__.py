@@ -50,24 +50,20 @@ def cli(log_level="info", log_file=None):
 
 
 @cli.command("build-metadata")
-@click.argument("version", help="Version of the rfamseq database")
-@click.argument(
-    "ncbi-info",
-    type=click.Path(),
-    help="Path to file produced by parse-assembly-summary",
-)
+@click.argument("version")
+@click.argument("ncbi-info", type=click.Path())
 @click.argument(
     "proteome-file",
     type=click.File("r"),
-    help="Path to the file produced by: proteomes2genomes",
 )
 @click.argument(
     "fasta-directory",
     type=click.Path(exists=True),
-    help="Path to a directory with all fasta files produced by download",
 )
 @click.argument(
-    "output", default=".", type=click.Path(), help="Where to write the UP*.jsonl files"
+    "output",
+    default=".",
+    type=click.Path(),
 )
 def build_metadata_cmd(
     version: str,
@@ -81,6 +77,13 @@ def build_metadata_cmd(
     downloading files, but we are still tweaking the metadata generation so this
     will build metdata from fetched fasta files. This assumes the fasta files
     are named with UP* and stored in one directory.
+
+    Arguments:
+      VERSION          Version of the rfamseq database, eg 15.0
+      NCBI-INFO        Path to file produced by parse-assembly-summary
+      PROTEOME-FILE    Path to the file produced by: proteomes2genomes
+      FASTA-DIRECTORY  Path to a directory with all fasta files produced by download
+      OUTPUT           Path to write the up*.jsonl files to
     """
     out = Path(output)
     fa_dir = Path(fasta_directory)
@@ -117,23 +120,20 @@ def build_metadata_cmd(
 
 
 @cli.command("download")
-@click.argument("version", help="Version of the rfamseq")
+@click.argument("version")
 @click.argument(
     "ncbi-info",
     type=click.Path(),
-    help="Path to file produced by parse-assembly-summary",
 )
 @click.argument(
     "proteome-file",
     default="-",
     type=click.File("r"),
-    help="A jsonl file produced by proteomes2genomes",
 )
 @click.argument(
     "output",
     default=".",
     type=click.Path(),
-    help="Path to write the sequence fasta and metadata jsonl files to",
 )
 def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
     """
@@ -142,6 +142,14 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
     limit it to the specified components. This will produce a UP*.fa and
     UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
     and .fa contains the specified metadata.
+
+
+    \b
+    Arguments:
+      VERSION        Version of the rfamseq database, eg 15.0
+      NCBI-INFO      Path to file produced by parse-assembly-summary
+      PROTEOME-FILE  Path to the file produced by: proteomes2genomes
+      OUTPUT         Path to write the sequence fasta and metadata jsonl files to
     """
     out = Path(output)
     with SqliteDict(ncbi_info, flag="r") as db:
@@ -176,18 +184,23 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
 )
 @click.argument(
     "xml",
-    default="-",
     type=click.Path(),
-    help="Path to the proteome.xml file fetched from uniprot.",
 )
 @click.argument(
-    "output", default="-", type=click.File("w"), help="Path to write a summary jsonl to"
+    "output",
+    default="-",
+    type=click.File("w"),
 )
 def p2g_cmd(xml, output, ignore=None):
     """
     Parse the XML file provided by uniprot to a jsonl file. The jsonl file
     contains one JSON encoded object per line where the object contains
     everything needed to download a genome from NCBI/ENA.
+
+    \b
+    Arguments:
+      XML     Path to the proteome.xml file fetched from uniprot.
+      OUTPUT  Path to write a summary jsonl to
     """
     to_skip = set()
     if ignore:
@@ -205,15 +218,19 @@ def p2g_cmd(xml, output, ignore=None):
     "filename",
     default="-",
     type=click.File("r"),
-    help="Path to the TSV file with NCBI assembly summaries to parse",
 )
-@click.argument("output", type=click.Path(), help="Path to write an sqlite database to")
+@click.argument("output", type=click.Path())
 def parse_assembly_info(filename, output):
     """
     Parse the assembly summaries provided by NCBI to generate an sqlite database
     that can be used to quickly lookup assembly summary information. The
     assembly summary information is used in different parts of the downloading
     pipeline.
+
+    \b
+    Arguments
+      FILENAME  Path to the TSV file with NCBI assembly summaries to parse
+      OUTPUT    Path to write an sqlite database to
     """
 
     reader = csv.DictReader(filename, delimiter="\t")

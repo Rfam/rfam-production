@@ -216,9 +216,9 @@ def ftp_path(info: SqliteDict, accession: str, suffix: str) -> ty.Optional[str]:
         LOGGER.info("Accession %s not found in ncbi db", versioned)
         return None
 
-    path = info[versioned]["ftp_path"]
-    if path == "na":
-        LOGGER.info("Accession %s has na path", versioned)
+    path = info[versioned].ftp_path
+    if path == "na" or path is None:
+        LOGGER.info("Accession %s has no path", versioned)
         return None
     parts = path.split("/")
     name = parts[-1]

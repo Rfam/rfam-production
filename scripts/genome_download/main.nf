@@ -16,7 +16,7 @@ process fetch_ncbi_locations {
   find summaries -type f | xargs cat > merged
   grep '^#' merged | tail -1 | sed 's|# ||' > info
   grep -v '^#' merged >> info
-  parse_assembly_info.py info ncbi.db
+  rfamseq parse-assembly-summary info ncbi.db
   """
 }
 

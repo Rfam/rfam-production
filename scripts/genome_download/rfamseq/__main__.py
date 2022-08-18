@@ -31,13 +31,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option("--log-file", default=None, type=click.Path())
+@click.option(
+    "--log-file", default=None, type=click.Path(), help="File to log to, default stdout"
+)
 @click.option(
     "--log-level",
     default="info",
     type=click.Choice(
         ["critical", "error", "warn", "info", "debug"], case_sensitive=False
     ),
+    help="Set the log level",
 )
 def cli(log_level="info", log_file=None):
     """
@@ -47,11 +50,25 @@ def cli(log_level="info", log_file=None):
 
 
 @cli.command("build-metadata")
-@click.argument("version")
-@click.argument("ncbi-info", type=click.Path())
-@click.argument("proteome-file", default="-", type=click.File("r"))
-@click.argument("fasta-directory", type=click.Path(exists=True))
-@click.argument("output", type=click.Path())
+@click.argument("version", help="Version of the rfamseq database")
+@click.argument(
+    "ncbi-info",
+    type=click.Path(),
+    help="Path to file produced by parse-assembly-summary",
+)
+@click.argument(
+    "proteome-file",
+    type=click.File("r"),
+    help="Path to the file produced by: proteomes2genomes",
+)
+@click.argument(
+    "fasta-directory",
+    type=click.Path(exists=True),
+    help="Path to a directory with all fasta files produced by download",
+)
+@click.argument(
+    "output", default=".", type=click.Path(), help="Where to write the UP*.jsonl files"
+)
 def build_metadata_cmd(
     version: str,
     ncbi_info: str,
@@ -59,6 +76,12 @@ def build_metadata_cmd(
     fasta_directory: str,
     output: str,
 ):
+    """
+    Build metadata for downloaded fasta files. This is normally done when
+    downloading files, but we are still tweaking the metadata generation so this
+    will build metdata from fetched fasta files. This assumes the fasta files
+    are named with UP* and stored in one directory.
+    """
     out = Path(output)
     fa_dir = Path(fasta_directory)
     failed = False
@@ -94,11 +117,32 @@ def build_metadata_cmd(
 
 
 @cli.command("download")
-@click.argument("version")
-@click.argument("ncbi-info", type=click.Path())
-@click.argument("proteome-file", default="-", type=click.File("r"))
-@click.argument("output", type=click.Path())
+@click.argument("version", help="Version of the rfamseq")
+@click.argument(
+    "ncbi-info",
+    type=click.Path(),
+    help="Path to file produced by parse-assembly-summary",
+)
+@click.argument(
+    "proteome-file",
+    default="-",
+    type=click.File("r"),
+    help="A jsonl file produced by proteomes2genomes",
+)
+@click.argument(
+    "output",
+    default=".",
+    type=click.Path(),
+    help="Path to write the sequence fasta and metadata jsonl files to",
+)
 def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
+    """
+    Download the genomes specified in proteome-file. The file is the result of
+    proteomes2genomes or a chunk of that file. This will download the genome and
+    limit it to the specified components. This will produce a UP*.fa and
+    UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
+    and .fa contains the specified metadata.
+    """
     out = Path(output)
     with SqliteDict(ncbi_info, flag="r") as db:
         for line in proteome_file:
@@ -124,10 +168,27 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
 
 
 @cli.command("proteomes2genomes")
-@click.option("--ignore", default=None, type=click.File("r"))
-@click.argument("xml", type=click.Path())
-@click.argument("output", default="-", type=click.File("w"))
+@click.option(
+    "--ignore",
+    default=None,
+    type=click.File("r"),
+    help="A file with one UPI per line of UPIs to ignore when parsing.",
+)
+@click.argument(
+    "xml",
+    default="-",
+    type=click.Path(),
+    help="Path to the proteome.xml file fetched from uniprot.",
+)
+@click.argument(
+    "output", default="-", type=click.File("w"), help="Path to write a summary jsonl to"
+)
 def p2g_cmd(xml, output, ignore=None):
+    """
+    Parse the XML file provided by uniprot to a jsonl file. The jsonl file
+    contains one JSON encoded object per line where the object contains
+    everything needed to download a genome from NCBI/ENA.
+    """
     to_skip = set()
     if ignore:
         to_skip.update(l.strip() for l in ignore)
@@ -140,9 +201,21 @@ def p2g_cmd(xml, output, ignore=None):
 
 
 @cli.command("parse-assembly-summary")
-@click.argument("filename", default="-", type=click.File("r"))
-@click.argument("output", type=click.Path())
+@click.argument(
+    "filename",
+    default="-",
+    type=click.File("r"),
+    help="Path to the TSV file with NCBI assembly summaries to parse",
+)
+@click.argument("output", type=click.Path(), help="Path to write an sqlite database to")
 def parse_assembly_info(filename, output):
+    """
+    Parse the assembly summaries provided by NCBI to generate an sqlite database
+    that can be used to quickly lookup assembly summary information. The
+    assembly summary information is used in different parts of the downloading
+    pipeline.
+    """
+
     reader = csv.DictReader(filename, delimiter="\t")
     with SqliteDict(output, flag="r") as db:
         count = 0

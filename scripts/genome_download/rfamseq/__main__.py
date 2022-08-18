@@ -16,6 +16,7 @@ limitations under the License.
 import csv
 import json
 import logging
+import sys
 import typing as ty
 from pathlib import Path
 
@@ -60,6 +61,7 @@ def build_metadata_cmd(
 ):
     out = Path(output)
     fa_dir = Path(fasta_directory)
+    failed = False
     with SqliteDict(ncbi_info, flag="r") as db:
         for line in proteome_file:
             raw = json.loads(line)
@@ -68,6 +70,13 @@ def build_metadata_cmd(
 
             fetched = []
             fasta = fa_dir / f"{proteome.upi}.fa"
+            if not fasta.exists():
+                LOGGER.error(
+                    "Missing fasta file %s for proteome %s", fasta, proteome.upi
+                )
+                failed = True
+                continue
+
             for record in SeqIO.parse(fasta, "fasta"):
                 fetched.append(metadata.FromFasta.from_record(record))
 
@@ -79,6 +88,9 @@ def build_metadata_cmd(
                 )
                 json.dump(cattrs.unstructure(info), meta)
                 meta.write("\n")
+
+    if failed:
+        sys.exit(1)
 
 
 @cli.command("download")

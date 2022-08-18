@@ -230,35 +230,40 @@ def test_wgs_generates_expected_ids(info, expected):
     [
         (
             "ALWZ05",
-            [
-                wgs.WgsSequence(
-                    wgs_id="ALWZ05",
-                    kind=wgs.WgsSequenceKind.SEQUENCE,
-                    start=1,
-                    stop=5154716,
-                    id_length=13,
-                ),
-                wgs.WgsSequence(
-                    wgs_id="ALWZ05S",
-                    kind=wgs.WgsSequenceKind.CONTIG,
-                    start=1,
-                    stop=2066983,
-                    id_length=len("ALWZ05S0000001"),
-                ),
-            ],
+            (
+                [],
+                [
+                    wgs.WgsSequence(
+                        wgs_id="ALWZ05",
+                        kind=wgs.WgsSequenceKind.SEQUENCE,
+                        start=1,
+                        stop=5154716,
+                        id_length=13,
+                    ),
+                    wgs.WgsSequence(
+                        wgs_id="ALWZ05S",
+                        kind=wgs.WgsSequenceKind.CONTIG,
+                        start=1,
+                        stop=2066983,
+                        id_length=len("ALWZ05S0000001"),
+                    ),
+                ],
+            ),
         ),
         (
             "ACTP02",
-            [
-                wgs.WgsSequence(
-                    wgs_id="ACTP02",
-                    kind=wgs.WgsSequenceKind.SEQUENCE,
-                    start=1,
-                    stop=23,
-                    id_length=len("ACTP02000001"),
-                ),
-                wgs.ContigInfo(prefix="KE", start=150405, stop=150411),
-            ],
+            (
+                [wgs.ContigInfo(prefix="KE", start=150405, stop=150411)],
+                [
+                    wgs.WgsSequence(
+                        wgs_id="ACTP02",
+                        kind=wgs.WgsSequenceKind.SEQUENCE,
+                        start=1,
+                        stop=23,
+                        id_length=len("ACTP02000001"),
+                    ),
+                ],
+            ),
         ),
         # (
         #     "SCMI01",

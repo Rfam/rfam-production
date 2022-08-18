@@ -22,6 +22,7 @@ process fetch_ncbi_locations {
 
 process download_all_proteomes {
   queue 'short'
+  publishDir 'genomes/uniprot', mode: 'copy'
 
   output:
   path('summary.xml')
@@ -52,29 +53,12 @@ process find_genomes {
   """
 }
 
-process lookup_taxonomy_info {
-  queue 'short'
-  publishDir 'genomes/metadata', mode: 'copy'
-
-  input:
-  tuple path(summary), path(taxonomy)
-
-  output:
-  path('taxonomy.csv')
-
-  """
-  uniprot_taxonomy.py $taxonomy $summary taxonomy.csv
-  """
-}
-
 process download {
   tag { "$proteome_file.baseName" }
   maxForks 30
-  queue 'short'
   publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy"
   memory { 6.GB * task.attempt }
-  errorStrategy 'ignore'
-  /* errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' } */
+  errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' }
   maxRetries 4
 
   input:

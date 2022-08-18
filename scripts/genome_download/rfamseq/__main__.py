@@ -217,7 +217,7 @@ def parse_assembly_info(filename, output):
     """
 
     reader = csv.DictReader(filename, delimiter="\t")
-    with SqliteDict(output, flag="r") as db:
+    with SqliteDict(output) as db:
         count = 0
         for index, row in enumerate(reader):
             count += 1
@@ -232,7 +232,7 @@ def parse_assembly_info(filename, output):
         if count == 0:
             raise ValueError("Did not load any assemblies")
 
-    with SqliteDict(output) as db:
+    with SqliteDict(output, flag="r") as db:
         assert len(db) == count, "Did not load all assembiles"
 
 

@@ -27,7 +27,7 @@ from sqlitedict import SqliteDict
 
 from rfamseq import download, metadata, ncbi, uniprot
 
-from scripts.genome_download.rfamseq.utils import serialize
+from rfamseq.utils import serialize
 
 LOGGER = logging.getLogger(__name__)
 
@@ -252,7 +252,7 @@ def parse_assembly_info(filename, output):
             raise ValueError("Did not load any assemblies")
 
     with SqliteDict(output, flag="r") as db:
-        assert len(db) == count, "Did not load all assembiles"
+        assert len(db) == count, "Did not load all assemblies"
 
 
 if __name__ == "__main__":

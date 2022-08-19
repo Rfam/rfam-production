@@ -27,6 +27,8 @@ from sqlitedict import SqliteDict
 
 from rfamseq import download, metadata, ncbi, uniprot
 
+from scripts.genome_download.rfamseq.utils import serialize
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -112,7 +114,7 @@ def build_metadata_cmd(
                 info = metadata.Metadata.build(
                     version, proteome, genome.assembly_info, fetched
                 )
-                json.dump(cattrs.unstructure(info), meta)
+                json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")
 
     if failed:

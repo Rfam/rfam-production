@@ -12,7 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from datetime import date, datetime
 
 
 def versionless(accession: str) -> str:
     return accession.split(".", 1)[0]
+
+
+def serialize(obj):
+    """
+    Serialize datetime and date objects that are not serializable by default json code
+    """
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError("Type {obj} is not JSON serializable".format(obj=type(obj)))

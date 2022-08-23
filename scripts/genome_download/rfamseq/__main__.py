@@ -173,7 +173,7 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
                 info = metadata.Metadata.build(
                     version, proteome, genome.assembly_info, fetched
                 )
-                json.dump(cattrs.unstructure(info), meta)
+                json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")
 
 

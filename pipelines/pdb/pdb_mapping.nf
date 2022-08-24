@@ -257,15 +257,18 @@ process add_all_3d {
     path(query)
 
     output:
-    val('done')
+    val('3d_done')
 
     """
     git clone $params.seed_repo
     cd rfam-3d-seed-alignments
     python add_3d.py all --nocache > add_3d_output.txt
+    git add data/output/RF*
+    git commit -m'New data from PDB pipeline'
+    git push
     """
-
 }
+
 
 workflow pdb_mapping {
     take: start

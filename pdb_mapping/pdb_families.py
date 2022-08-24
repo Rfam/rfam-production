@@ -3,6 +3,7 @@ import datetime
 
 import mysql.connector
 
+from pdb_config import add_3d_output
 from utils import RfamDB
 
 rfam_search_url = "<https://rfam.org/family/{0}>"
@@ -43,6 +44,9 @@ def list_new_families():
                                 format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
             else:
                 pdb_file.write("There are no new families.")
+
+            pdb_file.write("To see the full output of the rfam-3d-add-seed-alignments script please see: {file}"
+                           .format(file=add_3d_output))
 
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))

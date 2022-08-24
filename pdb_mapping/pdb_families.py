@@ -45,9 +45,6 @@ def list_new_families():
             else:
                 pdb_file.write("There are no new families.")
 
-            pdb_file.write("To see the full output of the rfam-3d-add-seed-alignments script please see: {file}"
-                           .format(file=add_3d_output))
-
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e

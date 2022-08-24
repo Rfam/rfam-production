@@ -249,7 +249,6 @@ process clan_compete_rel_web {
 }
 
 process add_all_3d {
-    publishDir "$params.pdb_files", mode: "copy"
     container 'docker://rfam/rfam-3d-seed-alignments:latest'
     errorStrategy 'finish'
 
@@ -268,6 +267,18 @@ process add_all_3d {
     git commit -m'New data from PDB pipeline'
     git push
     git log --name-status -1 > $params.pdb_files/git_output.txt
+    """
+}
+
+process update_3d_message{
+    input:
+    val('3d_done')
+
+    output:
+    val('done')
+
+    """
+    python $params.pdb_scripts/add_3d_output.py
     """
 }
 
@@ -326,6 +337,16 @@ workflow sync_rel_web {
         | sync_web_production_db | set { synced } 
 }
 
+workflow add_3d {
+    take:
+        pdb_txt
+    emit: done
+    main:
+        pdb_txt \
+        | add_all_3d
+        | update_3d_message | set { done }
+}
+
 workflow mapping_and_updates {
     take: start
     emit: done
@@ -335,7 +356,7 @@ workflow mapping_and_updates {
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(pdb_mapping.out.pdb_txt)
         clan_compete_rel_web(sync_rel_web.out.synced)
-        add_all_3d(pdb_mapping.out.new_families) \
+        add_3d(pdb_mapping.out.new_families) \
         | set { done }
 }
 
@@ -361,7 +382,6 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail{to: ${params.email}, subject: 'PDB pipeline execution', body: msg}
+sendMail(to: ${params.email}, subject: 'PDB pipeline execution', body: msg)
 println msg
-
 }

@@ -3,7 +3,6 @@ import datetime
 
 import mysql.connector
 
-from pdb_config import add_3d_output
 from utils import RfamDB
 
 rfam_search_url = "<https://rfam.org/family/{0}>"
@@ -41,7 +40,7 @@ def list_new_families():
                     rf_num = entry[0]
                     pd_id = entry[1]
                     pdb_file.write("\nRfam accession number: {0}   PDB ID: {1}".
-                                format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
+                                   format(rfam_search_url.format(rf_num), pdb_search_url.format(pd_id)))
             else:
                 pdb_file.write("There are no new families.")
 

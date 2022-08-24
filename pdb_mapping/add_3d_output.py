@@ -27,8 +27,12 @@ def write_3d_output():
     pdb_txt = "{dir}/pdb_families_{date}.txt".format(dir=pdb_files, date=today_date)
 
     with open(pdb_txt, "a") as pdb_file:
-        pdb_file.write(modified + "\n")
-        pdb_file.write(added + "\n")
+        if modified:
+            pdb_file.write(modified + "\n")
+        if added:
+            pdb_file.write(added + "\n")
+        elif not modified and not added:
+            pdb_file.write("No updates to be made after running the rfam-3d-seed-alignments script.\n")
 
 
 if __name__ == '__main__':

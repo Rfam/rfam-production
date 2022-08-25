@@ -23,7 +23,7 @@ def write_3d_output():
                     line = line.replace("M", "")
                     modified += line
             else:
-                msg = "No updates to be made after running the rfam-3d-seed-alignments script.\n"
+                msg = "\n No updates to be made after running the rfam-3d-seed-alignments script.\n"
 
     today_date = str(datetime.date.today())
     pdb_txt = "{dir}/pdb_families_{date}.txt".format(dir=pdb_files, date=today_date)

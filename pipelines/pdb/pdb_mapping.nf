@@ -264,7 +264,7 @@ process add_all_3d {
     python add_3d.py all --nocache
     git add data/output/RF*
     git add pdb*
-    git commit -m'New data from PDB pipeline'
+    git commit -m'Auto-commit - New data from PDB pipeline'
     git push
     git log --name-status -1 > $params.pdb_files/git_output.txt
     """
@@ -382,6 +382,6 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail(to: ${params.email}, subject: 'PDB pipeline execution', body: msg)
+sendMail(to: $params.email, subject: 'PDB pipeline execution', body: msg)
 println msg
 }

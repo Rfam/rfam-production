@@ -62,10 +62,6 @@ class ContigInfo:
     stop: int
 
     @classmethod
-    def from_range(cls, raw: str) -> ContifInfo:
-        pass
-
-    @classmethod
     def build(cls, raw: str) -> ContigInfo:
         raw_start, raw_stop = raw.split("-", 1)
         if not (match := re.match(CONTIG_PATTERN, raw_start)):

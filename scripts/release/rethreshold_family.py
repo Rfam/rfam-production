@@ -69,14 +69,14 @@ def submit_new_rfsearch_job(family_dir, rfmake=False):
     lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
     lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
     cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-           "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax\"")
+           "-J %s \"cd %s && rfsearch.pl -q production-rh7 -relax\"")
 
     # If rfmake is set to True, runs rfmake following rfsearch, otherwise run rfsearch
     # only by default
 
     if rfmake is True:
         cmd = ("bsub -M %s -R \"rusage[mem=%s]\" -o %s -e %s -n %s -g %s -q production-rh7 "
-               "-J %s \"cd %s && rfsearch.pl -cnompi -q production-rh7 -relax && rfmake.pl\"")
+               "-J %s \"cd %s && rfsearch.pl -q production-rh7 -relax && rfmake.pl\"")
 
     subprocess.call(cmd % (MEMORY, MEMORY, lsf_out_file, lsf_err_file,
                            CPU, LSF_GROUP, rfam_acc, family_dir), shell=True)

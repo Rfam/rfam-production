@@ -33,8 +33,10 @@ def write_3d_output():
         if changes == 0:
             pdb_file.write(no_changes + "\n")
         else:
-            pdb_file.write(modified + "\n")
-            pdb_file.write(added + "\n")
+            if modified:
+                pdb_file.write(modified + "\n")
+            if added:
+                pdb_file.write(added + "\n")
 
 
 if __name__ == '__main__':

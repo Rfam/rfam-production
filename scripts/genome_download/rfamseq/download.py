@@ -86,7 +86,10 @@ def lookup_by_accession(info: SqliteDict, accession: str) -> Records:
                 yield from ncbi.efetch_fasta(contig)
             except wget.FetchError:
                 LOGGER.info("Failed to get %s from NCBI", contig)
-                yield from ena.fetch_fasta(contig)
+                try:
+                    yield from ena.fetch_fasta(contig)
+                except wget.FetchError:
+                    LOGGER.info("Failed to get %s from ENA", contig)
 
 
 def sequences_by_components(

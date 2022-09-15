@@ -73,7 +73,7 @@ def launch_new_rfsearch(family_dir, cpu=4):
     
     # LSF command to be executed
     cmd = ("bsub -M %s -o %s -e %s -n %s -g %s -q production-rh74 "
-           "-J %s \"cd %s && rfsearch.pl -t 30 -cnompi -q production-rh74 -relax -nodesc\"")
+           "-J %s \"cd %s && rfsearch.pl -t 30 -q production-rh74 -relax -nodesc\"")
 
     # call command
     subprocess.call(cmd % (MEMORY, lsf_out_file, lsf_err_file,

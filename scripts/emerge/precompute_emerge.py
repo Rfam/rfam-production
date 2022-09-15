@@ -98,7 +98,7 @@ def run(args):
                      '"cd {0} && '
                      'rm -f DESC && '
                      'predict_ss.pl -infile input.fasta -outfile SEED -r && '
-                     'rfsearch.pl -nodesc -t 30 -cnompi -relax && '
+                     'rfsearch.pl -nodesc -t 30 -relax && '
                      'rfmake.pl -t 50 -a -forcethr && '
                      'mkdir rscape && R-scape --outdir rscape --cyk align && '
                      'cd .. && '

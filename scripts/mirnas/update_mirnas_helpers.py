@@ -21,6 +21,5 @@ def get_mirna_ids(input_args):
     with open(input_args, mode='r') as infile:
         tsv_file = csv.reader(infile, delimiter='\t')
         for line in tsv_file:
-            mirna_id = line.split('\t')
-            mirna_ids.append(mirna_id)
+            mirna_ids.append(line[0])
     return mirna_ids

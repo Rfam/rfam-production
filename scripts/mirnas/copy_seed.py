@@ -70,7 +70,7 @@ def parse_arguments():
     parser.add_argument("--input",
                         help="TSV file with miRNA ID, and threshold value of families to update, "
                              "file will also include Rfam acc number if families to update")
-    parser.add_argument("--new", help="True if miRNA IDs are new families", default=False)
+    parser.add_argument("--new", help="True if miRNA IDs are new families", action='store_true', default=False)
 
     return parser.parse_args()
 
@@ -88,15 +88,3 @@ if __name__ == "__main__":
         mirnas_dict = get_mirna_dict(args.input)
         for mirna_id in mirnas_dict:
             copy_seed_file(mirna_id)
-
-
-    if args.csv_input:
-        mirnas_dict = get_mirna_dict(args.csv_input)
-        for mirna_id in mirnas_dict:
-            copy_seed_file(mirna_id)
-    elif args.input:
-        mirna_ids = get_mirna_ids(args.input)
-        for mirna_id in mirna_ids:
-            copy_seed_file(mirna_id, new=True)
-    else:
-        print("Please provide an input.")

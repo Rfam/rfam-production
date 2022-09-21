@@ -9,6 +9,7 @@ from scripts.mirnas.update_mirnas_helpers import get_mirna_ids
 def auto_desc_make(mirna_id, wiki_links_file=None):
     """
     Launch the jobs to create the new DESC file
+    Only needs to be run for new families, families to be updated will already have a DESC file
 
     :param mirna_id: miRBase family ID
     :param wiki_links_file: A file listing all possible miRNA wiki links
@@ -35,16 +36,14 @@ def auto_desc_make(mirna_id, wiki_links_file=None):
                     job_name=mirna_id, env_path=ENV_PATH, desc_gen=DESC_GEN_PATH, family_dir=family_dir,), shell=True)
 
     else:
-        print('error')
+        print('An error has occurred - path does not exist {dir}'.format(dir=family_dir))
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input", help="A .json file mirna : threshold pairs",
-                        action="store")
-    parser.add_argument("--wiki-links", help="A file listing all possible miRNA wiki links",
-                        action="store")
+    parser.add_argument("--input", help="TSV file with miRNA ID, and threshold value")
+    parser.add_argument("--wiki-links", help="A file listing all possible miRNA wiki links")
     return parser.parse_args()
 
 

@@ -68,7 +68,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Checkout (for update) or create dir (for new) for a family, "
                                                  "and copy over the SEED file")
     parser.add_argument("--input",
-                        help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
+                        help="TSV file with miRNA ID, and threshold value of families to update, "
+                             "file will also include Rfam acc number if families to update")
+    parser.add_argument("--new", help="True if miRNA IDs are new families", default=False)
 
     return parser.parse_args()
 
@@ -76,9 +78,17 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
 
-    mirna_ids = get_mirna_ids(args.input)
-    for mirna_id in mirna_ids:
-        copy_seed_file(mirna_id)
+    if not args.input:
+        print("Please provide an input.")
+    elif args.new:
+        mirna_ids = get_mirna_ids(args.input)
+        for mirna_id in mirna_ids:
+            copy_seed_file(mirna_id, new=True)
+    else:
+        mirnas_dict = get_mirna_dict(args.input)
+        for mirna_id in mirnas_dict:
+            copy_seed_file(mirna_id)
+
 
     if args.csv_input:
         mirnas_dict = get_mirna_dict(args.csv_input)

@@ -3,7 +3,7 @@ import os
 import subprocess
 import argparse
 
-from scripts.mirnas.update_mirnas_helpers import get_mirna_dict
+from scripts.mirnas.update_mirnas_helpers import get_mirna_dict, get_id_thresholds
 from scripts.mirnas.mirna_config import UPDATE_DIR, NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 
@@ -63,22 +63,30 @@ def autorfmake(entryids_thresholds, serial=False):
 def parse_arguments():
     parser = argparse.ArgumentParser(description="run rfmake.pl with a manually selected threshold")
     required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument("--csv-input",
-                                    help="CSV file with miRNA id, rfam accession number, "
-                                         "threshold value of families to update")
-    parser.add_argument("--serial", help="Serial execution of rfmake", action="store_true", default=False)
+    required_arguments.add_argument("--input",
+                                    help="TSV file with miRNA ID, and threshold value of families to update, "
+                                         "file will also include Rfam acc number if families to update")
     parser.add_argument("--thresholds", help="A json file with miRNA : threshold pairs", action="store")
+    parser.add_argument("--serial", help="Serial execution of rfmake", action="store_true", default=False)
+    parser.add_argument("--new", help="True if miRNA IDs are new families", action='store_true', default=False)
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_arguments()
-    if args.csv_input:
-        mirnas_dict = get_mirna_dict(args.csv_input)
+    # new families
+    if args.input and args.new:
+        ids_thresholds = get_id_thresholds(args.input)
+    # update families
+    elif args.input:
+        mirnas_dict = get_mirna_dict(args.input)
         ids_thresholds = mirnas_dict.values()
     elif args.thresholds:
         json_file = args.thresholds
         with open(json_file, 'r') as fp:
             ids_thresholds = json.load(fp)
+    else:
+        print("Please provide an input.")
+
     autorfmake(ids_thresholds, args.serial)

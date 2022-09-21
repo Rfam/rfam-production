@@ -32,6 +32,7 @@ def launch_new_rfsearch(family_dir, cpu):
     subprocess.call(
         cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=cpu, job_name=job_name,
                    family_dir=family_dir, option=option), shell=True)
+    print('Submitting rfsearch job for {dir}'.format(dir=family_dir))
 
 
 def remove_all_gaps(family_dir):

@@ -23,3 +23,10 @@ def get_mirna_ids(input_args):
         for line in tsv_file:
             mirna_ids.append(line[0])
     return mirna_ids
+
+
+def get_id_thresholds(input_args):
+    with open(input_args, mode='r') as infile:
+        reader = csv.reader(infile, delimiter='\t')
+        id_thresholds_dict = {rows[0]: {rows[1]} for rows in reader}
+    return id_thresholds_dict

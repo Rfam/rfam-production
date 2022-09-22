@@ -44,20 +44,21 @@ def autorfmake(entryids_thresholds, serial=False):
     could_not_update = []
     family_dir = ""
 
-    for entry in entryids_thresholds:
-        for entry_id, threshold in entry.items():
-            if entry_id.startswith('RF'):
-                family_dir = os.path.join(UPDATE_DIR, entry_id)
-            elif entry_id.startswith('MIPF'):
-                family_dir = os.path.join(NEW_DIR, entry_id)
-            if os.path.exists(family_dir):
-                if serial is True:
-                    rfmake_serial(family_dir, threshold)
-                else:
-                    rfmake(family_dir, entry_id, threshold)
+    for entry_id, threshold in entryids_thresholds.items():
+        if entry_id.startswith('RF'):
+            family_dir = os.path.join(UPDATE_DIR, entry_id)
+        elif entry_id.startswith('MIPF'):
+            family_dir = os.path.join(NEW_DIR, entry_id)
+        if os.path.exists(family_dir):
+            if serial is True:
+                rfmake_serial(family_dir, threshold)
             else:
-                could_not_update.append(family_dir)
-                continue
+                rfmake(family_dir, entry_id, threshold)
+        else:
+            could_not_update.append(family_dir)
+            continue
+
+    print("Could not update: {0}".format(could_not_update))
 
 
 def parse_arguments():
@@ -82,6 +83,7 @@ if __name__ == '__main__':
     elif args.input:
         mirnas_dict = get_mirna_dict(args.input)
         ids_thresholds = mirnas_dict.values()
+        ids_thresholds = {k: v for d in ids_thresholds for k, v in d.items()}
     elif args.thresholds:
         json_file = args.thresholds
         with open(json_file, 'r') as fp:

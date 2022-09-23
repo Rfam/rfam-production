@@ -57,8 +57,8 @@ def autorfmake(entryids_thresholds, serial=False):
         else:
             could_not_update.append(family_dir)
             continue
-
-    print("Could not update: {0}".format(could_not_update))
+    if could_not_update:
+        print("Could not update: {0}".format(could_not_update))
 
 
 def parse_arguments():

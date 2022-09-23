@@ -106,7 +106,7 @@ if __name__ == '__main__':
         families = get_rfam_accs(args.input)
 
     DIR_TO_USE = NEW_DIR if args.new else UPDATE_DIR
-    print("Using dir: ".format(DIR_TO_USE))
+    print("Using dir: {dir}".format(dir=DIR_TO_USE))
     for family_id in families:
         run_qc_check(family_id)
         time.sleep(60)

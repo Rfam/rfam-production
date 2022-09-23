@@ -3,7 +3,7 @@ import fileinput
 import os
 import sys
 
-from scripts.mirnas.update_mirnas_helpers import get_rfam_accs
+from scripts.mirnas.update_mirnas_helpers import get_rfam_accs, get_mirna_ids
 from scripts.mirnas.mirna_config import UPDATE_DIR
 
 field_options = {
@@ -61,13 +61,18 @@ def update_desc_fields(rfam_accessions):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument(
-        "--csv-input", help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
+    required_arguments.add_argument("--input",
+                                    help="TSV file with miRNA ID, and threshold value of families to update, "
+                                         "file will also include Rfam acc number if families to update")
+    parser.add_argument("--new", help="If supplied, these are new miRNA families", action="store_true", default=False)
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_arguments()
-    rfam_accs = get_rfam_accs(args.csv_input)
-    update_desc_fields(rfam_accs)
+    if args.new:
+        ids_list = get_mirna_ids(args.input)
+    else:
+        ids_list = get_rfam_accs(args.input)
+    update_desc_fields(ids_list)

@@ -21,7 +21,7 @@ Use the following scripts if you wish to run the processes individually.
     `auto_rfmake.py --input <file>`
 
 4. Modify the DESC files sequentially:
-    `auto_addref.py --input <file>`
+    `auto_addref.py --input <file> --sequential`
 
 5. Update the fields AU, SE, SS in the DESC files:
     `update_desc.py`
@@ -55,10 +55,13 @@ Use the following scripts if you wish to run the processes individually.
     `auto_desc_generator.py --input <file>`
 
 5. Add the microRNA references:
-    `auto_addref.py --new --input <file>`
+    `auto_addref.py --new --input <file> --sequential`
 
-6. Run the QC checks:
+6. Update the fields AU, SE, SS in the DESC files:
+    `update_desc.py`
+
+7. Run the QC checks:
    `auto_rqc.py --new --input <file>`
 
-7. Check in the new families, runs `rfnew.pl`:
+8. Check in the new families, runs `rfnew.pl`:
     `auto_rfnew.py --input <file>`

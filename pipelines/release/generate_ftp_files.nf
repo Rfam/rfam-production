@@ -65,7 +65,7 @@ process generate_fasta_files {
     val('done')
 
     """
-    rm -rf mkdir $params.release_ftp/fasta_files
+    rm -rf $params.release_ftp/fasta_files
     mkdir $params.release_ftp/fasta_files
     python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --all --outdir $params.release_ftp/fasta_files
     """

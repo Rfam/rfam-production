@@ -24,10 +24,10 @@ Use the following scripts if you wish to run the processes individually.
     `auto_addref.py --input <file> --sequential`
 
 5. Update the fields AU, SE, SS in the DESC files:
-    `update_desc.py`
+    `update_desc.py --new --input <file>`
 
 6. Run the QC checks:
-    `auto_rqc.py`
+    `auto_rqc.py --input <file>`
 
 7. Check in the families:
    `auto_rfci.py`
@@ -58,7 +58,7 @@ Use the following scripts if you wish to run the processes individually.
     `auto_addref.py --new --input <file> --sequential`
 
 6. Update the fields AU, SE, SS in the DESC files:
-    `update_desc.py`
+    `update_desc.py --new --input <file>`
 
 7. Run the QC checks:
    `auto_rqc.py --new --input <file>`

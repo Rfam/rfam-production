@@ -300,11 +300,14 @@ def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
     path = assembly_info_path(info, accession)
     if not path:
         raise UnknownGenomeId(accession)
-    with wget.wget(path) as handle:
-        ainfo = parse_assembly_info(handle)
-        if not ainfo:
-            raise UnknownGenomeId(accession)
-        return ainfo
+    try:
+        with wget.wget(path) as handle:
+            ainfo = parse_assembly_info(handle)
+    except wget.FetchError as err:
+        LOGGER.debug(err)
+    if not ainfo:
+        raise UnknownGenomeId(accession)
+    return ainfo
 
 
 @sleep_and_retry
@@ -312,8 +315,11 @@ def assembly_info(info: SqliteDict, accession: str) -> NcbiAssemblyInfo:
 def efetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     LOGGER.info("Trying efetch for %s", accession)
     url = NCBI_SEQ_URL.format(accession=accession)
-    with wget.wget(url) as handle:
-        yield from fasta.parse(handle)
+    try:
+        with wget.wget(url) as handle:
+            yield from fasta.parse(handle)
+    except wget.FetchError as err:
+        LOGGER.debug(err)
 
 
 def ftp_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

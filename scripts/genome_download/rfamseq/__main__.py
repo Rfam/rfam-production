@@ -27,6 +27,8 @@ from sqlitedict import SqliteDict
 
 from rfamseq import download, metadata, ncbi, uniprot
 
+from rfamseq.utils import serialize
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -112,7 +114,7 @@ def build_metadata_cmd(
                 info = metadata.Metadata.build(
                     version, proteome, genome.assembly_info, fetched
                 )
-                json.dump(cattrs.unstructure(info), meta)
+                json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")
 
     if failed:
@@ -171,7 +173,7 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
                 info = metadata.Metadata.build(
                     version, proteome, genome.assembly_info, fetched
                 )
-                json.dump(cattrs.unstructure(info), meta)
+                json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")
 
 
@@ -250,7 +252,7 @@ def parse_assembly_info(filename, output):
             raise ValueError("Did not load any assemblies")
 
     with SqliteDict(output, flag="r") as db:
-        assert len(db) == count, "Did not load all assembiles"
+        assert len(db) == count, "Did not load all assemblies"
 
 
 if __name__ == "__main__":

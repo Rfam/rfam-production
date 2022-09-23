@@ -63,7 +63,10 @@ class ContigInfo:
 
     @classmethod
     def build(cls, raw: str) -> ContigInfo:
-        raw_start, raw_stop = raw.split("-", 1)
+        if "-" not in raw:
+            raw_start = raw_stop = raw
+        else:
+            raw_start, raw_stop = raw.split("-", 1)
         if not (match := re.match(CONTIG_PATTERN, raw_start)):
             raise ValueError(f"Cannot parse {raw}")
         prefix = match.group(1)
@@ -75,14 +78,15 @@ class ContigInfo:
         assert prefix == match.group(1), f"Mismatch prefix {raw}"
         stop = match.group(2)
 
-        return cls(prefix=prefix, start=int(start), stop=int(stop))
+        return cls(prefix=prefix, start=start, stop=stop)
 
     def as_range(self) -> str:
         return f"{self.prefix}{self.start}-{self.prefix}{self.stop}"
 
     def ids(self) -> ty.Iterable[str]:
-        for index in range(self.start, self.stop + 1):
-            yield f"{self.prefix}{index}"
+        num_leading_zeros = len(self.start) - len(str(int(self.start)))
+        for index in range(int(self.start), int(self.stop) + 1):
+            yield f"{self.prefix}{str(index).zfill(num_leading_zeros+len(str(index)))}"
 
 
 @enum.unique
@@ -207,23 +211,26 @@ def resolve_ena_wgs(
     url = ena.ENA_EMBL_URL.format(accession=accession)
     contigs: ty.List[ContigInfo] = []
     info: ty.List[WgsSequence] = []
-    with wget.wget(url) as handle:
-        for line in handle:
-            prefix = line[0:3]
-            try:
-                kind = cattrs.structure(prefix, WgsSequenceKind)
-            except:
-                continue
-            try:
-                info.append(WgsSequence.build(kind, line[3:].strip()))
-            except InvalidWgsAccession as err:
-                if kind is not WgsSequenceKind.CONTIG:
-                    raise err
+    try:
+        with wget.wget(url) as handle:
+            for line in handle:
+                prefix = line[0:3]
+                try:
+                    kind = cattrs.structure(prefix, WgsSequenceKind)
+                except:
+                    continue
+                try:
+                    info.append(WgsSequence.build(kind, line[3:].strip()))
+                except InvalidWgsAccession as err:
+                    if kind is not WgsSequenceKind.CONTIG:
+                        raise err
 
-                value = line[3:].strip()
-                parts = value.split(";")
-                for part in parts:
-                    contigs.append(ContigInfo.build(part))
+                    value = line[3:].strip()
+                    parts = value.split(";")
+                    for part in parts:
+                        contigs.append(ContigInfo.build(part))
+    except wget.FetchError as e:
+        LOGGER.debug(e)
 
     return (contigs, info)
 
@@ -231,10 +238,13 @@ def resolve_ena_wgs(
 def resolve_wgs(accession: str) -> ty.Optional[WgsSummary]:
     (contigs, ena_info) = resolve_ena_wgs(accession)
     ncbi_ids = ncbi.resolve_wgs(accession)
-    if not ncbi_ids and not ena_info and not contigs:
+    if ncbi_ids and ena_info and contigs:
+        wgs_id = ena_info[0].wgs_id
+        return WgsSummary(
+            wgs_id=wgs_id,
+            contigs=contigs,
+            sequences=ena_info,
+            ncbi_ids=(ncbi_ids or []),
+        )
+    else:
         return None
-
-    wgs_id = ena_info[0].wgs_id
-    return WgsSummary(
-        wgs_id=wgs_id, contigs=contigs, sequences=ena_info, ncbi_ids=(ncbi_ids or [])
-    )

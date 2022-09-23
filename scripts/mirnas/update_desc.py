@@ -4,7 +4,7 @@ import os
 import sys
 
 from scripts.mirnas.update_mirnas_helpers import get_rfam_accs, get_mirna_ids
-from scripts.mirnas.mirna_config import UPDATE_DIR
+from scripts.mirnas.mirna_config import UPDATE_DIR, NEW_DIR
 
 field_options = {
     'AU': 'AU   Griffiths-Jones SR; 0000-0001-6043-807X\n',
@@ -50,7 +50,7 @@ def update_desc_fields(rfam_accessions):
     """
     fields = ['AU', 'SE', 'SS']
     for family in rfam_accessions:
-        family_dir = os.path.join(UPDATE_DIR, family)
+        family_dir = os.path.join(DIR_TO_USE, family)
         if os.path.exists(family_dir):
             os.chdir(family_dir)
             rewrite_wk()
@@ -72,7 +72,10 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
     if args.new:
+        DIR_TO_USE = NEW_DIR
         ids_list = get_mirna_ids(args.input)
     else:
+        DIR_TO_USE = UPDATE_DIR
         ids_list = get_rfam_accs(args.input)
+    print("Using dir: {dir}".format(dir=DIR_TO_USE))
     update_desc_fields(ids_list)

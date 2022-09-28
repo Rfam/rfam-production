@@ -128,7 +128,7 @@ class Genome:
     def build(
         cls,
         pinfo: uniprot.ProteomeInfo,
-        ncbi_info: ty.Optional[ncbi.NcbiAssemblyInfo],
+        ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport],
         taxonomy: Taxonomy,
         total_length: int,
     ) -> Genome:
@@ -246,7 +246,7 @@ class Metadata:
         cls,
         version: str,
         pinfo: uniprot.ProteomeInfo,
-        assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo],
+        assembly_info: ty.Optional[ncbi.NcbiAssemblyReport],
         records: ty.List[FromFasta],
     ) -> Metadata:
 

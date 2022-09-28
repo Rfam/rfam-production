@@ -282,43 +282,76 @@ def test_can_resolve_wgs_ids_with_ena(accession, expected):
     assert wgs.resolve_ena_wgs(accession) == expected
 
 
+# @pytest.mark.parametrize(
+#     "given,accession,expected",
+#     [
+#         (
+#             wgs.WgsSequence(
+#                 wgs_id="LWDE02",
+#                 kind=wgs.WgsSequenceKind.SEQUENCE,
+#                 start=1,
+#                 stop=23,
+#                 id_length=len("LWDE02000001"),
+#             ),
+#             "LWDE01000000",
+#             True,
+#         ),
+#         (
+#             wgs.WgsSequence(
+#                 wgs_id="LWDE02",
+#                 kind=wgs.WgsSequenceKind.SEQUENCE,
+#                 start=1,
+#                 stop=23,
+#                 id_length=len("LWDE02000001"),
+#             ),
+#             "LWDE01",
+#             True,
+#         ),
+#         (
+#             wgs.WgsSequence(
+#                 wgs_id="ACTP02",
+#                 kind=wgs.WgsSequenceKind.SEQUENCE,
+#                 start=1,
+#                 stop=23,
+#                 id_length=len("ACTP02000001"),
+#             ),
+#             "LWDE01000000",
+#             False,
+#         ),
+#     ],
+# )
+# def test_can_detect_if_within_one_version(given, accession, expected):
+#     assert given.within_one_version(accession) == expected
+
+
 @pytest.mark.parametrize(
-    "given,accession,expected",
+    "accession,to_check,expected",
     [
-        (
-            wgs.WgsSequence(
-                wgs_id="LWDE02",
-                kind=wgs.WgsSequenceKind.SEQUENCE,
-                start=1,
-                stop=23,
-                id_length=len("LWDE02000001"),
-            ),
-            "LWDE01000000",
-            True,
-        ),
-        (
-            wgs.WgsSequence(
-                wgs_id="LWDE02",
-                kind=wgs.WgsSequenceKind.SEQUENCE,
-                start=1,
-                stop=23,
-                id_length=len("LWDE02000001"),
-            ),
-            "LWDE01",
-            True,
-        ),
-        (
-            wgs.WgsSequence(
-                wgs_id="ACTP02",
-                kind=wgs.WgsSequenceKind.SEQUENCE,
-                start=1,
-                stop=23,
-                id_length=len("ACTP02000001"),
-            ),
-            "LWDE01000000",
-            False,
-        ),
+        ("ALWZ04S0000000", "ALWZ04S0000000", True),
+        ("ALWZ040000000", "ALWZ040000000", False),
+        ("ALWZ04S0000001", "ALWZ04S", True),
+        ("ALWZ04S", "ALWZ04S0000001", True),
+        ("ALWZ04S", "ALWZ040000001", False),
+        ("LKAM01", "LKAM01", True),
+        ("LKAM01", "LKAM01000000", True),
+        ("AMCR01", "LKAM01000000", False),
     ],
 )
-def test_can_detect_if_within_one_version(given, accession, expected):
-    assert given.within_one_version(accession) == expected
+def test_can_correctly_match_wgs_ids(accession, to_check, expected):
+    summary = wgs.resolve_ena_wgs(accession)
+    assert summary.id_matches(to_check) == expected
+
+
+@pytest.mark.parametrize(
+    "accession,wgs_id,wgs_version,wgs_type",
+    [
+        ("ALWZ05", "ALWZ", 5, None),
+        ("ACTP02", "ACTP", 2, None),
+        ("ALWZ04S", "ALWZ", 4, "S"),
+    ],
+)
+def test_wgs_summary_know_wgs_project_id(accession, wgs_id, wgs_version):
+    summary = wgs.resolve_ena_wgs(accession)
+    assert summary.wgs_accession == wgs_id
+    assert summary.wgs_version == wgs_version
+    assert summary.wgs_type == wgs_type

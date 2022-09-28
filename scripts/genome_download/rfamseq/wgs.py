@@ -15,6 +15,7 @@ limitations under the License.
 
 from __future__ import annotations
 
+import collections as coll
 import enum
 import logging
 import re
@@ -37,6 +38,14 @@ class InvalidWgsAccession(Exception):
     """
     Raised if the WGS accession is not formatted as expected.
     """
+
+
+def looks_like_wgs_accession(raw: str) -> bool:
+    try:
+        wgs_endpoint(raw)
+        return True
+    except InvalidWgsAccession:
+        return False
 
 
 def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
@@ -91,9 +100,17 @@ class ContigInfo:
 
 @enum.unique
 class WgsSequenceKind(enum.Enum):
+    """
+    This represents the different assembly levels that a WGS sequence can have.
+
+    Note the ordering of these values matters. They are arranged largest to
+    smallest which is used later when deciding which are the largest chunks to
+    use.
+    """
+
+    CONTIG = "CON"
     SCAFFOLD = "WGS_SCAFLD"
     SEQUENCE = "WGS"
-    CONTIG = "CON"
 
 
 @frozen
@@ -186,16 +203,47 @@ class WgsSummary:
         for id in self.ncbi_ids:
             yield id
 
+    def largest_ids(self) -> ty.Iterable[str]:
+        if self.contigs:
+            for contig in self.contigs:
+                yield from contig.ids()
+        elif self.sequences:
+            mapped: ty.Dict[WgsSequenceKind, ty.List[WgsSequence]] = coll.defaultdict(
+                list
+            )
+            for sequence in self.sequences:
+                mapped[sequence.kind].append(sequence)
+
+            for kind in WgsSequenceKind:
+                seen = False
+                for wgs_sequence in mapped.get(kind, []):
+                    yield from wgs_sequence.ids()
+                    seen = True
+                if seen:
+                    break
+            else:
+                raise ValueError("Failed to produce and wgs sequences")
+
+        elif self.ncbi_ids:
+            yield from self.ncbi_ids
+        else:
+            raise ValueError("Somehow failed to have any ids in a wgs set")
+
     def record_ids(self) -> ty.Set[str]:
         return {wgs.record_id() for wgs in self.sequences}
 
-    def within_one_version(self, accession: str) -> bool:
-        for info in self.sequences:
-            if isinstance(info, ContigInfo):
-                continue
-            if info.within_one_version(accession):
-                return True
-        return False
+    def id_matches(self, raw: str, within_one_version=False):
+        # TODO: Rework this class so this is not needed. This class should have
+        #       wgs_accession wgs_version properities which contain the
+        current_prefix, current_version = wgs_endpoint(self.wgs_id)
+        max_diff = int(within_one_version)
+        try:
+            prefix, version = wgs_endpoint(raw)
+            return (
+                prefix == current_prefix and abs(version - current_version) == max_diff
+            )
+        except InvalidWgsAccession:
+            return False
 
     def __contains__(self, accession: str) -> bool:
         for id in self.ids():

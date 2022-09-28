@@ -71,6 +71,10 @@ class SelectedComponents:
         for v in value:
             assert isinstance(v, Component)
 
+    @lru_cache
+    def includes_unplaced(self) -> bool:
+        return any(isinstance(a, Unplaced) for a in self.accessions)
+
     def __len__(self) -> int:
         return len(self.accessions)
 

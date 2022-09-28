@@ -121,7 +121,7 @@ def wgs_sequences(wgs: str) -> Records:
 
 
 def lookup_with_fallback(
-    info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyInfo
+    info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyReport
 ) -> Records:
     genome = proteome.genome_info
     assert genome.accession, f"Missing genome accession in {proteome}"
@@ -138,15 +138,15 @@ def lookup_with_fallback(
     assert isinstance(
         genome.components, uniprot.SelectedComponents
     ), f"Invalid components type {genome}"
-    comp_set = fasta_filter.ComponentSet.from_selected(
-        ncbi_info.sequence_info,
+    comp_set = fasta_filter.ComponentSelector.from_selected(
+        ncbi_info,
         genome.components,
         wgs_accessions,
     )
 
     records = lookup_by_accession(info, genome.accession)
 
-    for classification in fasta_filter.filter(records, comp_set):
+    for classification in comp_set.filter(records):
         if isinstance(classification, fasta_filter.Extra):
             LOGGER.info(
                 "Accession %s contains extra record %s",
@@ -190,7 +190,7 @@ class DownloadMethod(enum.Enum):
         self,
         info: SqliteDict,
         proteome: uniprot.ProteomeInfo,
-        ncbi_info: ty.Optional[ncbi.NcbiAssemblyInfo] = None,
+        ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport] = None,
     ) -> Records:
         if self is DownloadMethod.BY_COMPONENT:
             yield from sequences_by_components(info, proteome)
@@ -200,7 +200,7 @@ class DownloadMethod(enum.Enum):
             ), "Invalid genome_info"
             yield from lookup_by_accession(info, proteome.genome_info.accession)
         elif self is DownloadMethod.FALLBACK:
-            assert isinstance(ncbi_info, ncbi.NcbiAssemblyInfo), "Must give ncbi_info"
+            assert isinstance(ncbi_info, ncbi.NcbiAssemblyReport), "Must give ncbi_info"
             yield from lookup_with_fallback(info, proteome, ncbi_info)
         else:
             raise ValueError("Cannot fetch with method %s", self)
@@ -210,7 +210,7 @@ class DownloadMethod(enum.Enum):
 class GenomeDownload:
     method: DownloadMethod
     proteome: uniprot.ProteomeInfo
-    assembly_info: ty.Optional[ncbi.NcbiAssemblyInfo]
+    assembly_info: ty.Optional[ncbi.NcbiAssemblyReport]
 
     @classmethod
     def by_components(cls, proteome: uniprot.ProteomeInfo) -> GenomeDownload:
@@ -240,7 +240,7 @@ class GenomeDownload:
 
         LOGGER.info("Extracting selected components for %s", genome.accession)
         try:
-            ncbi_info = ncbi.assembly_info(info, genome.accession)
+            ncbi_info = ncbi.fetch_assembly_report(info, genome.accession)
         except ncbi.UnknownGenomeId:
             return cls.by_components(proteome)
 

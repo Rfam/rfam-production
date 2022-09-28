@@ -18,7 +18,7 @@ from __future__ import annotations
 import typing as ty
 
 import cattrs
-from attrs import frozen
+from attrs import field, frozen
 
 
 @frozen
@@ -38,16 +38,28 @@ class Accession:
 
     accession: str
     version: ty.Optional[str]
+    aliases: ty.Tuple[Accession] = field(factory=tuple)
 
     @classmethod
-    def build(cls, raw: str) -> Accession:
+    def build(cls, raw: str, aliases=None) -> Accession:
         """
         Build a new Accession from the given raw string.
         """
+        aliases = aliases or tuple()
         parts = raw.split(".", 1)
         if len(parts) == 2:
-            return cls(*parts)
-        return cls(raw, None)
+            return cls(parts[0], parts[1], aliases=aliases)
+        return cls(raw, None, aliases=aliases)
+
+    def alias(self, alias: Accession) -> Accession:
+        """
+        Create a new one with which adds the given Accession as an alias.
+        """
+        aliases = list(self.aliases)
+        aliases.append(alias)
+        return Accession(
+            accession=self.accession, version=self.version, aliases=tuple(aliases)
+        )
 
     def matches(self, accession: Accession) -> bool:
         """
@@ -56,7 +68,9 @@ class Accession:
         using `==` between two Accessios will work. Or converting this to a
         string and comparing those.
         """
-        return accession.accession == self.accession
+        return accession.accession == self.accession or any(
+            a.matches(accession) for a in self.aliases
+        )
 
     def versioned(self) -> bool:
         """

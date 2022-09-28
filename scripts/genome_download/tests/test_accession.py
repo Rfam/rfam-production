@@ -74,13 +74,33 @@ def test_can_round_trip_with_cattrs_to_a_string(raw):
 @pytest.mark.parametrize(
     "given,other,expected",
     [
-        ("NC_004448.1", "NC_004448.1", True),
-        ("NC_004448.1", "NC_004448.2", True),
-        ("NC_004448.1", "NC_004448", True),
-        ("NC_004448", "NC_004448.1", True),
-        ("NC_004448", "NC_004448", True),
-        ("NC_004449", "NC_004448", False),
+        (Accession.build("NC_004448.1"), Accession.build("NC_004448.1"), True),
+        (Accession.build("NC_004448.1"), Accession.build("NC_004448.2"), True),
+        (Accession.build("NC_004448.1"), Accession.build("NC_004448"), True),
+        (Accession.build("NC_004448"), Accession.build("NC_004448.1"), True),
+        (Accession.build("NC_004448"), Accession.build("NC_004448"), True),
+        (Accession.build("NC_004449"), Accession.build("NC_004448"), False),
+        (
+            Accession.build("NC_004449.1", aliases=(Accession.build("NC_004448"),)),
+            Accession.build("NC_004448.1"),
+            True,
+        ),
+        (
+            Accession.build("NC_004448.1"),
+            Accession.build("NC_004448.1", aliases=(Accession.build("NC_004448"),)),
+            True,
+        ),
+        (
+            Accession.build("NC_004449", aliases=(Accession.build("NC_004448"),)),
+            Accession.build("NC_004448.1"),
+            True,
+        ),
+        (
+            Accession.build("NC_004448"),
+            Accession.build("NC_004448.1", aliases=(Accession.build("NC_004448"),)),
+            True,
+        ),
     ],
 )
 def test_can_detect_expected_matches(given, other, expected):
-    assert Accession.build(given).matches(Accession.build(other)) == expected
+    assert given.matches(other) == expected

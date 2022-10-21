@@ -81,8 +81,10 @@ def auto_add_ref(reference, rfam_accessions=None, thresholds_file=None):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     file_input = parser.add_mutually_exclusive_group()
-    file_input.add_argument("--csv-input",
-                            help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
+    file_input.add_argument("--input",
+                            help="TSV file with miRNA ID, and threshold value of families to update, "
+                                 "file will also include Rfam acc number if families to update")
+    parser.add_argument("--new", help="True if miRNA IDs are new families", action='store_true', default=False)
     file_input.add_argument("--thresholds", help="A json file with miRNA : threshold pairs",
                             action="store")
     parser.add_argument("--ref", help="A string indicating the PubMed id to use for reference",
@@ -95,14 +97,16 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    if args.csv_input:
-        rfam_accs = get_rfam_accs(args.csv_input)
-    else:
-        rfam_accs = None
-    if args.thresholds:
-        mirna_list = get_mirna_ids(args.thresholds)
+    if args.input and args.new:
+        mirna_list = get_mirna_ids(args.input)
     else:
         mirna_list = None
+
+    if args.input and not args.new:
+        rfam_accs = get_rfam_accs(args.input)
+    else:
+        rfam_accs = None
+
     if args.sequential is False:
         auto_add_ref(reference=args.ref, rfam_accessions=rfam_accs, thresholds_file=mirna_list)
     else:

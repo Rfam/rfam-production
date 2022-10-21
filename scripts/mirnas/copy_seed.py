@@ -43,8 +43,6 @@ def copy_seed_file(mirna, new=False):
     """
 
     mirna_dir = mirna
-    if mirna.find("relabelled") == -1:
-        mirna_dir = mirna + "_relabelled"
     if new:
         check = create_new_dir(mirna_dir)
         checkout_dir = os.path.join(NEW_DIR, mirna_dir)
@@ -53,6 +51,8 @@ def copy_seed_file(mirna, new=False):
         check = checkout_family(rfam_acc)
         checkout_dir = os.path.join(UPDATE_DIR, rfam_acc)
     if check:
+        if mirna.find("relabelled") == -1:
+            mirna_dir = mirna + "_relabelled"
         for search_dir in SEARCH_DIRS:
             if os.path.exists(os.path.join(search_dir, mirna_dir)):
                 updated_mirna_loc = os.path.join(search_dir, mirna_dir)
@@ -67,24 +67,24 @@ def copy_seed_file(mirna, new=False):
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Checkout (for update) or create dir (for new) for a family, "
                                                  "and copy over the SEED file")
-    mutually_exclusive = parser.add_mutually_exclusive_group()
-    mutually_exclusive.add_argument("--csv-input",
-                                    help="CSV file with miRNA id, rfam accession number, "
-                                         "threshold value of families to update")
-    mutually_exclusive.add_argument("--input", help="JSON file with miRNA id : threshold value pairs")
+    parser.add_argument("--input",
+                        help="TSV file with miRNA ID, and threshold value of families to update, "
+                             "file will also include Rfam acc number if families to update")
+    parser.add_argument("--new", help="True if miRNA IDs are new families", action='store_true', default=False)
 
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    if args.csv_input:
-        mirnas_dict = get_mirna_dict(args.csv_input)
-        for mirna_id in mirnas_dict:
-            copy_seed_file(mirna_id)
-    elif args.input:
+
+    if not args.input:
+        print("Please provide an input.")
+    elif args.new:
         mirna_ids = get_mirna_ids(args.input)
         for mirna_id in mirna_ids:
             copy_seed_file(mirna_id, new=True)
     else:
-        print("Please provide an input.")
+        mirnas_dict = get_mirna_dict(args.input)
+        for mirna_id in mirnas_dict:
+            copy_seed_file(mirna_id)

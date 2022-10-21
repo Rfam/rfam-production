@@ -2,8 +2,8 @@ import os
 import subprocess
 import argparse
 
-from scripts.mirnas.update_mirnas_helpers import get_rfam_accs
-from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY
+from scripts.mirnas.update_mirnas_helpers import get_rfam_accs, get_mirna_ids
+from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY, NEW_DIR
 
 
 def launch_new_rfsearch(family_dir, cpu):
@@ -32,6 +32,7 @@ def launch_new_rfsearch(family_dir, cpu):
     subprocess.call(
         cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=cpu, job_name=job_name,
                    family_dir=family_dir, option=option), shell=True)
+    print('Submitting rfsearch job for {dir}'.format(dir=family_dir))
 
 
 def remove_all_gaps(family_dir):
@@ -56,13 +57,14 @@ def remove_all_gaps(family_dir):
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Precompute families by launching an rfsearch job")
     mutually_exclusive = parser.add_mutually_exclusive_group()
-    mutually_exclusive.add_argument("--input", help="A file listing all family directories", type=str)
-    mutually_exclusive.add_argument("--csv-input",
-                                    help="CSV file with miRNA id, rfam accession number, "
-                                         "threshold value of families to update")
+    mutually_exclusive.add_argument("--file-list-input", help="A file listing all family directories", type=str)
+    mutually_exclusive.add_argument("--input",
+                                    help="TSV file with miRNA ID, and threshold value of families to update, "
+                                         "file will also include Rfam acc number if families to update")
     parser.add_argument('--ignore-gap-check', help='Do not remove all gap columns from the alignment',
                         action="store_true",
                         default=False)
+    parser.add_argument("--new", help="True if miRNA IDs are new families", action='store_true', default=False)
 
     return parser.parse_args()
 
@@ -70,14 +72,22 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
     dirs = []
-    if args.csv_input:
-        rfam_accs = get_rfam_accs(csv_file=args.csv_input)
+    if args.input and not args.new:
+        rfam_accs = get_rfam_accs(args.input)
         for rfam_acc in rfam_accs:
             rfam_family_dir = os.path.join(UPDATE_DIR, rfam_acc)
             dirs.append(rfam_family_dir)
-    elif args.input:
+
+    elif args.input and args.new:
+        mirna_ids = get_mirna_ids(args.input)
+        for mirna_id in mirna_ids:
+            family_dir = os.path.join(NEW_DIR, mirna_id)
+            dirs.append(family_dir)
+
+    elif args.file_list_input:
         with open(args.input, 'r') as fp:
             dirs = [x.strip() for x in fp]
+
     if args.ignore_gap_check:
         for family_dir in dirs:
             launch_new_rfsearch(family_dir, cpu=4)

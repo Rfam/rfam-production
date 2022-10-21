@@ -89,9 +89,9 @@ def write_to_files():
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--csv-input",
-                        help="CSV file with miRNA id, rfam accession number, threshold value of families to update")
-    parser.add_argument("--input", help="JSON file with miRNA id : threshold value pairs")
+    parser.add_argument("--input",
+                        help="TSV file with miRNA ID, and threshold value of families to update, "
+                             "file will also include Rfam acc number if families to update")
     parser.add_argument("--new", help="If supplied, these are new miRNA families", action="store_true", default=False)
 
     return parser.parse_args()
@@ -100,13 +100,13 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
     families = []
-    if args.csv_input:
-        families = get_rfam_accs(csv_file=args.csv_input)
-    elif args.input:
+    if args.input and args.new:
         families = get_mirna_ids(args.input)
+    elif args.input:
+        families = get_rfam_accs(args.input)
 
     DIR_TO_USE = NEW_DIR if args.new else UPDATE_DIR
-    print("Using dir: ".format(DIR_TO_USE))
+    print("Using dir: {dir}".format(dir=DIR_TO_USE))
     for family_id in families:
         run_qc_check(family_id)
         time.sleep(60)

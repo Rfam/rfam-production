@@ -8,6 +8,8 @@ from scripts.mirnas.mirna_config import NEW_DIR, MEMORY, CPU, LSF_GROUP
 
 def auto_rfnew(mirnas):
     """
+    Run rfnew.pl to check-in the given families
+    :param mirnas: list of miRNA IDs to check-in
     """
     for mirna in mirnas:
         family_dir = os.path.join(NEW_DIR, mirna)
@@ -23,7 +25,7 @@ def auto_rfnew(mirnas):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="run rfnew.pl")
-    parser.add_argument("--input", help="A json file with miRNA : threshold pairs", action="store")
+    parser.add_argument("--input", help="TSV file with miRNA ID, and threshold value of families to update")
 
     return parser.parse_args()
 

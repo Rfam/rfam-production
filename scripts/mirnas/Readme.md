@@ -10,24 +10,24 @@ Use the following scripts if you wish to run the processes individually.
 
 1. Check out the family and copy over the SEED:
 
-    `copy_seed.py`
+    `copy_seed.py --input <file>`
 
-    This takes in a CSV file with the miRNA ID, Rfam accession number, threshold. It runs `rfco.pl`, and copies the SEED to the family directory. 
+    This takes in a TSV file with the miRNA ID, Rfam accession number, threshold. It runs `rfco.pl`, and copies the SEED to the family directory. 
 
 2. Launch `rfsearch.pl` for the families, given the input CSV:
-    `auto_rfsearch.py`
+    `auto_rfsearch.py --input <file>`
 
 3. Launch `rfmake.pl` with the threshold per family, given the input CSV:
-    `auto_rfmake.py`
+    `auto_rfmake.py --input <file>`
 
 4. Modify the DESC files sequentially:
-    `auto_addref.py`
+    `auto_addref.py --input <file> --sequential`
 
 5. Update the fields AU, SE, SS in the DESC files:
-    `update_desc.py`
+    `update_desc.py --new --input <file>`
 
 6. Run the QC checks:
-    `auto_rqc.py`
+    `auto_rqc.py --input <file>`
 
 7. Check in the families:
    `auto_rfci.py`
@@ -36,16 +36,32 @@ Use the following scripts if you wish to run the processes individually.
 ## Create new families
 
 1. Create new directory and copy the SEED, for each family:
-    `copy_seed.py`
+    This takes in a TSV file with the miRNA ID, threshold. It runs `rfco.pl`, and copies the SEED to the family directory. 
+    Use argument `--new` to specify that these are new miRNA families. 
+    
+    `copy_seed.py --new --input <file>`
+
 2. Launch `rfsearch.pl` jobs:
-    `auto_rfsearch.py`
+    Use argument `--new` to specify that these are new miRNA families.
+
+    `auto_rfsearch.py --new --input <file>`
+
 3. Launch `rfmake.pl` jobs:
-   `auto_rfmake.py`
+   `auto_rfmake.py --new --input <file>`
+
 4. Generate the correct DESC file, by updating the DESC template:
-    `auto_desc_generator.py`
-5. Add the microRna references:
-    `auto_addref.py`
-6. Run the QC checks:
-   `auto_rqc.py`
-7. Check in the new families, runs `rfnew.pl`:
-    `auto_rfnew.py`
+    Only needs to be run for new families, families to be updated will already have a DESC file
+
+    `auto_desc_generator.py --input <file>`
+
+5. Add the microRNA references:
+    `auto_addref.py --new --input <file> --sequential`
+
+6. Update the fields AU, SE, SS in the DESC files:
+    `update_desc.py --new --input <file>`
+
+7. Run the QC checks:
+   `auto_rqc.py --new --input <file>`
+
+8. Check in the new families, runs `rfnew.pl`:
+    `auto_rfnew.py --input <file>`

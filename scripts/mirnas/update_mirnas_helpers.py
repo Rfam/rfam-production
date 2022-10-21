@@ -1,20 +1,15 @@
 import csv
-import json
-
-from scripts.mirnas.mirna_config import MIRNAS_CSV
 
 
-def get_mirna_dict(csv_file=None):
-    csv_file = MIRNAS_CSV if csv_file is None else csv_file
-    with open(csv_file, mode='r') as infile:
-        reader = csv.reader(infile)
+def get_mirna_dict(input_args):
+    with open(input_args, mode='r') as infile:
+        reader = csv.reader(infile, delimiter='\t')
         mirnas_dict = {rows[0]: {rows[1]: rows[2]} for rows in reader}
     return mirnas_dict
 
 
-def get_rfam_accs(csv_file=None):
-    csv_file = MIRNAS_CSV if csv_file is None else csv_file
-    mirnas_dict = get_mirna_dict(csv_file)
+def get_rfam_accs(input_args):
+    mirnas_dict = get_mirna_dict(input_args)
     rfam_accs = []
     for mirna_entry in mirnas_dict.values():
         rfam_accs.append(mirna_entry.keys()[0])
@@ -22,11 +17,16 @@ def get_rfam_accs(csv_file=None):
 
 
 def get_mirna_ids(input_args):
-    with open(input_args, 'r') as fp:
-        ids_thresholds = json.load(fp)
     mirna_ids = []
-    for entry in ids_thresholds:
-        # entry_id = entry.keys()[0]
-        # threshold = entry.values()[0]
-        mirna_ids.append(entry)
+    with open(input_args, mode='r') as infile:
+        tsv_file = csv.reader(infile, delimiter='\t')
+        for line in tsv_file:
+            mirna_ids.append(line[0])
     return mirna_ids
+
+
+def get_id_thresholds(input_args):
+    with open(input_args, mode='r') as infile:
+        reader = csv.reader(infile, delimiter='\t')
+        id_thresholds_dict = {rows[0]: rows[1] for rows in reader}
+    return id_thresholds_dict

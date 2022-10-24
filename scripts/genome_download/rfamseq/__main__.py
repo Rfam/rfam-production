@@ -77,7 +77,7 @@ def build_metadata_cmd(
     """
     Build metadata for downloaded fasta files. This is normally done when
     downloading files, but we are still tweaking the metadata generation so this
-    will build metdata from fetched fasta files. This assumes the fasta files
+    will build metadata from fetched fasta files. This assumes the fasta files
     are named with UP* and stored in one directory.
 
     Arguments:

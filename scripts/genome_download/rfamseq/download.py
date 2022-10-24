@@ -93,7 +93,7 @@ def lookup_by_accession(info: SqliteDict, accession: str) -> Records:
 
 
 def sequences_by_components(
-    info: SqliteDict, proteome: uniprot.ProteomeInfo
+        info: SqliteDict, proteome: uniprot.ProteomeInfo
 ) -> Records:
     LOGGER.info("Looking up each component for %s", proteome.upi)
     genome = proteome.genome_info
@@ -121,19 +121,21 @@ def wgs_sequences(wgs: str) -> Records:
 
 
 def lookup_with_fallback(
-    info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyReport
+        info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyReport
 ) -> Records:
     genome = proteome.genome_info
     assert genome.accession, f"Missing genome accession in {proteome}"
-
     wgs_accessions = None
-    if ncbi_info.wgs_project:
-        wgs_accessions = wgs.resolve_wgs(ncbi_info.wgs_project)
-        if wgs_accessions:
-            LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
-            LOGGER.debug("Found %s", wgs_accessions)
-        else:
-            LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
+    try:
+        if ncbi_info.wgs_project and any(ncbi_info.wgs_project[0:4] in acc for acc in genome.components.accessions):
+            wgs_accessions = wgs.resolve_wgs(ncbi_info.wgs_project)
+            if wgs_accessions:
+                LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
+                LOGGER.debug("Found %s", wgs_accessions)
+            else:
+                LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
+    except TypeError as e:
+        LOGGER.debug('Catching TypeError to ignore type Unplaced items in accession list', e)
 
     assert isinstance(
         genome.components, uniprot.SelectedComponents
@@ -187,10 +189,10 @@ class DownloadMethod(enum.Enum):
     FALLBACK = "LOOKUP_WITH_FALLBACK"
 
     def fetch(
-        self,
-        info: SqliteDict,
-        proteome: uniprot.ProteomeInfo,
-        ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport] = None,
+            self,
+            info: SqliteDict,
+            proteome: uniprot.ProteomeInfo,
+            ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport] = None,
     ) -> Records:
         if self is DownloadMethod.BY_COMPONENT:
             yield from sequences_by_components(info, proteome)

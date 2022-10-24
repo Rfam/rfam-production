@@ -25,7 +25,7 @@ from attrs import field, frozen
 class Accession:
     """
     This is meant to represent an 'accession' that sequences are identified by.
-    Acessions are generally a '<string>.<version>'. Depending upon where the
+    Accessions are generally a '<string>.<version>'. Depending upon where the
     sequence came from and in what context it may or may not have a version.
     This class is used instead of treating accession as a raw string as
     sometimes we have versioned ones (with the '.<version>') and sometimes we do
@@ -65,10 +65,10 @@ class Accession:
         """
         Check if the given accession matches this one, ignoring the version if
         any of both accessions. If a versioned check needs to be done then just
-        using `==` between two Accessios will work. Or converting this to a
+        using `==` between two Accessions will work. Or converting this to a
         string and comparing those.
         """
-        return accession.accession == self.accession or any(
+        return accession == self.accession or any(
             a.matches(accession) for a in self.aliases
         )
 

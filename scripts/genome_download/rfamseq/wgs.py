@@ -55,7 +55,9 @@ def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
     prefix = match.group(1)
     id = raw[len(prefix) :]
     minimal = re.sub("^0+", "", id) or "0"
-    return (prefix, int(minimal))
+    # change this to a float to account for IDs ending in .1 oe .2 but now unsure if those types of IDs
+    # should even get this far
+    return (prefix, int(float(minimal)))
 
 
 def wgs_id(length: int, prefix: str, index: int) -> str:
@@ -95,7 +97,7 @@ class ContigInfo:
     def ids(self) -> ty.Iterable[str]:
         num_leading_zeros = len(self.start) - len(str(int(self.start)))
         for index in range(int(self.start), int(self.stop) + 1):
-            yield f"{self.prefix}{str(index).zfill(num_leading_zeros+len(str(index)))}"
+            yield f"{self.prefix}{str(index).zfill(num_leading_zeros + len(str(index)))}"
 
 
 @enum.unique
@@ -193,6 +195,14 @@ class WgsSummary:
     sequences: ty.List[WgsSequence]
     ncbi_ids: ty.List[str]
 
+    @property
+    def wgs_prefix(self) -> str:
+        return self.wgs_id[0:4]
+
+    @property
+    def wgs_version(self) -> int:
+        return int(self.wgs_id[4:6])
+
     def ids(self) -> ty.Iterable[str]:
         for contig in self.contigs:
             yield from contig.ids()
@@ -233,15 +243,10 @@ class WgsSummary:
         return {wgs.record_id() for wgs in self.sequences}
 
     def id_matches(self, raw: str, within_one_version=False):
-        # TODO: Rework this class so this is not needed. This class should have
-        #       wgs_accession wgs_version properities which contain the
-        current_prefix, current_version = wgs_endpoint(self.wgs_id)
         max_diff = int(within_one_version)
         try:
             prefix, version = wgs_endpoint(raw)
-            return (
-                prefix == current_prefix and abs(version - current_version) == max_diff
-            )
+            return prefix[0:4] == self.wgs_prefix and abs(version - int(self.wgs_version)) == max_diff
         except InvalidWgsAccession:
             return False
 
@@ -253,7 +258,7 @@ class WgsSummary:
 
 
 def resolve_ena_wgs(
-    accession: str,
+        accession: str,
 ) -> ty.Tuple[ty.List[ContigInfo], ty.List[WgsSequence]]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
     url = ena.ENA_EMBL_URL.format(accession=accession)
@@ -286,13 +291,9 @@ def resolve_ena_wgs(
 def resolve_wgs(accession: str) -> ty.Optional[WgsSummary]:
     (contigs, ena_info) = resolve_ena_wgs(accession)
     ncbi_ids = ncbi.resolve_wgs(accession)
-    if ncbi_ids and ena_info and contigs:
-        wgs_id = ena_info[0].wgs_id
-        return WgsSummary(
-            wgs_id=wgs_id,
-            contigs=contigs,
-            sequences=ena_info,
-            ncbi_ids=(ncbi_ids or []),
-        )
-    else:
+    if not ncbi_ids and not ena_info and not contigs:
         return None
+    wgs_id = ena_info[0].wgs_id
+    return WgsSummary(
+        wgs_id=wgs_id, contigs=contigs, sequences=ena_info, ncbi_ids=(ncbi_ids or [])
+    )

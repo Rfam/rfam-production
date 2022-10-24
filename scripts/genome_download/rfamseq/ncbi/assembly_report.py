@@ -76,8 +76,8 @@ class NcbiSequenceInfo:
 
     def accession(self, merged=False) -> Accession:
         """
-        Get the accesion for this sequence. This will prefer the
-        genbank_accession over the refseq one if both are set an different. If
+        Get the accession for this sequence. This will prefer the
+        genbank_accession over the refseq one if both are set and different. If
         they are equal then an accession with both present will be used. This
         can be forced by setting merged=True.
         """

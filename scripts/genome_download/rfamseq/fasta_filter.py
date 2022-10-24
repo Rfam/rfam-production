@@ -128,10 +128,10 @@ class ComponentSelector:
 
     @classmethod
     def from_selected(
-        cls,
-        assembly_report: ncbi.NcbiAssemblyReport,
-        selected: uniprot.SelectedComponents,
-        wgs_accessions: ty.Optional[wgs.WgsSummary],
+            cls,
+            assembly_report: ncbi.NcbiAssemblyReport,
+            selected: uniprot.SelectedComponents,
+            wgs_accessions: ty.Optional[wgs.WgsSummary],
     ) -> ComponentSelector:
 
         accessions: ty.Set[Accession] = set()
@@ -141,25 +141,33 @@ class ComponentSelector:
                 unplaced = True
             elif wgs.looks_like_wgs_accession(component):
                 if wgs_accessions:
+                    if wgs_accessions.wgs_id in component:
+                        continue
+                    # maybe keep this logic in the id_matches function
+                    elif component[0:4] == self.wgs_prefix and abs(int(component[4:6]) - int(self.wgs_version)) <= 1:
+                        continue
+                    else:
+                        pass
+                    # component is not already in wgs_accession object so add to missing-wgs-accs?
+                    # accessions.add(Accession.build(component)) ?
+
                     # If the component to fetch is a wgs record id which we already have
                     # stored in the wgs_accession object we do not search for it in the
-                    # file. That id will never appear in the file, but the ids which
+                    # file.
+                    # That id will never appear in the file, but the ids which
                     # compose a record may. By this point we have already resolved the
                     # wgs accession into records (hopefully) so we can ignore it as
                     # something to search for and just rely on the wgs ids we have
                     # determined.
-                    #
                     # If the given component is single version difference from the
                     # record id we already see in the wgs_accessions, we accept it.
-                    # This is techinically wrong, however, there are cases where old
-                    # versions dissappear. This is painful but there is generally a new exists,
+                    # This is technically wrong, however, there are cases where old
+                    # versions disappear. This is painful but there is generally a new exists,
                     # so we can get a close enough sequence.
                     #
                     # Example:
                     # UP000077684 (GCA_001645045.2) wants LWDE01000000, which is gone,
                     # but LWDE02 exists.
-                    if wgs_accessions.id_matches(component, within_one_version=True):
-                        continue
                 else:
                     raise ValueError("Not yet implemented")
             else:
@@ -200,7 +208,7 @@ class ComponentSelector:
     def filter(self, records: ty.Iterable[SeqIO.SeqRecord]) -> ty.Iterable[RecordTypes]:
         """
         Parse a fasta handle and compare each sequence to the requested set. If the
-        sequence has been requestd yeild a Found object, it has not then yeild and
+        sequence has been requested, yield a Found object, it has not then yield an
         Extra object. For any ids which are not present in the file yield a Missing
         object. Does not handle duplicate ids within a file.
         """

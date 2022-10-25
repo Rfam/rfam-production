@@ -22,6 +22,8 @@ import subprocess
 import sys
 import tempfile
 
+from db_utils import fetch_all_rfam_accs
+
 JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",
            "TREE": "writeAnnotatedTree.pl"}
@@ -220,7 +222,7 @@ if __name__ == '__main__':
 
     accessions = []
     if args.acc == 'all':
-        accessions = get_all_rfam_accessions()
+        accessions = fetch_all_rfam_accs()
     elif os.path.isfile(args.f):
         fp = open(args.f, 'r')
         accessions = [acc.strip() for acc in fp]

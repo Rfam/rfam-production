@@ -223,10 +223,10 @@ if __name__ == '__main__':
     accessions = []
     if args.acc == 'all':
         accessions = fetch_all_rfam_accs()
-    elif os.path.isfile(args.f):
-        fp = open(args.f, 'r')
-        accessions = [acc.strip() for acc in fp]
-        fp.close()
+    elif args.f:
+        if os.path.isfile(args.f):
+            with open(args.f, 'r') as fp:
+                accessions = [acc.strip() for acc in fp]
     elif args.acc[0:2] == 'RF':
         accessions.append(args.acc)
 

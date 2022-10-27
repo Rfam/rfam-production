@@ -22,7 +22,7 @@ import subprocess
 import sys
 import tempfile
 
-from db_utils import fetch_all_rfam_accs
+from utils.db_utils import fetch_all_rfam_accs
 
 JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "CM": "writeAnnotatedCM.pl",

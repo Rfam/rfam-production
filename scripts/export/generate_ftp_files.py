@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# ---------------------------------IMPORTS-------------------------------------
-
 import argparse
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from utils.db_utils import fetch_all_rfam_accs
 
@@ -29,20 +26,13 @@ JIFFIES = {"SEED": "writeAnnotatedSeed.pl",
            "TREE": "writeAnnotatedTree.pl"}
 
 
-# -----------------------------------------------------------------------------
-
-
 def export_ftp_file(file_type, rfam_acc, dest_dir=None):
     """
-
-    :param type:
-    :param rfam_acc:
-    :param dest_dir:
-    :return:
+    Call the perl jiffy script (cm, seed, or tree) to export the ftp file
+    :param file_type: cm, seed, or tree
+    :param rfam_acc: Rfam ID
+    :param dest_dir: where to write ftp file to
     """
-
-    # TO DO
-    # convert this to load family accessions from the database
 
     if dest_dir is not None:
         os.chdir(os.path.abspath(dest_dir))
@@ -50,26 +40,20 @@ def export_ftp_file(file_type, rfam_acc, dest_dir=None):
         sys.exit("Provide a valid destination directory")
 
     try:
-        # select jiffy
         jiffy = JIFFIES[file_type]
-
-        # call jiffy
         cmd = "%s %s" % (jiffy, rfam_acc)
         subprocess.call(cmd, shell=True)
-
-    except:
-        raise Exception('Command {} failed'.format(cmd))
-
-
-# -----------------------------------------------------------------------------
+    except Exception as e:
+        raise Exception('Command {cmd} failed: {err}'.format(cmd=cmd, err=e))
 
 
 def rename_files(source_dir, file_type, rfam_acc):
     """
+    Rename the ftp files
 
-    :param source_dir:
-    :param file_type:
-    :return:
+    :param source_dir: source of FTP file
+    :param file_type: cm, seed, or tree
+    :param rfam_acc: Rfam ID
     """
 
     if not os.path.exists(source_dir):
@@ -92,9 +76,6 @@ def rename_files(source_dir, file_type, rfam_acc):
         shutil.copy(taxtree, seed_tree)
 
 
-# -----------------------------------------------------------------------------
-
-
 def create_seed_archive(destination):
     """
     Create a combined Rfam.seed file and compress it.
@@ -108,23 +89,20 @@ def create_seed_archive(destination):
     os.chdir(cwd)
 
 
-# -----------------------------------------------------------------------------
-
-
-def create_combined_cm_file(destination):
+def create_combined_cm_file(destination, accs):
     """
     Create a combined Rfam.cm file.
+    Write a .txt file containing a list of all Rfam accessions in the CM file.
     """
     cwd = os.getcwd()
     os.chdir(destination)
+    with open("list.txt") as accs_list:
+        accs_list.write(accs)
     cmd = "rm -f Rfam.cm && cat *.CM > Rfam.cm"
     status = os.system(cmd.format(destination))
     if status:
         raise Exception('There was a problem generating Rfam.cm in {}'.format(destination))
     os.chdir(cwd)
-
-
-# -----------------------------------------------------------------------------
 
 
 def create_tree_archive(destination):
@@ -142,9 +120,6 @@ def create_tree_archive(destination):
     if status:
         raise Exception('There was a problem generating Rfam.seed_tree.gz in {}'.format(destination))
     os.chdir(cwd)
-
-
-# -----------------------------------------------------------------------------
 
 
 def validate_seed_archive(destination, rfam_accs):
@@ -166,35 +141,12 @@ def validate_seed_archive(destination, rfam_accs):
         raise Exception('Error: Rfam.seed contains {} families instead of {}'.format(family_count, len(rfam_accs)))
 
 
-# -----------------------------------------------------------------------------
-
-
-def get_all_rfam_accessions():
-    """
-    Fetch a list of all Rfam families from the SVN repository.
-    """
-    rfam_accessions = []
-    svn_url = 'https://xfamsvn.ebi.ac.uk/svn/data_repos/trunk/Families/'
-    svn_list = tempfile.NamedTemporaryFile()
-    cmd = "svn list {} > {}".format(svn_url, svn_list.name)
-    os.system(cmd)
-    with open(svn_list.name, 'r') as f_svn_list:
-        for line in f_svn_list:
-            if line.startswith('RF'):
-                rfam_accessions.append(line.strip().replace('/', ''))
-    print('Found {} accessions on SVN'.format(len(rfam_accessions)))
-    return rfam_accessions
-
-
-# -----------------------------------------------------------------------------
-
-
 def parse_arguments():
     """
     """
-    parser = argparse.ArgumentParser()
+    arg_parser = argparse.ArgumentParser()
 
-    mutually_exclusive_type = parser.add_mutually_exclusive_group()
+    mutually_exclusive_type = arg_parser.add_mutually_exclusive_group()
     mutually_exclusive_type.add_argument("--seed", help="Export SEED files from SVN",
                                          action="store_true", default=False)
     mutually_exclusive_type.add_argument("--cm", help="Export CM files from SVN",
@@ -202,18 +154,16 @@ def parse_arguments():
     mutually_exclusive_type.add_argument("--tree", help="Export SEED files from SVN",
                                          action="store_true", default=False)
 
-    mutually_exclusive_input = parser.add_mutually_exclusive_group()
+    mutually_exclusive_input = arg_parser.add_mutually_exclusive_group()
     mutually_exclusive_input.add_argument("--acc", help="Rfam family accession",
                                           action="store", type=str)
     mutually_exclusive_input.add_argument("-f", help="List of Rfam family accessions (.txt)",
                                           action="store", type=str)
 
-    parser.add_argument("--dest-dir", help="Destination directory to generate files to")
+    arg_parser.add_argument("--dest-dir", help="Destination directory to generate files to")
 
-    return parser
+    return arg_parser
 
-
-# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
@@ -252,6 +202,6 @@ if __name__ == '__main__':
         create_seed_archive(args.dest_dir)
         validate_seed_archive(args.dest_dir, accessions)
     elif args.cm and args.acc == 'all':
-        create_combined_cm_file(args.dest_dir)
+        create_combined_cm_file(args.dest_dir, accessions)
     elif args.tree and args.acc == 'all':
         create_tree_archive(args.dest_dir)

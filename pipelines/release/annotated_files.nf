@@ -83,8 +83,8 @@ process create_tar_file {
 
     """
     cd ${params.release_ftp}/cm
-    rm -f RF0*.cm
-    grep ACC $query | sed -e 's/ACC\\s\\+//g' | sort | uniq > list.txt
+    mkdir cm_files
+    mv *RF0* cm_files
     cmfetch --index $query
     while read p; do echo \$p; cmfetch Rfam.cm \$p > "\$p.cm" ; done <list.txt
     tar -czvf Rfam.tar.gz RF0*.cm

@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from scripts.export.generate_ftp_files import get_all_rfam_accessions
+from utils.db_utils import fetch_all_rfam_accs
 
 
 def num_families_check(num_accs, statfile):
@@ -37,9 +37,24 @@ def desc_check(num_accs, cmfile):
                 count += 1
     print("Number of DESC lines: {0}".format(count))
 
-    if (2*num_accs) != count:
+    if (2 * num_accs) != count:
         print("Number of DESC lines is incorrect!")
         sys.exit()
+
+
+def all_accs_in_cm(accs, cm):
+    """
+    Check that all accessions in the database are present in the Rfam.cm file before we continue
+    :param accs: list of all rfam_acc found in the family table of the rfam_live database
+    :param cm: Rfam.cm file
+    :return:
+    """
+
+    with open(cm, 'r') as f:
+        contents = f.read()
+        for acc in accs:
+            if acc not in contents:
+                print("Accession not found in cm file, please ensure this cm file has been created: {0}".format(acc))
 
 
 def parse_args():
@@ -54,6 +69,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    accessions = get_all_rfam_accessions()
+    accessions = fetch_all_rfam_accs()
     num_families_check(len(accessions), args.stat_file)
     desc_check(len(accessions), args.cm_file)
+    all_accs_in_cm(accessions, args.cm_file)

@@ -52,7 +52,18 @@ EVAL = 4  # full region evalue
 version = '14.0'
 
 
-# -------------------------------------------------------------------------
+def fetch_all_rfam_accs():
+    """
+    Fetch all available Rfam accessions
+    """
+    cnx = RfamDB.connect()
+    cursor = cnx.cursor(buffered=True)
+    query = "SELECT rfam_acc FROM family ORDER BY rfam_acc ASC"
+    cursor.execute(query)
+    rfam_accs = [str(x[0]) for x in cursor.fetchall()]
+    cursor.close()
+    RfamDB.disconnect(cnx)
+    return rfam_accs
 
 
 def set_is_significant_to_zero(rfam_acc, rfamseq_acc):

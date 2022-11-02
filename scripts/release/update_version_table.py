@@ -38,7 +38,7 @@ def parse_args():
     return: Argparse parser object
     """
 
-    parser = argparse.ArgumentParser(prog="clan_competition.py")
+    parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="Release version number, e.g. 14.8", required=True)
 
     return parser.parse_args()

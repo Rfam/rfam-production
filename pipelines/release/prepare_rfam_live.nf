@@ -58,7 +58,7 @@ process update_rnacentral_descriptions {
     val('rnacentral_complete')
 
     """
-    python $params.rfamprod/scripts/release/update_rnacentral_descriptions.py
+    python $params.rfamprod/scripts/release/update_rnacentral_description.py
     """
 }
 

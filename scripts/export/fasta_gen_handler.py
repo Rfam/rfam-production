@@ -17,6 +17,9 @@ Description:    Calls fasta_generator to generate fasta files for all Rfam
 
 Comments:       It is a prerequisite that the sequence file is indexed using
                 esl-sfetch --index option
+                
+                This file is possibly no longer needed - calls non-existent fasta_generator.py 
+                Replaced by generate_fasta_files.nf
 """
 
 # ---------------------------------IMPORTS-------------------------------------
@@ -31,6 +34,7 @@ from config import rfam_config
 # -----------------------------------------------------------------------------
 
 LSF_GROUP = rfam_config.FA_EXPORT_GROUP
+
 
 # -----------------------------------------------------------------------------
 
@@ -77,7 +81,6 @@ def fasta_gen_handler(seq_file, out_dir, rfam_accessions=None):
         os.mkdir(os.path.join(out_dir, "log"))
 
     for fam in families:
-
         # 1. Generate script file
         sh_path = shell_script_generator(
             seq_file, fam, out_dir, os.path.join(out_dir, "scripts"))
@@ -85,6 +88,7 @@ def fasta_gen_handler(seq_file, out_dir, rfam_accessions=None):
         # 2. submit job under group
         cmd = "bsub < %s" % (sh_path)
         subprocess.call(cmd, shell=True)
+
 
 # -----------------------------------------------------------------------------
 
@@ -130,12 +134,13 @@ def shell_script_generator(seq_file, rfam_acc, fa_outdir, out_dir=None):
 
     output_fp.write("#BSUB -Ep \"rm /tmp/$LSB_JOBID.*\"\n")
     output_fp.write("#BSUB -g %s \n\n" % (LSF_GROUP))
-    output_fp.write("python %s %s %s %s \n" % (os.path.join(os.getcwd(),"fasta_generator.py"), seq_file,
+    output_fp.write("python %s %s %s %s \n" % (os.path.join(os.getcwd(), "fasta_generator.py"), seq_file,
                                                rfam_acc, fa_outdir))
 
     output_fp.close()
 
     return file_path
+
 
 # -----------------------------------------------------------------------------
 
@@ -158,6 +163,7 @@ def parse_arguments():
 
     return parser
 
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -170,5 +176,3 @@ if __name__ == '__main__':
 
     if os.path.isfile(seq_db) and os.path.isdir(outdir):
         fasta_gen_handler(seq_db, outdir, args.f)
-
-

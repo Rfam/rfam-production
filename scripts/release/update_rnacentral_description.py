@@ -46,18 +46,23 @@ def update_descriptions(cursor, cnx):
     """
     found = 0
     not_found = 0
+    errored = 0
     for entry in get_rnacentral_ids(cursor):
         url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rnacentral?query={} AND entry_type:sequence&fields=description&format=json'
         rnacentral_id = entry[0]
         data = requests.get(url.format(rnacentral_id))
-        if data.json()['hitCount'] == 1:
-            description = data.json()['entries'][0]['fields']['description'][0]
-            print('{}: {}'.format(rnacentral_id, description))
-            update_description(cursor, cnx, rnacentral_id, description)
-            found += 1
-        else:
-            print('No description found for {}'.format(rnacentral_id))
-            not_found += 1
+        try:
+            if data.json()['hitCount'] == 1:
+                description = data.json()['entries'][0]['fields']['description'][0]
+                print('{}: {}'.format(rnacentral_id, description))
+                update_description(cursor, cnx, rnacentral_id, description)
+                found += 1
+            else:
+                print('No description found for {}'.format(rnacentral_id))
+                not_found += 1
+        except (ValueError, KeyError) as e:
+            print("Server Error: {err} for URL: {url}".format(err=e, url=url.format(rnacentral_id)))
+            errored += 1
     print('Updated {} descriptions, not found {} descriptions'.format(found, not_found))
 
 

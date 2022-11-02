@@ -18,10 +18,29 @@ process generate_fasta {
     val(acc)
 
     output:
-    val('done')
+    val('files_done')
 
     """
     python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --outdir $params.release_ftp/fasta_files --acc $acc
+    """
+}
+
+process combine_fasta {
+
+    input:
+    val('files_done')
+
+    output:
+    val('done')
+
+    """
+    cd $params.release_ftp/fasta_files
+    mkdir unzipped
+    cp *.fa.gz unzipped/
+    cd unzipped
+    gunzip *.gz
+    cat *.fa > Rfam.fa
+    cp Rfam.fa ../
     """
 }
 

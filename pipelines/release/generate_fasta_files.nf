@@ -39,7 +39,8 @@ process combine_fasta {
     cp *.fa.gz unzipped/
     cd unzipped
     gunzip *.gz
-    cat *.fa > Rfam.fa
+    cat *.fa > Rfam.fa.unsorted
+    sort Rfam.fa.unsorted | uniq > Rfam.fa
     cp Rfam.fa ../
     """
 }

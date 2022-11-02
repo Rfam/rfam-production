@@ -11,7 +11,6 @@ def update_file(release_stats_file):
     """
     Update the release_stats.tsv file in the FTP folder to include the latest version number, release date, and
     number of families
-    :return:
     """
     conn = RfamDB.connect()
     cursor = conn.cursor()

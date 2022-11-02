@@ -12,6 +12,7 @@ process fetch_families {
 }
 
 process generate_fasta {
+    queue 'short'
 
     input:
     val(acc)
@@ -20,7 +21,7 @@ process generate_fasta {
     val('done')
 
     """
-    python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --acc $acc --outdir $params.release_ftp/fasta_files
+    python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --outdir $params.release_ftp/fasta_files --acc $acc
     """
 }
 
@@ -30,7 +31,7 @@ workflow generate_fasta_files {
   main:
     start
     | fetch_families \
-    | splitCsv(sep: "\t") \
+    | splitText \
     | generate_fasta \
     | set { done }
 }

@@ -240,19 +240,14 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     log_file = os.path.join(outdir, rfam_acc + ".log")
     logging.basicConfig(filename=log_file, filemode='w', level=logging.INFO)
 
-    # open a new fasta output file
     fasta_output_file = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
     if os.path.exists(fasta_output_file):
         LOGGER.info("File %s already exists, skipping this family.", fasta_output_file)
         return
     fp_out = gzip.open(fasta_output_file, 'w')
 
-    # connect to db
     cnx = RfamDB.connect()
-
-    # get a new buffered cursor
     cursor = cnx.cursor(raw=True)
-
     query = None
 
     for seq_type in seq_types:

@@ -1,33 +1,49 @@
 nextflow.enable.dsl=2
 
+process fetch_families {
+
+    input:
+    val(_flag)
+
+    output:
+    file('families')
+
+    """
+    mysql -s `python $params.rfamprod/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc from family" > families
+    """
+}
+
 process generate_seed_files {
-    memory '10GB'
+    queue 'short'
+
+    input:
+    val(acc)
     
     output:
     val('done)')
 
     """
-    rm -rf ${params.release_ftp}/seed/
-    mkdir -p ${params.release_ftp}/seed/
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --seed --dest-dir "${params.release_ftp}/seed"
+    rm -rf $params.release_ftp/seed/
+    mkdir -p $params.release_ftp/seed/
+    python $params.rfamprod/scripts/export/generate_ftp_files.py --seed --dest-dir $params.release_ftp/seed --acc $acc
     """
 
 }
-process generate_cm_files {  
-    memory '10GB'
+process generate_cm_files {
+    queue 'short'
     publishDir "${params.release_ftp}/cm", mode: "copy"
 
     output:
     path("Rfam.cm")
 
     """
-    rm -rf ${params.release_ftp}/cm
-    mkdir -p ${params.release_ftp}/cm
-    python ${params.rfamprod}/scripts/export/generate_ftp_files.py --acc all --cm --dest-dir .
+    rm -rf $params.release_ftp/cm
+    mkdir -p $params.release_ftp/cm
+    python $params.rfamprod/scripts/export/generate_ftp_files.py --cm --dest-dir . --acc $acc
     """
 }
 process rewrite_cm_file { 
-    publishDir "${params.release_ftp}/cm", mode: "copy"
+    publishDir "$params.release_ftp/cm", mode: "copy"
     
     input:
     path(query)
@@ -37,7 +53,7 @@ process rewrite_cm_file {
 
     """
     grep -v DESC $query > Rfam.nodesc.cm
-    perl ${params.perl_path}/jiffies/seed-desc-to-cm.pl ${params.release_ftp}/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
+    perl $params.perl_path/jiffies/seed-desc-to-cm.pl $params.release_ftp/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
     """
 
 }
@@ -52,7 +68,7 @@ process checks {
 
     """
     cmstat $query > cmstat_file.txt
-    python ${params.rfamprod}/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
+    python $params.rfamprod/scripts/release/rfam_cm_check.py --cm-file $query --stat-file cmstat_file.txt
     """
 
 }
@@ -82,7 +98,7 @@ process create_tar_file {
     val("done")
 
     """
-    cd ${params.release_ftp}/cm
+    cd $params.release_ftp/cm
     mkdir cm_files
     mv *RF0* cm_files
     cmfetch --index $query
@@ -100,7 +116,7 @@ process load_into_rfam_live {
     val('done')
 
     """
-    python ${params.rfamprod}/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed $query
+    python $params.rfamprod/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed $query
     """
 
 }
@@ -110,8 +126,13 @@ workflow generate_annotated_files {
         rfam_cm
         done
     main:
-        generate_seed_files()
-        generate_cm_files \
+        fetch_families | set { families }
+        families \
+        | splitText \
+        | generate_seed_files()
+        families \
+        | splitText \
+        | generate_cm_files \
         | rewrite_cm_file \
         | checks | set { rfam_cm }
         rfam_cm \

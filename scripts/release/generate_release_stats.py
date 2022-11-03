@@ -33,7 +33,8 @@ def update_file(release_stats_file):
     with open(release_stats_file, 'a') as rsf:
         writer = csv.writer(rsf, delimiter='\t')
         row = [version, release_date, num_families]
-        writer.writerow("\n", row)
+        writer.writerow("\n")
+        writer.writerow(row)
 
 
 if __name__ == '__main__':

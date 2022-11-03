@@ -16,11 +16,11 @@ def update_file(release_stats_file):
     cursor = conn.cursor()
     try:
         cursor.execute("select rfam_release from version;")
-        version = cursor.fetchall()
+        version = cursor.fetchone()[0]
         cursor.execute("select rfam_release_date from version;")
-        release_date = cursor.fetchall()
+        release_date = cursor.fetchone()[0]
         cursor.execute("select count(distinct rfam_acc) from family;")
-        num_families = cursor.fetchall()
+        num_families = cursor.fetchone()[0]
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e
@@ -33,7 +33,6 @@ def update_file(release_stats_file):
     with open(release_stats_file, 'a') as rsf:
         writer = csv.writer(rsf, delimiter='\t')
         row = [version, release_date, num_families]
-        writer.writerow("\n")
         writer.writerow(row)
 
 

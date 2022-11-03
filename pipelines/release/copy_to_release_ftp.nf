@@ -19,7 +19,6 @@ process copy_to_release_ftp {
     cp cm/Rfam.cm.gz $params.ftp_dir
     cp cm/Rfam.tar.gz $params.ftp_dir
     cp seed/Rfam.seed.gz $params.ftp_dir
-    cp seed/Rfam.seed_tree.tar.gz $params.ftp_dir
 
     cp -r $params.release_dir/genome_browser_hub/ $params.ftp_dir
     cp $params.release_dir/COPYING $params.ftp_dir

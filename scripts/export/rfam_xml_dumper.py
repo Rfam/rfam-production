@@ -1048,10 +1048,9 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
             # Don't build hierarchical references for Clans and Motifs
             for entry in rfam_accs:
                 print(entry)
-                entry_file = os.path.join(outdir, entry, '.xml')
+                entry_file = os.path.join(outdir, entry + '.xml')
                 if os.path.exists(entry_file):
                     print("Skipping {acc}. File already exists {f}".format(acc=entry, f=entry_file))
-                    break
                 else:
                     t0 = timeit.default_timer()
                     xml4db_dumper(None, None, entry_type, entry, False, outdir)

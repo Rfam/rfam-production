@@ -58,6 +58,19 @@ process generate_clanin_file {
     """
 }
 
+process generate_3d_seed_file {
+
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.3d_families --seed $params.release_ftp/seed
+    """
+}
+
 
 workflow generate_ftp_files {
     take: start 
@@ -66,7 +79,8 @@ workflow generate_ftp_files {
         tree_files(start)
         generate_full_region_file \
         | generate_pdb_file \
-        | generate_clanin_file
+        | generate_clanin_file \
+        | generate_3d_seed_file
         | set { done }
 }
 

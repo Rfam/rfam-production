@@ -71,18 +71,20 @@ process create_release_note {
     output:
     path("release_note.txt")
     """ 
-    python $params.rfamprod/scripts/release/create_release_note.txt --version=$params.releasex --entries=`grep -r 'entry id' $params.text_search | wc -l`
+    python $params.rfamprod/scripts/release/create_release_note.py --version=$params.releasex --entries=`grep -r 'entry id' $params.text_search | wc -l`
     """
 }
 process index_data_on_dev {
     input:
     path(query)
+
     output:
     val('dev_done')
+
     """
-    cp $query /nfs/production/agb/rfam/search_dumps/rfam_dev
-    unlink /nfs/production/agb/rfam/search_dumps/rfam_dev
-    ln -s $params.text_search /nfs/production/agb/rfam/search_dumps/rfam_dev
+    unlink $params.rfam_dev
+    ln -s $params.text_search $params.rfam_dev
+    cp $query $params.rfam_dev
     """
 }
 

@@ -1,8 +1,5 @@
 process fetch_families {
 
-    input:
-    val(_flag)
-
     output:
     file('families')
 
@@ -48,6 +45,9 @@ process generate_fasta_files {
 process generate_cm_files {
     queue 'short'
     publishDir "$params.ftp_exports/cm", mode: "copy"
+
+    input:
+    val(acc)
 
     output:
     path("Rfam.cm")
@@ -190,7 +190,7 @@ workflow generate_ftp_files {
         fetch_families | set { families }
         families \
         | splitText \
-        | generate_seed_files() | set { seed }
+        | generate_seed_files | set { seed }
         seed \
         | generate_fasta_files
         families \
@@ -202,7 +202,8 @@ workflow generate_ftp_files {
         | generate_archive_zip
         rfam_cm \
         | create_tar_file
-        tree_files \
+        seed \
+        | tree_files 
         generate_full_region_file \
         | generate_pdb_file \
         | generate_clanin_file

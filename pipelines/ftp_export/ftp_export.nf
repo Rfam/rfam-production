@@ -127,6 +127,9 @@ process create_tar_file {
 process tree_files {
     memory '10GB'
 
+    input:
+    path(query)
+
     output:
     val('tree_done')
 

@@ -74,7 +74,7 @@ def get_mirna_directory_location(mirna_id):
 
 def check_family_exists_in_svn(rfam_acc):
 	
-	svn_url = "https://xfamsvn.ebi.ac.uk/svn/data_repos/trunk/Families/%s"
+	svn_url = "https://svn.rfam.org/svn/data_repos/trunk/Families/%s"
 	
 	status = False
 	# Check if entry existis on SVN repo; status=True

@@ -7,7 +7,7 @@ def get_all_rfam_accessions():
     Fetch a list of all Rfam families from the SVN repository.
     """
     rfam_accessions = []
-    svn_url = 'https://xfamsvn.ebi.ac.uk/svn/data_repos/trunk/Families/'
+    svn_url = 'https://svn.rfam.org/svn/data_repos/trunk/Families/'
     svn_list = tempfile.NamedTemporaryFile()
     cmd = "svn list {} > {}".format(svn_url, svn_list.name)
     os.system(cmd)

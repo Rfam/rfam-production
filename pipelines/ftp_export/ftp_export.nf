@@ -19,8 +19,8 @@ process generate_seed_files {
     path("Rfam.seed")
 
     """
-    rm -rf $params.ftp_exports/seed/
-    mkdir -p $params.ftp_exports/seed/
+    rm -rf $params.ftp_exports/seed
+    mkdir -p $params.ftp_exports/seed
     python $params.scripts/export/generate_ftp_files.py --seed --dest-dir . --acc $acc
     """
 
@@ -131,8 +131,8 @@ process tree_files {
     val('tree_done')
 
     """
-    rm -rf $params.ftp_exports/tree/
-    mkdir -p $params.ftp_exports/tree/
+    rm -rf $params.ftp_exports/tree
+    mkdir -p $params.ftp_exports/tree
     python $params.scripts/export/generate_ftp_files.py --acc all --tree --dest-dir $params.ftp_exports/tree
     """
 }
@@ -203,7 +203,7 @@ workflow generate_ftp_files {
         rfam_cm \
         | create_tar_file
         seed \
-        | tree_files 
+        | tree_files
         generate_full_region_file \
         | generate_pdb_file \
         | generate_clanin_file

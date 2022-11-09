@@ -24,7 +24,7 @@ MIRBASE_ENTRY = 'https://www.mirbase.org/cgi-bin/mirna_entry.pl?acc'
 RNACENTRAL_DESCRIPTION = 'https://www.ebi.ac.uk/ebisearch/ws/rest/rnacentral/entry/{}?format=json&fields=description'
 RNACENTRAL_MIRBASE_TSV = ('https://ftp.ebi.ac.uk/pub/databases/RNAcentral/current_release/id_mapping/'
                           'database_mappings/mirbase.tsv')
-RFAM_SVN = 'https://xfamsvn.ebi.ac.uk/svn'
+RFAM_SVN = 'https://svn.rfam.org/svn'
 
 
 def get_last_modified_date(rfam_acc):

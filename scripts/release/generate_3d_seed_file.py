@@ -14,7 +14,7 @@ def create_3d_seed_file(file_with_list, seed_dir):
         rfam_accs = f.read().splitlines()
 
     for acc in rfam_accs:
-        seed_path = os.path.join(seed_dir, acc, '.seed')
+        seed_path = os.path.join(seed_dir, acc + '.seed')
         with open(seed_path, 'r') as i:
             with open(out_file, 'a') as o:
                 for line in i:
@@ -42,4 +42,4 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    create_3d_seed_file(args.f, args.seed)
+    create_3d_seed_file(args.f, args.seed_dir)

@@ -116,7 +116,7 @@ process load_into_rfam_live {
     val('done')
 
     """
-    python $params.rfamprod/scripts/release/load_cm_seed_in_db.py ${params.release_ftp}/seed/Rfam.seed $query
+    python $params.rfamprod/scripts/release/load_cm_seed_in_db.py $params.release_ftp/seed/Rfam.seed $query
     """
 
 }

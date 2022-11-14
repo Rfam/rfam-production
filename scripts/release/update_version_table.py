@@ -19,7 +19,7 @@ def update_version(release_version):
         cursor.execute(num_families_query)
         num_families = cursor.fetchone()[0]
         cursor.execute(version_query.format(release=release_version, date=today_date, num_families=num_families))
-
+        conn.commit()
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e

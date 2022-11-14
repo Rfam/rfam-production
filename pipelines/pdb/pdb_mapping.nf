@@ -177,7 +177,7 @@ process create_validate_xml_families {
     source $params.rfamprod/django_settings.sh
     rm -rf $params.pdb_files/text_search/families
     mkdir -p $params.pdb_files/text_search/families
-    python $params.rfamprod/scripts/export/rfam_xml_dumper.py --type F --out $params.pdb_files/text_search/families --db rfam-rel
+    python $params.rfamprod/scripts/export/rfam_xml_dumper.py --type F --out $params.pdb_files/text_search/families --db rfamrel
     python $params.rfamprod/scripts/validation/xml_validator.py --input $params.pdb_files/text_search/families --log
     bash $params.pdb_scripts/check_empty.sh "$params.pdb_files/text_search/families/error.log"
     """

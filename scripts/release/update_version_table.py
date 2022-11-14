@@ -19,7 +19,7 @@ def update_version(release_version):
         cursor.execute(num_families_query)
         num_families = cursor.fetchone()[0]
         cursor.execute(version_query.format(release=release_version, date=today_date, num_families=num_families))
-
+        conn.commit()
     except mysql.connector.Error as e:
         logging.debug("MySQL error has occurred: {0}".format(e))
         raise e
@@ -38,7 +38,7 @@ def parse_args():
     return: Argparse parser object
     """
 
-    parser = argparse.ArgumentParser(prog="clan_competition.py")
+    parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="Release version number, e.g. 14.8", required=True)
 
     return parser.parse_args()

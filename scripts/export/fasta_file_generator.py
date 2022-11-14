@@ -10,17 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-"""
-Description:    Script to generate fasta files for all family regions
-                in full_region. For execution on lsf call fasta_gen_handler
-                that generates distinct shell scripts per family to enable
-                recovery.
-
-Requirements:   Easel tools should be installed and added to PATH. Easel tools
-                can be installed along with the Infernal suite
-"""
-
-# ---------------------------------IMPORTS-------------------------------------
 
 import os
 import sys
@@ -33,7 +22,18 @@ from utils import RfamDB
 from utils import db_utils as db
 from config import rfam_config
 
-# -----------------------------------------------------------------------------
+"""
+Description:    Script to generate fasta files for all family regions
+                in full_region. For execution on lsf call fasta_gen_handler
+                that generates distinct shell scripts per family to enable
+                recovery.
+
+Requirements:   Easel tools should be installed and added to PATH. Easel tools
+                can be installed along with the Infernal suite
+"""
+
+LOGGER = logging.getLogger(__name__)
+
 # To be modified accordingly
 LSF = False
 
@@ -54,8 +54,6 @@ else:
     ESL_PATH = ESL_LOCAL
 
 
-# -----------------------------------------------------------------------------
-
 def generate_fasta(seq_file, out_dir):
     """
     Uses esl-sfetch to generate family specific fasta files out of seq_file
@@ -69,6 +67,8 @@ def generate_fasta(seq_file, out_dir):
                 generated
     """
 
+    LOGGER.info("Generating fasta file", seq_file)
+
     sequence = ''
     fp_out = None
     seq_bits = None
@@ -76,24 +76,18 @@ def generate_fasta(seq_file, out_dir):
     # logging sequences not exported
     # rename this to family log
     log_file = os.path.join(out_dir, "missing_seqs.log")
-    logging.basicConfig(
-        filename=log_file, filemode='w', level=logging.INFO)
+    logging.basicConfig(filename=log_file, filemode='w', level=logging.INFO)
 
-    # connect to db
     cnx = RfamDB.connect()
-
-    # get a new buffered cursor
     cursor = cnx.cursor(raw=True)
 
     # fetch clan specific family full_region data and sequence description
-
     query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
              "FROM full_region fr, rfamseq rf\n"
              "WHERE fr.rfamseq_acc=rf.rfamseq_acc\n"
              "AND fr.is_significant=1\n"
              "ORDER BY fr.rfam_acc")
 
-    # execute the query
     cursor.execute(query)
 
     for region in cursor:
@@ -111,7 +105,7 @@ def generate_fasta(seq_file, out_dir):
         rfam_acc = region[RFAM_ACC]
 
         cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
-                                     seq_file, str(region[SEQ_ACC]))
+                                             seq_file, str(region[SEQ_ACC]))
 
         proc = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE)
@@ -145,8 +139,6 @@ def generate_fasta(seq_file, out_dir):
     # disconnect from DB
     cursor.close()
     RfamDB.disconnect(cnx)
-
-# -----------------------------------------------------------------------------
 
 
 def generate_fasta_single(seq_file, rfam_acc, out_dir):
@@ -197,7 +189,7 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
     for region in cursor:
 
         cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
-                                            seq_file, str(region[SEQ_ACC]))
+                                             seq_file, str(region[SEQ_ACC]))
 
         proc = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE)
@@ -233,9 +225,6 @@ def generate_fasta_single(seq_file, rfam_acc, out_dir):
     RfamDB.disconnect(cnx)
 
 
-# -----------------------------------------------------------------------------
-
-
 def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     """
 
@@ -248,33 +237,29 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     seq_types = ["FULL", "SEED"]
 
     # logging sequences not exported
-    # rename this to family log
     log_file = os.path.join(outdir, rfam_acc + ".log")
-    logging.basicConfig(
-        filename=log_file, filemode='w', level=logging.INFO)
+    logging.basicConfig(filename=log_file, filemode='w', level=logging.INFO)
 
-    # connect to db
+    fasta_output_file = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
+    if os.path.exists(fasta_output_file):
+        LOGGER.info("File %s already exists, skipping this family.", fasta_output_file)
+        return
+    fp_out = gzip.open(fasta_output_file, 'w')
+
     cnx = RfamDB.connect()
-
-    # get a new buffered cursor
     cursor = cnx.cursor(raw=True)
-
     query = None
-
-    # open a new fasta output file
-    filename = os.path.join(outdir, str(rfam_acc) + ".fa.gz")
-    fp_out = gzip.open(filename, 'w')
 
     for seq_type in seq_types:
 
         if seq_type == "FULL":
             # fetch sequence accessions for specific family - significant only!!
             query = ("SELECT fr.rfam_acc, fr.rfamseq_acc, fr.seq_start, fr.seq_end, rf.description\n"
-                          "FROM full_region fr JOIN rfamseq rf\n"
-                          "ON fr.rfamseq_acc=rf.rfamseq_acc\n"
-                          "WHERE fr.is_significant=1\n"
-                          "AND fr.type=\'full\'"
-                          "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
+                     "FROM full_region fr JOIN rfamseq rf\n"
+                     "ON fr.rfamseq_acc=rf.rfamseq_acc\n"
+                     "WHERE fr.is_significant=1\n"
+                     "AND fr.type=\'full\'"
+                     "AND fr.rfam_acc=\'%s\'") % (rfam_acc)
         elif seq_type == "SEED":
             query = ("SELECT sr.rfam_acc, sr.rfamseq_acc, sr.seq_start, sr.seq_end, rf.description\n"
                      "FROM seed_region sr JOIN rfamseq rf\n"
@@ -283,16 +268,16 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
 
         # execute the query
         cursor.execute(query)
-        
-	for region in cursor:
+
+        for region in cursor:
             cmd = ""
             if seq_type == "FULL":
                 cmd = "esl-sfetch -c %s/%s %s %s" % (str(region[START]), str(region[END]),
-                                                 seq_db, str(region[SEQ_ACC]))
+                                                     seq_db, str(region[SEQ_ACC]))
 
             elif seq_type == "SEED":
                 # command to extract sequences from Rfam.seed
-                cmd = "esl-sfetch %s %s/%s-%s" % (rfam_seed,str(region[SEQ_ACC]),
+                cmd = "esl-sfetch %s %s/%s-%s" % (rfam_seed, str(region[SEQ_ACC]),
                                                   str(region[START]), str(region[END]))
 
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -327,13 +312,11 @@ def extract_family_sequences(seq_db, rfam_seed, rfam_acc, outdir):
     cursor.close()
     RfamDB.disconnect(cnx)
 
-    if os.path.exists(filename):
-       if os.path.getsize(filename) > 0:
-           return True
+    if os.path.exists(fasta_output_file):
+        if os.path.getsize(fasta_output_file) > 0:
+            return True
 
     return False
-
-# -----------------------------------------------------------------------------
 
 
 def seq_validator(sequence):
@@ -352,8 +335,6 @@ def seq_validator(sequence):
 
     return False
 
-# -----------------------------------------------------------------------------
-
 
 def parse_arguments():
     """
@@ -368,7 +349,7 @@ def parse_arguments():
     parser.add_argument("--rfam-seed", help="Rfam.seed file")
     mutually_exclusive = parser.add_mutually_exclusive_group()
     mutually_exclusive.add_argument("--acc", help="Rfam family accession to extract sequences for",
-                        action="store", default=None)
+                                    action="store", default=None)
     mutually_exclusive.add_argument("-f",
                                     help="A list of Rfam family accessions to extract sequences for",
                                     action="store", default=None)
@@ -379,18 +360,11 @@ def parse_arguments():
 
     return parser
 
-# -----------------------------------------------------------------------------
-
 
 if __name__ == '__main__':
 
-    # need to add more parameters for local and lsf execution rather that global
-    # variable
-
     parser = parse_arguments()
     args = parser.parse_args()
-
-    # some parameter checking
 
     sequence_file = args.seq_db
     output_dir = args.outdir

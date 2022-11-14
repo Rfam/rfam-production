@@ -58,16 +58,16 @@ process generate_clanin_file {
     """
 }
 
-process generate_fasta_files {
-    memory '10GB'
-   
+process generate_3d_seed_file {
+
+    input:
+    path(query)
+
     output:
     val('done')
 
     """
-    rm -rf mkdir $params.release_ftp/fasta_files
-    mkdir $params.release_ftp/fasta_files
-    python $params.rfamprod/scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $params.release_ftp/seed/Rfam.seed --all --outdir $params.release_ftp/fasta_files
+    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.3d_families --seed $params.release_ftp/seed
     """
 }
 
@@ -79,8 +79,8 @@ workflow generate_ftp_files {
         tree_files(start)
         generate_full_region_file \
         | generate_pdb_file \
-        | generate_clanin_file
-        generate_fasta_files() \
+        | generate_clanin_file \
+        | generate_3d_seed_file
         | set { done }
 }
 

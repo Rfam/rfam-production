@@ -12,7 +12,7 @@ python load_cm_seed_in_db.py /path/to/Rfam.seed /path/to/Rfam.cm
 import os
 import sys
 
-from getters import get_all_rfam_accessions
+from utils.getters import get_all_rfam_accessions
 from utils import RfamDB
 
 

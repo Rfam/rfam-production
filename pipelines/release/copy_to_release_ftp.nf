@@ -1,10 +1,10 @@
-params.ftp_dir = "$params.ftp_site/$params.releasex"
+params.ftp_dir = "$params.ftp_site/.$params.releasex"
 
 process copy_to_release_ftp {
     queue 'datamover'
 
     output:
-    val('done)')
+    val('copy_done)')
 
     """
     mkdir $params.ftp_dir
@@ -19,16 +19,30 @@ process copy_to_release_ftp {
     cp cm/Rfam.cm.gz $params.ftp_dir
     cp cm/Rfam.tar.gz $params.ftp_dir
     cp seed/Rfam.seed.gz $params.ftp_dir
-    cp seed/Rfam.seed_tree.tar.gz $params.ftp_dir
 
-    cp -r $params.releases_dir/genome_browser_hub/ $params.ftp_dir
-    cp $params.releases_dir/COPYING $params.ftp_dir
-    cp $params.releases_dir/USERMAN $params.ftp_dir
-    cp $params.releases_dir/README $params.ftp_dir
+    cp -r $params.release_dir/genome_browser_hub/ $params.ftp_dir
+    cp $params.release_dir/COPYING $params.ftp_dir
+    cp $params.release_dir/USERMAN $params.ftp_dir
+    cp $params.release_dir/README $params.ftp_dir
     """
 
 }
 
+process generate_stats_file {
+    queue 'datamover'
+
+    input:
+    val('copy_done)')
+
+    output:
+    val('done')
+
+    """
+    python scripts/release/generate_release_stats.py $params.ftp_site/.$params.releasex
+    """
+}
+
 workflow {
     copy_to_release_ftp()
+    generate_stats_file()
 }

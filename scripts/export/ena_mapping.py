@@ -49,12 +49,13 @@ def query():
 
 def upload_file(filename):
     config = rfam_config.ENA_FTP
-    with FTP(config['hostname'], config['user'], config['password']) as ftp, open(
-        filename, "rb"
-    ) as raw:
+    ena_ftp = FTP(config['hostname'], config['user'], config['password'])
+    with open(filename, "rb") as raw:
+        ena_ftp.cwd('/xref')
         now = date.today().isoformat()
         filename = 'Rfam_%s_rfam2embl_crossrefs.txt' % now
-        ftp.storbinary('STOR %s' % filename, raw)
+        ena_ftp.storbinary('STOR %s' % filename, raw)
+    ena_ftp.quit()
 
 
 def main():

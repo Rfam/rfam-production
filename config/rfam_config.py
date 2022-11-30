@@ -1,4 +1,4 @@
-'''
+"""
 Created on 2 Mar 2016
 
 @author: ikalvari
@@ -7,7 +7,7 @@ Description: This is a configuration file with all the paths on the cluster
 
 Edited May 2022 By @ecooke - codon migration
 
-'''
+"""
 
 from config import rfam_local as cfl
 
@@ -56,3 +56,6 @@ RFAM_VIEW_GROUP = cfl.RFAM_VIEW_GROUP
 
 RFAM_EMAIL = cfl.RFAM_EMAIL
 BROWSER_HUB_DESC_URL = cfl.BROWSER_HUB_DESC_URL
+
+
+ENA_FTP = cfl.ENA_FTP

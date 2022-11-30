@@ -71,6 +71,19 @@ process generate_3d_seed_file {
     """
 }
 
+process ena_rfam_mapping {
+
+    input:
+    path(query)
+
+    output:
+    val('done')
+
+    """
+    python $params.rfamprod/scripts/export/ena_mapping.py
+    """
+}
+
 
 workflow generate_ftp_files {
     take: start 
@@ -80,7 +93,8 @@ workflow generate_ftp_files {
         generate_full_region_file \
         | generate_pdb_file \
         | generate_clanin_file \
-        | generate_3d_seed_file
+        | generate_3d_seed_file \
+        | ena_rfam_mapping
         | set { done }
 }
 

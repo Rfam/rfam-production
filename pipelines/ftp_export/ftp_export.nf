@@ -26,22 +26,6 @@ process generate_seed_files {
 
 }
 
-process generate_fasta_files {
-    memory '10GB'
-
-    input:
-    path(query)
-
-    output:
-    val('done')
-
-    """
-    rm -rf $params.ftp_exports/fasta_files
-    mkdir $params.ftp_exports/fasta_files
-    python $params.scripts/export/fasta_file_generator.py --seq-db $params.rfamseqfa --rfam-seed $query --all --outdir $params.ftp_exports/fasta_files
-    """
-}
-
 process generate_cm_files {
     queue 'short'
     publishDir "$params.ftp_exports/cm", mode: "copy"
@@ -182,6 +166,21 @@ process generate_clanin_file {
     """
 }
 
+process copy_to_preview {
+    queue 'datamover'
+
+    output:
+    val('done)')
+
+    """
+    cp $params.ftp_exports/Rfam.clanin $params.ftp_preview
+    cp $params.ftp_exports/cm/Rfam.cm.gz $params.ftp_preview
+    cp $params.ftp_exports/Rfam.full_region.gz $params.ftp_preview
+    cp $params.ftp_exports/Rfam.pdb.gz $params.ftp_preview
+    cp $params.ftp_exports/seed/Rfam.seed.gz $params.ftp_preview
+
+}
+
 
 
 workflow generate_ftp_files {
@@ -194,8 +193,6 @@ workflow generate_ftp_files {
         families \
         | splitText \
         | generate_seed_files | set { seed }
-        seed \
-        | generate_fasta_files
         families \
         | splitText \
         | generate_cm_files \
@@ -211,6 +208,8 @@ workflow generate_ftp_files {
         | generate_pdb_file \
         | generate_clanin_file
         | set { done }
+        done \
+        copy_to_preview
 }
 
 workflow {

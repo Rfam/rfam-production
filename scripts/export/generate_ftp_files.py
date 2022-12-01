@@ -205,6 +205,8 @@ def parse_arguments():
                                           action="store", type=str)
     mutually_exclusive_input.add_argument("-f", help="List of Rfam family accessions (.txt)",
                                           action="store", type=str)
+    mutually_exclusive_input.add_argument("--combine", help="Created a combined file for seed or cm",
+                                          action="store", type=str)
 
     parser.add_argument("--dest-dir", help="Destination directory to generate files to")
 
@@ -221,10 +223,10 @@ if __name__ == '__main__':
     accessions = []
     if args.acc == 'all':
         accessions = get_all_rfam_accessions()
-    elif os.path.isfile(args.f):
-        fp = open(args.f, 'r')
-        accessions = [acc.strip() for acc in fp]
-        fp.close()
+    elif args.f:
+        if os.path.isfile(args.f):
+            with open(args.f, 'r') as fp:
+                accessions = [acc.strip() for acc in fp]
     elif args.acc[0:2] == 'RF':
         accessions.append(args.acc)
 
@@ -246,10 +248,12 @@ if __name__ == '__main__':
         export_ftp_file(jiffy_type, accession, args.dest_dir)
         rename_files(args.dest_dir, jiffy_type, accession)
 
-    if args.seed and args.acc == 'all':
-        create_seed_archive(args.dest_dir)
-        validate_seed_archive(args.dest_dir, accessions)
-    elif args.cm and args.acc == 'all':
-        create_combined_cm_file(args.dest_dir)
+    if args.seed:
+        if args.combine or args.acc == 'all':
+            create_seed_archive(args.dest_dir)
+            validate_seed_archive(args.dest_dir, accessions)
+    elif args.cm:
+        if args.combine or args.acc == 'all':
+            create_combined_cm_file(args.dest_dir)
     elif args.tree and args.acc == 'all':
         create_tree_archive(args.dest_dir)

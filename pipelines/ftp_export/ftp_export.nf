@@ -1,9 +1,13 @@
-process fetch_families {
+process dirs_fetch_families {
 
     output:
     file('families')
 
     """
+    rm -rf $params.ftp_exports/seed
+    mkdir -p $params.ftp_exports/seed
+    rm -rf $params.ftp_exports/cm
+    mkdir -p $params.ftp_exports/cm
     mysql -s `python $params.scripts/view/mysql_options.py $params.db` <<< "select rfam_acc from family" > families
     """
 }
@@ -16,11 +20,9 @@ process generate_seed_files {
     val(acc)
 
     output:
-    path("Rfam.seed")
+    path('seed_done')
 
     """
-    rm -rf $params.ftp_exports/seed
-    mkdir -p $params.ftp_exports/seed
     python $params.scripts/export/generate_ftp_files.py --seed --dest-dir . --acc $acc
     """
 
@@ -37,11 +39,25 @@ process generate_cm_files {
     val('cm_done')
 
     """
-    rm -rf $params.ftp_exports/cm
-    mkdir -p $params.ftp_exports/cm
     python $params.scripts/export/generate_ftp_files.py --cm --dest-dir . --acc $acc
     """
 }
+
+process combined_files {
+
+    input:
+    tuple val('_flag'), val('_flag')
+
+    output:
+    tuple path('Rfam.seed'), path('Rfam.cm')
+
+    """
+    python $params.scripts/export/generate_ftp_files.py --combine --seed --dest-dir $params.ftp_exports/seed
+    python $params.scripts/export/generate_ftp_files.py --combine --cm --dest-dir $params.ftp_exports/cm
+    """
+
+}
+
 process rewrite_cm_file {
     publishDir "$params.ftp_exports/cm", mode: "copy"
 
@@ -169,8 +185,11 @@ process generate_clanin_file {
 process copy_to_preview {
     queue 'datamover'
 
+    input:
+    val('done')
+
     output:
-    val('done)')
+    val('done')
 
     """
     cp $params.ftp_exports/Rfam.clanin $params.ftp_preview
@@ -190,27 +209,29 @@ workflow generate_ftp_files {
         done
 
     main:
-        fetch_families | set { families }
+        dirs_fetch_families | set { families }
         families \
         | splitText \
         | generate_seed_files | set { seed }
         families \
         | splitText \
-        | generate_cm_files \
+        | generate_cm_files | set { cm }
+        seed, cm \
+        | combined_files | set { seed_file, cm_file }
         | rewrite_cm_file \
         | checks | set { rfam_cm }
-        rfam_cm \
+        cm_file \
         | generate_archive_zip
-        rfam_cm \
+        cm_file \
         | create_tar_file
-        seed \
+        seed_file \
         | tree_files
         generate_full_region_file \
         | generate_pdb_file \
         | generate_clanin_file
         | set { done }
         done \
-        copy_to_preview
+        | copy_to_preview | set { done }
 }
 
 workflow {

@@ -34,7 +34,7 @@ process generate_cm_files {
     val(acc)
 
     output:
-    path("Rfam.cm")
+    val('cm_done')
 
     """
     rm -rf $params.ftp_exports/cm
@@ -46,13 +46,13 @@ process rewrite_cm_file {
     publishDir "$params.ftp_exports/cm", mode: "copy"
 
     input:
-    path(query)
+    val('cm_done')
 
     output:
     path("Rfam.cm")
 
     """
-    grep -v DESC $query > Rfam.nodesc.cm
+    grep -v DESC $params.ftp_exports/cm/Rfam.cm > Rfam.nodesc.cm
     perl $params.perl_path/jiffies/seed-desc-to-cm.pl $params.ftp_exports/seed/Rfam.seed Rfam.nodesc.cm > Rfam.cm
     """
 

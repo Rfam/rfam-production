@@ -178,6 +178,7 @@ process copy_to_preview {
     cp $params.ftp_exports/Rfam.full_region.gz $params.ftp_preview
     cp $params.ftp_exports/Rfam.pdb.gz $params.ftp_preview
     cp $params.ftp_exports/seed/Rfam.seed.gz $params.ftp_preview
+    """
 
 }
 

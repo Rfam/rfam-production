@@ -296,7 +296,7 @@ def set_is_singificant_to_zero_multi(non_sig_seqs):
 
 def reset_is_significant(clan_comp_type='FULL'):
     """
-    This function resets full_region's is_singificant field's back to 1.
+    This function resets full_region's is_significant field's back to 1.
     This should be able to update all or part of the table for clan
     competition initialization and restoration.
     """

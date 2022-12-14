@@ -44,7 +44,7 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $params.pdb_files/Rfam.cm $query
+    cmscan --toponly -o ${query}.output --tblout ${query}.tbl --cut_ga $params.pdb_files/Rfam.cm $query
     """
 }
 
@@ -73,6 +73,21 @@ process create_text_file_for_db {
     
     """
     python $params.rfamprod/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
+    """
+}
+
+process merge_with_curated {
+    publishDir "$params.pdb_files", mode: "copy"
+
+    input:
+    path(query)
+
+    output:
+    path('pdb_full_region_merged_*.txt')
+
+    """
+    wget https://github.com/Rfam/rfam-3d-seed-alignments/blob/master/pdb_full_region_curated.txt
+    cat $query pdb_full_region_curated.txt > "pdb_full_region_merged-$(date +"%d-%m-%Y").txt"
     """
 }
 
@@ -219,7 +234,7 @@ process sync_rel_db {
     val('done')
 
     """
-    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database rfam-rel -nqc
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database rfam-rel
     """
 }
 
@@ -230,23 +245,11 @@ process sync_web_production_db {
     output:
     val('synced')
     """
-    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database pg -nqc
-    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database fb1 -nqc
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database pg
+    python $params.pdb_scripts/pdb_full_region_table.py --file $query --database fb1
     """
 }
 
-process clan_compete_rel_web {
-    input:
-    val('synced')
-
-    output:
-    val('done')
-
-    """
-    python $params.rfamprod/scripts/processing/clan_competition.py --input $params.pdb_files/clan_competition/sorted --pdb --sync
-    """
-
-}
 
 process add_all_3d {
     container 'docker://rfam/rfam-3d-seed-alignments:latest'
@@ -300,7 +303,8 @@ workflow pdb_mapping {
         | run_cmscan \
         | collect \
         | combine_cmscan_results \
-        | create_text_file_for_db | set { pdb_txt }
+        | create_text_file_for_db
+        | merge_with_curated | set { pdb_txt }
         pdb_txt \
         | import_db_and_generate_clan_files \
         | sort_clan_files \
@@ -311,10 +315,11 @@ workflow pdb_mapping {
 
 workflow ftp {
     take: new_families
+    emit: updated_pdb_text
     main:
         new_families \
         | get_ftp_file \
-        | update_ftp
+        | update_ftp | set {updated_pdb_text}
 }
 
 workflow update_search_index {
@@ -327,19 +332,17 @@ workflow update_search_index {
 }
 
 workflow sync_rel_web {
-    take: 
-        pdb_txt
+    take: updated_pdb_text
     emit: synced 
     main:
-        pdb_txt \
+        updated_pdb_text \
         | sync_rel_db
-        pdb_txt \
+        updated_pdb_text \
         | sync_web_production_db | set { synced } 
 }
 
 workflow add_3d {
-    take:
-        pdb_txt
+    take: pdb_txt
     emit: done
     main:
         pdb_txt \
@@ -354,8 +357,8 @@ workflow mapping_and_updates {
         pdb_mapping(start)
         ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
-        sync_rel_web(pdb_mapping.out.pdb_txt)
-        clan_compete_rel_web(sync_rel_web.out.synced)
+        sync_rel_web(ftp.out.updated_pdb_text)
+        clan_compete_rel_web(ftp.out.updated_pdb_text)
         add_3d(pdb_mapping.out.new_families) \
         | set { done }
 }

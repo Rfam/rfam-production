@@ -83,11 +83,11 @@ process merge_with_curated {
     path(query)
 
     output:
-    path('pdb_full_region_merged_*.txt')
+    path('pdb_full_region_merged*.txt')
 
     """
-    wget https://github.com/Rfam/rfam-3d-seed-alignments/blob/master/pdb_full_region_curated.txt
-    cat $query pdb_full_region_curated.txt > "pdb_full_region_merged-$(date +"%d-%m-%Y").txt"
+    wget https://raw.githubusercontent.com/Rfam/rfam-3d-seed-alignments/update-curated/pdb_full_region_curated.txt
+    cat $query pdb_full_region_curated.txt > pdb_full_region_merged-$(date +"%d-%m-%Y").txt
     """
 }
 
@@ -318,8 +318,9 @@ workflow ftp {
     emit: updated_pdb_text
     main:
         new_families \
-        | get_ftp_file \
-        | update_ftp | set {updated_pdb_text}
+        | get_ftp_file | set {updated_pdb_text}
+        | updated_pdb_text \
+        | update_ftp
 }
 
 workflow update_search_index {
@@ -358,7 +359,6 @@ workflow mapping_and_updates {
         ftp(pdb_mapping.out.new_families)
         update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(ftp.out.updated_pdb_text)
-        clan_compete_rel_web(ftp.out.updated_pdb_text)
         add_3d(pdb_mapping.out.new_families) \
         | set { done }
 }

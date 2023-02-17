@@ -1,5 +1,6 @@
 process fetch_ncbi_locations {
   queue 'short'
+  time '1h'
   errorStrategy 'finish'
 
   input:
@@ -22,6 +23,7 @@ process fetch_ncbi_locations {
 
 process download_all_proteomes {
   queue 'short'
+  time '1h'
   publishDir 'genomes/uniprot', mode: 'copy'
 
   output:
@@ -34,6 +36,7 @@ process download_all_proteomes {
 
 process find_genomes {
   queue 'short'
+  time '1h'
 
   input:
   tuple path(summary), path(to_skip)
@@ -74,6 +77,7 @@ process download {
 
 process validate_chunk {
   queue 'short'
+  time '6h'
   tag { "$short_name" }
 
   input:
@@ -110,7 +114,7 @@ process merge_chunks {
 }
 
 process build_rfamseq {
-  queue 'short'
+  queue 'standard'
   container ''
   publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
@@ -134,7 +138,7 @@ process build_rfamseq {
 }
 
 process build_rev {
-  queue 'short'
+  queue 'standard'
   publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
 
@@ -167,7 +171,7 @@ workflow genome_download {
     Channel.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
 
     download_all_proteomes \
-    | combine(to_ignore) 
+    | combine(to_ignore)
     | find_genomes \
     | flatten \
     | combine(ncbi_info) \

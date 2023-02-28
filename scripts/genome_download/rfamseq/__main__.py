@@ -26,7 +26,6 @@ from Bio import SeqIO
 from sqlitedict import SqliteDict
 
 from rfamseq import download, metadata, ncbi, uniprot
-
 from rfamseq.utils import serialize
 
 LOGGER = logging.getLogger(__name__)
@@ -144,7 +143,6 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
     limit it to the specified components. This will produce a UP*.fa and
     UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
     and .fa contains the specified metadata.
-
 
     \b
     Arguments:

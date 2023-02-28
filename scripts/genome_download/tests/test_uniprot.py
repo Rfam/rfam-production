@@ -669,6 +669,21 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
             ),
         ),
+        (
+            Path("test/data/UP000008177.xml"),
+            None,
+            # uniprot.ProteomeInfo(
+            #     upi="UP000008177",
+            #     taxid=999810,
+            #     is_reference=True,
+            #     is_representative=True,
+            #     proteome_description=None,
+            #     genome_info=uniprot.GenomeInfo(
+            #         accession='GCA_000292645.1',
+            #         description=''
+            #     )
+            # )
+        ),
     ],
 )
 def test_parses_expected_data(path: Path, expected: uniprot.ProteomeInfo):

@@ -123,6 +123,8 @@ def get_id_matches(mirbase_id):
         try:
             cursor.execute(query)
             rfam_id = cursor.fetchone()
+            if rfam_id is None:
+                return []
             return [rfam_id]
         except mysql.connector.Error as e:
             print("MySQL error has occurred: {0}".format(e))

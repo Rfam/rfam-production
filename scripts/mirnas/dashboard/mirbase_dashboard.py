@@ -13,7 +13,7 @@ import os
 from compute_dashboard_entries import run_rfmake, get_overlaps, is_inconsistent_ss, get_id_matches, get_action
 from dashboard_exceptions import SpeciesFileNotFound
 from format_dashboard import (get_header_line, get_input_data, format_rfam_overlaps, format_mirbase_url,
-                              format_rfam_ids, get_summary, get_google_sheets_data)
+                              format_rfam_ids, get_summary, get_google_sheets_data, format_rfam_clans)
 from microrna_progress import updated_families, new_commits
 from getters import (get_output_path, get_output_url, get_family_location, get_report_url, get_mirbase_alignments,
                      get_mirbase_id, get_mirbase_acc)
@@ -80,26 +80,31 @@ def generate_dashboard(f_out, data, nocache):
         if is_inconsistent_ss(location):
             action = 'Inconsistent SS_CONS'
             skip = True
+
         try:
             if not skip:
                 run_rfmake(location, score)
         except SpeciesFileNotFound as e:
             print(e.message)
             action = 'Fix rfmake problems'
+
         try:
             if not action and not skip:
                 overlaps = get_overlaps(identifier, nocache)
         except:
             overlaps = []
             action = 'Fix overlap problems'
+
         overlaps_by_id = get_id_matches(get_mirbase_id(identifier))
         if not overlaps and overlaps_by_id:
             rfam_matches = format_rfam_overlaps(overlaps_by_id)
             rfam_matches = rfam_matches.replace('")', ' Match by ID, no overlap")')
         else:
             rfam_matches = format_rfam_overlaps(overlaps)
+
         if not action:
             action = get_action(identifier, location, overlaps, overlaps_by_id, score)
+
         fields = [
             get_summary(row_id, 'label'),
             get_summary(row_id, 'formula'),
@@ -111,8 +116,10 @@ def generate_dashboard(f_out, data, nocache):
             get_mirbase_id(identifier),
             format_rfam_ids(overlaps) if overlaps else format_rfam_ids(overlaps_by_id),
             rfam_matches,
+            format_rfam_clans(overlaps) if overlaps else format_rfam_clans(overlaps_by_id),
             metadata['comment'],
         ]
+
         csvwriter.writerow(fields)
         if action == 'Done (new family)':
             done_new.add(overlaps[0] if overlaps else overlaps_by_id[0])

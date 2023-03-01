@@ -2,8 +2,9 @@ import csv
 import os
 import tempfile
 import time
+import collections as coll
 
-from getters import get_rfam_id
+from getters import get_rfam_id, get_rfam_clan
 
 
 def format_output_line(fields):
@@ -20,7 +21,7 @@ def get_header_line():
     """
     columns = ['Summary', '', 'Report', 'Score (editable)', 'Author (editable)',
                'Action', 'miRBase AC', 'miRBase ID', 'Rfam ID(s)', 'Rfam AC(s)',
-               'Comment (editable)', ]
+               'Rfam Clan(s)', 'Comment (editable)', ]
     return columns
 
 
@@ -71,6 +72,30 @@ def format_rfam_ids(overlaps):
     for rfam_acc in sorted(overlaps):
         rfam_ids.append(get_rfam_id(rfam_acc))
     return ', '.join(rfam_ids)
+
+
+def format_rfam_clans(overlaps):
+    """
+    Given a list of Rfam accessions, return a string of CLAN_ID(RFAM_IDS).
+
+    >>> rfam_rfam_clans(['RF00818', 'RF00716'])
+    'CL00084 (RF00818, RF00716)'
+    >>> rfam_rfam_clans(['RF00716', 'RF00070'])
+    'CL00051 (RF00070), CL00084 (RF00716)'
+    >>> rfam_rfam_clans(['RF00716', 'RF00070', 'RF02913'])
+    'CL00051 (RF00070), CL00084 (RF00716), No clan (RF02913)'
+    """
+    clans = coll.defaultdict(set)
+    for rfam_acc in overlaps:
+        clan_id = get_rfam_clan(rfam_acc) or 'No clan'
+        clans[clan_id] = rfam_acc
+
+    sorted_clans = []
+    for clan, rfam_accs in clans.items():
+        sorted_clans.append("{clan} {accs}".format(
+                            clan=clan,
+                            accs=','.join(sorted(rfam_accs))))
+    return ', '.join(sorted(sorted_clans))
 
 
 def get_summary(row_id, data_type):

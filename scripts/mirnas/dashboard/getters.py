@@ -83,6 +83,17 @@ def get_rfam_id(rfam_acc):
         return ''
 
 
+def get_rfam_clan(rfam_acc):
+    """
+    Get Rfam ID for an Rfam accession.
+    """
+    url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Clan%22&fields=name&format=json'
+    data = requests.get(url.format(rfam_acc))
+    if data.json()['hitCount'] != 0:
+        return (data.json()['entries'][0]['fields']['name'][0])
+    return None
+
+
 def get_mirbase_alignments():
     """
     Get a list of alignments provided by miRBase.

@@ -97,6 +97,15 @@ def get_mirbase_id(identifier):
     """
     Example:
     MIPF0000024__mir-103
+
+    >>> get_mirbase_id('MIPF0000024__mir-103')
+    'mir-103'
+    >>> get_mirbase_id('MIPF0000024')
+    ''
+    >>> get_mirbase_id('MIPF0000024_mir-103')
+    ''
+    >>> get_mirbase_id('MIPF0000024__mir_103')
+    'mir_103'
     """
     if '__' in identifier:
         _, mirbase_id = identifier.split('__')
@@ -109,6 +118,15 @@ def get_mirbase_acc(identifier):
     """
     Example:
     MIPF0000024__mir-103
+
+    >>> get_mirbase_id('MIPF0000024__mir-103')
+    'MIPF0000024'
+    >>> get_mirbase_id('MIPF0000024')
+    ''
+    >>> get_mirbase_id('MIPF0000024_mir-103')
+    ''
+    >>> get_mirbase_id('MIPF0000024__mir_103')
+    'MIPF0000024'
     """
     if '__' in identifier:
         mirbase_acc, _ = identifier.split('__')

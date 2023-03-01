@@ -115,7 +115,10 @@ def get_id_matches(mirbase_id):
     data = requests.get(url.format(mirbase_id))
     if data.json()['hitCount'] == 1:
         rfam_id = data.json()['entries'][0]['id']
-        return [rfam_id]
+        if not rfam_id:
+            print("Text search gave invalid Rfam id for: %s" % mirbase_id)
+        else:
+            return [rfam_id]
     if data.json()['hitCount'] == 0:
         query = "SELECT rfam_acc FROM family WHERE rfam_id = '{}'".format(mirbase_id)
         conn = RfamDB.connect()

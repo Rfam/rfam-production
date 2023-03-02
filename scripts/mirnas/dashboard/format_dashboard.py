@@ -88,7 +88,7 @@ def format_rfam_clans(overlaps):
     clans = coll.defaultdict(set)
     for rfam_acc in overlaps:
         clan_id = get_rfam_clan(rfam_acc) or 'No clan'
-        clans[clan_id] = rfam_acc
+        clans[clan_id].add(rfam_acc)
 
     sorted_clans = []
     for clan, rfam_accs in clans.items():

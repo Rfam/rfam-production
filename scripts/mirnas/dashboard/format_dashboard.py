@@ -92,7 +92,7 @@ def format_rfam_clans(overlaps):
 
     sorted_clans = []
     for clan, rfam_accs in clans.items():
-        sorted_clans.append("{clan} {accs}".format(
+        sorted_clans.append("{clan}({accs})".format(
                             clan=clan,
                             accs=','.join(sorted(rfam_accs))))
     return ', '.join(sorted(sorted_clans))

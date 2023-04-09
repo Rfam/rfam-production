@@ -256,7 +256,9 @@ class Metadata:
         for info in records:
             seq_info = None
             if assembly_info:
-                seq_info = assembly_info.info_for(info.rfamseq_acc)
+                seq_info = assembly_info.info_for(
+                    ncbi.Accession.build(info.rfamseq_acc)
+                )
             rfamseq.append(RfamSeq.from_fasta(int(pinfo.taxid), info))
             genseq.append(GenSeq.from_fasta(pinfo.upi, version, seq_info, info))
             total_length += info.length

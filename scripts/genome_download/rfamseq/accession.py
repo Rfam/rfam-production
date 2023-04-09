@@ -68,7 +68,7 @@ class Accession:
         using `==` between two Accessions will work. Or converting this to a
         string and comparing those.
         """
-        return accession == self.accession or any(
+        return accession.accession == self.accession or any(
             a.matches(accession) for a in self.aliases
         )
 

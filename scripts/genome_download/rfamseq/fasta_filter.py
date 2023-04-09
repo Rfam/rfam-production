@@ -128,10 +128,10 @@ class ComponentSelector:
 
     @classmethod
     def from_selected(
-            cls,
-            assembly_report: ncbi.NcbiAssemblyReport,
-            selected: uniprot.SelectedComponents,
-            wgs_accessions: ty.Optional[wgs.WgsSummary],
+        cls,
+        assembly_report: ncbi.NcbiAssemblyReport,
+        selected: uniprot.SelectedComponents,
+        wgs_accessions: ty.Optional[wgs.WgsSummary],
     ) -> ComponentSelector:
 
         accessions: ty.Set[Accession] = set()
@@ -144,7 +144,10 @@ class ComponentSelector:
                     if wgs_accessions.wgs_id in component:
                         continue
                     # maybe keep this logic in the id_matches function
-                    elif component[0:4] == self.wgs_prefix and abs(int(component[4:6]) - int(self.wgs_version)) <= 1:
+                    elif (
+                        component[0:4] == self.wgs_prefix
+                        and abs(int(component[4:6]) - int(self.wgs_version)) <= 1
+                    ):
                         continue
                     else:
                         pass
@@ -220,15 +223,25 @@ class ComponentSelector:
             if self.requested.includes_unplaced() and self.assembly_report.is_unplaced(
                 accession
             ):
+                LOGGER.info("Found - Accession %s is an expected unplaced", record.id)
                 yield Found(matching_accession=record.id, record=record)
 
             elif wgs_id := self.matching_wgs_set(record.id):
+                LOGGER.info(
+                    "Found - Accession %s is an expected member of WGS set %s",
+                    record.id,
+                    wgs_id,
+                )
                 seen.mark_wgs(wgs_id)
                 yield Found(matching_accession=wgs_id, record=record)
-            elif self.matching_accession(accession):
+            elif matching := self.matching_accession(accession):
+                LOGGER.info(
+                    "Found - Accession %s matches requested %s", record.id, matching
+                )
                 seen.mark_accession(accession)
                 yield Found(matching_accession=record.id, record=record)
             else:
+                LOGGER.info("Extra - Accession %s is extra", record.id)
                 yield Extra(extra=record)
 
         for accession in self.requested.standard_accessions:

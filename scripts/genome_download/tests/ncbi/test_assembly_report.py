@@ -14,11 +14,14 @@ limitations under the License.
 """
 
 import typing as ty
+from io import StringIO
 
 import pytest
+import requests
 
 from rfamseq import ncbi
 from rfamseq.accession import Accession
+from rfamseq.ncbi import assembly_report as report
 
 
 @pytest.mark.parametrize(
@@ -276,3 +279,95 @@ def test_can_build_expected_accessions(info, expected):
 )
 def test_can_build_expected_merged_accessions(info, expected):
     assert info.accession(merged=True) == expected
+
+
+@pytest.mark.parametrize(
+    "info,accession,expected",
+    [
+        (
+            ncbi.NcbiSequenceInfo(
+                genbank_accession=Accession(accession="KE698606", version="1"),
+                refseq_accession=Accession(accession="NW_005844920", version="1"),
+                relationship=ncbi.SequenceRelationship.EQUAL,
+                name="scaffold2549_1",
+                role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                molecule_type=None,
+                length=2014,
+            ),
+            Accession.build("NC_004448.1"),
+            False,
+        ),
+        (
+            ncbi.NcbiSequenceInfo(
+                genbank_accession=Accession(accession="KE698606", version="1"),
+                refseq_accession=Accession(accession="NW_005844920", version="1"),
+                relationship=ncbi.SequenceRelationship.EQUAL,
+                name="scaffold2549_1",
+                role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                molecule_type=None,
+                length=2014,
+            ),
+            Accession.build("NW_005844920"),
+            True,
+        ),
+        (
+            ncbi.NcbiSequenceInfo(
+                genbank_accession=Accession(accession="KE698606", version="1"),
+                refseq_accession=Accession(accession="NW_005844920", version="1"),
+                relationship=ncbi.SequenceRelationship.EQUAL,
+                name="scaffold2549_1",
+                role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                molecule_type=None,
+                length=2014,
+            ),
+            Accession.build("NW_005844920.1"),
+            True,
+        ),
+        (
+            ncbi.NcbiSequenceInfo(
+                genbank_accession=Accession(accession="KE698606", version="1"),
+                refseq_accession=Accession(accession="NW_005844920", version="1"),
+                relationship=ncbi.SequenceRelationship.EQUAL,
+                name="scaffold2549_1",
+                role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                molecule_type=None,
+                length=2014,
+            ),
+            Accession.build("KE698606.1"),
+            True,
+        ),
+        (
+            ncbi.NcbiSequenceInfo(
+                genbank_accession=Accession(accession="KE698606", version="1"),
+                refseq_accession=Accession(accession="NW_005844920", version="1"),
+                relationship=ncbi.SequenceRelationship.EQUAL,
+                name="scaffold2549_1",
+                role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                molecule_type=None,
+                length=2014,
+            ),
+            Accession.build("KE698606"),
+            True,
+        ),
+    ],
+)
+def test_sequence_info_detects_matches(info, accession, expected):
+    assert info.matches(accession) == expected
+
+
+@pytest.mark.parametrize(
+    "url,accession,expected",
+    [
+        (
+            "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/455/745/GCF_000455745.1_ASM45574v1/GCF_000455745.1_ASM45574v1_assembly_report.txt",
+            "NW_005841829.1",
+            True,
+        )
+    ],
+)
+def test_can_detect_when_sequence_is_unplaced(url, accession, expected):
+    response = requests.get(url)
+    response.raise_for_status()
+    rep = report.parse_assembly_info(StringIO(response.text))
+    assert rep
+    assert rep.is_unplaced(Accession.build(accession)) == expected

@@ -237,13 +237,20 @@ def parse_assembly_info(filename, output):
     with SqliteDict(output) as db:
         count = 0
         for index, row in enumerate(reader):
-            count += 1
             summary = ncbi.NcbiAssemblySummary.from_ncbi_row(row)
             if summary.assembly_accession in db:
+                if db[summary.assembly_accession] != summary:
+                    LOGGER.debug(
+                        "Found duplicate entry for %s", summary.assembly_accession
+                    )
+                    continue
                 raise ValueError("Multiple mappings to %s" % summary.assembly_accession)
+
+            count += 1
             db[summary.assembly_accession] = summary
             if index % 100000 == 0:
                 db.commit()
+        LOGGER.info("Done parsing assemblies")
         db.commit()
 
         if count == 0:

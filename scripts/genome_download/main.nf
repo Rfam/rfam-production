@@ -11,12 +11,10 @@ process fetch_ncbi_locations {
 
   """
   mkdir summaries
-  pushd summaries
-  xargs -P 4 -a "../$urls" wget --no-verbose
-  popd
+  wget --input-file ncbi-urls.txt -P summaries
   find summaries -type f | xargs cat > merged
   grep '^#' merged | tail -1 | sed 's|# ||' > info
-  grep -v '^#' merged >> info
+  grep -v '^#' merged | sort -u >> info
   rfamseq parse-assembly-summary info ncbi.db
   """
 }

@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import enum
 import logging
 import typing as ty
 import xml.etree.ElementTree as ET
@@ -88,11 +89,24 @@ class SelectedComponents:
 Components = ty.Union[All, SelectedComponents]
 
 
+@enum.unique
+class GenomeSource(enum.Enum):
+    ENA = "ENA/EMBL"
+    REF_SEQ = "Refseq"
+    ENSEMBL_FUNGI = "EnsemblFungi"
+    ENSEMBL_PROTISTS = "EnsemblProtists"
+    WORMBASE = "WormBase"
+    ENSEMBL_PLANTS = "EnsemblPlants"
+    ENSEMBL_METAZOA = "EnsemblMetazoa"
+    ENSEMBL = "Ensembl"
+
+
 @frozen
 class GenomeInfo:
     accession: ty.Optional[str]
     description: ty.Optional[str]
     components: Components
+    source: ty.Optional[GenomeSource]
 
     @property
     def version(self) -> ty.Optional[str]:
@@ -172,6 +186,15 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     if accessions and len(accessions) > 1:
         raise ValueError(f"Cannot handle >1 genome accession in {upid}")
 
+    source = None
+    sources = all_matching_node_text(
+        ".//pro:genomeAssembly/pro:genomeAssemblySource", root
+    )
+    if sources:
+        LOGGER.debug("Found genome sources: %s", sources)
+        if len(sources) == 1:
+            source = cattrs.structure(sources[0], GenomeSource)
+
     components: ty.List[Component] = []
     description = None
     saw_genome = False
@@ -208,6 +231,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
                     accession=possible_gca,
                     description=description,
                     components=ALL_CHROMOSOMES,
+                    source=source,
                 )
 
             # If there is one component marked as a genome use that and all
@@ -219,6 +243,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
                     accession=possible_gca,
                     description=description,
                     components=ALL_CHROMOSOMES,
+                    source=source,
                 )
 
         # Otherwise only use the given components
@@ -226,6 +251,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
             accession=None,
             description=description,
             components=SelectedComponents(components),
+            source=source,
         )
 
     assert len(accessions) == 1, f"Multiple genomes, impossibility in {upid}"
@@ -233,7 +259,10 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     # If not given any components then assume we want all sequences
     if not components:
         return GenomeInfo(
-            accession=accessions[0], description=description, components=ALL_CHROMOSOMES
+            accession=accessions[0],
+            description=description,
+            components=ALL_CHROMOSOMES,
+            source=source,
         )
 
     # Handle being asked for a single component that is the versionless version
@@ -246,6 +275,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
                 accession=accessions[0],
                 description=description,
                 components=ALL_CHROMOSOMES,
+                source=source,
             )
 
     # Use the simple case of just using the requested components of the given
@@ -254,6 +284,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         accession=accessions[0],
         description=description,
         components=SelectedComponents(components),
+        source=source,
     )
 
 

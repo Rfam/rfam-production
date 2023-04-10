@@ -90,6 +90,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000001405.27",
                     description=None,
+                    source=uniprot.GenomeSource.ENSEMBL,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CM000663",
@@ -140,6 +141,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000499845.1",
                     description=None,
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CM002288",
@@ -176,6 +178,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000002995",
                     description=None,
+                    source=uniprot.GenomeSource.WORMBASE,
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
                 lineage_info=uniprot.LineageInfo(
@@ -197,13 +200,14 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000861105.1",
                     description="Hepatitis E virus ORF1, ORF2, ORF3,complete cds's; methyltransferase, Y domain, papain-like protease, poly-proline hing",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(accessions=["L08816"]),
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=652674,
                     species="Hepatitis E virus genotype 1 (isolate Human/China/HeBei/1987)",
                     common_name="HEV",
-                    tax_string="Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirus; Hepatitis E virus.",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Alsuviricetes; Hepelivirales; Hepeviridae; Orthohepevirinae; Paslahepevirus; Hepatitis E virus.",
                 ),
             ),
         ),
@@ -218,6 +222,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000879395.1",
                     description="RefStrain",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB179636",
@@ -238,7 +243,7 @@ def test_can_get_correct_lineage(taxid, expected):
                     ncbi_id=230407,
                     species="Cryphonectria parasitica mycoreovirus 1 (strain 9B21)",
                     common_name="CpMYRV-1",
-                    tax_string="Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Reoviridae; Spinareovirinae; Mycoreovirus; Mycoreovirus 1.",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Duplornaviricota; Resentoviricetes; Reovirales; Spinareoviridae; Mycoreovirus; Mycoreovirus 1.",
                 ),
             ),
         ),
@@ -253,6 +258,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="AB290918",
                     description="Torque teno midi virus 1 DNA",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
                 lineage_info=uniprot.LineageInfo(
@@ -274,6 +280,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_017348405.1",
                     description="Mycobacterium phage prophiGD12-2",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "MW584207",
@@ -284,7 +291,7 @@ def test_can_get_correct_lineage(taxid, expected):
                     ncbi_id=2813240,
                     species="Mycobacterium phage prophiGD12-2",
                     common_name=None,
-                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Siphoviridae; unclassified Siphoviridae.",
+                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Siphoviridae; unclassified Siphoviridae.",
                 ),
             ),
         ),
@@ -299,6 +306,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000317975.2",
                     description=None,
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "HE999757",
@@ -324,6 +332,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000310245.1",
                     description=None,
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CP003921",
@@ -350,6 +359,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000016325.1",
                     description=None,
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "CP000653",
@@ -376,6 +386,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002210635.1",
                     description="Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY965444",
@@ -401,6 +412,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001736955.2",
                     description="Bacillus phage SPG24 DNA, contig00001 sequence.",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB930182",
@@ -411,7 +423,7 @@ def test_can_get_correct_lineage(taxid, expected):
                     ncbi_id=1497851,
                     species="Bacillus phage SPG24",
                     common_name=None,
-                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Caudovirales; Herelleviridae; Bastillevirinae; Nitunavirus; Bacillus virus SPG24.",
+                    tax_string="Viruses; Duplodnaviria; Heunggongvirae; Uroviricota; Caudoviricetes; Herelleviridae; Bastillevirinae; Nitunavirus; Nitunavirus SPG24.",
                 ),
             ),
         ),
@@ -426,6 +438,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002184215.1",
                     description="Grapevine enamovirus-1 isolate SE-BR, partial genome.",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY820716",
@@ -451,6 +464,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001019975.1",
                     description="Genome",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KP774592",
@@ -477,6 +491,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000870385.1",
                     description="Maruca vitrata MNPV",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "EF125867",
@@ -502,6 +517,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCF_009870125.1",
                     description=None,
+                    source=uniprot.GenomeSource.REF_SEQ,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             uniprot.UNPLACED,
@@ -561,6 +577,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_900519105.1",
                     description=None,
+                    source=uniprot.GenomeSource.ENSEMBL_PLANTS,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "AB042240",
@@ -588,6 +605,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001675455.1",
                     description=None,
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "LXWX01000000",
@@ -613,6 +631,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_002237195.1",
                     description="Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(
                         accessions=[
                             "KY354243",
@@ -638,6 +657,7 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_001028725.1",
                     description=None,
+                    source=uniprot.GenomeSource.WORMBASE,
                     components=uniprot.ALL_CHROMOSOMES,
                 ),
                 lineage_info=uniprot.LineageInfo(
@@ -659,30 +679,159 @@ def test_can_get_correct_lineage(taxid, expected):
                 genome_info=uniprot.GenomeInfo(
                     accession="GCA_000857805.1",
                     description="Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65",
+                    source=uniprot.GenomeSource.ENA,
                     components=uniprot.SelectedComponents(accessions=["AJ011380"]),
                 ),
                 lineage_info=uniprot.LineageInfo(
                     ncbi_id=650136,
                     species="Porcine teschovirus 1 (isolate Pig/United Kingdom/F65/1967)",
                     common_name="PTV-1",
-                    tax_string="Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Teschovirus; Teschovirus A; teschovirus A1.",
+                    tax_string="Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes; Picornavirales; Picornaviridae; Caphthovirinae; Teschovirus; Teschovirus A; teschovirus A1.",
                 ),
             ),
         ),
         (
-            Path("test/data/UP000008177.xml"),
-            None,
-            # uniprot.ProteomeInfo(
-            #     upi="UP000008177",
-            #     taxid=999810,
-            #     is_reference=True,
-            #     is_representative=True,
-            #     proteome_description=None,
-            #     genome_info=uniprot.GenomeInfo(
-            #         accession='GCA_000292645.1',
-            #         description=''
-            #     )
-            # )
+            Path("tests/data/UP000008177.xml"),
+            uniprot.ProteomeInfo(
+                upi="UP000008177",
+                taxid=999810,
+                is_reference=True,
+                is_representative=True,
+                proteome_description=None,
+                genome_info=uniprot.GenomeInfo(
+                    accession="GCA_000292645.1",
+                    description=None,
+                    source=uniprot.GenomeSource.ENA,
+                    components=uniprot.SelectedComponents(
+                        accessions=[
+                            "FQ790245",
+                            "FQ790246",
+                            "FQ790247",
+                            "FQ790248",
+                            "FQ790249",
+                            "FQ790250",
+                            "FQ790251",
+                            "FQ790252",
+                            "FQ790253",
+                            "FQ790254",
+                            "FQ790255",
+                            "FQ790256",
+                            "FQ790257",
+                            "FQ790258",
+                            "FQ790259",
+                            "FQ790260",
+                            "FQ790261",
+                            "FQ790262",
+                            "FQ790263",
+                            "FQ790264",
+                            "FQ790265",
+                            "FQ790266",
+                            "FQ790267",
+                            "FQ790268",
+                            "FQ790269",
+                            "FQ790270",
+                            "FQ790271",
+                            "FQ790272",
+                            "FQ790273",
+                            "FQ790274",
+                            "FQ790275",
+                            "FQ790276",
+                            "FQ790277",
+                            "FQ790278",
+                            "FQ790279",
+                            "FQ790280",
+                            "FQ790281",
+                            "FQ790282",
+                            "FQ790283",
+                            "FQ790284",
+                            "FQ790285",
+                            "FQ790286",
+                            "FQ790287",
+                            "FQ790288",
+                            "FQ790289",
+                            "FQ790290",
+                            "FQ790291",
+                            "FQ790292",
+                            "FQ790293",
+                            "FQ790294",
+                            "FQ790295",
+                            "FQ790296",
+                            "FQ790297",
+                            "FQ790298",
+                            "FQ790299",
+                            "FQ790300",
+                            "FQ790301",
+                            "FQ790302",
+                            "FQ790303",
+                            "FQ790304",
+                            "FQ790305",
+                            "FQ790306",
+                            "FQ790307",
+                            "FQ790308",
+                            "FQ790309",
+                            "FQ790310",
+                            "FQ790311",
+                            "FQ790312",
+                            "FQ790313",
+                            "FQ790314",
+                            "FQ790315",
+                            "FQ790316",
+                            "FQ790317",
+                            "FQ790318",
+                            "FQ790319",
+                            "FQ790320",
+                            "FQ790321",
+                            "FQ790322",
+                            "FQ790323",
+                            "FQ790324",
+                            "FQ790325",
+                            "FQ790326",
+                            "FQ790327",
+                            "FQ790328",
+                            "FQ790329",
+                            "FQ790330",
+                            "FQ790331",
+                            "FQ790332",
+                            "FQ790333",
+                            "FQ790334",
+                            "FQ790335",
+                            "FQ790336",
+                            "FQ790337",
+                            "FQ790338",
+                            "FQ790339",
+                            "FQ790340",
+                            "FQ790341",
+                            "FQ790342",
+                            "FQ790343",
+                            "FQ790344",
+                            "FQ790345",
+                            "FQ790346",
+                            "FQ790347",
+                            "FQ790348",
+                            "FQ790349",
+                            "FQ790350",
+                            "FQ790351",
+                            "FQ790352",
+                            "FQ790353",
+                            "FQ790354",
+                            "FQ790355",
+                            "FQ790356",
+                            "FQ790357",
+                            "FQ790358",
+                            "FQ790359",
+                            "FQ790360",
+                            "FQ790361",
+                            "FQ790362",
+                        ]
+                    ),
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=999810,
+                    species="Botryotinia fuckeliana (strain T4)",
+                    common_name="Noble rot fungus",
+                    tax_string="Eukaryota; Fungi; Dikarya; Ascomycota; Pezizomycotina; Leotiomycetes; Helotiales; Sclerotiniaceae; Botrytis.",
+                ),
+            ),
         ),
     ],
 )

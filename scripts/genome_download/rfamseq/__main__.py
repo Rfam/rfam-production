@@ -237,7 +237,11 @@ def parse_assembly_info(filename, output):
     with SqliteDict(output) as db:
         count = 0
         for index, row in enumerate(reader):
-            summary = ncbi.NcbiAssemblySummary.from_ncbi_row(row)
+            try:
+                summary = ncbi.NcbiAssemblySummary.from_ncbi_row(row)
+            except Exception:
+                LOGGER.error("Could not parse row %s", row)
+                continue
             if summary.assembly_accession in db:
                 if db[summary.assembly_accession] != summary:
                     LOGGER.debug(

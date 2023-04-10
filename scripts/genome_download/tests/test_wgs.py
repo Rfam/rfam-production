@@ -335,6 +335,8 @@ def test_can_resolve_wgs_ids_with_ena(accession, expected):
         ("LKAM01", "LKAM01", True),
         ("LKAM01", "LKAM01000000", True),
         ("AMCR01", "LKAM01000000", False),
+        ("WWJG01", "WWJG01002768.1", True),
+        ("WWJG01", "WWJG01002768", True),
     ],
 )
 def test_can_correctly_match_wgs_ids(accession, to_check, expected):

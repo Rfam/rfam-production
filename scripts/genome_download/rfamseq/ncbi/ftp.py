@@ -98,6 +98,7 @@ def efetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
             yield from fasta.parse(handle)
     except wget.FetchError as err:
         LOGGER.debug(err)
+        raise err
 
 
 def ftp_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

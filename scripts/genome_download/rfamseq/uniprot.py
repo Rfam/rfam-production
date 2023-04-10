@@ -221,7 +221,6 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     # Handle the case where there is not overarching genome assembly to work
     # with and just a series of components to fetch.
     if not accessions:
-
         # If the only component is a GCA_ sequence then use that and all
         # components.
         if len(components) == 1:

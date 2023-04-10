@@ -106,7 +106,7 @@ class SeenAccessions:
 
     @classmethod
     def empty(cls) -> SeenAccessions:
-        return cls(accessions=set(), wgs_id=None)
+        return cls(accessions=set(), wgs_id=set())
 
     def mark_wgs(self, wgs_id: str):
         self.wgs_id.add(wgs_id)
@@ -133,7 +133,6 @@ class ComponentSelector:
         selected: uniprot.SelectedComponents,
         wgs_accessions: ty.Optional[wgs.WgsSummary],
     ) -> ComponentSelector:
-
         accessions: ty.Set[Accession] = set()
         unplaced = False
         for component in selected:
@@ -143,17 +142,6 @@ class ComponentSelector:
                 if wgs_accessions:
                     if wgs_accessions.wgs_id in component:
                         continue
-                    # maybe keep this logic in the id_matches function
-                    elif (
-                        component[0:4] == self.wgs_prefix
-                        and abs(int(component[4:6]) - int(self.wgs_version)) <= 1
-                    ):
-                        continue
-                    else:
-                        pass
-                    # component is not already in wgs_accession object so add to missing-wgs-accs?
-                    # accessions.add(Accession.build(component)) ?
-
                     # If the component to fetch is a wgs record id which we already have
                     # stored in the wgs_accession object we do not search for it in the
                     # file.
@@ -172,7 +160,7 @@ class ComponentSelector:
                     # UP000077684 (GCA_001645045.2) wants LWDE01000000, which is gone,
                     # but LWDE02 exists.
                 else:
-                    raise ValueError("Not yet implemented")
+                    raise ValueError(f"Not yet implemented {component}")
             else:
                 accessions.add(Accession.build(component))
 
@@ -243,6 +231,10 @@ class ComponentSelector:
             else:
                 LOGGER.info("Extra - Accession %s is extra", record.id)
                 yield Extra(extra=record)
+
+        import sys
+
+        sys.exit(1)
 
         for accession in self.requested.standard_accessions:
             if accession in seen:

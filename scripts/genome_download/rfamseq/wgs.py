@@ -29,7 +29,7 @@ from rfamseq import ena, ncbi, wget
 LOGGER = logging.getLogger(__name__)
 
 
-PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)\d+$")
+PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)\d+(\.\d+)?$")
 
 CONTIG_PATTERN = re.compile(r"(^[A-Z]+)(\d+)$")
 
@@ -53,11 +53,19 @@ def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
         raise InvalidWgsAccession(raw)
 
     prefix = match.group(1)
+    version_suffix = match.group(2)
+
     id = raw[len(prefix) :]
+    if version_suffix:
+        id = id.replace(version_suffix, "")
+
     minimal = re.sub("^0+", "", id) or "0"
-    # change this to a float to account for IDs ending in .1 oe .2 but now unsure if those types of IDs
-    # should even get this far
-    return (prefix, int(float(minimal)))
+
+    # TODO: Check that the versions are the same. The last two numbers after
+    #       the letters in a WGS id are versions. These should match, ie
+    #       WWJG01000002.1 has version 1. The 01 after WWJG and .1 are the
+    #       same.
+    return (prefix, int(minimal))
 
 
 def wgs_id(length: int, prefix: str, index: int) -> str:
@@ -246,7 +254,10 @@ class WgsSummary:
         max_diff = int(within_one_version)
         try:
             prefix, version = wgs_endpoint(raw)
-            return prefix[0:4] == self.wgs_prefix and abs(version - int(self.wgs_version)) == max_diff
+            return (
+                prefix[0:4] == self.wgs_prefix
+                and abs(version - int(self.wgs_version)) == max_diff
+            )
         except InvalidWgsAccession:
             return False
 
@@ -258,7 +269,7 @@ class WgsSummary:
 
 
 def resolve_ena_wgs(
-        accession: str,
+    accession: str,
 ) -> ty.Tuple[ty.List[ContigInfo], ty.List[WgsSequence]]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
     url = ena.ENA_EMBL_URL.format(accession=accession)

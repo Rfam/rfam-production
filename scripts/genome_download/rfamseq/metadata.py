@@ -249,7 +249,6 @@ class Metadata:
         assembly_info: ty.Optional[ncbi.NcbiAssemblyReport],
         records: ty.List[FromFasta],
     ) -> Metadata:
-
         genseq = []
         rfamseq = []
         total_length = 0

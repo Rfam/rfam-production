@@ -163,6 +163,7 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             genome = download.GenomeDownload.build(db, proteome)
             with fasta_out.open("w") as fasta:
                 for sequence in genome.records(db):
+                    LOGGER.debug("Writing record %s", sequence.id)
                     fetched.append(metadata.FromFasta.from_record(sequence))
                     SeqIO.write(sequence, fasta, "fasta")
 

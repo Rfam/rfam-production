@@ -13,12 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import io
 import logging
 import os
+import shutil
 import subprocess as sp
 import tempfile
 import typing as ty
-from contextlib import contextmanager
+import urllib.request
+from contextlib import closing, contextmanager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,18 +37,10 @@ class FetchError(Exception):
 @contextmanager
 def wget(url: str) -> ty.Iterator[ty.IO]:
     LOGGER.debug("Fetching %s", url)
-    with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as tmp:
+    with tempfile.NamedTemporaryFile("wb+", dir=os.curdir) as tmp:
         try:
-            sp.check_call(
-                [
-                    "wget",
-                    "--no-verbose",
-                    "-O",
-                    tmp.name,
-                    url,
-                ],
-                stderr=sp.DEVNULL,
-            )
+            with closing(urllib.request.urlopen(str(url))) as req:
+                shutil.copyfileobj(req, tmp)
         except Exception as err:
             LOGGER.warn("Failed fetching %s", url)
             LOGGER.debug(err)
@@ -62,6 +57,7 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
                 decomp.seek(0)
                 yield decomp
         elif b"text/plain" in info:
-            yield tmp
+            with io.open(tmp.name, "r") as raw:
+                yield raw
         else:
             raise ValueError(f"Could not handle file type from {url} ({info})")

@@ -17,13 +17,12 @@ from __future__ import annotations
 
 import collections as coll
 import logging
-import re
 import typing as ty
 
 from attrs import define, frozen
 from Bio import SeqIO
 
-from rfamseq import ncbi, uniprot, utils, wgs
+from rfamseq import ncbi, uniprot, wgs
 from rfamseq.accession import Accession
 
 LOGGER = logging.getLogger(__name__)
@@ -48,41 +47,85 @@ class Extra:
 RecordTypes = ty.Union[Missing, Found, Extra]
 
 
-def wgs_matches(
-    wgs_accession: ty.Dict[str, ty.List[str]], component: str
-) -> ty.List[str]:
-    for short_wgs, accessions in wgs_accession.items():
-        pattern = re.compile(f"{short_wgs}\\d+")
-        if re.match(pattern, component):
-            return accessions
-    return []
+@define
+class WgsSequenceContainer:
+    """
+    This represents a way to refer to a collection of WGS sets.
+    """
+
+    any_member_of: ty.Set[wgs.WgsPrefix]
+    ranges: ty.Set[wgs.WgsSequenceRange]
+
+    @classmethod
+    def empty(cls) -> WgsSequenceContainer:
+        return cls(any_member_of=set(), ranges=set())
+
+    def __add_sequence_range(self, range: wgs.WgsSequenceRange):
+        if range.is_single_range() and range.start.is_wgs_set_reference():
+            self.any_member_of.add(range.prefix)
+        else:
+            self.ranges.add(range)
+
+    def add(self, accession: str):
+        try:
+            prefix = wgs.WgsPrefix.build(accession)
+            self.any_member_of.add(prefix)
+            return None
+        except:
+            LOGGER.debug("Accession %s is not a wgs prefix", accession)
+            pass
+
+        try:
+            range = wgs.WgsSequenceRange.build(wgs.WgsSequenceKind.SEQUENCE, accession)
+            return self.__add_sequence_range(range)
+        except:
+            LOGGER.debug("Accession %s is not a wgs sequence range", accession)
+            pass
+
+        raise ValueError(f"Cannot treat {accession} as a WGS accession")
+
+    def is_empty(self) -> bool:
+        return not (bool(self.ranges) or bool(self.any_member_of))
+
+    def matching_set(
+        self,
+        accession: ty.Union[str, Accession, wgs.WgsSequenceId],
+        within_one_version=False,
+    ) -> ty.Optional[wgs.WgsPrefix]:
+        if isinstance(accession, Accession):
+            accession = wgs.WgsSequenceId.build(str(accession))
+        if isinstance(accession, str):
+            accession = wgs.WgsSequenceId.build(accession)
+
+        for prefix in self.any_member_of:
+            if prefix.matches(accession.prefix, within_one_version=within_one_version):
+                return prefix
+
+        for range in self.ranges:
+            if range.includes(accession, within_one_version=within_one_version):
+                return range.prefix
+        return None
 
 
 @frozen
 class RequestedAccessions:
     unplaced: bool
     standard_accessions: ty.Set[Accession]
-    wgs_set: ty.Optional[wgs.WgsSummary]
+    wgs_set: WgsSequenceContainer
 
     @classmethod
     def build(cls, selected: uniprot.SelectedComponents) -> RequestedAccessions:
         accessions = set()
         unplaced = False
-        wgs_set = None
+        wgs_set = WgsSequenceContainer.empty()
         for accession in selected.accessions:
             if isinstance(accession, uniprot.Unplaced):
                 unplaced = True
                 continue
-            elif wgs.is_wgs_id(accession):
-                # If the WGS accession is the same as what we have in the NCBI
-                # report then use the already fetched WGS summary. If it is not
-                # then we need to look it up
-                pass
-
+            elif wgs.looks_like_wgs_accession(accession):
+                wgs_set.add(accession)
             else:
-                # Use the NCBI Assembly Summary to build an accession that
-                # includes all aliases we can find.
-                accessions.add(accession)
+                accessions.add(Accession.build(accession))
 
         return cls(
             unplaced=unplaced,
@@ -90,26 +133,24 @@ class RequestedAccessions:
             wgs_set=wgs_set,
         )
 
+    def includes_wgs(self):
+        return not self.wgs_set.is_empty()
+
     def includes_unplaced(self):
         return self.unplaced
-
-    def __contains__(self, id: Accession) -> bool:
-        if any(a.matches(id) for a in self.standard_accessions):
-            return True
-        return any(id in wgs for wgs in self.wgs_sets)
 
 
 @define
 class SeenAccessions:
     accessions: ty.Set[Accession]
-    wgs_id: ty.Set[str]
+    wgs_id: coll.Counter[str]
 
     @classmethod
     def empty(cls) -> SeenAccessions:
-        return cls(accessions=set(), wgs_id=set())
+        return cls(accessions=set(), wgs_id=coll.Counter())
 
     def mark_wgs(self, wgs_id: str):
-        self.wgs_id.add(wgs_id)
+        self.wgs_id[wgs_id] += 1
 
     def mark_accession(self, accession: Accession):
         self.accessions.add(accession)
@@ -133,53 +174,13 @@ class ComponentSelector:
         selected: uniprot.SelectedComponents,
         wgs_accessions: ty.Optional[wgs.WgsSummary],
     ) -> ComponentSelector:
-        accessions: ty.Set[Accession] = set()
-        unplaced = False
-        for component in selected:
-            if isinstance(component, uniprot.Unplaced):
-                unplaced = True
-            elif wgs.looks_like_wgs_accession(component):
-                if wgs_accessions:
-                    if wgs_accessions.wgs_id in component:
-                        continue
-                    # If the component to fetch is a wgs record id which we already have
-                    # stored in the wgs_accession object we do not search for it in the
-                    # file.
-                    # That id will never appear in the file, but the ids which
-                    # compose a record may. By this point we have already resolved the
-                    # wgs accession into records (hopefully) so we can ignore it as
-                    # something to search for and just rely on the wgs ids we have
-                    # determined.
-                    # If the given component is single version difference from the
-                    # record id we already see in the wgs_accessions, we accept it.
-                    # This is technically wrong, however, there are cases where old
-                    # versions disappear. This is painful but there is generally a new exists,
-                    # so we can get a close enough sequence.
-                    #
-                    # Example:
-                    # UP000077684 (GCA_001645045.2) wants LWDE01000000, which is gone,
-                    # but LWDE02 exists.
-                else:
-                    raise ValueError(f"Not yet implemented {component}")
-            else:
-                accessions.add(Accession.build(component))
-
         return cls(
-            requested=RequestedAccessions(
-                unplaced=unplaced,
-                standard_accessions=accessions,
-                wgs_set=wgs_accessions,
-            ),
+            requested=RequestedAccessions.build(selected),
             assembly_report=assembly_report,
         )
 
     def matching_wgs_set(self, id: str) -> ty.Optional[str]:
-        if not self.requested.wgs_set:
-            return None
-
-        try:
-            endpoint = wgs.wgs_endpoint(id)
-        except wgs.InvalidWgsAccession:
+        if not wgs.looks_like_wgs_accession(id):
             return None
 
         # Check if this sequence is from a WGS set. This means the id is any one
@@ -189,14 +190,19 @@ class ComponentSelector:
         #
         # This should take the accession from the sequence and check if it
         # looks like any sequence id know about for the given WGS set
-        if self.requested.wgs_set.id_matches(endpoint, within_one_version=True):
-            return self.requested.wgs_set.wgs_id
+        if prefix := self.requested.wgs_set.matching_set(id, within_one_version=True):
+            return prefix.to_wgs_string()
         return None
 
     def matching_accession(self, id: Accession) -> ty.Optional[Accession]:
         to_search = id
+        # Build an accession that is has all aliases from the NCBI assembly
+        # report.
         if info := self.assembly_report.info_for(id):
             to_search = id.alias(info.accession())
+
+        # Check if any requested assembly matches the given or possible
+        # aliases.
         for accession in self.requested.standard_accessions:
             if accession.matches(to_search):
                 return accession
@@ -210,6 +216,7 @@ class ComponentSelector:
         object. Does not handle duplicate ids within a file.
         """
 
+        count = 0
         seen = SeenAccessions.empty()
         for record in records:
             LOGGER.info("Checking if %s is allowed", record.id)
@@ -218,6 +225,7 @@ class ComponentSelector:
                 accession
             ):
                 LOGGER.info("Found - Accession %s is an expected unplaced", record.id)
+                count += 1
                 yield Found(matching_accession=record.id, record=record)
 
             elif wgs_id := self.matching_wgs_set(record.id):
@@ -227,22 +235,32 @@ class ComponentSelector:
                     wgs_id,
                 )
                 seen.mark_wgs(wgs_id)
+                count += 1
                 yield Found(matching_accession=wgs_id, record=record)
+
             elif matching := self.matching_accession(accession):
                 LOGGER.info(
                     "Found - Accession %s matches requested %s", record.id, matching
                 )
                 seen.mark_accession(accession)
+                count += 1
                 yield Found(matching_accession=record.id, record=record)
+
             else:
                 LOGGER.info("Extra - Accession %s is extra", record.id)
                 yield Extra(extra=record)
 
+        LOGGER.info("Found %i requested sequences in the fasta file", count)
+        LOGGER.debug("Requested %s", self.requested)
+        LOGGER.debug("Seen %s", seen)
+
         for accession in self.requested.standard_accessions:
             if accession in seen:
                 continue
+            LOGGER.debug("Missing accession %s", accession)
             yield Missing(accession=str(accession))
 
-        if self.requested.wgs_set and not seen.seen_wgs():
-            for accession in self.requested.wgs_set.largest_ids():
-                yield Missing(accession=accession)
+        if self.requested.includes_wgs() and not seen.seen_wgs():
+            # for accession in self.requested.wgs_set.largest_ids():
+            #     LOGGER.debug("Missing sequences from WGS set %s", accession)
+            raise ValueError("Not reimplemented")

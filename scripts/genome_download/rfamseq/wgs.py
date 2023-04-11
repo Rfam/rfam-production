@@ -28,8 +28,7 @@ from rfamseq import ena, ncbi, wget
 
 LOGGER = logging.getLogger(__name__)
 
-
-PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)\d+(\.\d+)?$")
+PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)(\d+)(\.\d+)?$")
 
 CONTIG_PATTERN = re.compile(r"(^[A-Z]+)(\d+)$")
 
@@ -40,6 +39,21 @@ class InvalidWgsAccession(Exception):
     """
 
 
+@frozen
+class WgsEndpoint:
+    wgs_id: str
+    wgs_version: str
+    sequence_index: int
+    sequence_version: ty.Optional[str]
+
+    @property
+    def wgs_prefix(self) -> str:
+        return self.wgs_id + self.wgs_version
+
+    def version_diff(self, version: int) -> int:
+        return abs(int(self.wgs_version) - version)
+
+
 def looks_like_wgs_accession(raw: str) -> bool:
     try:
         wgs_endpoint(raw)
@@ -48,24 +62,27 @@ def looks_like_wgs_accession(raw: str) -> bool:
         return False
 
 
-def wgs_endpoint(raw: str) -> ty.Tuple[str, int]:
+def wgs_endpoint(raw: str) -> WgsEndpoint:
     if not (match := re.match(PATTERN, raw)):
         raise InvalidWgsAccession(raw)
 
-    prefix = match.group(1)
-    version_suffix = match.group(2)
-
-    id = raw[len(prefix) :]
-    if version_suffix:
-        id = id.replace(version_suffix, "")
-
-    minimal = re.sub("^0+", "", id) or "0"
+    wgs_prefix = match.group(1)
+    sequence_version = match.group(3)
+    if not sequence_version:
+        sequence_version = None
+    else:
+        sequence_version = sequence_version[1:]
 
     # TODO: Check that the versions are the same. The last two numbers after
     #       the letters in a WGS id are versions. These should match, ie
     #       WWJG01000002.1 has version 1. The 01 after WWJG and .1 are the
     #       same.
-    return (prefix, int(minimal))
+    return WgsEndpoint(
+        wgs_id=wgs_prefix[0:4],
+        wgs_version=wgs_prefix[4:],
+        sequence_index=int(match.group(2)),
+        sequence_version=sequence_version,
+    )
 
 
 def wgs_id(length: int, prefix: str, index: int) -> str:
@@ -133,24 +150,34 @@ class WgsSequence:
 
     @classmethod
     def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsSequence:
-        prefix, start = wgs_endpoint(endpoint)
+        parsed = wgs_endpoint(endpoint)
         return cls(
-            wgs_id=prefix, kind=kind, start=start, stop=start, id_length=len(endpoint)
+            wgs_id=parsed.wgs_prefix,
+            kind=kind,
+            start=parsed.sequence_index,
+            stop=parsed.sequence_index,
+            id_length=len(endpoint),
         )
 
     @classmethod
     def from_range(cls, kind: WgsSequenceKind, range: str) -> WgsSequence:
         raw_start, raw_stop = range.split("-", 1)
-        prefix1, start = wgs_endpoint(raw_start)
-        prefix2, stop = wgs_endpoint(raw_stop)
+        endpoint1 = wgs_endpoint(raw_start)
+        endpoint2 = wgs_endpoint(raw_stop)
 
-        assert prefix1 == prefix2, f"Cannot create range across prefixes {range}"
+        assert (
+            endpoint1.wgs_prefix == endpoint2.wgs_prefix
+        ), f"Cannot create range across prefixes {range}"
         assert len(raw_start) == len(
             raw_stop
         ), f"Cannot create range with bad lengths {range}"
 
         return cls(
-            wgs_id=prefix1, kind=kind, start=start, stop=stop, id_length=len(raw_start)
+            wgs_id=endpoint1.wgs_prefix,
+            kind=kind,
+            start=endpoint1.sequence_index,
+            stop=endpoint2.sequence_index,
+            id_length=len(raw_start),
         )
 
     @classmethod
@@ -250,16 +277,12 @@ class WgsSummary:
     def record_ids(self) -> ty.Set[str]:
         return {wgs.record_id() for wgs in self.sequences}
 
-    def id_matches(self, raw: str, within_one_version=False):
+    def id_matches(self, endpoint: WgsEndpoint, within_one_version=False) -> bool:
         max_diff = int(within_one_version)
-        try:
-            prefix, version = wgs_endpoint(raw)
-            return (
-                prefix[0:4] == self.wgs_prefix
-                and abs(version - int(self.wgs_version)) == max_diff
-            )
-        except InvalidWgsAccession:
-            return False
+        return (
+            endpoint.wgs_id == self.wgs_prefix
+            and endpoint.version_diff(self.wgs_version) <= max_diff
+        )
 
     def __contains__(self, accession: str) -> bool:
         for id in self.ids():

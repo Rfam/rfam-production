@@ -174,6 +174,14 @@ class ComponentSelector:
         )
 
     def matching_wgs_set(self, id: str) -> ty.Optional[str]:
+        if not self.requested.wgs_set:
+            return None
+
+        try:
+            endpoint = wgs.wgs_endpoint(id)
+        except wgs.InvalidWgsAccession:
+            return None
+
         # Check if this sequence is from a WGS set. This means the id is any one
         # of the ones known to be a part of that WGS set. We will treat seeing any
         # one sequence from a wgs set as seeing the whole WGS set. Slightly
@@ -181,9 +189,7 @@ class ComponentSelector:
         #
         # This should take the accession from the sequence and check if it
         # looks like any sequence id know about for the given WGS set
-        if self.requested.wgs_set and self.requested.wgs_set.id_matches(
-            id, within_one_version=True
-        ):
+        if self.requested.wgs_set.id_matches(endpoint, within_one_version=True):
             return self.requested.wgs_set.wgs_id
         return None
 
@@ -231,10 +237,6 @@ class ComponentSelector:
             else:
                 LOGGER.info("Extra - Accession %s is extra", record.id)
                 yield Extra(extra=record)
-
-        import sys
-
-        sys.exit(1)
 
         for accession in self.requested.standard_accessions:
             if accession in seen:

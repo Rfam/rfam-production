@@ -218,6 +218,7 @@ def fetch_assembly_report(info: SqliteDict, accession: str) -> NcbiAssemblyRepor
     path = ftp_path(info, accession)
     if not path:
         raise UnknownGenomeId(accession)
+    LOGGER.info("Using path %s", path)
 
     try:
         with wget.wget(path) as handle:

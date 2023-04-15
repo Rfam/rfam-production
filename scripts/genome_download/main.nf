@@ -64,7 +64,7 @@ process download {
   maxForks 30
   publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy"
   memory { 6.GB * task.attempt }
-  errorStrategy { task.exitStatus in 129..140 ? 'retry' : 'finish' }
+  errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
   maxRetries 4
 
   input:
@@ -79,9 +79,11 @@ process download {
 }
 
 process validate_chunk {
-  queue 'short'
-  time '6h'
   tag { "$short_name" }
+  queue 'standard'
+  time '12h'
+  memory { 6.GB * task.attempt }
+  errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
 
   input:
   tuple val(short_name), path('genomes*.fa')
@@ -99,6 +101,8 @@ process validate_chunk {
 }
 
 process merge_chunks {
+  queue 'standard'
+  time '24h'
   publishDir 'genomes/rfamseq', mode: 'copy'
 
   input:

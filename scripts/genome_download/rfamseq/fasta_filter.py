@@ -240,14 +240,15 @@ class ComponentSelector:
                 count += 1
                 yield Found(matching_accession=record.id, record=record)
 
-            elif wgs_id := self.matching_wgs_set(record.id):
+            elif wgs_ids := self.matching_wgs_set(record.id):
                 LOGGER.info(
                     "Found - Accession %s is an expected member of WGS set %s",
                     record.id,
-                    wgs_id,
+                    wgs_ids,
                 )
-                seen.mark_wgs_prefixes(wgs_id)
+                seen.mark_wgs_prefixes(wgs_ids)
                 count += 1
+                wgs_id = list(wgs_ids)[0]
                 yield Found(matching_accession=wgs_id.to_wgs_string(), record=record)
 
             elif matching := self.matching_accession(accession):

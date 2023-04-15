@@ -105,6 +105,25 @@ class WgsPrefix:
             current += "S"
         return current
 
+    def next_version(self) -> WgsPrefix:
+        """
+        Create a new WgsPrefix which is the next version of this WgsPrefix.
+        Basically this just creates a new object that increoments the
+        wgs_version.
+
+        >>> WgsPrefix(wgs_id="JABDTM", wgs_version=2, scaffold=False, length=8).next_version()
+        WgsPrefix(wgs_id="JABDTM", wgs_version=3, scaffold=False, length=8)
+        >>> WgsPrefix(wgs_id="JABDTM", wgs_version=1, scaffold=True, length=8).next_version()
+        WgsPrefix(wgs_id="JABDTM", wgs_version=2, scaffold=True, length=8)
+        """
+
+        return WgsPrefix(
+            wgs_id=self.wgs_id,
+            wgs_version=self.wgs_version + 1,
+            scaffold=self.scaffold,
+            length=self.length,
+        )
+
     def matches(self, other: WgsPrefix, within_one_version=False) -> int:
         """
         Fuzzy compare two WgsPrefixes. This will allow two prefixes to match if

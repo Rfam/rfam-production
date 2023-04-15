@@ -69,10 +69,21 @@ def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
     return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
 
 
-def fetch_wgs_sequences(prefix: wgs.WgsPrefix) -> ty.Iterable[SeqIO.SeqRecord]:
+def fetch_wgs_sequences(
+    prefix: wgs.WgsPrefix, allow_next=True
+) -> ty.Iterable[SeqIO.SeqRecord]:
     url = wgs_fasta_url(prefix)
     LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
-    yield from fetch(url)
+    try:
+        yield from fetch(url)
+    except wget.FetchError as err:
+        LOGGER.exception(err)
+        if not allow_next:
+            raise err
+        LOGGER.info("Trying to increment and grab next WGS set")
+        next_url = wgs_fasta_url(prefix.next_version())
+        LOGGER.debug("Fetching next WGS from %s", next_url)
+        yield from fetch(next_url)
 
 
 def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

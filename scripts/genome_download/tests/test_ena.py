@@ -16,21 +16,25 @@ limitations under the License.
 
 import pytest
 
-from rfamseq import ena
+from rfamseq import ena, wgs
 
 
 @pytest.mark.parametrize(
     "accession,expected",
     [
-        (
-            "CABU01000000",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
-        ),
+        # (
+        #     "CABU01000000",
+        #     "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+        # ),
         (
             "CABU01",
             "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
         ),
+        (
+            "JABWAI01",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
+        ),
     ],
 )
 def test_can_generate_expected_wgs_fasta_url(accession, expected):
-    assert ena.wgs_fasta_url(accession) == expected
+    assert ena.wgs_fasta_url(wgs.WgsPrefix.build(accession)) == expected

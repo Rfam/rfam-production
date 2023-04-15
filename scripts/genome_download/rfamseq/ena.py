@@ -14,6 +14,7 @@ limitations under the License.
 """
 
 import logging
+import re
 import typing as ty
 from functools import lru_cache
 
@@ -65,7 +66,8 @@ def fetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
 
 def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
     short = prefix.wgs_id[0:3].lower()
-    name = prefix.to_wgs_string()[0:6].upper()
+    name = prefix.to_wgs_string().upper()
+    name = re.sub("0+$", "", name)
     return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
 
 

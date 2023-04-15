@@ -19,7 +19,7 @@ from functools import lru_cache
 
 from Bio import SeqIO
 
-from rfamseq import fasta, wget
+from rfamseq import fasta, wget, wgs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -63,15 +63,16 @@ def fetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
     yield from fetch(ENA_FASTA_URL, accession=accession)
 
 
-def wgs_fasta_url(accession: str) -> str:
-    prefix = accession[0:3].lower()
-    name = accession[0:6].upper()
-    return ENA_WGS_FASTA_URL.format(prefix=prefix, name=name)
+def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
+    short = prefix.wgs_id[0:3].lower()
+    name = prefix.to_wgs_string()[0:6].upper()
+    return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
 
 
-def fetch_wgs_sequences(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    LOGGER.info("Fetching the wgs fasta set for %s", accession)
-    yield from fetch(wgs_fasta_url(accession))
+def fetch_wgs_sequences(prefix: wgs.WgsPrefix) -> ty.Iterable[SeqIO.SeqRecord]:
+    url = wgs_fasta_url(prefix)
+    LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
+    yield from fetch(url)
 
 
 def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

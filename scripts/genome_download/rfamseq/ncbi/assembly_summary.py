@@ -15,13 +15,17 @@ limitations under the License.
 
 from __future__ import annotations
 
+import csv
 import enum
+import logging
 import typing as ty
 
 import cattrs
 from attrs import frozen
 
 from rfamseq.ncbi.utils import maybe
+
+LOGGER = logging.getLogger(__name__)
 
 
 @enum.unique
@@ -88,3 +92,38 @@ class NcbiAssemblySummary:
     def from_ncbi_row(cls, row: ty.Dict[str, str]) -> NcbiAssemblySummary:
         updated = {k: maybe(v) for k, v in row.items()}
         return cattrs.structure(updated, cls)
+
+
+def cleaned_assembly(handle: ty.IO) -> ty.Iterable[str]:
+    for line in handle:
+        if line.startswith("#"):
+            if line.startswith("#   See"):
+                continue
+            yield line.replace("# ", "")
+        else:
+            yield line
+
+
+def parse_assembly_files(filenames: ty.List[str]) -> ty.Iterable[NcbiAssemblySummary]:
+    """
+    Iterates over the list of filenames and parses all assemblies from each
+    one. Each file must contain at least one valid assembly summary otherwise
+    it will fail. This will log any inputs that fail to be parsed but will not
+    fail in that case.
+    """
+
+    for filename in filenames:
+        LOGGER.debug("Parsing assemblies from %s", filename)
+        count = 0
+        with open(filename, "r") as handle:
+            lines = cleaned_assembly(handle)
+            for row in csv.DictReader(lines, delimiter="\t"):
+                try:
+                    yield NcbiAssemblySummary.from_ncbi_row(row)
+                    count += 1
+                except Exception:
+                    LOGGER.error("Could not parse row %s", row)
+                    continue
+
+        if not count:
+            raise ValueError(f"Failed to parse any assemblies from {filename}")

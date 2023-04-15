@@ -215,51 +215,49 @@ def p2g_cmd(xml, output, ignore=None):
 
 
 @cli.command("parse-assembly-summary")
-@click.argument(
-    "filename",
-    default="-",
-    type=click.File("r"),
-)
+@click.option("--fail-on-duplicate", is_flag=True)
+@click.argument("filenames", nargs=-1)
 @click.argument("output", type=click.Path())
-def parse_assembly_info(filename, output):
+def parse_assembly_info(filenames, output, fail_on_duplicate=False):
     """
     Parse the assembly summaries provided by NCBI to generate an sqlite database
     that can be used to quickly lookup assembly summary information. The
     assembly summary information is used in different parts of the downloading
-    pipeline.
+    pipeline. The files are parsed in the order provided and if there are
+    duplicate ids earlier ones take priority.
 
     \b
     Arguments
-      FILENAME  Path to the TSV file with NCBI assembly summaries to parse
-      OUTPUT    Path to write an sqlite database to
+      FILENAMEs  Path to the TSV files with NCBI assembly summaries to parse
+      OUTPUT     Path to write an sqlite database to
     """
 
-    reader = csv.DictReader(filename, delimiter="\t")
+    count = 0
     with SqliteDict(output) as db:
-        count = 0
-        for index, row in enumerate(reader):
-            try:
-                summary = ncbi.NcbiAssemblySummary.from_ncbi_row(row)
-            except Exception:
-                LOGGER.error("Could not parse row %s", row)
-                continue
+        for index, summary in enumerate(ncbi.parse_assembly_files(filenames)):
             if summary.assembly_accession in db:
+                LOGGER.warning(
+                    "Found duplicate entry for %s", summary.assembly_accession
+                )
                 if db[summary.assembly_accession] != summary:
-                    LOGGER.debug(
-                        "Found duplicate entry for %s", summary.assembly_accession
+                    LOGGER.debug("Have: %s", db[summary.assembly_accession])
+                    LOGGER.debug("Found: %s", summary.assembly_accession)
+                if fail_on_duplicate:
+                    raise ValueError(
+                        "Duplicate accession for {summary.assembly_accession}"
                     )
-                    continue
-                raise ValueError("Multiple mappings to %s" % summary.assembly_accession)
+                continue
 
-            count += 1
             db[summary.assembly_accession] = summary
+            count += 1
             if index % 100000 == 0:
                 db.commit()
+
         LOGGER.info("Done parsing assemblies")
         db.commit()
 
-        if count == 0:
-            raise ValueError("Did not load any assemblies")
+    if count == 0:
+        raise ValueError("Did not load any assemblies")
 
     with SqliteDict(output, flag="r") as db:
         assert len(db) == count, "Did not load all assemblies"

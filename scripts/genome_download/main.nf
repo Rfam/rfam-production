@@ -15,7 +15,12 @@ process fetch_ncbi_locations {
   find summaries -type f | xargs cat > merged
   grep '^#' merged | tail -1 | sed 's|# ||' > info
   grep -v '^#' merged | sort -u >> info
-  rfamseq parse-assembly-summary info ncbi.db
+  rfamseq parse-assembly-summary \
+    summaries/assembly_summary_refseq.txt \
+    summaries/assembly_summary_genbank.txt \
+    summaries/assembly_summary_refseq_historical.txt \
+    summaries/assembly_summary_genbank_historical.txt \
+    ncbi.db
   """
 }
 

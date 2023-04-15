@@ -29,8 +29,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 @frozen
-class Missing:
+class MissingAccession:
     accession: str
+
+
+@frozen
+class MissingWgsSet:
+    prefix: wgs.WgsPrefix
 
 
 @frozen
@@ -44,6 +49,7 @@ class Extra:
     extra: SeqIO.SeqRecord
 
 
+Missing = ty.Union[MissingAccession, MissingWgsSet]
 RecordTypes = ty.Union[Missing, Found, Extra]
 
 
@@ -143,20 +149,20 @@ class RequestedAccessions:
 @define
 class SeenAccessions:
     accessions: ty.Set[Accession]
-    wgs_id: coll.Counter[str]
+    wgs_prefix: ty.Set[wgs.WgsPrefix]
 
     @classmethod
     def empty(cls) -> SeenAccessions:
-        return cls(accessions=set(), wgs_id=coll.Counter())
+        return cls(accessions=set(), wgs_prefix=set())
 
-    def mark_wgs(self, wgs_id: str):
-        self.wgs_id[wgs_id] += 1
+    def mark_wgs_prefix(self, wgs_id: wgs.WgsPrefix):
+        self.wgs_prefix.add(wgs_id)
 
     def mark_accession(self, accession: Accession):
         self.accessions.add(accession)
 
     def seen_wgs(self) -> bool:
-        return bool(self.wgs_id)
+        return bool(self.wgs_prefix)
 
     def __contains__(self, accession: Accession) -> bool:
         return any(a.matches(accession) for a in self.accessions)
@@ -166,20 +172,26 @@ class SeenAccessions:
 class ComponentSelector:
     requested: RequestedAccessions
     assembly_report: ncbi.NcbiAssemblyReport
+    summaries: ty.Dict[wgs.WgsSummary, wgs.WgsSummary]
 
     @classmethod
     def from_selected(
         cls,
         assembly_report: ncbi.NcbiAssemblyReport,
         selected: uniprot.SelectedComponents,
-        wgs_accessions: ty.Optional[wgs.WgsSummary],
+        wgs_summary: ty.Optional[wgs.WgsSummary],
     ) -> ComponentSelector:
+        summaries = {}
+        if wgs_summary:
+            summaries[wgs_summary] = wgs_summary
+
         return cls(
             requested=RequestedAccessions.build(selected),
             assembly_report=assembly_report,
+            summaries=summaries,
         )
 
-    def matching_wgs_set(self, id: str) -> ty.Optional[str]:
+    def matching_wgs_set(self, id: str) -> ty.Optional[wgs.WgsPrefix]:
         if not wgs.looks_like_wgs_accession(id):
             return None
 
@@ -191,7 +203,7 @@ class ComponentSelector:
         # This should take the accession from the sequence and check if it
         # looks like any sequence id know about for the given WGS set
         if prefix := self.requested.wgs_set.matching_set(id, within_one_version=True):
-            return prefix.to_wgs_string()
+            return prefix
         return None
 
     def matching_accession(self, id: Accession) -> ty.Optional[Accession]:
@@ -234,9 +246,9 @@ class ComponentSelector:
                     record.id,
                     wgs_id,
                 )
-                seen.mark_wgs(wgs_id)
+                seen.mark_wgs_prefix(wgs_id)
                 count += 1
-                yield Found(matching_accession=wgs_id, record=record)
+                yield Found(matching_accession=wgs_id.to_wgs_string(), record=record)
 
             elif matching := self.matching_accession(accession):
                 LOGGER.info(
@@ -258,9 +270,9 @@ class ComponentSelector:
             if accession in seen:
                 continue
             LOGGER.debug("Missing accession %s", accession)
-            yield Missing(accession=str(accession))
+            yield MissingAccession(accession=str(accession))
 
         if self.requested.includes_wgs() and not seen.seen_wgs():
-            # for accession in self.requested.wgs_set.largest_ids():
-            #     LOGGER.debug("Missing sequences from WGS set %s", accession)
-            raise ValueError("Not reimplemented")
+            LOGGER.debug("Missing wgs set")
+            for wgs_prefix in self.requested.wgs_set.any_member_of:
+                yield MissingWgsSet(prefix=wgs_prefix)

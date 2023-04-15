@@ -28,8 +28,6 @@ from .accession_method import fetch as fetch_accessions
 
 Records = ty.Iterable[SeqIO.SeqRecord]
 
-WGS_PATTERN = re.compile(r"^([A-Z]{4,6})\d{2,}")
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -109,20 +107,19 @@ def fetch(
                 genome.accession,
             )
             yield classification.record
-        elif isinstance(classification, fasta_filter.Missing):
+        elif isinstance(classification, fasta_filter.MissingAccession):
             LOGGER.info(
                 "Accession %s did not contain %s",
                 genome.accession,
                 classification.accession,
             )
-            missing = classification.accession
-            if match := re.match(WGS_PATTERN, missing):
-                LOGGER.info("Accession %s looks like a wgs set", missing)
-                try:
-                    yield from ena.fetch_wgs_sequences(match.group(1))
-                    continue
-                except:
-                    LOGGER.info("Failed to download WGS sequences")
             yield from fetch_accessions(info, classification.accession)
+        elif isinstance(classification, fasta_filter.MissingWgsSet):
+            LOGGER.info(
+                "Accession %s did not contain any known sequences from WGS set %s",
+                genome.accession,
+                classification.prefix,
+            )
+            yield from ena.fetch_wgs_sequences(classification.prefix)
         else:
             raise ValueError(f"Impossible state with {classification} for {proteome}")

@@ -15,16 +15,16 @@ limitations under the License.
 
 from __future__ import annotations
 
+import collections as coll
 import enum
 import logging
 import re
 import typing as ty
 
 import cattrs
-from attrs import define, frozen
+from attrs import field, frozen
 
 from rfamseq import ena, ncbi, wget
-from rfamseq.accession import Accession
 
 LOGGER = logging.getLogger(__name__)
 
@@ -272,6 +272,17 @@ class WgsSequenceRange:
             return self.start.to_wgs_string()
         return f"{self.start.to_wgs_string()}-{self.stop.to_wgs_string()}"
 
+    def ids(self) -> ty.Iterable[WgsSequenceId]:
+        start = self.start.sequence_index
+        stop = self.stop.sequence_index + 1
+        for index in range(start, stop):
+            yield WgsSequenceId(
+                prefix=self.start.prefix,
+                sequence_index=index,
+                sequence_version=None,
+                length=self.start.length,
+            )
+
     def includes(
         self, accession: ty.Union[str, WgsSequenceId], within_one_version=False
     ) -> bool:
@@ -319,35 +330,36 @@ class ContigInfo:
 @frozen
 class WgsSummary:
     prefix: WgsPrefix
-    contigs: ty.List[ContigInfo]
-    sequences: ty.List[WgsSequenceRange]
-    ncbi_ids: ty.List[str]
+    contigs: ty.List[ContigInfo] = field(hash=False)
+    sequences: ty.List[WgsSequenceRange] = field(hash=False)
+    ncbi_ids: ty.List[str] = field(hash=False)
 
-    # def largest_ids(self) -> ty.Iterable[str]:
-    #     if self.contigs:
-    #         for contig in self.contigs:
-    #             yield from contig.ids()
-    #     elif self.sequences:
-    #         mapped: ty.Dict[WgsSequenceKind, ty.List[WgsSequenceSet]] = coll.defaultdict(
-    #             list
-    #         )
-    #         for sequence in self.sequences:
-    #             mapped[sequence.kind].append(sequence)
-    #
-    #         for kind in WgsSequenceKind:
-    #             seen = False
-    #             for wgs_sequence in mapped.get(kind, []):
-    #                 yield from wgs_sequence.ids()
-    #                 seen = True
-    #             if seen:
-    #                 break
-    #         else:
-    #             raise ValueError("Failed to produce and wgs sequences")
-    #
-    #     elif self.ncbi_ids:
-    #         yield from self.ncbi_ids
-    #     else:
-    #         raise ValueError("Somehow failed to have any ids in a wgs set")
+    def largest_ids(self) -> ty.Iterable[str]:
+        if self.contigs:
+            for contig in self.contigs:
+                yield from contig.ids()
+        elif self.sequences:
+            mapped: ty.Dict[
+                WgsSequenceKind, ty.List[WgsSequenceRange]
+            ] = coll.defaultdict(list)
+            for sequence in self.sequences:
+                mapped[sequence.kind].append(sequence)
+
+            for kind in WgsSequenceKind:
+                seen = False
+                for wgs_sequence in mapped.get(kind, []):
+                    for seqid in wgs_sequence.ids():
+                        yield seqid.to_wgs_string()
+                    seen = True
+                if seen:
+                    break
+            else:
+                raise ValueError("Failed to produce and wgs sequences")
+
+        elif self.ncbi_ids:
+            yield from self.ncbi_ids
+        else:
+            raise ValueError("Somehow failed to have any ids in a wgs set")
 
     def includes_sequence(
         self, endpoint: WgsSequenceId, within_one_version=False
@@ -362,39 +374,12 @@ class WgsSummary:
         return False
 
 
-# def parse_wgs(raw: ty.Union[Accession, str]) -> ty.Union[]:
-#     pass
-
-
 def looks_like_wgs_accession(raw: str) -> bool:
     try:
         WgsSequenceId.build(raw)
         return True
     except InvalidWgsAccession:
         return False
-
-
-# def wgs_endpoint(raw: str) -> WgsEndpoint:
-#     if not (match := re.match(PATTERN, raw)):
-#         raise InvalidWgsAccession(raw)
-#
-#     wgs_prefix = match.group(1)
-#     sequence_version = match.group(3)
-#     if not sequence_version:
-#         sequence_version = None
-#     else:
-#         sequence_version = sequence_version[1:]
-#
-#     # TODO: Check that the versions are the same. The last two numbers after
-#     #       the letters in a WGS id are versions. These should match, ie
-#     #       WWJG01000002.1 has version 1. The 01 after WWJG and .1 are the
-#     #       same.
-#     return WgsEndpoint(
-#         wgs_id=wgs_prefix[0:4],
-#         wgs_version=wgs_prefix[4:],
-#         sequence_index=int(match.group(2)),
-#         sequence_version=sequence_version,
-#     )
 
 
 def resolve_ena_wgs(

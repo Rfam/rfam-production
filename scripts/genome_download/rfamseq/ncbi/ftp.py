@@ -49,13 +49,6 @@ class InvalidGenomeId(Exception):
     """
 
 
-class UnknownGenomeId(Exception):
-    """
-    Raised if the genome id looks valid but NCBI assembly data does not know
-    about it.
-    """
-
-
 def add_version_if_missing(info: SqliteDict, id: str) -> str:
     if "." in id:
         return id
@@ -69,16 +62,32 @@ def add_version_if_missing(info: SqliteDict, id: str) -> str:
     return possible[to_use]
 
 
-def ftp_path(info: SqliteDict, accession: str, suffix: str) -> ty.Optional[str]:
+def increment_version(id: str) -> str:
+    matches = re.match(r"^(.+)\.(\d+)$", id)
+    if not matches:
+        raise ValueError(f"Failed to parse {id} to increment")
+    prefix = matches.group(1)
+    version = matches.group(2)
+    next_version = int(version) + 1
+    return f"{prefix}.{next_version}"
+
+
+def ftp_path(
+    info: SqliteDict, accession: str, suffix: str, try_next_version=True
+) -> ty.Optional[str]:
     versioned = add_version_if_missing(info, accession)
     if not versioned or versioned not in info:
-        LOGGER.info("Accession %s not found in ncbi db", versioned)
+        LOGGER.warning("Accession %s not found in ncbi db", versioned)
         return None
 
     path = info[versioned].ftp_path
     if path == "na" or path is None:
-        LOGGER.info("Accession %s has no path", versioned)
-        return None
+        LOGGER.warning("Accession %s has no path", versioned)
+        LOGGER.debug("Have %s", info[versioned])
+        if not try_next_version:
+            return None
+        next_version = increment_version(versioned)
+        return ftp_path(info, next_version, suffix, try_next_version=False)
     parts = path.split("/")
     name = parts[-1]
     return f"{path}/{name}_{suffix}"

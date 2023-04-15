@@ -51,15 +51,20 @@ def fetch_fasta(info: SqliteDict, genome: uniprot.GenomeInfo) -> Records:
     yield from fetch_accessions(info, genome.accession)
 
 
-def is_wgs(genome: uniprot.GenomeInfo, ncbi_info: ncbi.NcbiAssemblyReport) -> bool:
-    found = (
-        ncbi_info.wgs_project
-        and isinstance(genome.components, uniprot.SelectedComponents)
-        and any(
-            ncbi_info.wgs_project[0:4] in acc for acc in genome.components.accessions
-        )
-    )
-    return bool(found)
+def wgs_requested(
+    genome: uniprot.GenomeInfo, ncbi_info: ncbi.NcbiAssemblyReport
+) -> bool:
+    if not ncbi_info.wgs_project:
+        return False
+
+    if not isinstance(genome.components, uniprot.SelectedComponents):
+        return False
+
+    start = ncbi_info.wgs_project[0:4]
+    for accession in genome.components.accessions:
+        if isinstance(accession, str) and start in accession:
+            return True
+    return False
 
 
 def fetch(
@@ -70,8 +75,8 @@ def fetch(
     wgs_accessions = None
 
     try:
-        if ncbi_info.wgs_project and is_wgs(genome, ncbi_info):
-            wgs_accessions = wgs.resolve_wgs(ncbi_info.wgs_project)
+        if ncbi_info.wgs_project and wgs_requested(genome, ncbi_info):
+            wgs_accessions = wgs.resolve_wgs(wgs.WgsPrefix.build(ncbi_info.wgs_project))
             if wgs_accessions:
                 LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
                 LOGGER.debug("Found %s", wgs_accessions)

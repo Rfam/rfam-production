@@ -93,11 +93,11 @@ class WgsSequenceContainer:
     def is_empty(self) -> bool:
         return not (bool(self.ranges) or bool(self.any_member_of))
 
-    def matching_set(
+    def matching_sets(
         self,
         accession: ty.Union[str, Accession, wgs.WgsSequenceId],
         within_one_version=False,
-    ) -> ty.Optional[wgs.WgsPrefix]:
+    ) -> ty.Optional[ty.Set[wgs.WgsPrefix]]:
         if isinstance(accession, Accession):
             accession = wgs.WgsSequenceId.build(str(accession))
         if isinstance(accession, str):
@@ -105,11 +105,11 @@ class WgsSequenceContainer:
 
         for prefix in self.any_member_of:
             if prefix.matches(accession.prefix, within_one_version=within_one_version):
-                return prefix
+                return set([accession.prefix, prefix])
 
         for range in self.ranges:
             if range.includes(accession, within_one_version=within_one_version):
-                return range.prefix
+                return set([range.prefix])
         return None
 
 
@@ -155,8 +155,8 @@ class SeenAccessions:
     def empty(cls) -> SeenAccessions:
         return cls(accessions=set(), wgs_prefix=set())
 
-    def mark_wgs_prefix(self, wgs_id: wgs.WgsPrefix):
-        self.wgs_prefix.add(wgs_id)
+    def mark_wgs_prefixes(self, wgs_ids: ty.Set[wgs.WgsPrefix]):
+        self.wgs_prefix.update(wgs_ids)
 
     def mark_accession(self, accession: Accession):
         self.accessions.add(accession)
@@ -191,7 +191,7 @@ class ComponentSelector:
             summaries=summaries,
         )
 
-    def matching_wgs_set(self, id: str) -> ty.Optional[wgs.WgsPrefix]:
+    def matching_wgs_set(self, id: str) -> ty.Optional[ty.Set[wgs.WgsPrefix]]:
         if not wgs.looks_like_wgs_accession(id):
             return None
 
@@ -202,7 +202,7 @@ class ComponentSelector:
         #
         # This should take the accession from the sequence and check if it
         # looks like any sequence id know about for the given WGS set
-        if prefix := self.requested.wgs_set.matching_set(id, within_one_version=True):
+        if prefix := self.requested.wgs_set.matching_sets(id, within_one_version=True):
             return prefix
         return None
 
@@ -246,7 +246,7 @@ class ComponentSelector:
                     record.id,
                     wgs_id,
                 )
-                seen.mark_wgs_prefix(wgs_id)
+                seen.mark_wgs_prefixes(wgs_id)
                 count += 1
                 yield Found(matching_accession=wgs_id.to_wgs_string(), record=record)
 
@@ -273,6 +273,7 @@ class ComponentSelector:
             yield MissingAccession(accession=str(accession))
 
         if self.requested.includes_wgs() and not seen.seen_wgs():
-            LOGGER.debug("Missing wgs set")
-            for wgs_prefix in self.requested.wgs_set.any_member_of:
+            missing = self.requested.wgs_set.any_member_of - seen.wgs_prefix
+            LOGGER.debug("Missing wgs sets: %s", missing)
+            for wgs_prefix in missing:
                 yield MissingWgsSet(prefix=wgs_prefix)

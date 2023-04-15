@@ -72,7 +72,8 @@ def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
 
 
 def fetch_wgs_sequences(
-    prefix: wgs.WgsPrefix, allow_next=True
+    prefix: wgs.WgsPrefix,
+    max_increase=2,
 ) -> ty.Iterable[SeqIO.SeqRecord]:
     url = wgs_fasta_url(prefix)
     LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
@@ -80,12 +81,12 @@ def fetch_wgs_sequences(
         yield from fetch(url)
     except wget.FetchError as err:
         LOGGER.exception(err)
-        if not allow_next:
+        if max_increase <= 0:
             raise err
         LOGGER.info("Trying to increment and grab next WGS set")
         next_url = wgs_fasta_url(prefix.next_version())
         LOGGER.debug("Fetching next WGS from %s", next_url)
-        yield from fetch(next_url)
+        yield from fetch(next_url, max_increase=max_increase - 1)
 
 
 def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:

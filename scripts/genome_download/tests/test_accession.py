@@ -24,6 +24,8 @@ from rfamseq.accession import Accession
     [
         ("NC_004448.1", Accession(accession="NC_004448", version="1")),
         ("NC_004448", Accession(accession="NC_004448", version=None)),
+        ("CY130004", Accession(accession="CY130004", version=None)),
+        ("D00050", Accession(accession="D00050", version=None)),
     ],
 )
 def test_can_build_as_expected(raw, expected):
@@ -54,6 +56,8 @@ def test_can_be_structured_by_cattrs(raw, expected):
     [
         "NC_004448.1",
         "NC_004448",
+        "CY130004",
+        "D00050",
     ],
 )
 def test_can_round_trip_to_a_string(raw):
@@ -65,6 +69,8 @@ def test_can_round_trip_to_a_string(raw):
     [
         "NC_004448.1",
         "NC_004448",
+        "CY130004",
+        "D00050",
     ],
 )
 def test_can_round_trip_with_cattrs_to_a_string(raw):

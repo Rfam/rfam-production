@@ -208,7 +208,7 @@ def p2g_cmd(xml, output, ignore=None):
         to_skip.update(l.strip() for l in ignore)
 
     for proteome in uniprot.proteomes(Path(xml), to_skip):
-        LOGGER.info("Working on %s", proteome.upi)
+        LOGGER.debug("Saving on %s", proteome.upi)
         data = cattrs.unstructure(proteome)
         output.write(json.dumps(data))
         output.write("\n")

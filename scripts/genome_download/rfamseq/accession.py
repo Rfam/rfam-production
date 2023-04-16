@@ -78,6 +78,25 @@ class Accession:
         """
         return self.version is not None
 
+    def increment(self, size=1) -> Accession:
+        """
+        Will produce a new Accession with the version incremented. If this
+        Accession has no version, it will be assumed to be 1 and thus
+        incremented to 2. This will remove all aliases from the Accession.
+        """
+
+        assert size > 0, "Must give positive size"
+        version = 1
+        if self.version:
+            version = int(self.version)
+
+        version = version + size
+        return Accession(
+            accession=self.accession,
+            version=str(version),
+            aliases=tuple(),
+        )
+
     def __str__(self) -> str:
         if self.version:
             return f"{self.accession}.{self.version}"

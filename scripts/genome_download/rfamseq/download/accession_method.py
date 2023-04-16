@@ -17,40 +17,53 @@ from __future__ import annotations
 
 import logging
 import typing as ty
+from contextlib import contextmanager
 
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, ncbi, wget
+from rfamseq import ena, fasta, ncbi, wget
 
 Records = ty.Iterable[SeqIO.SeqRecord]
 
 LOGGER = logging.getLogger(__name__)
 
 
-def lookup_fasta(info: SqliteDict, accession: str) -> Records:
+class FastaLookupFailed(Exception):
+    """
+    Raised when if all fasta lookup methods failed to fetch some data.
+    """
+
+
+class AccessionLookupFailed(Exception):
+    """
+    Raised when if all accession lookup methods failed to fetch some id.
+    """
+
+
+@contextmanager
+def fetch(info: SqliteDict, accession: str) -> ty.Iterator[ty.IO]:
     try:
         LOGGER.info("Trying to fetch %s from NCBI", accession)
-        yield from ncbi.fetch_fasta(info, accession)
-    except wget.FetchError:
-        LOGGER.info("Failed to fetch %s from NCBI, trying ENA", accession)
-        yield from ena.fetch_fasta(accession)
+        with ncbi.fetch_fasta(info, accession) as handle:
+            yield handle
+            return
+    except Exception as err:
+        LOGGER.debug(err)
+        LOGGER.debug("Failed to fetch from NCBI")
 
-
-def fetch(info: SqliteDict, accession: str) -> Records:
-    LOGGER.info("Trying to fetch %s from NCBI", accession)
     try:
-        yield from lookup_fasta(info, accession)
-    except wget.FetchError:
-        LOGGER.info("Trying to find contigs from %s", accession)
-        contigs = list(ena.fetch_contigs(accession))
-        for contig in contigs:
-            LOGGER.info("Fetching contig %s from NCBI", contig)
-            try:
-                yield from ncbi.efetch_fasta(contig)
-            except wget.FetchError:
-                LOGGER.info("Failed to get %s from NCBI", contig)
-                try:
-                    yield from ena.fetch_fasta(contig)
-                except wget.FetchError:
-                    LOGGER.info("Failed to get %s from ENA", contig)
+        LOGGER.info("Trying to fetch %s from ENA", accession)
+        with ena.fetch_fasta(accession) as handle:
+            yield handle
+            return
+    except Exception as err:
+        LOGGER.debug(err)
+        LOGGER.debug("Failed to fetch from ENA")
+
+    raise AccessionLookupFailed(f"Failed to lookup {accession}")
+
+
+def records(info: SqliteDict, accession: str) -> ty.Iterator[SeqIO.SeqRecord]:
+    with fetch(info, accession) as handle:
+        yield from fasta.parse(handle)

@@ -21,36 +21,44 @@ import typing as ty
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ncbi, uniprot
+from rfamseq import fasta, ncbi, uniprot, wget, wgs
+from rfamseq.accession import Accession
 
-from .accession_method import fetch as fetch_accessions
-
-Records = ty.Iterable[SeqIO.SeqRecord]
+from .accession_method import records as accession_records
 
 LOGGER = logging.getLogger(__name__)
 
 
-def fetch(info: SqliteDict, proteome: uniprot.ProteomeInfo) -> Records:
+def components(proteome: uniprot.ProteomeInfo) -> ty.List[str]:
     LOGGER.info("Looking up each component for %s", proteome.upi)
     genome = proteome.genome_info
-    assert isinstance(
-        genome.components, uniprot.SelectedComponents
-    ), f"Invalid components for {proteome}"
+    if not isinstance(genome.components, uniprot.SelectedComponents):
+        raise ValueError(f"Invalid components for {proteome}")
+
     ids = []
     for component in genome.components:
-        assert isinstance(component, str), f"Invalid component in {proteome}"
-        ids.append(component)
+        if isinstance(component, Accession):
+            ids.append(str(component))
+        elif isinstance(component, (wgs.WgsPrefix, wgs.WgsSequenceId)):
+            ids.append(component.to_wgs_string())
+        else:
+            raise ValueError(f"Cannot fetch by component for {genome}")
 
-    ids = ",".join(ids)
+    return ids
+
+
+def records(
+    info: SqliteDict, proteome: uniprot.ProteomeInfo
+) -> ty.Iterator[SeqIO.SeqRecord]:
+    comp_ids = components(proteome)
+    ids = ",".join(comp_ids)
     LOGGER.info("Trying to lookup all ids as a batch: %s", ids)
     try:
-        fetched = ncbi.efetch_fasta(ids)
-        if fetched:
-            yield from fetched
-        else:
-            raise ValueError("Failed to fetch using efetch")
+        url = ncbi.efetch_fasta_url(ids)
+        with wget.wget(url) as handle:
+            yield from fasta.parse(handle)
     except:
         LOGGER.info("Failed to efetch all ids, will try individual lookup")
-        for component in genome.components:
-            assert isinstance(component, str), f"Invalid component in {proteome}"
-            yield from fetch_accessions(info, component)
+        for component in ids:
+            LOGGER.debug("Fetching %s", component)
+            yield from accession_records(info, component)

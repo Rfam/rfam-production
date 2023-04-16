@@ -24,6 +24,9 @@ import cattrs
 import requests
 from attrs import field, frozen
 
+from rfamseq import wgs
+from rfamseq.accession import Accession
+
 LOGGER = logging.getLogger(__name__)
 
 NS = {
@@ -48,14 +51,21 @@ UNPLACED = Unplaced(unplaced=True)
 
 ALL_CHROMOSOMES = All(all=True)
 
-Component = ty.Union[str, Unplaced]
+Component = ty.Union[Accession, wgs.WgsPrefix, wgs.WgsSequenceId, Unplaced]
 
 
 def structure_component(v: ty.Any, _) -> Component:
-    if isinstance(v, str):
-        return v
     if isinstance(v, dict):
-        return Unplaced(**v)
+        if "unplaced" in v:
+            return Unplaced(**v)
+        if "accession" in v:
+            if "aliases" in v:
+                v["aliases"] = tuple(v["aliases"])
+            return Accession(**v)
+        if "wgs_id" in v:
+            return wgs.WgsPrefix(**v)
+        if "prefix" in v:
+            return wgs.WgsSequenceId(**v)
     raise ValueError(f"Cannot unstructure {v} to Component")
 
 
@@ -75,6 +85,11 @@ class SelectedComponents:
     @lru_cache
     def includes_unplaced(self) -> bool:
         return any(isinstance(a, Unplaced) for a in self.accessions)
+
+    def includes_wgs(self):
+        return any(
+            isinstance(a, (wgs.WgsPrefix, wgs.WgsSequenceId)) for a in self.accessions
+        )
 
     def __len__(self) -> int:
         return len(self.accessions)
@@ -135,9 +150,7 @@ class ProteomeInfo:
 
     @property
     def description(self) -> ty.Optional[str]:
-        if self.proteome_description:
-            return self.proteome_description
-        return self.genome_info.description
+        return self.proteome_description or self.genome_info.description
 
 
 def node_text(node: ty.Optional[ET.Element]) -> ty.Optional[str]:
@@ -216,7 +229,11 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         if len(comp_accs) > 1 and name != "Genome":
             raise ValueError(f"Cannot handle >1 accession unless it is a genome {upid}")
 
-        components.extend(comp_accs)
+        for raw_acc in comp_accs:
+            if wgs_component := wgs.parse_wgs_accession(raw_acc):
+                components.append(wgs_component)
+            else:
+                components.append(Accession.build(raw_acc))
 
     # Handle the case where there is not overarching genome assembly to work
     # with and just a series of components to fetch.
@@ -225,6 +242,8 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         # components.
         if len(components) == 1:
             possible_gca = components[0]
+            if isinstance(possible_gca, Accession):
+                possible_gca = str(possible_gca)
             if isinstance(possible_gca, str) and possible_gca.startswith("GCA_"):
                 return GenomeInfo(
                     accession=possible_gca,
@@ -344,11 +363,13 @@ def proteomes(path: Path, ignore: ty.Set[str]) -> ty.Iterable[ProteomeInfo]:
     xml = ET.parse(path)
     proteomes = xml.getroot()
     for element in proteomes:
-        try:
-            upid = element.find("pro:upid", NS).text
-        except:
-            upid = None
+        upid_elem = element.find("pro:upid", NS)
+        if not upid_elem:
+            continue
+
+        upid = upid_elem.text
         if upid in ignore:
             LOGGER.info("Skipping upid as requested")
             continue
+        LOGGER.info("Parsing %s", upid)
         yield proteome(element)

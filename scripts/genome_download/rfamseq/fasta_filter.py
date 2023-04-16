@@ -22,7 +22,7 @@ import typing as ty
 from attrs import define, frozen
 from Bio import SeqIO
 
-from rfamseq import ncbi, uniprot, wgs
+from rfamseq import fasta, ncbi, uniprot, wgs
 from rfamseq.accession import Accession
 
 LOGGER = logging.getLogger(__name__)
@@ -71,23 +71,22 @@ class WgsSequenceContainer:
             self.any_member_of.add(range.prefix)
         else:
             self.ranges.add(range)
+        return None
 
-    def add(self, accession: str):
-        try:
-            prefix = wgs.WgsPrefix.build(accession)
-            self.any_member_of.add(prefix)
+    def add(
+        self,
+        accession: ty.Union[wgs.WgsPrefix, wgs.WgsSequenceId, wgs.WgsSequenceRange],
+    ):
+        if isinstance(accession, wgs.WgsPrefix):
+            self.any_member_of.add(accession)
             return None
-        except:
-            LOGGER.debug("Accession %s is not a wgs prefix", accession)
-            pass
-
-        try:
-            range = wgs.WgsSequenceRange.build(wgs.WgsSequenceKind.SEQUENCE, accession)
-            return self.__add_sequence_range(range)
-        except:
-            LOGGER.debug("Accession %s is not a wgs sequence range", accession)
-            pass
-
+        elif isinstance(accession, wgs.WgsSequenceRange):
+            return self.__add_sequence_range(accession)
+        elif isinstance(accession, wgs.WgsSequenceId):
+            seq_range = wgs.WgsSequenceRange.from_endpoint(
+                wgs.WgsSequenceKind.SEQUENCE, accession
+            )
+            return self.__add_sequence_range(seq_range)
         raise ValueError(f"Cannot treat {accession} as a WGS accession")
 
     def is_empty(self) -> bool:
@@ -128,10 +127,10 @@ class RequestedAccessions:
             if isinstance(accession, uniprot.Unplaced):
                 unplaced = True
                 continue
-            elif wgs.looks_like_wgs_accession(accession):
+            elif isinstance(accession, (wgs.WgsPrefix, wgs.WgsSequenceId)):
                 wgs_set.add(accession)
             else:
-                accessions.add(Accession.build(accession))
+                accessions.add(accession)
 
         return cls(
             unplaced=unplaced,
@@ -220,7 +219,7 @@ class ComponentSelector:
                 return accession
         return None
 
-    def filter(self, records: ty.Iterable[SeqIO.SeqRecord]) -> ty.Iterable[RecordTypes]:
+    def filter(self, handle: ty.IO) -> ty.Iterable[RecordTypes]:
         """
         Parse a fasta handle and compare each sequence to the requested set. If the
         sequence has been requested, yield a Found object, it has not then yield an
@@ -230,13 +229,16 @@ class ComponentSelector:
 
         count = 0
         seen = SeenAccessions.empty()
-        for record in records:
+        for record in fasta.parse(handle):
             LOGGER.info("Checking if %s is allowed", record.id)
             accession = Accession.build(record.id)
             if self.requested.includes_unplaced() and self.assembly_report.is_unplaced(
                 accession
             ):
                 LOGGER.info("Found - Accession %s is an expected unplaced", record.id)
+                if self.matching_accession(accession):
+                    LOGGER.debug("Accession %s was also requested", record.id)
+                    seen.mark_accession(accession)
                 count += 1
                 yield Found(matching_accession=record.id, record=record)
 

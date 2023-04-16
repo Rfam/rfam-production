@@ -19,6 +19,7 @@ import csv
 import logging
 import re
 import typing as ty
+from contextlib import contextmanager
 from io import StringIO
 
 import requests
@@ -40,6 +41,12 @@ NCBI_WGS_URL = "https://www.ncbi.nlm.nih.gov/Traces/wgs/{accession}/contigs/tsv"
 class UnknownGCF(Exception):
     """
     Raised if an Unknown GCF id is given
+    """
+
+
+class UnknownGCA(Exception):
+    """
+    Raised if an Unknown GCA id is given
     """
 
 
@@ -93,42 +100,34 @@ def ftp_path(
     return f"{path}/{name}_{suffix}"
 
 
-def genome_ftp_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
-    return ftp_path(info, accession, "genomic.fna.gz")
-
-
-@sleep_and_retry
-@limits(3, period=1)
-def efetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    LOGGER.info("Trying efetch for %s", accession)
-    url = NCBI_SEQ_URL.format(accession=accession)
-    try:
-        with wget.wget(url) as handle:
-            yield from fasta.parse(handle)
-    except wget.FetchError as err:
-        LOGGER.debug(err)
-        raise err
-
-
-def ftp_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    LOGGER.info("Trying FTP access to %s", accession)
+def ftp_fasta_url(info: SqliteDict, accession: str) -> str:
     prefix = accession[0:4]
     if prefix not in {"GCA_", "GCF_"}:
         raise InvalidGenomeId(accession)
-    url = genome_ftp_path(info, accession)
-    if url is None and prefix == "GCF_":
+
+    if (url := ftp_path(info, accession, "genomic.fna.gz")) is not None:
+        return url
+
+    if prefix == "GCF_":
         raise UnknownGCF(accession)
-    if url is None:
-        raise Exception("Not yet implemented")
-    with wget.wget(url) as handle:
-        yield from fasta.parse(handle)
+    raise UnknownGCA(accession)
 
 
-def fetch_fasta(info: SqliteDict, accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+def efetch_fasta_url(accession: str) -> str:
+    return NCBI_SEQ_URL.format(accession=accession)
+
+
+def fasta_url(info: SqliteDict, accession: str) -> str:
     if accession.startswith("GCA_") or accession.startswith("GCF_"):
-        yield from ftp_fasta(info, accession)
-    else:
-        yield from efetch_fasta(accession)
+        LOGGER.info("Trying FTP access to %s", accession)
+        return ftp_fasta_url(info, accession)
+    return efetch_fasta_url(accession)
+
+
+@contextmanager
+def fetch_fasta(info: SqliteDict, accession: str) -> ty.Iterator[ty.IO]:
+    with wget.wget(fasta_url(info, accession)) as handle:
+        yield handle
 
 
 def resolve_wgs(accession: str) -> ty.Optional[ty.List[str]]:

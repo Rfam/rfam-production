@@ -24,7 +24,7 @@ import typing as ty
 import cattrs
 from attrs import field, frozen
 
-from rfamseq import ena, ncbi, wget
+from rfamseq import ncbi, wget
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +33,8 @@ PATTERN = re.compile(r"^([A-Z]{4,6}\d{2}S?)(\d+)(\.\d+)?$")
 PREFIX_PATTERN = re.compile(r"^([A-Z]{4,6})(\d{2}S?)$")
 
 CONTIG_PATTERN = re.compile(r"(^[A-Z]+)(\d+)$")
+
+ENA_EMBL_URL = "https://www.ebi.ac.uk/ena/browser/api/embl/{accession}?download=true"
 
 
 class InvalidWgsAccession(Exception):
@@ -243,16 +245,19 @@ class WgsSequenceRange:
     stop: WgsSequenceId
 
     @classmethod
-    def from_endpoint(cls, kind: WgsSequenceKind, endpoint: str) -> WgsSequenceRange:
+    def from_endpoint(
+        cls, kind: WgsSequenceKind, endpoint: ty.Union[str, WgsSequenceId]
+    ) -> WgsSequenceRange:
         """
         Build a sequence set that represents a single sequence.
         """
-        parsed = WgsSequenceId.build(endpoint)
+        if isinstance(endpoint, str):
+            endpoint = WgsSequenceId.build(endpoint)
         return cls(
-            prefix=parsed.prefix,
+            prefix=endpoint.prefix,
             kind=kind,
-            start=parsed,
-            stop=parsed,
+            start=endpoint,
+            stop=endpoint,
         )
 
     @classmethod
@@ -326,6 +331,7 @@ class ContigInfo:
     prefix: str
     start: int
     stop: int
+    length: int
 
     @classmethod
     def build(cls, raw: str) -> ContigInfo:
@@ -344,7 +350,17 @@ class ContigInfo:
         assert prefix == match.group(1), f"Mismatch prefix {raw}"
         stop = match.group(2)
 
-        return cls(prefix=prefix, start=start, stop=stop)
+        return cls(
+            prefix=prefix,
+            start=int(start),
+            stop=int(stop),
+            length=len(raw_start),
+        )
+
+    def ids(self):
+        length = self.length - len(self.prefix)
+        for index in range(self.start, self.stop + 1):
+            yield f"{self.prefix}{index:{length}}"
 
 
 @frozen
@@ -402,11 +418,21 @@ def looks_like_wgs_accession(raw: str) -> bool:
         return False
 
 
+def parse_wgs_accession(raw: str) -> ty.Optional[ty.Union[WgsSequenceId, WgsPrefix]]:
+    try:
+        seq_id = WgsSequenceId.build(raw)
+        if seq_id.sequence_index == 0:
+            return seq_id.prefix
+        return seq_id
+    except InvalidWgsAccession:
+        return None
+
+
 def resolve_ena_wgs(
     accession: str,
 ) -> ty.Tuple[ty.List[ContigInfo], ty.List[WgsSequenceRange]]:
     LOGGER.info("Fetching EMBL formatted file for %s", accession)
-    url = ena.ENA_EMBL_URL.format(accession=accession)
+    url = ENA_EMBL_URL.format(accession=accession)
     contigs: ty.List[ContigInfo] = []
     info: ty.List[WgsSequenceRange] = []
     try:

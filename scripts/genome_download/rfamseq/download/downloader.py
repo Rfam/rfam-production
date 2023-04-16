@@ -23,11 +23,11 @@ from attrs import frozen
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ncbi, uniprot
+from rfamseq import fasta, ncbi, uniprot
 
-from .accession_method import fetch as fetch_accessions
-from .component_method import fetch as fetch_components
-from .fallback_method import fetch as fallback_fetch
+from . import accession_method as accession
+from . import component_method as component
+from . import fallback_method as fallback
 
 Records = ty.Iterable[SeqIO.SeqRecord]
 
@@ -47,15 +47,17 @@ class DownloadMethod(enum.Enum):
         ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport] = None,
     ) -> Records:
         if self is DownloadMethod.BY_COMPONENT:
-            yield from fetch_components(info, proteome)
+            yield from component.records(info, proteome)
+
         elif self is DownloadMethod.LOOKUP_GENOME_ACCESSION:
-            assert isinstance(
-                proteome.genome_info.accession, str
-            ), "Invalid genome_info"
-            yield from fetch_accessions(info, proteome.genome_info.accession)
+            if not isinstance(proteome.genome_info.accession, str):
+                raise ValueError("Invalid genome info {proteome}")
+            yield from accession.records(info, proteome.genome_info.accession)
+
         elif self is DownloadMethod.FALLBACK:
             assert isinstance(ncbi_info, ncbi.NcbiAssemblyReport), "Must give ncbi_info"
-            yield from fallback_fetch(info, proteome, ncbi_info)
+            yield from fallback.records(info, proteome, ncbi_info)
+
         else:
             raise ValueError("Cannot fetch with method %s", self)
 
@@ -100,7 +102,7 @@ class GenomeDownload:
 
         # If we are fetching a genome which has a single component, and that
         # component is the WGS project assigned the genome in the NCBI assembly
-        # info, we c
+        # info, we can
         return cls(DownloadMethod.FALLBACK, proteome, ncbi_info)
 
     def records(self, info: SqliteDict) -> Records:

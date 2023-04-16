@@ -110,3 +110,28 @@ def test_can_round_trip_with_cattrs_to_a_string(raw):
 )
 def test_can_detect_expected_matches(given, other, expected):
     assert given.matches(other) == expected
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("NC_004448.1", "NC_004448.2"),
+        ("NC_004448.33", "NC_004448.34"),
+        ("CY130004", "CY130004.2"),
+        ("D00050", "D00050.2"),
+    ],
+)
+def test_can_increment_an_accession(raw, expected):
+    assert Accession.build(raw).increment() == Accession.build(expected)
+
+
+@pytest.mark.parametrize(
+    "raw,size,expected",
+    [
+        ("NC_004448.1", 2, "NC_004448.3"),
+        ("NC_004448.33", 7, "NC_004448.40"),
+        ("D00050", 1, "D00050.2"),
+    ],
+)
+def test_can_increment_an_accession_by_given_size(raw, size, expected):
+    assert Accession.build(raw).increment(size=size) == Accession.build(expected)

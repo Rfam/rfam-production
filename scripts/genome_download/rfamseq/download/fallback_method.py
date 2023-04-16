@@ -16,39 +16,39 @@ limitations under the License.
 from __future__ import annotations
 
 import logging
-import re
 import typing as ty
+from contextlib import contextmanager
 
 from Bio import SeqIO
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, fasta_filter, ncbi, uniprot, wgs
+from rfamseq import ena, fasta, fasta_filter, ncbi, uniprot, wgs
 
-from .accession_method import fetch as fetch_accessions
-
-Records = ty.Iterable[SeqIO.SeqRecord]
+from .accession_method import records as accession_records
 
 LOGGER = logging.getLogger(__name__)
 
 
-def fetch_ena_genome(accession: str) -> Records:
-    try:
-        yield from ena.fetch_fasta(accession)
-    except Exception:
-        LOGGER.info("Failed to fetch from ENA")
-        return None
-
-
-def fetch_fasta(info: SqliteDict, genome: uniprot.GenomeInfo) -> Records:
+@contextmanager
+def fetch_fasta(info: SqliteDict, genome: uniprot.GenomeInfo) -> ty.Iterator[ty.IO]:
     assert genome.accession, f"Missing genome accession"
+    did_ena = False
     if genome.source is uniprot.GenomeSource.ENA:
-        records = fetch_ena_genome(genome.accession)
-        if records:
-            LOGGER.info("Fetching genome %s from ENA", genome.accession)
-            yield from records
-            return
+        try:
+            LOGGER.info("Trying to fetch %s from ENA", genome.accession)
+            with ena.fetch_fasta(genome.accession) as handle:
+                yield handle
+                did_ena = True
+                return
+        except:
+            LOGGER.info("Fetching from ENA failed")
+
+    if did_ena:
+        raise ValueError("impossible state")
+
     LOGGER.info("Fetching genome %s from NCBI", genome.accession)
-    yield from fetch_accessions(info, genome.accession)
+    with ncbi.fetch_fasta(info, genome.accession) as handle:
+        yield handle
 
 
 def wgs_requested(
@@ -67,64 +67,73 @@ def wgs_requested(
     return False
 
 
-def fetch(
+def wgs_summary(
+    ncbi_info: ncbi.NcbiAssemblyReport, genome: uniprot.GenomeInfo
+) -> ty.Optional[wgs.WgsSummary]:
+    if not ncbi_info.wgs_project or not wgs_requested(genome, ncbi_info):
+        return None
+
+    summary = wgs.resolve_wgs(wgs.WgsPrefix.build(ncbi_info.wgs_project))
+    if not summary:
+        LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
+        return None
+
+    LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
+    LOGGER.debug("Found %s", summary)
+    return summary
+
+
+def records(
     info: SqliteDict, proteome: uniprot.ProteomeInfo, ncbi_info: ncbi.NcbiAssemblyReport
-) -> Records:
+) -> ty.Iterator[SeqIO.SeqRecord]:
     genome = proteome.genome_info
     assert genome.accession, f"Missing genome accession in {proteome}"
-    wgs_accessions = None
 
-    try:
-        if ncbi_info.wgs_project and wgs_requested(genome, ncbi_info):
-            wgs_accessions = wgs.resolve_wgs(wgs.WgsPrefix.build(ncbi_info.wgs_project))
-            if wgs_accessions:
-                LOGGER.info("Resolved WGS set %s", ncbi_info.wgs_project)
-                LOGGER.debug("Found %s", wgs_accessions)
-            else:
-                LOGGER.info("Did not resolve WGS set %s", ncbi_info.wgs_project)
-    except TypeError as e:
-        LOGGER.debug(
-            "Catching TypeError to ignore type Unplaced items in accession list", e
-        )
+    if not isinstance(genome.components, uniprot.SelectedComponents):
+        raise ValueError(f"Invalid components type {genome}")
 
-    assert isinstance(
-        genome.components, uniprot.SelectedComponents
-    ), f"Invalid components type {genome}"
     comp_set = fasta_filter.ComponentSelector.from_selected(
         ncbi_info,
         genome.components,
-        wgs_accessions,
+        wgs_summary(ncbi_info, genome),
     )
 
-    records = fetch_fasta(info, genome)
-    for classification in comp_set.filter(records):
-        if isinstance(classification, fasta_filter.Extra):
-            LOGGER.info(
-                "Accession %s contains extra record %s",
-                genome.accession,
-                classification.extra.id,
-            )
-            continue
-        elif isinstance(classification, fasta_filter.Found):
-            LOGGER.info(
-                "Found expected record %s in %s",
-                classification.record.id,
-                genome.accession,
-            )
-            yield classification.record
-        elif isinstance(classification, fasta_filter.MissingAccession):
-            LOGGER.info(
-                "Accession %s did not contain %s",
-                genome.accession,
-                classification.accession,
-            )
-            yield from fetch_accessions(info, classification.accession)
-        elif isinstance(classification, fasta_filter.MissingWgsSet):
-            LOGGER.info(
-                "Accession %s did not contain any known sequences from WGS set %s",
-                genome.accession,
-                classification.prefix,
-            )
-            yield from ena.fetch_wgs_sequences(classification.prefix)
-        else:
-            raise ValueError(f"Impossible state with {classification} for {proteome}")
+    with fetch_fasta(info, genome) as records:
+        for classification in comp_set.filter(records):
+            if isinstance(classification, fasta_filter.Extra):
+                LOGGER.info(
+                    "Accession %s contains extra record %s",
+                    genome.accession,
+                    classification.extra.id,
+                )
+                continue
+
+            elif isinstance(classification, fasta_filter.Found):
+                LOGGER.info(
+                    "Found expected record %s in %s",
+                    classification.record.id,
+                    genome.accession,
+                )
+                yield classification.record
+
+            elif isinstance(classification, fasta_filter.MissingAccession):
+                LOGGER.info(
+                    "Accession %s did not contain %s",
+                    genome.accession,
+                    classification.accession,
+                )
+                yield from accession_records(info, classification.accession)
+
+            elif isinstance(classification, fasta_filter.MissingWgsSet):
+                LOGGER.info(
+                    "Accession %s did not contain any known sequences from WGS set %s",
+                    genome.accession,
+                    classification.prefix,
+                )
+                with ena.wgs_fasta(classification.prefix) as handle:
+                    yield from fasta.parse(handle)
+
+            else:
+                raise ValueError(
+                    f"Impossible state with {classification} for {proteome}"
+                )

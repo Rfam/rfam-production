@@ -14,13 +14,17 @@ limitations under the License.
 """
 
 import logging
+import os
 import re
 import typing as ty
+from contextlib import contextmanager
 from functools import lru_cache
+from pathlib import Path
+from urllib.parse import urlparse
 
 from Bio import SeqIO
 
-from rfamseq import fasta, wget, wgs
+from rfamseq import wget, wgs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,11 +41,30 @@ class MissingContigs(Exception):
     """
 
 
-def fetch(template: str, **data) -> ty.Iterable[SeqIO.SeqRecord]:
+def check_filepath(url: str) -> ty.Optional[Path]:
+    base_path = os.environ.get("ENA_PATH", None)
+    if not base_path:
+        return None
+    parsed = urlparse(url)
+    if "ftp" not in parsed.netloc:
+        return None
+    path = Path(base_path)
+    path = path / Path(parsed.path)
+    if path.exists():
+        return path
+    return None
+
+
+@contextmanager
+def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
     url = template.format(**data)
     LOGGER.debug("Fetching %s", url)
-    with wget.wget(url) as handle:
-        yield from fasta.parse(handle)
+    if filepath := check_filepath(url):
+        with filepath.open("r") as handle:
+            yield handle
+    else:
+        with wget.wget(url) as handle:
+            yield handle
 
 
 @lru_cache
@@ -59,9 +82,11 @@ def fetch_contigs(accession: str) -> ty.List[str]:
     return contigs
 
 
-def fetch_fasta(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+@contextmanager
+def fetch_fasta(accession: str) -> ty.Iterator[ty.IO]:
     LOGGER.info("Fetching %s fasta from ENA", accession)
-    yield from fetch(ENA_FASTA_URL, accession=accession)
+    with fetch(ENA_FASTA_URL, accession=accession) as handle:
+        yield handle
 
 
 def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
@@ -71,14 +96,16 @@ def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
     return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
 
 
-def fetch_wgs_sequences(
-    prefix: wgs.WgsPrefix,
+@contextmanager
+def wgs_fasta(
+    prefix,
     max_increase=2,
-) -> ty.Iterable[SeqIO.SeqRecord]:
+) -> ty.Iterator[ty.IO]:
     url = wgs_fasta_url(prefix)
     LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
     try:
-        yield from fetch(url)
+        with fetch(url) as handle:
+            yield handle
     except wget.FetchError as err:
         LOGGER.exception(err)
         if max_increase <= 0:
@@ -86,18 +113,19 @@ def fetch_wgs_sequences(
         LOGGER.info("Trying to increment and grab next WGS set")
         next_url = wgs_fasta_url(prefix.next_version())
         LOGGER.debug("Fetching next WGS from %s", next_url)
-        yield from fetch(next_url, max_increase=max_increase - 1)
+        with fetch(next_url, max_increase=max_increase - 1) as handle:
+            yield handle
 
 
-def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-    LOGGER.info("Fetching %s from ENA", accession)
-    try:
-        yield from fetch_fasta(accession)
-    except wget.FetchError:
-        LOGGER.info("Failed to get directly, will try via contigs")
-        contigs = list(fetch_contigs(accession))
-        if not contigs:
-            raise ValueError(f"Could not find contigs for {accession}")
-        for contig in contigs:
-            LOGGER.info("Fetching contig %s for %s", contig, accession)
-            yield from fetch_fasta(contig)
+# def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
+#     LOGGER.info("Fetching %s from ENA", accession)
+#     try:
+#         yield from fetch_fasta(accession)
+#     except wget.FetchError:
+#         LOGGER.info("Failed to get directly, will try via contigs")
+#         contigs = list(fetch_contigs(accession))
+#         if not contigs:
+#             raise ValueError(f"Could not find contigs for {accession}")
+#         for contig in contigs:
+#             LOGGER.info("Fetching contig %s for %s", contig, accession)
+#             yield from fetch_fasta(contig)

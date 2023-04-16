@@ -34,6 +34,10 @@ from rfamseq import wgs
             "ALWZ04S",
             wgs.WgsPrefix(wgs_id="ALWZ", wgs_version=4, scaffold=True, length=7),
         ),
+        (
+            "AAFI02000000",
+            wgs.WgsPrefix(wgs_id="AAFI", wgs_version=2, scaffold=False, length=6),
+        ),
     ],
 )
 def test_can_build_wgs_prefix_correctly(raw, expected):
@@ -50,6 +54,19 @@ def test_can_build_wgs_prefix_correctly(raw, expected):
 )
 def test_wgs_prefix_can_roundtrip(raw):
     assert wgs.WgsPrefix.build(raw).to_wgs_string() == raw
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        (
+            "AAFI02000000",
+            "AAFI02",
+        ),
+    ],
+)
+def test_truncates_long_accession_in_roundtrip(raw, expected):
+    assert wgs.WgsPrefix.build(raw).to_wgs_string() == expected
 
 
 @pytest.mark.parametrize(

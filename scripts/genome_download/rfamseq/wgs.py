@@ -74,7 +74,8 @@ class WgsPrefix:
         >>> WgsPrefix.build("ALWZ04S")
         WgsPrefix(wgs_id="ALWZ", wgs_version=4, scaffold=True, length=7)
         """
-        if not (match := re.match(PREFIX_PATTERN, raw)):
+        stripped = re.sub("0+$", "", raw)
+        if not (match := re.match(PREFIX_PATTERN, stripped)):
             raise InvalidWgsPrefix(raw)
 
         scaffold = raw.endswith("S")
@@ -84,7 +85,7 @@ class WgsPrefix:
             wgs_id=match.group(1),
             wgs_version=int(raw_version),
             scaffold=scaffold,
-            length=len(raw),
+            length=len(stripped),
         )
 
     def to_wgs_string(self) -> str:

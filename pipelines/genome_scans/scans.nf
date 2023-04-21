@@ -3,16 +3,17 @@ process scan {
     queue 'short'
 
     input:
-    tuple val(family), val(threshold)
+    val(family)
 
     output:
-    path('${family}')
+    path(family)
 
     """
     rfco.pl $family
     cd $family
     rfsearch.pl -dbchoice testrfamseq
     rfmake.pl
+    cd ..
     """
 }
 
@@ -28,6 +29,7 @@ process check_in {
 workflow {
     Channel.fromPath(params.input)
     | splitText(by: params.chunkSize)
+    | map{it -> it.trim()}
     | scan
     | check_in
 }

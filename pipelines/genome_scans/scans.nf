@@ -11,8 +11,8 @@ process scan {
     """
     rfco.pl $family
     cd $family
-    rfsearch.pl -t 25 -ignoresm
-    rfmake.pl -t $threshold -forcethr -a -local
+    rfsearch.pl -dbchoice testrfamseq
+    rfmake.pl
     """
 }
 
@@ -27,7 +27,7 @@ process check_in {
 
 workflow {
     Channel.fromPath(params.input)
-    | splitCsv(by: params.chunkSize)
+    | splitText(by: params.chunkSize)
     | scan
     | check_in
 }

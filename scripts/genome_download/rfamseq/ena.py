@@ -41,29 +41,30 @@ class MissingContigs(Exception):
     """
 
 
-def check_filepath(url: str) -> ty.Optional[Path]:
+def internal_path(url: str) -> ty.Optional[Path]:
     base_path = os.environ.get("ENA_PATH", None)
     if not base_path:
         return None
     parsed = urlparse(url)
     if "ftp" not in parsed.netloc:
         return None
+    parts = "/".join(parsed.path.split("/")[2:])
     path = Path(base_path)
-    path = path / Path(parsed.path)
-    if path.exists():
-        return path
-    return None
+    path = path / Path(parts)
+    return path
 
 
 @contextmanager
 def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
     url = template.format(**data)
     LOGGER.debug("Fetching %s", url)
-    if filepath := check_filepath(url):
+    if (filepath := internal_path(url)) and filepath.exists():
         with filepath.open("r") as handle:
+            LOGGER.debug("Using local file path %s", filepath)
             yield handle
     else:
         with wget.wget(url) as handle:
+            LOGGER.debug("Using FTP fetch of %s", url)
             yield handle
 
 

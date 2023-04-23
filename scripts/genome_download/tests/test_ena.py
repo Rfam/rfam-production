@@ -13,10 +13,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import contextlib
+import os
+from pathlib import Path
 
 import pytest
 
 from rfamseq import ena, wgs
+
+
+@contextlib.contextmanager
+def set_env(**environ):
+    """
+    Temporarily set the process environment variables.
+
+    >>> with set_env(PLUGINS_DIR='test/plugins'):
+    ...   "PLUGINS_DIR" in os.environ
+    True
+
+    >>> "PLUGINS_DIR" in os.environ
+    False
+
+    :type environ: dict[str, unicode]
+    :param environ: Environment variables to set
+    """
+    old_environ = dict(os.environ)
+    os.environ.update(environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_environ)
 
 
 @pytest.mark.parametrize(
@@ -38,3 +65,17 @@ from rfamseq import ena, wgs
 )
 def test_can_generate_expected_wgs_fasta_url(accession, expected):
     assert ena.wgs_fasta_url(wgs.WgsPrefix.build(accession)) == expected
+
+
+@pytest.mark.parametrize(
+    "given,expected",
+    [
+        (
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
+            Path("/ftp/ena/databases/ena/wgs/public/jab/JABWAI01.fasta.gz"),
+        ),
+    ],
+)
+def test_can_convert_to_expected_internal_paths(given, expected):
+    with set_env(ENA_PATH="/ftp/ena"):
+        assert ena.internal_path(given) == expected

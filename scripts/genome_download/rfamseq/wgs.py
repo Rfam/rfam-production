@@ -213,6 +213,19 @@ class WgsSequenceId:
         length = self.length - (len(prefix) + len(suffix))
         return f"{prefix}{self.sequence_index:0{length}}{suffix}"
 
+    def matches(self, other: WgsSequenceId, within_one_version=False) -> int:
+        """
+        Fuzzy compare two WgsSequenceId. This will allow the two prefixes to
+        match if they only differ by one version, if allowed. This is sometimes
+        useful if the old wgs set has disappeared, which can happen. The length
+        of the ids are ignored when comparing.
+        """
+        return (
+            self.prefix.matches(other.prefix, within_one_version=within_one_version)
+            and self.sequence_index == other.sequence_index
+            and self.sequence_version == other.sequence_version
+        )
+
 
 @enum.unique
 class WgsSequenceKind(enum.Enum):
@@ -424,6 +437,13 @@ def parse_wgs_accession(raw: str) -> ty.Optional[ty.Union[WgsSequenceId, WgsPref
         if seq_id.sequence_index == 0:
             return seq_id.prefix
         return seq_id
+    except InvalidWgsAccession:
+        return None
+
+
+def parse_wgs_sequence_id(raw: str) -> ty.Optional[WgsSequenceId]:
+    try:
+        return WgsSequenceId.build(raw)
     except InvalidWgsAccession:
         return None
 

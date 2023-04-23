@@ -280,6 +280,66 @@ def test_can_tell_if_sequence_range_is_single(raw, expected):
     assert range.is_single_range() == expected
 
 
+@pytest.mark.parametrize(
+    "first,second,within_one_version,expected",
+    [
+        (
+            "ALWZ04S0000001",
+            "ALWZ04S0000001",
+            False,
+            True,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ04S000001",
+            False,
+            True,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ04S0000002",
+            False,
+            False,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ04S0000001",
+            True,
+            True,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ05S0000001",
+            False,
+            False,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ05S0000001",
+            True,
+            True,
+        ),
+        (
+            "ALWZ04S0000001",
+            "ALWZ050000001",
+            True,
+            False,
+        ),
+        (
+            "ALWZ04S0000002",
+            "ALWZ05S0000001",
+            True,
+            False,
+        ),
+    ],
+)
+def test_sequence_id_knows_if_matches(first, second, within_one_version, expected):
+    s1 = wgs.WgsSequenceId.build(first)
+    s2 = wgs.WgsSequenceId.build(second)
+    assert s1.matches(s2, within_one_version=within_one_version) is expected
+    assert s2.matches(s1, within_one_version=within_one_version) is expected
+
+
 # @pytest.mark.parametrize(
 #     "kind,raw,expected",
 #     [

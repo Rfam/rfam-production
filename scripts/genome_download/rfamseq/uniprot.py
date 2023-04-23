@@ -364,17 +364,12 @@ def proteomes(path: Path, ignore: ty.Set[str]) -> ty.Iterable[ProteomeInfo]:
     proteomes = xml.getroot()
     seen = False
     for element in proteomes:
-        upid_elem = element.find("pro:upid", NS)
-        if not upid_elem:
+        parsed = proteome(element)
+        if parsed.upi in ignore:
+            LOGGER.info("Skipping upid %s as requested", parsed.upi)
             continue
-
-        upid = upid_elem.text
-        if upid in ignore:
-            LOGGER.info("Skipping upid as requested")
-            continue
-        LOGGER.info("Parsing %s", upid)
         seen = True
-        yield proteome(element)
+        yield parsed
 
     if not seen:
         raise ValueError("Found no proteomes")

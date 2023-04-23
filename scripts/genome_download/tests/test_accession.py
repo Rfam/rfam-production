@@ -135,3 +135,8 @@ def test_can_increment_an_accession(raw, expected):
 )
 def test_can_increment_an_accession_by_given_size(raw, size, expected):
     assert Accession.build(raw).increment(size=size) == Accession.build(expected)
+
+
+def test_it_cannot_parse_an_empty_string():
+    with pytest.raises(ValueError):
+        Accession.build("")

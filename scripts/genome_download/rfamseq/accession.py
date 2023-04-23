@@ -45,6 +45,8 @@ class Accession:
         """
         Build a new Accession from the given raw string.
         """
+        if not raw:
+            raise ValueError("Cannot parse an empty accession")
         aliases = aliases or tuple()
         parts = raw.split(".", 1)
         if len(parts) == 2:

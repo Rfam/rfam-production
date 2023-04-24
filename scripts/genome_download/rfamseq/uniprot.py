@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from __future__ import annotations
+
 import enum
 import logging
 import typing as ty
@@ -26,6 +28,7 @@ from attrs import field, frozen
 
 from rfamseq import wgs
 from rfamseq.accession import Accession
+from rfamseq.utils import assert_never
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,31 +77,53 @@ cattrs.register_structure_hook(Component, structure_component)
 
 @frozen
 class SelectedComponents:
-    accessions: ty.List[Component] = field()
+    unplaced: bool
+    accessions: ty.List[Accession]
+    wgs_sets: ty.List[wgs.WgsPrefix]
+    wgs_sequences: ty.List[wgs.WgsSequenceId]
 
-    @accessions.validator
-    def _check_accessions(self, _, value):
-        assert value, "Cannot create empty selected components"
-        for v in value:
-            assert isinstance(v, Component)
+    @classmethod
+    def build(cls, components: ty.List[Component]) -> SelectedComponents:
+        unplaced = False
+        accessions = []
+        wgs_sets = list()
+        wgs_sequences = list()
+        for component in components:
+            match component:
+                case Unplaced():
+                    unplaced = True
+                case Accession():
+                    accessions.append(component)
+                case wgs.WgsPrefix():
+                    wgs_sets.append(component)
+                case wgs.WgsSequenceId():
+                    wgs_sequences.append(component)
+                case _:
+                    assert_never(component)
 
-    @lru_cache
-    def includes_unplaced(self) -> bool:
-        return any(isinstance(a, Unplaced) for a in self.accessions)
-
-    def includes_wgs(self):
-        return any(
-            isinstance(a, (wgs.WgsPrefix, wgs.WgsSequenceId)) for a in self.accessions
+        return cls(
+            unplaced=unplaced,
+            accessions=accessions,
+            wgs_sets=wgs_sets,
+            wgs_sequences=wgs_sequences,
         )
 
-    def __len__(self) -> int:
-        return len(self.accessions)
+    def matching_accessions(self, accession: Accession) -> ty.List[Accession]:
+        return [a for a in self.accessions if a.matches(accession)]
 
-    def __contains__(self, accession: Component) -> bool:
-        return accession in self.accessions
+    def matching_wgs_sets(self, prefix: wgs.WgsPrefix) -> ty.List[wgs.WgsPrefix]:
+        return [a for a in self.wgs_sets if a.matches(prefix, within_one_version=True)]
 
-    def __iter__(self):
-        return iter(self.accessions)
+    def matching_wgs_sequences(
+        self, seq_id: wgs.WgsSequenceId
+    ) -> ty.List[wgs.WgsSequenceId]:
+        return [a for a in self.wgs_sequences if a.matches(seq_id)]
+
+    def includes_unplaced(self) -> bool:
+        return self.unplaced
+
+    def includes_wgs(self):
+        return bool(self.wgs_sets) or bool(self.wgs_sequences)
 
 
 Components = ty.Union[All, SelectedComponents]
@@ -268,7 +293,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         return GenomeInfo(
             accession=None,
             description=description,
-            components=SelectedComponents(components),
+            components=SelectedComponents.build(components),
             source=source,
         )
 
@@ -301,7 +326,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     return GenomeInfo(
         accession=accessions[0],
         description=description,
-        components=SelectedComponents(components),
+        components=SelectedComponents.build(components),
         source=source,
     )
 

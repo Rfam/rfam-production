@@ -31,6 +31,8 @@ def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
             record.id = record.id.split("|")[2]
         if record.id in seen_ids:
             raise ValueError(f"Duplicate id {record.id}")
+        if not record.seq:
+            raise ValueError(f"Empty sequence is invalid {record.id}")
         yield record
         seen_ids.add(record.id)
     if not seen_ids:

@@ -108,10 +108,10 @@ def build_metadata_cmd(
                 fetched.append(metadata.FromFasta.from_record(record))
 
             metadata_out = out / f"{proteome.upi}.jsonl"
-            genome = download.GenomeDownload.build(db, proteome)
+            genome = download.GenomeDownloader.build(db, proteome)
             with metadata_out.open("w") as meta:
                 info = metadata.Metadata.build(
-                    version, proteome, genome.assembly_info, fetched
+                    version, proteome, genome.assembly_report, fetched
                 )
                 json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")
@@ -160,9 +160,9 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
 
             fetched = []
             fasta_out = out / f"{proteome.upi}.fa"
-            genome = download.GenomeDownload.build(db, proteome)
             with fasta_out.open("w") as fasta:
-                for sequence in genome.records(db):
+                downloader = download.GenomeDownloader.build(db, proteome)
+                for sequence in downloader.records():
                     LOGGER.debug("Writing record %s", sequence.id)
                     fetched.append(metadata.FromFasta.from_record(sequence))
                     SeqIO.write(sequence, fasta, "fasta")
@@ -170,7 +170,7 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             metadata_out = out / f"{proteome.upi}.jsonl"
             with metadata_out.open("w") as meta:
                 info = metadata.Metadata.build(
-                    version, proteome, genome.assembly_info, fetched
+                    version, proteome, downloader.assembly_report, fetched
                 )
                 json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")

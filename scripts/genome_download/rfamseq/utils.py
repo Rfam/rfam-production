@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from datetime import date, datetime
+from itertools import islice
+from typing import NoReturn
 
 
-def versionless(accession: str) -> str:
-    return accession.split(".", 1)[0]
+def assert_never(x: NoReturn) -> NoReturn:
+    assert False, "Unhandled type: {}".format(type(x).__name__)
 
 
 def serialize(obj):
@@ -27,3 +30,13 @@ def serialize(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError("Type {obj} is not JSON serializable".format(obj=type(obj)))
+
+
+def batched(iterable, n):
+    "Batch data into tuples of length n. The last batch may be shorter."
+    # batched('ABCDEFG', 3) --> ABC DEF G
+    if n < 1:
+        raise ValueError("n must be at least one")
+    it = iter(iterable)
+    while batch := tuple(islice(it, n)):
+        yield batch

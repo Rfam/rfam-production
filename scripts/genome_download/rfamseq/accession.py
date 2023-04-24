@@ -38,7 +38,7 @@ class Accession:
 
     accession: str
     version: ty.Optional[str]
-    aliases: ty.Tuple[Accession] = field(factory=tuple)
+    aliases: ty.Tuple[Accession] = field(factory=tuple, converter=tuple)
 
     @classmethod
     def build(cls, raw: str, aliases=None) -> Accession:

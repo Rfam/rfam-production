@@ -19,7 +19,8 @@ import csv
 import logging
 import re
 import typing as ty
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
+from ftplib import FTP
 from io import StringIO
 
 import requests
@@ -100,12 +101,44 @@ def ftp_path(
     return f"{path}/{name}_{suffix}"
 
 
+def guess_genome_url(accession: str, suffix: str) -> ty.Optional[str]:
+    LOGGER.info("Trying to fetch NCBI FTP url for %s", accession)
+    if accession[0:4] not in {"GCA_", "GCF_"}:
+        LOGGER.debug("Accession %s is not a genome accession", accession)
+        return None
+
+    if len(accession) not in {13, 15}:
+        LOGGER.debug("Accession %s is not expected size", accession)
+        return None
+
+    host = "ftp.ncbi.nlm.nih.gov"
+    try:
+        with closing(FTP(host)) as ftp:
+            ftp.login()
+            ftp_dir = f"genomes/all/{accession[0:3]}/{accession[4:7]}/{accession[7:10]}/{accession[10:13]}"
+            ftp.cwd(ftp_dir)
+            possible = ftp.nlst()
+            matching = [p for p in possible if p.startswith(accession)]
+            if len(matching) == 1:
+                return f"ftp://{host}/{ftp_dir}/{matching[0]}/{matching[0]}{suffix}"
+            else:
+                LOGGER.info("Cannot determine which of %s matches", possible)
+    except Exception as err:
+        LOGGER.debug("Failed to access NCBI FTP")
+        LOGGER.debug(err)
+        return None
+    return None
+
+
 def ftp_fasta_url(info: SqliteDict, accession: str) -> str:
     prefix = accession[0:4]
     if prefix not in {"GCA_", "GCF_"}:
         raise InvalidGenomeId(accession)
 
     if (url := ftp_path(info, accession, "genomic.fna.gz")) is not None:
+        return url
+
+    if (url := guess_genome_url(accession, "_genomic.fna.gz")) is not None:
         return url
 
     if prefix == "GCF_":

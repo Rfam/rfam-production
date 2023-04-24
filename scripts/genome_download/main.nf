@@ -62,7 +62,7 @@ process find_genomes {
 process download {
   tag { "$proteome_file.baseName" }
   queue 'datamover'
-  maxForks 30
+  maxForks params.download_forks
   publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy"
   memory { 6.GB * task.attempt }
   errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }

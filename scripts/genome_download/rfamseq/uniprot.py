@@ -140,6 +140,27 @@ class GenomeSource(enum.Enum):
     ENSEMBL_METAZOA = "EnsemblMetazoa"
     ENSEMBL = "Ensembl"
 
+    def from_ebi(self) -> bool:
+        match self:
+            case GenomeSource.ENA:
+                return True
+            case GenomeSource.REF_SEQ:
+                return False
+            case GenomeSource.ENSEMBL_FUNGI:
+                return True
+            case GenomeSource.ENSEMBL_PROTISTS:
+                return True
+            case GenomeSource.WORMBASE:
+                return True
+            case GenomeSource.ENSEMBL_PLANTS:
+                return True
+            case GenomeSource.ENSEMBL_METAZOA:
+                return True
+            case GenomeSource.ENSEMBL:
+                return True
+            case _:
+                assert_never(self)
+
 
 @frozen
 class GenomeInfo:

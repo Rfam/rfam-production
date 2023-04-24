@@ -67,10 +67,7 @@ class Missing:
 def fetch_genome(info: SqliteDict, genome: uniprot.GenomeInfo) -> ty.Iterator[ty.IO]:
     assert genome.accession, "Genome must have a primary accession"
 
-    if (
-        genome.source is uniprot.GenomeSource.ENA
-        or genome.source is uniprot.GenomeSource.ENSEMBL
-    ):
+    if genome.source and genome.source.from_ebi():
         try:
             LOGGER.info("Trying to fetch %s from ENA", genome.accession)
             with ena.fetch_fasta(genome.accession) as handle:

@@ -217,6 +217,36 @@ def proteome_value(
     return convert(value)
 
 
+def proteome_components(
+    upid: str, root: ET.Element
+) -> ty.Tuple[bool, ty.List[Component], ty.Optional[str]]:
+    description = None
+    saw_genome = False
+    components = []
+    for component in root.findall("pro:component", NS):
+        comp_accs = all_matching_node_text("pro:genomeAccession", component)
+        name = component.attrib.get("name", "")
+        if "unplaced" in name.lower():
+            components.append(UNPLACED)
+            if not comp_accs:
+                continue
+        if name == "Genome":
+            saw_genome = True
+            descriptions = all_matching_node_text("pro:description", component)
+            if descriptions and len(descriptions) == 1:
+                description = descriptions[0]
+
+        if not comp_accs:
+            raise ValueError(f"Missing component accession of {upid}")
+
+        for raw_acc in comp_accs:
+            if wgs_component := wgs.parse_wgs_accession(raw_acc):
+                components.append(wgs_component)
+            else:
+                components.append(Accession.build(raw_acc))
+    return (saw_genome, components, description)
+
+
 def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     accessions = all_matching_node_text(
         ".//pro:genomeAssembly/pro:genomeAssembly", root
@@ -225,40 +255,14 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
         raise ValueError(f"Cannot handle >1 genome accession in {upid}")
 
     source = None
-    sources = all_matching_node_text(
+    if sources := all_matching_node_text(
         ".//pro:genomeAssembly/pro:genomeAssemblySource", root
-    )
-    if sources:
+    ):
         LOGGER.debug("Found genome sources: %s", sources)
         if len(sources) == 1:
             source = cattrs.structure(sources[0], GenomeSource)
 
-    components: ty.List[Component] = []
-    description = None
-    saw_genome = False
-    for component in root.findall("pro:component", NS):
-        name = component.attrib.get("name", "")
-        if "unplaced" in name.lower():
-            components.append(UNPLACED)
-            continue
-
-        comp_accs = all_matching_node_text("pro:genomeAccession", component)
-        if not comp_accs:
-            raise ValueError(f"Missing component accession of {upid}")
-        if name == "Genome":
-            saw_genome = True
-            descriptions = all_matching_node_text("pro:description", component)
-            if descriptions and len(descriptions) == 1:
-                description = descriptions[0]
-
-        if len(comp_accs) > 1 and name != "Genome":
-            raise ValueError(f"Cannot handle >1 accession unless it is a genome {upid}")
-
-        for raw_acc in comp_accs:
-            if wgs_component := wgs.parse_wgs_accession(raw_acc):
-                components.append(wgs_component)
-            else:
-                components.append(Accession.build(raw_acc))
+    saw_genome, components, description = proteome_components(upid, root)
 
     # Handle the case where there is not overarching genome assembly to work
     # with and just a series of components to fetch.
@@ -311,9 +315,8 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     # Handle being asked for a single component that is the versionless version
     # of the genome accession. We assume that we want all sequences in the
     # genome.
-    if len(components) == 1:
-        versionless = accessions[0].split(".", 1)[0]
-        if versionless == components[0]:
+    if len(components) == 1 and isinstance(components[0], Accession):
+        if Accession.build(accessions[0]).matches(components[0]):
             return GenomeInfo(
                 accession=accessions[0],
                 description=description,

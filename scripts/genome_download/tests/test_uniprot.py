@@ -93,8 +93,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000001405.27",
                     description=None,
                     source=uniprot.GenomeSource.ENSEMBL,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("CM000663"),
                             Accession.build("CM000664"),
                             Accession.build("CM000665"),
@@ -144,8 +144,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000499845.1",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("CM002288"),
                             Accession.build("CM002289"),
                             Accession.build("CM002290"),
@@ -203,8 +203,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000861105.1",
                     description="Hepatitis E virus ORF1, ORF2, ORF3,complete cds's; methyltransferase, Y domain, papain-like protease, poly-proline hing",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[Accession.build("L08816")]
+                    components=uniprot.SelectedComponents.build(
+                        [Accession.build("L08816")]
                     ),
                 ),
                 lineage_info=uniprot.LineageInfo(
@@ -227,8 +227,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000879395.1",
                     description="RefStrain",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("AB179636"),
                             Accession.build("AB179637"),
                             Accession.build("AB179638"),
@@ -285,8 +285,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_017348405.1",
                     description="Mycobacterium phage prophiGD12-2",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("MW584207"),
                         ]
                     ),
@@ -311,8 +311,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000317975.2",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("HE999757"),
                         ]
                     ),
@@ -337,8 +337,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000310245.1",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("CP003921"),
                             Accession.build("CP003920"),
                         ]
@@ -364,8 +364,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000016325.1",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("CP000653"),
                             Accession.build("CP000654"),
                         ]
@@ -391,8 +391,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_002210635.1",
                     description="Common bottlenose dolphin gammaherpesvirus 1 strain Sarasota",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("KY965444"),
                         ]
                     ),
@@ -417,8 +417,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_001736955.2",
                     description="Bacillus phage SPG24 DNA, contig00001 sequence.",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("AB930182"),
                         ]
                     ),
@@ -443,8 +443,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_002184215.1",
                     description="Grapevine enamovirus-1 isolate SE-BR, partial genome.",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("KY820716"),
                         ]
                     ),
@@ -469,8 +469,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_001019975.1",
                     description="Genome",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("KP774592"),
                             Accession.build("KP774593"),
                         ]
@@ -496,8 +496,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000870385.1",
                     description="Maruca vitrata MNPV",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("EF125867"),
                         ]
                     ),
@@ -522,8 +522,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCF_009870125.1",
                     description=None,
                     source=uniprot.GenomeSource.REF_SEQ,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             uniprot.UNPLACED,
                             Accession.build("NC_046679"),
                             Accession.build("NC_046680"),
@@ -542,34 +542,32 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
             ),
         ),
-        # (
-        #     Path("tests/data/UP000007648.xml"),
-        #     uniprot.ProteomeInfo(
-        #         upi="UP000007648",
-        #         taxid="9305",
-        #         is_reference=True,
-        #         is_representative=True,
-        #         proteome_description='''The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal.
-        # The species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.
-        # The reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.''',
-        #         genome_info=uniprot.GenomeInfo(
-        #             accession="GCA_902635505.1",
-        #             description=None,
-        #             components=uniprot.SelectedComponents(
-        #                 accessions=[
-        #                     "AFEY01000000",
-        #                 ]
-        #             ),
-        #         ),
-        #         lineage_info=uniprot.LineageInfo(
-        #             ncbi_id=9305,
-        #             species='Sarcophilus harrisii (tasmanian devil)',
-        #             tax_string='Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Metatheria; Dasyuromorphia; Dasyuridae; Sarcophilus.',
-        #             tree_display_name='Sarcophilus_harrisii_(tasmanian_devil)',
-        #             align_display_name='Sarcophilus_harrisii_(tasmanian_devil)[9305]',
-        #         ),
-        #     ),
-        # ),
+        (
+            Path("tests/data/UP000007648.xml"),
+            uniprot.ProteomeInfo(
+                upi="UP000007648",
+                taxid=9305,
+                is_reference=True,
+                is_representative=True,
+                proteome_description="The Tasmanian devil (Sarcophilus harrisii) is a member of the family Dasyuridae and is the largest carnivorous marsupial, reaching 76 cm in length and weighing up to 12 kg. It has sharp teeth and strong jaws that can deliver one of the most powerful bites of any mammal. \n\nThe species is restricted to the Australian island of Tasmania and is at risk of extinction in the wild due to an unusual transmissible facial cancer, the devil facial tumor disease (DFTD), which is spread between devils by the transfer of cancer cells on biting.\n\nThe reference proteome of Sarcophilus harrisii is derived from the genome sequence prepared by the Tasmanian Devil Genome Project by the Center for Comparative Genomics and Bioinformatics at Pennsylvania State University. The project analyzed genomes of two Tasmanian devil individuals, one healthy animal and one with DFTD. The size of the genome is about 3.3 Gb.",
+                genome_info=uniprot.GenomeInfo(
+                    accession="GCA_902635505.1",
+                    description=None,
+                    components=uniprot.SelectedComponents.build(
+                        [
+                            WgsPrefix.build("AFEY01000000"),
+                        ]
+                    ),
+                    source=uniprot.GenomeSource.ENSEMBL,
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=9305,
+                    species="Sarcophilus harrisii",
+                    tax_string="Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia; Metatheria; Dasyuromorphia; Dasyuridae; Sarcophilus.",
+                    common_name="Tasmanian devil",
+                ),
+            ),
+        ),
         (
             Path("tests/data/UP000019116.xml"),
             uniprot.ProteomeInfo(
@@ -582,8 +580,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_900519105.1",
                     description=None,
                     source=uniprot.GenomeSource.ENSEMBL_PLANTS,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("AB042240"),
                             Accession.build("AP008982"),
                             uniprot.UNPLACED,
@@ -610,8 +608,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_001675455.1",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             WgsPrefix.build("LXWX01000000"),
                         ]
                     ),
@@ -636,8 +634,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_002237195.1",
                     description="Lake Sinai Virus SA1 ORF1, RNA-dependent RNA polymerase, and ORF4 genes",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             Accession.build("KY354243"),
                         ]
                     ),
@@ -684,8 +682,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000857805.1",
                     description="Porcine enterovirus 1 serotype 1 RNA for complete polyprotein, isolate F65",
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[Accession.build("AJ011380")]
+                    components=uniprot.SelectedComponents.build(
+                        [Accession.build("AJ011380")]
                     ),
                 ),
                 lineage_info=uniprot.LineageInfo(
@@ -708,8 +706,8 @@ def test_can_get_correct_lineage(taxid, expected):
                     accession="GCA_000292645.1",
                     description=None,
                     source=uniprot.GenomeSource.ENA,
-                    components=uniprot.SelectedComponents(
-                        accessions=[
+                    components=uniprot.SelectedComponents.build(
+                        [
                             uniprot.UNPLACED,
                             Accession.build("FQ790245"),
                             Accession.build("FQ790246"),
@@ -838,6 +836,28 @@ def test_can_get_correct_lineage(taxid, expected):
                     species="Botryotinia fuckeliana (strain T4)",
                     common_name="Noble rot fungus",
                     tax_string="Eukaryota; Fungi; Dikarya; Ascomycota; Pezizomycotina; Leotiomycetes; Helotiales; Sclerotiniaceae; Botrytis.",
+                ),
+            ),
+        ),
+        (
+            Path("tests/data/UP000035681.xml"),
+            uniprot.ProteomeInfo(
+                upi="UP000035681",
+                taxid=6248,
+                is_reference=False,
+                is_representative=True,
+                proteome_description=None,
+                genome_info=uniprot.GenomeInfo(
+                    accession="GCA_000947215.1",
+                    description=None,
+                    components=uniprot.ALL_CHROMOSOMES,
+                    source=uniprot.GenomeSource.WORMBASE,
+                ),
+                lineage_info=uniprot.LineageInfo(
+                    ncbi_id=6248,
+                    species="Strongyloides stercoralis",
+                    common_name="Threadworm",
+                    tax_string="Eukaryota; Metazoa; Ecdysozoa; Nematoda; Chromadorea; Rhabditida; Tylenchina; Panagrolaimomorpha; Strongyloidoidea; Strongyloididae; Strongyloides.",
                 ),
             ),
         ),

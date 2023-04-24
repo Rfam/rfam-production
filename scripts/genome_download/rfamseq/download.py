@@ -72,10 +72,10 @@ def fetch_genome(info: SqliteDict, genome: uniprot.GenomeInfo) -> ty.Iterator[ty
             LOGGER.info("Trying to fetch %s from ENA", genome.accession)
             with ena.fetch_fasta(genome.accession) as handle:
                 yield handle
-                return
+            return
         except Exception as err:
             LOGGER.info("Fetching from ENA failed")
-            LOGGER.debug(err)
+            LOGGER.exception(err)
 
     LOGGER.info("Fetching genome %s from NCBI", genome.accession)
     with ncbi.fetch_fasta(info, genome.accession) as handle:
@@ -193,7 +193,7 @@ class GenomeDownloader:
             assembly_report=assembly_report,
         )
 
-    def records(self) -> Records:
+    def fetch_records(self) -> Records:
         genome = self.proteome.genome_info
         missing = Missing.empty()
         if not genome.accession:
@@ -208,3 +208,14 @@ class GenomeDownloader:
             yield from genomic_records(self.info, genome, self.assembly_report, missing)
 
         yield from missing_records(missing)
+
+    def records(self) -> Records:
+        seen = set()
+        for record in self.fetch_records():
+            if not record.seq:
+                raise ValueError(f"Empty sequence is invalid {record.id}")
+            if record.id in seen:
+                LOGGER.error("Somehow got duplicate record id %s", record.id)
+                continue
+            yield record
+            seen.add(record.id)

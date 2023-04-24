@@ -13,9 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import logging
 import typing as ty
 
 from Bio import SeqIO
+
+LOGGER = logging.getLogger(__name__)
 
 
 def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
@@ -30,9 +33,11 @@ def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
         if "|" in record.id:
             record.id = record.id.split("|")[2]
         if record.id in seen_ids:
-            raise ValueError(f"Duplicate id {record.id}")
+            LOGGER.error(f"Fasta file contains duplicate id %s", record.id)
+            continue
         if not record.seq:
-            raise ValueError(f"Empty sequence is invalid {record.id}")
+            LOGGER.error(f"Fasta file contains empty sequence %s", record.id)
+            continue
         yield record
         seen_ids.add(record.id)
     if not seen_ids:

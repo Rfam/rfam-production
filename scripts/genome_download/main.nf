@@ -83,8 +83,9 @@ process validate_chunk {
   tag { "$short_name" }
   queue 'standard'
   time '12h'
-  memory { 6.GB * task.attempt }
+  memory { 10.GB * task.attempt }
   errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
+  maxRetries 3
 
   input:
   tuple val(short_name), path('genomes*.fa')

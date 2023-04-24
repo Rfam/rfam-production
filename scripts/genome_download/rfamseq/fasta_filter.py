@@ -186,7 +186,11 @@ class FastaFilter:
 
             case uniprot.SelectedComponents():
                 if self.requested.unplaced and not seen.unplaced:
-                    raise ValueError("Asked for unplaced, saw none")
+                    if not self.assembly_report:
+                        LOGGER.error("Asked for unplaced but cannot infer any")
+                    else:
+                        for sequence_info in self.assembly_report.sequence_info:
+                            yield MissingAccession(accession=sequence_info.accession())
 
                 for accession in self.requested.accessions:
                     if accession not in seen.accessions:

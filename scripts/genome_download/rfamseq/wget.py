@@ -28,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 
 class FetchError(Exception):
     """
-    An error raised when wget fails for some reason
+    An error raised when fetching and possible decompressing a url fails for some reason
     """
 
     pass
@@ -52,7 +52,12 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
         if b"application/gzip" in info:
             with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as decomp:
                 LOGGER.info("Decompressing file for %s to %s", url, decomp.name)
-                sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)
+                try:
+                    sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)
+                except sp.CalledProcessError as err:
+                    LOGGER.warn("Failed to decrompress file %s", tmp.name)
+                    LOGGER.exception(err)
+                    raise FetchError()
                 decomp.flush()
                 decomp.seek(0)
                 yield decomp

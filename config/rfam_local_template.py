@@ -11,22 +11,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# ---------------------------------GEN_CONFIG----------------------------------
+# ----------------------------PATHS--------------------------------
+ESL_PATH = ''
+ESL_SEQSTAT = ''
+ESL_SSPLIT = ''
+CMSEARCH = ''
+CMSCAN = ''
+CMFILE = ''
+SCANNER = ''
+DWL_SCRIPT = ''
+FA_GEN = ''
+RFAMSEQ_PATH = ''
+FAM_VIEW_PL = ''
+TMP_PATH = '/tmp'
+ESL_FSEQ_PATH = ''
+ENA_URL = 'http://www.ebi.ac.uk/ena/data/view/%s&display=fasta&range=%s-%s'
+TAX_NODES_DUMP = ''
+TAX_NAMES_DUMP = ''
+BIN_LOC = ''
+RFAM_SEED_SEQ_14_1 = ''
+PDB_FILES = ''
 
-RFAM_GPFS_LOC = ''
-LOC_PATH = ''
-GEN_DWLD_EXEC = ''
-
-LSF_GROUPS_CMD = 'bgadd -L %s /rfam_gen/%s'
-LSF_GEN_GROUP = '/rfam_gen'
-
-USER_EMAIL = ''
-
+# ---------------------------------GEN CONFIG----------------------------------
+ENA_FTP = ''
 SLACK_WEBHOOK = ''
-
+USER_EMAIL = ''
+RFAM_EMAIL = ''
+BROWSER_HUB_DESC_URL = ''
+BULK_REPORT_URL = ''
+APICURON_TOKEN = ''
 
 # ------------------------------DATABASES--------------------------------------
-# Databases
 RFAMLIVEPUB = {
     'user': '',
     'pwd': '',
@@ -43,23 +58,6 @@ RFAMLIVE = {
     'port': '',
 }
 
-RFAMLIVE_DJANGO = {
-    'USER': RFAMLIVE['user'],
-    'PASSWORD': RFAMLIVE['pwd'],
-    'HOST': RFAMLIVE['host'],
-    'NAME': RFAMLIVE['db'],
-    'PORT': RFAMLIVE['port'],
-    'ENGINE': 'django.db.backends.mysql',
-}
-
-RFAM12 = {
-    'user': '',
-    'pwd': '',
-    'host': '',
-    'db': '',
-    'port': '',
-}
-
 RFAMLIVELOC = {
     'user': '',
     'pwd': '',
@@ -69,8 +67,15 @@ RFAMLIVELOC = {
 }
 
 # ----------------------------Django settings----------------------------------
-
 # DATABASES
+RFAMLIVE_DJANGO = {
+    'USER': RFAMLIVE['user'],
+    'PASSWORD': RFAMLIVE['pwd'],
+    'HOST': RFAMLIVE['host'],
+    'NAME': RFAMLIVE['db'],
+    'PORT': RFAMLIVE['port'],
+    'ENGINE': 'django.db.backends.mysql',
+}
 RFAMDEV = {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': '',
@@ -92,30 +97,15 @@ RFAMLOC = {
 # SETTINGS
 SECRET_KEY = 'change secret key in production'
 
-# ----------------------------RFAM CONFIG PATHS--------------------------------
+# ---------------------------------SEQDBs--------------------------------------
+RFAM_SEED_DB = ''
 
-ESL_PATH = ''
-FA_GEN = ''
-RFAMSEQ_PATH = ''
-FAM_VIEW_PL = ''
-TMP_PATH = '/tmp'
-
-ESL_FSEQ_PATH = ''
-FSR_PATH = ''
-FSR_LOCAL = ''
-ENA_URL = 'http://www.ebi.ac.uk/ena/data/view/%s&display=fasta&range=%s-%s'
-
-# Maybe delete these
-TAX_NODES_DUMP = ''
-TAX_NAMES_DUMP = ''
-RFAM_NCBI_IDS = ''
-VALID_NCBI_IDS = ''
-NCBI_RANKS = ''
-
-# -------------------------------LSF GROUPS------------------------------------
+# -------------------------------LSF------------------------------------
 # rfamprod privileges required
 FA_EXPORT_GROUP = '/rfam_fa'
 RFAM_VIEW_GROUP = '/rfam_view'
+LSF_GROUPS_CMD = 'bgadd -L %s /rfam_gen/%s'
+LSF_GEN_GROUP = '/rfam_gen'
 
 # -----------------------------------------------------------------------------
 

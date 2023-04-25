@@ -49,10 +49,10 @@ def set_env(**environ):
 @pytest.mark.parametrize(
     "accession,expected",
     [
-        # (
-        #     "CABU01000000",
-        #     "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
-        # ),
+        (
+            "CABU01000000",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+        ),
         (
             "CABU01",
             "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
@@ -65,6 +65,30 @@ def set_env(**environ):
 )
 def test_can_generate_expected_wgs_fasta_url(accession, expected):
     assert ena.wgs_fasta_url(wgs.WgsPrefix.build(accession)) == expected
+
+
+@pytest.mark.parametrize(
+    "accession,expected",
+    [
+        (
+            "CABU01000000",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
+        ),
+        (
+            "CABU01",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
+        ),
+        (
+            "JABWAI01",
+            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/jab/JABWAI01.fasta.gz",
+        ),
+    ],
+)
+def test_can_generate_expected_suppressed_wgs_fasta_url(accession, expected):
+    assert (
+        ena.wgs_fasta_url(wgs.WgsPrefix.build(accession), use_suppressed=True)
+        == expected
+    )
 
 
 @pytest.mark.parametrize(

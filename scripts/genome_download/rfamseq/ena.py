@@ -18,11 +18,8 @@ import os
 import re
 import typing as ty
 from contextlib import contextmanager
-from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
-
-from Bio import SeqIO
 
 from rfamseq import wget, wgs
 
@@ -33,12 +30,9 @@ ENA_EMBL_URL = "https://www.ebi.ac.uk/ena/browser/api/embl/{accession}?download=
 ENA_WGS_FASTA_URL = (
     "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/{prefix}/{name}.fasta.gz"
 )
-
-
-class MissingContigs(Exception):
-    """
-    Raised if there are no contigs in the EMBL file.
-    """
+ENA_SUPPRESED_WGS_FASTA_URL = (
+    "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/{prefix}/{name}.fasta.gz"
+)
 
 
 def internal_path(url: str) -> ty.Optional[Path]:
@@ -72,21 +66,6 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
             yield handle
 
 
-@lru_cache
-def fetch_contigs(accession: str) -> ty.List[str]:
-    LOGGER.info("Fetching EMBL formatted file for %s", accession)
-    url = ENA_EMBL_URL.format(accession=accession)
-    contigs = []
-    with wget.wget(url) as handle:
-        for line in handle:
-            if not line.startswith("CON"):
-                continue
-            contigs.append(line[3:].strip())
-    if not contigs:
-        raise MissingContigs(f"No contigs for {accession}")
-    return contigs
-
-
 @contextmanager
 def fetch_fasta(accession: str) -> ty.Iterator[ty.IO]:
     LOGGER.info("Fetching %s fasta from ENA", accession)
@@ -94,19 +73,20 @@ def fetch_fasta(accession: str) -> ty.Iterator[ty.IO]:
         yield handle
 
 
-def wgs_fasta_url(prefix: wgs.WgsPrefix) -> str:
+def wgs_fasta_url(prefix: wgs.WgsPrefix, use_suppressed=False) -> str:
     short = prefix.wgs_id[0:3].lower()
     name = prefix.to_wgs_string().upper()
     name = re.sub("0+$", "", name)
+    if use_suppressed:
+        return ENA_SUPPRESED_WGS_FASTA_URL.format(prefix=short, name=name)
     return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
 
 
 @contextmanager
 def wgs_fasta(
-    prefix,
-    max_increase=2,
+    prefix: wgs.WgsPrefix, max_increase=2, use_suppressed=False
 ) -> ty.Iterator[ty.IO]:
-    url = wgs_fasta_url(prefix)
+    url = wgs_fasta_url(prefix, use_suppressed=use_suppressed)
     LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
     try:
         with fetch(url) as handle:
@@ -117,20 +97,5 @@ def wgs_fasta(
             raise err
         LOGGER.info("Trying to increment and grab next WGS set")
         next_url = wgs_fasta_url(prefix.next_version())
-        LOGGER.debug("Fetching next WGS from %s", next_url)
         with fetch(next_url, max_increase=max_increase - 1) as handle:
             yield handle
-
-
-# def lookup(accession: str) -> ty.Iterable[SeqIO.SeqRecord]:
-#     LOGGER.info("Fetching %s from ENA", accession)
-#     try:
-#         yield from fetch_fasta(accession)
-#     except wget.FetchError:
-#         LOGGER.info("Failed to get directly, will try via contigs")
-#         contigs = list(fetch_contigs(accession))
-#         if not contigs:
-#             raise ValueError(f"Could not find contigs for {accession}")
-#         for contig in contigs:
-#             LOGGER.info("Fetching contig %s for %s", contig, accession)
-#             yield from fetch_fasta(contig)

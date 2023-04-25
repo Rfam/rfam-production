@@ -71,6 +71,28 @@ class AccessionTracker:
             wgs_sequences=set(),
         )
 
+    def seen_accession(
+        self, accession: ty.Union[Accession, wgs.WgsSequenceId, wgs.WgsPrefix]
+    ) -> bool:
+        match accession:
+            case Accession():
+                return any(a.matches(accession) for a in self.accessions)
+            case wgs.WgsSequenceId():
+                return any(
+                    w.matches(accession, within_one_version=True)
+                    for w in self.wgs_sequences
+                ) or any(
+                    w.matches(accession.prefix, within_one_version=True)
+                    for w in self.wgs_prefix
+                )
+            case wgs.WgsPrefix():
+                return any(
+                    w.matches(accession, within_one_version=True)
+                    for w in self.wgs_prefix
+                )
+            case _:
+                assert_never(accession)
+
     def mark(self, seq_id: uniprot.All | uniprot.Component):
         self.count += 1
         match seq_id:
@@ -190,18 +212,34 @@ class FastaFilter:
                         LOGGER.error("Asked for unplaced but cannot infer any")
                     else:
                         for sequence_info in self.assembly_report.sequence_info:
-                            yield MissingAccession(accession=sequence_info.accession())
+                            accession = wgs.parse_wgs_sequence_id(
+                                str(sequence_info.accession())
+                            )
+                            if not accession:
+                                accession = sequence_info.accession()
+                            if seen.seen_accession(accession):
+                                LOGGER.debug(
+                                    "There appears to be confusion about %s", accession
+                                )
+                                continue
+                            match accession:
+                                case wgs.WgsSequenceId():
+                                    yield MissingWgsSequence(sequence_id=accession)
+                                case Accession():
+                                    yield MissingAccession(accession=accession)
+                                case _:
+                                    assert_never(accession)
 
                 for accession in self.requested.accessions:
-                    if accession not in seen.accessions:
+                    if not seen.seen_accession(accession):
                         yield MissingAccession(accession=accession)
 
                 for wgs_sequence in self.requested.wgs_sequences:
-                    if wgs_sequence not in seen.wgs_sequences:
+                    if not seen.seen_accession(wgs_sequence):
                         yield MissingWgsSequence(sequence_id=wgs_sequence)
 
                 for wgs_prefix in self.requested.wgs_sets:
-                    if wgs_prefix not in seen.wgs_prefix:
+                    if not seen.seen_accession(wgs_prefix):
                         yield MissingWgsSet(prefix=wgs_prefix)
 
             case _:

@@ -27,7 +27,7 @@ process check_in {
 }
 
 workflow {
-    Channel.fromPath(params.families)
+    Channel.fromPath(params.input)
     | splitText(by: params.chunkSize)
     | map{it -> it.trim()}
     | scan

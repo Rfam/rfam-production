@@ -21,6 +21,7 @@ from contextlib import contextmanager
 
 from attrs import define
 from Bio import SeqIO
+from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
 
 from rfamseq import ena, fasta, ncbi, uniprot, wget, wgs
@@ -130,6 +131,8 @@ def genomic_records(
                     assert_never(classification)
 
 
+@sleep_and_retry
+@limits(calls=3, period=1)
 def accession_fetch(accessions: ty.List[str]) -> Records:
     try:
         LOGGER.info("Trying to fetch %s from NCBI", accessions)

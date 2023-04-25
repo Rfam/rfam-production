@@ -11,7 +11,7 @@ process scan {
     """
     rfco.pl $family
     cd $family
-    rfsearch.pl -dbchoice testrfamseq
+    rfsearch.pl
     rfmake.pl
     cd ..
     """
@@ -27,7 +27,7 @@ process check_in {
 }
 
 workflow {
-    Channel.fromPath(params.input)
+    Channel.fromPath(params.families)
     | splitText(by: params.chunkSize)
     | map{it -> it.trim()}
     | scan

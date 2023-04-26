@@ -70,8 +70,10 @@ class Accession:
         using `==` between two Accessions will work. Or converting this to a
         string and comparing those.
         """
-        return accession.accession == self.accession or any(
-            a.matches(accession) for a in self.aliases
+        return (
+            accession.accession == self.accession
+            or any(a.matches(accession) for a in self.aliases)
+            or any(a.matches(self) for a in accession.aliases)
         )
 
     def versioned(self) -> bool:

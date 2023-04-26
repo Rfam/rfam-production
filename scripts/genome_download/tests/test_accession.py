@@ -93,6 +93,11 @@ def test_can_round_trip_with_cattrs_to_a_string(raw):
         ),
         (
             Accession.build("NC_004448.1"),
+            Accession.build("NC_004449.1", aliases=(Accession.build("NC_004448"),)),
+            True,
+        ),
+        (
+            Accession.build("NC_004448.1"),
             Accession.build("NC_004448.1", aliases=(Accession.build("NC_004448"),)),
             True,
         ),

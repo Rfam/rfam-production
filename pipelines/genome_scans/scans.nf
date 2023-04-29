@@ -11,7 +11,7 @@ process scan {
     """
     rfco.pl $family
     cd $family
-    rfsearch.pl -dbchoice testrfamseq
+    rfsearch.pl
     rfmake.pl
     cd ..
     """

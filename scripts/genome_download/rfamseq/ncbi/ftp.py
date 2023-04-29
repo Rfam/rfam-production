@@ -24,11 +24,9 @@ from ftplib import FTP
 from io import StringIO
 
 import requests
-from Bio import SeqIO
-from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
 
-from rfamseq import fasta, wget
+from rfamseq import wget
 
 LOGGER = logging.getLogger(__name__)
 

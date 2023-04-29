@@ -59,9 +59,29 @@ class Missing:
     def add_components(self, comps: uniprot.SelectedComponents):
         if comps.unplaced:
             raise ValueError("Cannot add unplaced to Missing")
-        self.accessions.update(comps.accessions)
-        self.wgs_sets.update(comps.wgs_sets)
-        self.wgs_sequences.update(comps.wgs_sequences)
+        for accession in comps.accessions:
+            self.add(accession)
+        for wgs_set in comps.wgs_sets:
+            self.add(wgs_set)
+        for wgs_sequence in comps.wgs_sequences:
+            self.add(wgs_sequence)
+
+    def add(self, accession: ty.Union[wgs.WgsPrefix, wgs.WgsSequenceId, Accession]):
+        match accession:
+            case wgs.WgsSequenceId():
+                if not any(w.matches(accession.prefix) for w in self.wgs_sets):
+                    self.wgs_sequences.add(accession)
+            case wgs.WgsPrefix():
+                self.wgs_sets.add(accession)
+                to_remove = []
+                for wgs_sequence in self.wgs_sequences:
+                    if any(w.matches(wgs_sequence.prefix) for w in self.wgs_sets):
+                        to_remove.append(wgs_sequence)
+                self.wgs_sequences.difference_update(to_remove)
+            case Accession():
+                self.accessions.add(accession)
+            case _:
+                assert_never(accession)
 
 
 @contextmanager
@@ -105,11 +125,11 @@ def genomic_records(
 
                 case MissingAccession():
                     LOGGER.info(
-                        "Accession %s did not contain %s",
+                        "Genome %s did not contain accession %s",
                         genome.accession,
                         classification.accession,
                     )
-                    missing.accessions.add(classification.accession)
+                    missing.add(classification.accession)
 
                 case MissingWgsSet():
                     LOGGER.info(
@@ -117,7 +137,7 @@ def genomic_records(
                         genome.accession,
                         classification.prefix,
                     )
-                    missing.wgs_sets.add(classification.prefix)
+                    missing.add(classification.prefix)
 
                 case MissingWgsSequence():
                     LOGGER.info(
@@ -125,7 +145,7 @@ def genomic_records(
                         genome.accession,
                         classification.sequence_id,
                     )
-                    missing.wgs_sequences.add(classification.sequence_id)
+                    missing.add(classification.sequence_id)
 
                 case _:
                     assert_never(classification)
@@ -159,6 +179,8 @@ def accession_fetch(accessions: ty.List[str]) -> Records:
 
 
 def missing_records(missing: Missing) -> Records:
+    LOGGER.info("Will fetch missing records %s", missing)
+
     for chunk in batched(missing.accessions, 3):
         ids = [str(c) for c in chunk]
         yield from accession_fetch(ids)

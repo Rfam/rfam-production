@@ -105,6 +105,9 @@ class NcbiSequenceInfo:
             return self.refseq_accession.matches(accession)
         return False
 
+    def is_unplaced(self) -> bool:
+        return self.role is SequenceRole.UNPLACED_SCAFFOLD
+
 
 @lru_cache
 def sequence_header(raw_headers: ty.Tuple[str]) -> ty.List[str]:
@@ -143,7 +146,7 @@ class NcbiAssemblyReport:
 
     def is_unplaced(self, accession: Accession) -> bool:
         if info := self.info_for(accession):
-            return info.role is SequenceRole.UNPLACED_SCAFFOLD
+            return info.is_unplaced()
         return False
 
 

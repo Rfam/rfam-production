@@ -20,7 +20,7 @@ import pytest
 
 from rfamseq import uniprot
 from rfamseq.accession import Accession
-from rfamseq.wgs import WgsPrefix
+from rfamseq.wgs import WgsPrefix, WgsSequenceId
 
 # UP000011116
 # UP000012065
@@ -879,3 +879,73 @@ def test_parses_expected_data(path: Path, expected: uniprot.ProteomeInfo):
 )
 def test_parses_expected_number(path: Path, ignore: ty.Set[str], expected: int):
     assert len(list(uniprot.proteomes(path, ignore))) == expected
+
+
+@pytest.mark.parametrize(
+    "accessions,given,expected",
+    [
+        (
+            [Accession.build("J01415"), uniprot.UNPLACED],
+            Accession.build("CM000663"),
+            [],
+        ),
+        (
+            [Accession.build("J01415"), uniprot.UNPLACED],
+            Accession.build("J01415"),
+            [Accession.build("J01415")],
+        ),
+        (
+            [Accession.build("J01415", aliases=(Accession.build("CM000663"),))],
+            Accession.build("CM000663"),
+            [Accession.build("J01415", aliases=(Accession.build("CM000663"),))],
+        ),
+        (
+            [Accession.build("J01415", aliases=(Accession.build("CM000663"),))],
+            Accession.build("J01416"),
+            [],
+        ),
+        (
+            [Accession.build("J01415", aliases=(Accession.build("CM000663"),))],
+            Accession.build("CM000664"),
+            [],
+        ),
+        (
+            [Accession.build("CM000663")],
+            Accession.build("J01415", aliases=(Accession.build("CM000663"),)),
+            [Accession.build("CM000663")],
+        ),
+        ([uniprot.UNPLACED], Accession.build("J01415"), []),
+        ([uniprot.UNPLACED], uniprot.UNPLACED, [uniprot.UNPLACED]),
+        ([Accession.build("J01415")], uniprot.UNPLACED, []),
+        (
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+            Accession.build("CM000663"),
+            [],
+        ),
+        (
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+            WgsPrefix.build("ANNZ01"),
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+        ),
+        (
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+            WgsSequenceId.build("ANNZ01000001"),
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+        ),
+        (
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+            WgsSequenceId.build("ANNZ01000002"),
+            [WgsPrefix.build("ANNZ01000000")],
+        ),
+        (
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+            WgsSequenceId.build("ANNZ02000001"),
+            [WgsPrefix.build("ANNZ01000000"), WgsSequenceId.build("ANNZ01000001")],
+        ),
+    ],
+)
+def test_selected_components_can_get_expected_matching_components(
+    accessions, given, expected
+):
+    selected = uniprot.SelectedComponents.build(accessions)
+    assert selected.matching(given) == expected

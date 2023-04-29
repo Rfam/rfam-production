@@ -36,8 +36,8 @@ class FetchError(Exception):
 
 @contextmanager
 def wget(url: str) -> ty.Iterator[ty.IO]:
-    LOGGER.debug("Fetching %s", url)
     with tempfile.NamedTemporaryFile("wb+", dir=os.curdir) as tmp:
+        LOGGER.debug("Fetching %s to %s", url, tmp.name)
         try:
             with closing(urllib.request.urlopen(str(url))) as req:
                 shutil.copyfileobj(req, tmp)

@@ -24,7 +24,7 @@ from pathlib import Path
 
 import cattrs
 import requests
-from attrs import field, frozen
+from attrs import frozen
 
 from rfamseq import wgs
 from rfamseq.accession import Accession
@@ -84,6 +84,12 @@ class SelectedComponents:
 
     @classmethod
     def build(cls, components: ty.List[Component]) -> SelectedComponents:
+        """
+        Create a new SelectedComponent. This requires the list of components
+        be not empty.
+        """
+        if not components:
+            raise ValueError("Cannot build empty SelectedComponents")
         unplaced = False
         accessions = []
         wgs_sets = list()
@@ -108,16 +114,39 @@ class SelectedComponents:
             wgs_sequences=wgs_sequences,
         )
 
-    def matching_accessions(self, accession: Accession) -> ty.List[Accession]:
-        return [a for a in self.accessions if a.matches(accession)]
+    def matching(self, component: Component) -> ty.List[Component]:
+        match component:
+            case Unplaced():
+                if self.unplaced:
+                    return [UNPLACED]
+                return []
 
-    def matching_wgs_sets(self, prefix: wgs.WgsPrefix) -> ty.List[wgs.WgsPrefix]:
-        return [a for a in self.wgs_sets if a.matches(prefix, within_one_version=True)]
+            case Accession():
+                return [a for a in self.accessions if component.matches(a)]
 
-    def matching_wgs_sequences(
-        self, seq_id: wgs.WgsSequenceId
-    ) -> ty.List[wgs.WgsSequenceId]:
-        return [a for a in self.wgs_sequences if a.matches(seq_id)]
+            case wgs.WgsPrefix():
+                matches: ty.List[Component] = []
+                for wgs_set in self.wgs_sets:
+                    if wgs_set.matches(component, within_one_version=True):
+                        matches.append(wgs_set)
+                for wgs_sequence in self.wgs_sequences:
+                    wgs_set = wgs_sequence.prefix
+                    if wgs_set.matches(component, within_one_version=True):
+                        matches.append(wgs_sequence)
+                return matches
+
+            case wgs.WgsSequenceId():
+                matches: ty.List[Component] = []
+                for wgs_set in self.wgs_sets:
+                    if wgs_set.matches(component.prefix, within_one_version=True):
+                        matches.append(wgs_set)
+                for wgs_sequence in self.wgs_sequences:
+                    if wgs_sequence.matches(component, within_one_version=True):
+                        matches.append(wgs_sequence)
+                return matches
+
+            case _:
+                assert_never(component)
 
     def includes_unplaced(self) -> bool:
         return self.unplaced

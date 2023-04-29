@@ -54,13 +54,14 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
     LOGGER.debug("Fetching %s", url)
     if filepath := internal_path(url):
         LOGGER.info("Trying to use internal path %s", filepath)
-        if not filepath.exists():
-            LOGGER.info("Path %s does not exist", filepath)
-        else:
+        try:
             with filepath.open("r") as handle:
                 LOGGER.debug("Using local file path %s", filepath)
                 yield handle
             return
+        except Exception as err:
+            LOGGER.info("Could not open %s", filepath)
+            LOGGER.exception(err)
 
     with wget.wget(url) as handle:
         LOGGER.debug("Using FTP fetch of %s", url)

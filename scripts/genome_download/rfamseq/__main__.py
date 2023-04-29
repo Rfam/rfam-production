@@ -161,11 +161,16 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             fetched = []
             fasta_out = out / f"{proteome.upi}.fa"
             with fasta_out.open("w") as fasta:
-                downloader = download.GenomeDownloader.build(db, proteome)
-                for sequence in downloader.records():
-                    LOGGER.debug("Writing record %s", sequence.id)
-                    fetched.append(metadata.FromFasta.from_record(sequence))
-                    SeqIO.write(sequence, fasta, "fasta")
+                try:
+                    downloader = download.GenomeDownloader.build(db, proteome)
+                    for sequence in downloader.records():
+                        LOGGER.debug("Writing record %s", sequence.id)
+                        fetched.append(metadata.FromFasta.from_record(sequence))
+                        SeqIO.write(sequence, fasta, "fasta")
+                except Exception as err:
+                    LOGGER.error("Failed to download %s", proteome)
+                    LOGGER.exception(err)
+                    raise err
 
             metadata_out = out / f"{proteome.upi}.jsonl"
             with metadata_out.open("w") as meta:

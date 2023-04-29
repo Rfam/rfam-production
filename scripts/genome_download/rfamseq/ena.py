@@ -60,10 +60,11 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
             with filepath.open("r") as handle:
                 LOGGER.debug("Using local file path %s", filepath)
                 yield handle
-    else:
-        with wget.wget(url) as handle:
-            LOGGER.debug("Using FTP fetch of %s", url)
-            yield handle
+            return
+
+    with wget.wget(url) as handle:
+        LOGGER.debug("Using FTP fetch of %s", url)
+        yield handle
 
 
 @contextmanager

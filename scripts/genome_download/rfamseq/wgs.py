@@ -49,7 +49,7 @@ class InvalidWgsPrefix(Exception):
     """
 
 
-@frozen
+@frozen(hash=True)
 class WgsPrefix:
     """
     This represents the parsed prefix of WGS ids. WGS ids start with a unique
@@ -143,7 +143,7 @@ class WgsPrefix:
         )
 
 
-@frozen
+@frozen(hash=True)
 class WgsSequenceId:
     """
     This represents a single WGS sequence. This is basically a prefix with an

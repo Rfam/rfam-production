@@ -24,8 +24,7 @@ from Bio import SeqIO
 from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, fasta, ncbi, uniprot, wget, wgs
-from rfamseq.accession import Accession
+from rfamseq import ena, fasta, ncbi, uniprot, wget
 from rfamseq.fasta_filter import (
     FastaFilter,
     Found,
@@ -33,6 +32,7 @@ from rfamseq.fasta_filter import (
     MissingWgsSequence,
     MissingWgsSet,
 )
+from rfamseq.missing import Missing
 from rfamseq.utils import assert_never, batched
 
 Records = ty.Iterable[SeqIO.SeqRecord]
@@ -44,44 +44,6 @@ class AccessionLookupFailed(Exception):
     """
     Raised when if all accession lookup methods failed to fetch some id.
     """
-
-
-@define
-class Missing:
-    accessions: ty.Set[Accession]
-    wgs_sets: ty.Set[wgs.WgsPrefix]
-    wgs_sequences: ty.Set[wgs.WgsSequenceId]
-
-    @classmethod
-    def empty(cls) -> Missing:
-        return Missing(accessions=set(), wgs_sets=set(), wgs_sequences=set())
-
-    def add_components(self, comps: uniprot.SelectedComponents):
-        if comps.unplaced:
-            raise ValueError("Cannot add unplaced to Missing")
-        for accession in comps.accessions:
-            self.add(accession)
-        for wgs_set in comps.wgs_sets:
-            self.add(wgs_set)
-        for wgs_sequence in comps.wgs_sequences:
-            self.add(wgs_sequence)
-
-    def add(self, accession: ty.Union[wgs.WgsPrefix, wgs.WgsSequenceId, Accession]):
-        match accession:
-            case wgs.WgsSequenceId():
-                if not any(w.matches(accession.prefix) for w in self.wgs_sets):
-                    self.wgs_sequences.add(accession)
-            case wgs.WgsPrefix():
-                self.wgs_sets.add(accession)
-                to_remove = []
-                for wgs_sequence in self.wgs_sequences:
-                    if any(w.matches(wgs_sequence.prefix) for w in self.wgs_sets):
-                        to_remove.append(wgs_sequence)
-                self.wgs_sequences.difference_update(to_remove)
-            case Accession():
-                self.accessions.add(accession)
-            case _:
-                assert_never(accession)
 
 
 @contextmanager
@@ -240,7 +202,8 @@ class GenomeDownloader:
         else:
             yield from genomic_records(self.info, genome, self.assembly_report, missing)
 
-        yield from missing_records(missing)
+        if missing:
+            yield from missing_records(missing)
 
     def records(self) -> Records:
         seen = set()

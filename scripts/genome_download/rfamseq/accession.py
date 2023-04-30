@@ -21,7 +21,7 @@ import cattrs
 from attrs import field, frozen
 
 
-@frozen
+@frozen(hash=True)
 class Accession:
     """
     This is meant to represent an 'accession' that sequences are identified by.

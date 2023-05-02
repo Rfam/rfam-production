@@ -170,7 +170,7 @@ class GenomeDownloader:
     info: SqliteDict
     proteome: uniprot.ProteomeInfo
     assembly_report: ty.Optional[ncbi.NcbiAssemblyReport]
-    _metadata: ty.List[FromFasta]
+    from_fasta: ty.List[FromFasta]
 
     @classmethod
     def build(
@@ -188,7 +188,7 @@ class GenomeDownloader:
             info=info,
             proteome=proteome,
             assembly_report=assembly_report,
-            metadata=[],
+            from_fasta=[],
         )
 
     def fetch_records(self) -> Records:
@@ -208,9 +208,9 @@ class GenomeDownloader:
         if missing:
             yield from missing_records(missing)
 
-    def metadata(self, version) -> Metadata:
+    def metadata(self, version: str) -> Metadata:
         return Metadata.build(
-            version, self.proteome, self.assembly_report, self._metadata
+            version, self.proteome, self.assembly_report, self.from_fasta
         )
 
     def records(self) -> Records:
@@ -221,6 +221,6 @@ class GenomeDownloader:
             if record.id in seen:
                 LOGGER.error("Somehow got duplicate record id %s", record.id)
                 continue
-            self._metadata.append(FromFasta.from_record(record))
+            self.from_fasta.append(FromFasta.from_record(record))
             yield record
             seen.add(record.id)

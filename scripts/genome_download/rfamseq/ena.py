@@ -16,12 +16,15 @@ limitations under the License.
 import logging
 import os
 import re
+import tempfile
 import typing as ty
 from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
-from rfamseq import wget, wgs
+from Bio import SeqIO
+
+from rfamseq import fasta, wget, wgs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,9 +72,19 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
 
 
 @contextmanager
+def normalized(template: str, **data) -> ty.Iterator[ty.IO]:
+    with tempfile.NamedTemporaryFile(dir=os.curdir) as tmp:
+        with fetch(template, **data) as raw:
+            SeqIO.write(fasta.parse(raw), tmp.name, "fasta")
+        tmp.flush()
+        tmp.seek(0)
+        yield tmp
+
+
+@contextmanager
 def fetch_fasta(accession: str) -> ty.Iterator[ty.IO]:
     LOGGER.info("Fetching %s fasta from ENA", accession)
-    with fetch(ENA_FASTA_URL, accession=accession) as handle:
+    with normalized(ENA_FASTA_URL, accession=accession) as handle:
         yield handle
 
 
@@ -91,7 +104,7 @@ def wgs_fasta(
     url = wgs_fasta_url(prefix, use_suppressed=use_suppressed)
     LOGGER.info("Fetching the wgs fasta set for %s at %s", prefix, url)
     try:
-        with fetch(url) as handle:
+        with normalized(url) as handle:
             yield handle
     except wget.FetchError as err:
         LOGGER.exception(err)
@@ -99,5 +112,5 @@ def wgs_fasta(
             raise err
         LOGGER.info("Trying to increment and grab next WGS set")
         next_url = wgs_fasta_url(prefix.next_version())
-        with fetch(next_url, max_increase=max_increase - 1) as handle:
+        with normalized(next_url, max_increase=max_increase - 1) as handle:
             yield handle

@@ -109,6 +109,39 @@ class NcbiSequenceInfo:
         return self.role is SequenceRole.UNPLACED_SCAFFOLD
 
 
+@frozen
+class NcbiAssemblyReport:
+    taxid: int = field(metadata={"ncbi_name": "Taxid"})
+    assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})
+    assembly_level: ty.Optional[AssemblyLevel] = field(
+        metadata={"ncbi_name": "Assembly level"}
+    )
+    organism_name: str = field(metadata={"ncbi_name": "Organism name"})
+    bio_sample: ty.Optional[str] = field(metadata={"ncbi_name": "BioSample"})
+    bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
+    wgs_project: ty.Optional[str] = field(metadata={"ncbi_name": "WGS project"})
+    sequence_info: ty.Dict[str, NcbiSequenceInfo]
+
+    def info_for(self, accession: Accession) -> ty.Optional[NcbiSequenceInfo]:
+        """
+        Find the NcbiSequenceInfo for the given accession.
+        """
+
+        versionless = accession.versionless()
+        if info := self.sequence_info.get(str(versionless), None):
+            if info.matches(accession):
+                return info
+        for alias in versionless.aliases:
+            if info := self.info_for(alias):
+                return info
+        return None
+
+    def is_unplaced(self, accession: Accession) -> bool:
+        if info := self.info_for(accession):
+            return info.is_unplaced()
+        return False
+
+
 @lru_cache
 def sequence_header(raw_headers: ty.Tuple[str]) -> ty.List[str]:
     mapping = {}
@@ -123,31 +156,6 @@ def sequence_header(raw_headers: ty.Tuple[str]) -> ty.List[str]:
         else:
             headers.append(raw)
     return headers
-
-
-@frozen
-class NcbiAssemblyReport:
-    taxid: int = field(metadata={"ncbi_name": "Taxid"})
-    assembly_name: str = field(metadata={"ncbi_name": "Assembly name"})
-    assembly_level: ty.Optional[AssemblyLevel] = field(
-        metadata={"ncbi_name": "Assembly level"}
-    )
-    organism_name: str = field(metadata={"ncbi_name": "Organism name"})
-    bio_sample: ty.Optional[str] = field(metadata={"ncbi_name": "BioSample"})
-    bio_project: ty.Optional[str] = field(metadata={"ncbi_name": "BioProject"})
-    wgs_project: ty.Optional[str] = field(metadata={"ncbi_name": "WGS project"})
-    sequence_info: ty.List[NcbiSequenceInfo]
-
-    def info_for(self, accession: Accession) -> ty.Optional[NcbiSequenceInfo]:
-        for info in self.sequence_info:
-            if info.matches(accession):
-                return info
-        return None
-
-    def is_unplaced(self, accession: Accession) -> bool:
-        if info := self.info_for(accession):
-            return info.is_unplaced()
-        return False
 
 
 def parse_header_line(line: str) -> ty.Optional[ty.Tuple[str, ty.Optional[str]]]:
@@ -208,7 +216,16 @@ def parse_assembly_info(handle: ty.IO) -> ty.Optional[NcbiAssemblyReport]:
         LOGGER.info("No sequences found, returning no assembly info")
         return None
 
-    raw["sequence_info"] = sequences
+    raw["sequence_info"] = {}
+    for sequence in sequences:
+        info = cattrs.structure(sequence, NcbiSequenceInfo)
+        if info.genbank_accession:
+            acc = str(info.genbank_accession.versionless())
+            raw["sequence_info"][acc] = sequence
+        if info.refseq_accession:
+            acc = str(info.refseq_accession.versionless())
+            raw["sequence_info"][acc] = sequence
+    assert len(raw["sequence_info"]) >= len(sequences)
     return cattrs.structure(raw, NcbiAssemblyReport)
 
 

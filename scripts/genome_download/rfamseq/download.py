@@ -18,20 +18,15 @@ from __future__ import annotations
 import logging
 import typing as ty
 from contextlib import contextmanager
+from pathlib import Path
 
 from attrs import define
 from Bio import SeqIO
 from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, fasta, ncbi, uniprot, wget
-from rfamseq.fasta_filter import (
-    FastaFilter,
-    Found,
-    MissingAccession,
-    MissingWgsSequence,
-    MissingWgsSet,
-)
+from rfamseq import easel, ena, fasta, ncbi, uniprot, wget
+from rfamseq.fasta_filter import FastaFilter
 from rfamseq.metadata import FromFasta, Metadata
 from rfamseq.missing import Missing
 from rfamseq.utils import assert_never, batched
@@ -48,8 +43,17 @@ class AccessionLookupFailed(Exception):
 
 
 @contextmanager
-def fetch_genome(info: SqliteDict, genome: uniprot.GenomeInfo) -> ty.Iterator[ty.IO]:
+def fetch_genome(
+    info: SqliteDict, genome: uniprot.GenomeInfo, fetched: ty.Optional[Path]
+) -> ty.Iterator[ty.IO]:
     assert genome.accession, "Genome must have a primary accession"
+
+    LOGGER.info("Fetching the requested genome %s", genome)
+    if fetched and fetched.exists():
+        LOGGER.info("Using given file %s", fetched)
+        with fetched.open("rb") as raw:
+            yield raw
+        return
 
     if genome.source and genome.source.from_ebi():
         try:
@@ -71,47 +75,23 @@ def genomic_records(
     genome: uniprot.GenomeInfo,
     assembly_report: ty.Optional[ncbi.NcbiAssemblyReport],
     missing: Missing,
+    fetched: ty.Optional[Path],
 ) -> Records:
     assert genome.accession, "Genome must have a primary accession"
 
-    with fetch_genome(info, genome) as records:
-        selector = FastaFilter.from_selected(assembly_report, genome.components)
-        for classification in selector.filter(records):
-            match classification:
-                case Found():
-                    LOGGER.info(
-                        "Found expected record %s in %s",
-                        classification.record.id,
-                        genome.accession,
-                    )
-                    yield classification.record
-
-                case MissingAccession():
-                    LOGGER.info(
-                        "Genome %s did not contain accession %s",
-                        genome.accession,
-                        classification.accession,
-                    )
-                    missing.add(classification.accession)
-
-                case MissingWgsSet():
-                    LOGGER.info(
-                        "Genome %s did not contain any known sequences from WGS set %s",
-                        genome.accession,
-                        classification.prefix,
-                    )
-                    missing.add(classification.prefix)
-
-                case MissingWgsSequence():
-                    LOGGER.info(
-                        "Genome %s did not contain WGS sequence %s",
-                        genome.accession,
-                        classification.sequence_id,
-                    )
-                    missing.add(classification.sequence_id)
-
-                case _:
-                    assert_never(classification)
+    selector = FastaFilter.from_selected(assembly_report, genome.components)
+    with fetch_genome(info, genome, fetched) as handle:
+        ids = fasta.extract_ids(Path(handle.name))
+        selected, missed = selector.filter_ids(ids)
+        missing.update(missed)
+        if not selected:
+            raise ValueError("Selected no sequences")
+        elif selected == ids:
+            yield from SeqIO.parse(handle.name, "fasta")
+        else:
+            LOGGER.debug("Filtering with easel")
+            with easel.filtered(Path(handle.name), selected) as filtered:
+                yield from SeqIO.parse(filtered.name, "fasta")
 
 
 @sleep_and_retry
@@ -171,10 +151,14 @@ class GenomeDownloader:
     proteome: uniprot.ProteomeInfo
     assembly_report: ty.Optional[ncbi.NcbiAssemblyReport]
     from_fasta: ty.List[FromFasta]
+    prefetched: ty.Optional[Path] = None
 
     @classmethod
     def build(
-        cls, info: SqliteDict, proteome: uniprot.ProteomeInfo
+        cls,
+        info: SqliteDict,
+        proteome: uniprot.ProteomeInfo,
+        prefetched=None,
     ) -> GenomeDownloader:
         genome = proteome.genome_info
         assembly_report = None
@@ -189,6 +173,7 @@ class GenomeDownloader:
             proteome=proteome,
             assembly_report=assembly_report,
             from_fasta=[],
+            prefetched=prefetched,
         )
 
     def fetch_records(self) -> Records:
@@ -203,7 +188,9 @@ class GenomeDownloader:
                 case _:
                     assert_never(genome.components)
         else:
-            yield from genomic_records(self.info, genome, self.assembly_report, missing)
+            yield from genomic_records(
+                self.info, genome, self.assembly_report, missing, self.prefetched
+            )
 
         if missing:
             yield from missing_records(missing)

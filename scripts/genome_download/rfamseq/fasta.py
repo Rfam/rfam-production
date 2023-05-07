@@ -13,12 +13,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import io
 import logging
+import subprocess as sp
 import typing as ty
+from pathlib import Path
 
 from Bio import SeqIO
 
 LOGGER = logging.getLogger(__name__)
+
+
+def extract_ids(path: Path) -> ty.Set[str]:
+    """
+    Extract all sequence ids from the fasta file at the given path. This uses
+    seqkit to parse the file and extract the ids quickly. This will fail of no
+    ids are extracted.
+    """
+
+    ids = set()
+    text = sp.check_output(
+        ["seqkit", "seq", "--name", "--only-id", str(path)], text=True
+    )
+    for line in io.StringIO(text):
+        ids.add(line.strip())
+    if not ids:
+        raise ValueError(f"Somehow read no ids from {path}")
+    return ids
 
 
 def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:

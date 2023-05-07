@@ -76,6 +76,23 @@ class Accession:
             or any(a.matches(self) for a in accession.aliases)
         )
 
+    def versionless(self) -> Accession:
+        """
+        Generate a versionless accession.
+        """
+        return Accession(
+            accession=self.accession,
+            version=None,
+            aliases=tuple(a.versionless() for a in self.aliases),
+        )
+
+    def unaliased(self) -> Accession:
+        return Accession(
+            accession=self.accession,
+            version=self.version,
+            aliases=tuple(),
+        )
+
     def versioned(self) -> bool:
         """
         Check if this accession is versioned.

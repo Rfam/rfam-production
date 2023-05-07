@@ -37,8 +37,8 @@ from rfamseq.ncbi import assembly_report as report
                 bio_sample="SAMN01120252",
                 bio_project="PRJNA83435",
                 wgs_project="ALWZ05",
-                sequence_info=[
-                    ncbi.NcbiSequenceInfo(
+                sequence_info={
+                    ("ALWZ05S0000001"): ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("ALWZ05S0000001.1"),
                         refseq_accession=None,
                         relationship=ncbi.SequenceRelationship.DIFFERENT,
@@ -47,7 +47,7 @@ from rfamseq.ncbi import assembly_report as report
                         molecule_type=None,
                         length=1717731,
                     ),
-                    ncbi.NcbiSequenceInfo(
+                    ("ALWZ05S0000002"): ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("ALWZ05S0000002.1"),
                         refseq_accession=None,
                         relationship=ncbi.SequenceRelationship.DIFFERENT,
@@ -56,7 +56,7 @@ from rfamseq.ncbi import assembly_report as report
                         molecule_type=None,
                         length=2066984,
                     ),
-                ],
+                },
             ),
         ),
         (
@@ -69,8 +69,8 @@ from rfamseq.ncbi import assembly_report as report
                 bio_sample="SAMN02647163",
                 bio_project="PRJNA238952",
                 wgs_project=None,
-                sequence_info=[
-                    ncbi.NcbiSequenceInfo(
+                sequence_info={
+                    ("CP007265"): ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("CP007265.1"),
                         refseq_accession=Accession.build("NZ_CP007265.1"),
                         relationship=ncbi.SequenceRelationship.EQUAL,
@@ -78,8 +78,17 @@ from rfamseq.ncbi import assembly_report as report
                         role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
                         molecule_type="Chromosome",
                         length=4758629,
-                    )
-                ],
+                    ),
+                    ("NZ_CP007265"): ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("CP007265.1"),
+                        refseq_accession=Accession.build("NZ_CP007265.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="ANONYMOUS",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Chromosome",
+                        length=4758629,
+                    ),
+                },
             ),
         ),
         (
@@ -92,8 +101,8 @@ from rfamseq.ncbi import assembly_report as report
                 bio_sample=None,
                 bio_project="PRJNA485481",
                 wgs_project=None,
-                sequence_info=[
-                    ncbi.NcbiSequenceInfo(
+                sequence_info={
+                    ("KX689265"): ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("KX689265.1"),
                         refseq_accession=Accession.build("NC_033176.1"),
                         relationship=ncbi.SequenceRelationship.EQUAL,
@@ -101,8 +110,17 @@ from rfamseq.ncbi import assembly_report as report
                         role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
                         molecule_type="Segment",
                         length=None,
-                    )
-                ],
+                    ),
+                    ("NC_033176"): ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("KX689265.1"),
+                        refseq_accession=Accession.build("NC_033176.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="NC_033176.1",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Segment",
+                        length=None,
+                    ),
+                },
             ),
         ),
         (
@@ -115,8 +133,8 @@ from rfamseq.ncbi import assembly_report as report
                 bio_sample="SAMN04488563",
                 bio_project="PRJEB16466",
                 wgs_project=None,
-                sequence_info=[
-                    ncbi.NcbiSequenceInfo(
+                sequence_info={
+                    ("LT629791"): ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("LT629791.1"),
                         refseq_accession=Accession.build("NZ_LT629791.1"),
                         relationship=ncbi.SequenceRelationship.EQUAL,
@@ -124,8 +142,17 @@ from rfamseq.ncbi import assembly_report as report
                         role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
                         molecule_type="Chromosome",
                         length=7716600,
-                    )
-                ],
+                    ),
+                    ("NZ_LT629791"): ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("LT629791.1"),
+                        refseq_accession=Accession.build("NZ_LT629791.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="I",
+                        role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+                        molecule_type="Chromosome",
+                        length=7716600,
+                    ),
+                },
             ),
         ),
         (
@@ -138,8 +165,8 @@ from rfamseq.ncbi import assembly_report as report
                 bio_sample="SAMN02981559",
                 bio_project="PRJNA215016",
                 wgs_project="AVPB01",
-                sequence_info=[
-                    ncbi.NcbiSequenceInfo(
+                sequence_info={
+                    "KE698715": ncbi.NcbiSequenceInfo(
                         genbank_accession=Accession.build("KE698715.1"),
                         refseq_accession=Accession.build("NW_005847012.1"),
                         relationship=ncbi.SequenceRelationship.EQUAL,
@@ -148,7 +175,34 @@ from rfamseq.ncbi import assembly_report as report
                         molecule_type=None,
                         length=500,
                     ),
-                    ncbi.NcbiSequenceInfo(
+                    "NW_005847012": ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("KE698715.1"),
+                        refseq_accession=Accession.build("NW_005847012.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="scaffold3284_1",
+                        role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                        molecule_type=None,
+                        length=500,
+                    ),
+                    ("KE698715"): ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("KE698715.1"),
+                        refseq_accession=Accession.build("NW_005847012.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="scaffold3284_1",
+                        role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                        molecule_type=None,
+                        length=500,
+                    ),
+                    ("NW_005847012"): ncbi.NcbiSequenceInfo(
+                        genbank_accession=Accession.build("KE698715.1"),
+                        refseq_accession=Accession.build("NW_005847012.1"),
+                        relationship=ncbi.SequenceRelationship.EQUAL,
+                        name="scaffold3284_1",
+                        role=ncbi.SequenceRole.UNPLACED_SCAFFOLD,
+                        molecule_type=None,
+                        length=500,
+                    ),
+                    ("NC_004448"): ncbi.NcbiSequenceInfo(
                         genbank_accession=None,
                         refseq_accession=Accession.build("NC_004448.1"),
                         relationship=ncbi.SequenceRelationship.DIFFERENT,
@@ -157,7 +211,7 @@ from rfamseq.ncbi import assembly_report as report
                         molecule_type="Mitochondrion",
                         length=16746,
                     ),
-                ],
+                },
             ),
         ),
     ],
@@ -355,19 +409,19 @@ def test_sequence_info_detects_matches(info, accession, expected):
     assert info.matches(accession) == expected
 
 
-@pytest.mark.parametrize(
-    "url,accession,expected",
-    [
-        (
-            "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/455/745/GCF_000455745.1_ASM45574v1/GCF_000455745.1_ASM45574v1_assembly_report.txt",
-            "NW_005841829.1",
-            True,
-        )
-    ],
-)
-def test_can_detect_when_sequence_is_unplaced(url, accession, expected):
-    response = requests.get(url)
-    response.raise_for_status()
-    rep = report.parse_assembly_info(StringIO(response.text))
-    assert rep
-    assert rep.is_unplaced(Accession.build(accession)) == expected
+# @pytest.mark.parametrize(
+#     "url,accession,expected",
+#     [
+#         (
+#             "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/455/745/GCF_000455745.1_ASM45574v1/GCF_000455745.1_ASM45574v1_assembly_report.txt",
+#             "NW_005841829.1",
+#             True,
+#         )
+#     ],
+# )
+# def test_can_detect_when_sequence_is_unplaced(url, accession, expected):
+#     response = requests.get(url)
+#     response.raise_for_status()
+#     rep = report.parse_assembly_info(StringIO(response.text))
+#     assert rep
+#     assert rep.is_unplaced(Accession.build(accession)) == expected

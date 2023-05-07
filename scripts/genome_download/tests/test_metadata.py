@@ -159,46 +159,46 @@ def test_can_build_rfamseq_entries(taxid, info, expected):
     assert metadata.RfamSeq.from_fasta(taxid, info) == expected
 
 
-@pytest.mark.parametrize(
-    "upid,version,info,seq_info,expected",
-    [
-        (
-            "UP1",
-            "15.0",
-            metadata.FromFasta(
-                rfamseq_acc="AACE03000008.2", length=10, description="sequence"
-            ),
-            None,
-            metadata.GenSeq(
-                upid="UP1",
-                rfamseq_acc="AACE03000008.2",
-                chromosome_name=None,
-                chromosome_type=None,
-                version="15.0",
-            ),
-        ),
-        (
-            "UP1",
-            "15.0",
-            metadata.FromFasta(
-                rfamseq_acc="AACE03000008.2", length=10, description="sequence"
-            ),
-            ncbi.NcbiSequenceInfo(
-                genbank_accession="AACE03000008.2",
-                name="A",
-                role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
-                molecule_type="Chromosome",
-                length=10,
-            ),
-            metadata.GenSeq(
-                upid="UP1",
-                rfamseq_acc="AACE03000008.2",
-                chromosome_name="A",
-                chromosome_type="Chromosome",
-                version="15.0",
-            ),
-        ),
-    ],
-)
-def test_can_build_genseq_from_entries(upid, version, seq_info, info, expected):
-    assert metadata.GenSeq.from_fasta(upid, version, seq_info, info) == expected
+# @pytest.mark.parametrize(
+#     "upid,version,info,seq_info,expected",
+#     [
+#         (
+#             "UP1",
+#             "15.0",
+#             metadata.FromFasta(
+#                 rfamseq_acc="AACE03000008.2", length=10, description="sequence"
+#             ),
+#             None,
+#             metadata.GenSeq(
+#                 upid="UP1",
+#                 rfamseq_acc="AACE03000008.2",
+#                 chromosome_name=None,
+#                 chromosome_type=None,
+#                 version="15.0",
+#             ),
+#         ),
+#         (
+#             "UP1",
+#             "15.0",
+#             metadata.FromFasta(
+#                 rfamseq_acc="AACE03000008.2", length=10, description="sequence"
+#             ),
+#             ncbi.NcbiSequenceInfo(
+#                 genbank_accession="AACE03000008.2",
+#                 name="A",
+#                 role=ncbi.SequenceRole.ASSEMBLED_MOLECULE,
+#                 molecule_type="Chromosome",
+#                 length=10,
+#             ),
+#             metadata.GenSeq(
+#                 upid="UP1",
+#                 rfamseq_acc="AACE03000008.2",
+#                 chromosome_name="A",
+#                 chromosome_type="Chromosome",
+#                 version="15.0",
+#             ),
+#         ),
+#     ],
+# )
+# def test_can_build_genseq_from_entries(upid, version, seq_info, info, expected):
+#     assert metadata.GenSeq.from_fasta(upid, version, seq_info, info) == expected

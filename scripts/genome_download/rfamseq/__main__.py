@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import csv
 import json
 import logging
 import sys
@@ -47,7 +46,11 @@ def cli(log_level="info", log_file=None):
     """
     Main entry point for updating rfamseq for Rfam.
     """
-    logging.basicConfig(filename=log_file, level=getattr(logging, log_level.upper()))
+    logging.basicConfig(
+        filename=log_file,
+        level=getattr(logging, log_level.upper()),
+        format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s",
+    )
 
 
 @cli.command("build-metadata")
@@ -162,6 +165,68 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             with fasta_out.open("w") as fasta:
                 try:
                     downloader = download.GenomeDownloader.build(db, proteome)
+                    SeqIO.write(downloader.records(), fasta, "fasta")
+                except Exception as err:
+                    LOGGER.error("Failed to download %s", proteome)
+                    LOGGER.exception(err)
+                    raise err
+
+            metadata_out = out / f"{proteome.upi}.jsonl"
+            with metadata_out.open("w") as meta:
+                info = downloader.metadata(version)
+                json.dump(cattrs.unstructure(info), meta, default=serialize)
+                meta.write("\n")
+
+
+@cli.command("filter-fasta")
+@click.argument("version")
+@click.argument(
+    "ncbi-info",
+    type=click.Path(),
+)
+@click.argument(
+    "fasta-file",
+    type=click.Path(),
+)
+@click.argument(
+    "proteome-file",
+    type=click.File("r"),
+)
+@click.argument(
+    "output",
+    type=click.Path(),
+)
+def filter_fasta_cmd(
+    version: str, ncbi_info: str, fasta_file: str, proteome_file: str, output: str
+):
+    """
+    Download the genomes specified in proteome-file. The file is the result of
+    proteomes2genomes or a chunk of that file. This will download the genome and
+    limit it to the specified components. This will produce a UP*.fa and
+    UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
+    and .fa contains the specified metadata.
+
+    \b
+    Arguments:
+      VERSION        Version of the rfamseq database, eg 15.0
+      NCBI-INFO      Path to file produced by parse-assembly-summary
+      FASTA-FILE     Path to the fasta file to parse
+      PROTEOME-FILE  Path to the file produced by: proteomes2genomes
+      OUTPUT         Path to write the sequence fasta and metadata jsonl files to
+    """
+    out = Path(output)
+    with SqliteDict(ncbi_info, flag="r") as db:
+        for line in proteome_file:
+            raw = json.loads(line)
+            proteome = cattrs.structure(raw, uniprot.ProteomeInfo)
+            LOGGER.info("Downloading %s", proteome.upi)
+
+            fasta_out = out / f"{proteome.upi}.fa"
+            with fasta_out.open("w") as fasta:
+                try:
+                    downloader = download.GenomeDownloader.build(
+                        db, proteome, prefetched=Path(fasta_file)
+                    )
                     SeqIO.write(downloader.records(), fasta, "fasta")
                 except Exception as err:
                     LOGGER.error("Failed to download %s", proteome)

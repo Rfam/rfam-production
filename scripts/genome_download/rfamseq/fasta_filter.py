@@ -23,6 +23,7 @@ from Bio import SeqIO
 
 from rfamseq import fasta, ncbi, uniprot, wgs
 from rfamseq.accession import Accession
+from rfamseq.missing import Missing as MissingTracker
 from rfamseq.utils import assert_never
 
 LOGGER = logging.getLogger(__name__)
@@ -169,7 +170,7 @@ class FastaFilter:
             case _:
                 assert_never(self.requested)
 
-    def __missing__(self, seen: AccessionTracker) -> ty.Iterable[RecordTypes]:
+    def __missing__(self, seen: AccessionTracker) -> ty.Iterable[Missing]:
         match self.requested:
             case uniprot.All():
                 if not seen.count:
@@ -214,6 +215,38 @@ class FastaFilter:
 
             case _:
                 assert_never(self.requested)
+
+    def filter_ids(self, ids: ty.Set[str]) -> ty.Tuple[ty.Set[str], MissingTracker]:
+        """
+        Iterate over the given ids and select those which were requested.
+        """
+
+        found: ty.Set[str] = set()
+        seen = AccessionTracker.empty()
+        LOGGER.info("Filtering %i ids", len(ids))
+        for id in ids:
+            accession = parse_sequence_id(id)
+            if matching := self.matching_components(accession):
+                seen.mark(matching)
+                found.add(id)
+
+        LOGGER.info("Found %i matching ids", len(found))
+        LOGGER.debug("Requested %s", self.requested)
+        LOGGER.debug("Seen %s", seen)
+
+        missing = MissingTracker.empty()
+        for missed in self.__missing__(seen):
+            match missed:
+                case MissingWgsSet():
+                    missing.add(missed.prefix)
+                case MissingWgsSequence():
+                    missing.add(missed.sequence_id)
+                case MissingAccession():
+                    missing.add(missed.accession)
+                case _:
+                    assert_never(missed)
+
+        return (found, missing)
 
     def filter(self, handle: ty.IO) -> ty.Iterable[RecordTypes]:
         """

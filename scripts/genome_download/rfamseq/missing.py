@@ -26,15 +26,32 @@ from rfamseq.utils import assert_never
 
 @define
 class Missing:
+    """
+    This is meant to track what things which were requested but were missed.
+    This is basically a collection of sets for Accessions, WgsPrefixes and
+    WgsSequeceIds. This has some logic for remove conceptually duplicate entries,
+    ie WgsSequenceIds which are members of a WgsPrefix that is already stored.
+    """
+
     accessions: ty.Set[Accession]
     wgs_sets: ty.Set[wgs.WgsPrefix]
     wgs_sequences: ty.Set[wgs.WgsSequenceId]
 
     @classmethod
     def empty(cls) -> Missing:
+        """
+        Create an empty Missing object.
+        """
         return Missing(accessions=set(), wgs_sets=set(), wgs_sequences=set())
 
     def add_components(self, comps: uniprot.SelectedComponents):
+        """
+        Add all entries in the SelectedComponents to this Missing object. If
+        the SelectedComponents includes unplaced items this is an error. This
+        cannot track which ids are unplaced since that can only be known by
+        parsing an assembly report.
+        """
+
         if comps.unplaced:
             raise ValueError("Cannot add unplaced to Missing")
         for accession in comps.accessions:
@@ -45,6 +62,13 @@ class Missing:
             self.add(wgs_sequence)
 
     def add(self, accession: ty.Union[wgs.WgsPrefix, wgs.WgsSequenceId, Accession]):
+        """
+        Add the given Accession, WgsSequenceId or WgsPrefix to this Missing
+        object. If given a WgsPrefix this will remove all WgsSequenceIds which
+        have a prefix that is already stored. Additionally, giving a
+        WgSequenceId which has a known prefix will not do anything.
+        """
+
         match accession:
             case wgs.WgsSequenceId():
                 if not any(w.matches(accession.prefix) for w in self.wgs_sets):
@@ -61,5 +85,23 @@ class Missing:
             case _:
                 assert_never(accession)
 
+    def update(self, other: Missing):
+        """
+        Update this Missing object with all other entries in the other missing.
+        This is the same as updating all involved sets, but does ensure that
+        WGS sets/sequences are collapsed properly.
+        """
+
+        for accession in other.accessions:
+            self.add(accession)
+        for wgs_set in other.wgs_sets:
+            self.add(wgs_set)
+        for wgs_sequence in other.wgs_sequences:
+            self.add(wgs_sequence)
+
     def __bool__(self) -> bool:
+        """
+        Returns True if there are any accessions, wgs_sets or wgs_sequences.
+        """
+
         return bool(self.accessions) or bool(self.wgs_sets) or bool(self.wgs_sequences)

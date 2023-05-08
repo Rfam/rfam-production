@@ -167,8 +167,8 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
                     downloader = download.GenomeDownloader.build(db, proteome)
                     SeqIO.write(downloader.records(), fasta, "fasta")
                 except Exception as err:
-                    LOGGER.error("Failed to download %s", proteome)
                     LOGGER.exception(err)
+                    LOGGER.error("Failed to download %s", proteome)
                     raise err
 
             metadata_out = out / f"{proteome.upi}.jsonl"

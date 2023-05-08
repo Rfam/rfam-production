@@ -19,8 +19,21 @@ import pytest
 
 from rfamseq import ncbi, uniprot
 from rfamseq.accession import Accession
-from rfamseq.fasta_filter import FastaFilter
+from rfamseq.fasta_filter import FastaFilter, parse_sequence_id
 from rfamseq.wgs import WgsPrefix, WgsSequenceId
+
+
+@pytest.mark.parametrize(
+    "given,expected",
+    [
+        ("CM000360.1", Accession.build("CM000360.1")),
+        ("DLUF01000089.1", WgsSequenceId.build("DLUF01000089.1")),
+        ("DLUF01000089", WgsSequenceId.build("DLUF01000089")),
+        ("BM000999", Accession.build("BM000999")),
+    ],
+)
+def test_can_parse_sequence_id_correct(given, expected):
+    assert parse_sequence_id(given) == expected
 
 
 @pytest.mark.parametrize(
@@ -30,38 +43,47 @@ from rfamseq.wgs import WgsPrefix, WgsSequenceId
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             Accession.build("CM000360.1"),
-            [Accession.build("CM000360")],
+            {Accession.build("CM000360")},
         ),
         (
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             Accession.build("CM000360"),
-            [Accession.build("CM000360")],
+            {Accession.build("CM000360")},
         ),
         (
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             Accession.build("NT_078266.2"),
-            [Accession.build("CM000357")],
+            {Accession.build("CM000357")},
         ),
         (
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             Accession.build("NT_078266"),
-            [Accession.build("CM000357")],
+            {Accession.build("CM000357")},
         ),
         (
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             Accession.build("BM000999"),
-            [],
+            set(),
         ),
         (
             "UP000007062",
             "GCA_000005575.1_AgamP3_assembly_report.txt",
             WgsSequenceId.build("AAAB01001191.1"),
-            [WgsPrefix.build("AAAB01")],
+            {WgsPrefix.build("AAAB01")},
         ),
+        (
+            "UP000229442",
+            "GCA_002742765.1_UBA12182_assembly_report.txt",
+            WgsSequenceId.build("DLUF01000089.1"),
+            {
+                WgsPrefix.build("DLUF01"),
+                uniprot.UNPLACED,
+            },
+        )
         # (
         #     "UP000007062",
         #     "GCA_000005575.1_AgamP3_assembly_report.txt",
@@ -84,4 +106,7 @@ def test_can_detect_expected_matches(upi, genome, given, expected):
     info = info[0]
     requested = info.genome_info.components
     filter = FastaFilter.from_selected(assembly_report, requested)
-    assert filter.matching_components(given) == expected
+    found = filter.matching_components(given)
+    if isinstance(found, list):
+        found = set(found)
+    assert found == expected

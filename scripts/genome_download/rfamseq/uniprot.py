@@ -45,7 +45,7 @@ class All:
     all: bool
 
 
-@frozen
+@frozen(hash=True)
 class Unplaced:
     unplaced: bool
 

@@ -73,7 +73,7 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
 
 @contextmanager
 def normalized(template: str, **data) -> ty.Iterator[ty.IO]:
-    with tempfile.NamedTemporaryFile(dir=os.curdir) as tmp:
+    with tempfile.NamedTemporaryFile(mode="w", dir=os.curdir) as tmp:
         with fetch(template, **data) as raw:
             SeqIO.write(fasta.parse(raw), tmp.name, "fasta")
         tmp.flush()

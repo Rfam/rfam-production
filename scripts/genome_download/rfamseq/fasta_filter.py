@@ -181,7 +181,8 @@ class FastaFilter:
                     if not self.assembly_report:
                         LOGGER.error("Asked for unplaced but cannot infer any")
                     else:
-                        for sequence_info in self.assembly_report.sequence_info:
+                        infos = self.assembly_report.sequence_info
+                        for (_, sequence_info) in infos.items():
                             if not sequence_info.is_unplaced():
                                 continue
 

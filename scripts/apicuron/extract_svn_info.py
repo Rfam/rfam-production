@@ -4,7 +4,7 @@ import subprocess
 
 import argparse
 
-import scripts.apicuron.apicuron_conf as conf
+import scripts.apicuron.conf as conf
 
 
 def get_author(revision, svn_url):

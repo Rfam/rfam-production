@@ -15,8 +15,8 @@ def get_header():
         raise RuntimeError("No APICURON_TOKEN in config")
     header = {
         'accept: application/json',
-        'Content-Type: application/json',
-        'Authorization: ' + token
+        'Content-Type: multipart/form-data',
+        'authorization: ' + token
     }
     return header
 

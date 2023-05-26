@@ -4,7 +4,7 @@ import argparse
 from faker import Faker
 import pandas as pd
 
-from scripts.apicuron.apicuron_conf import sheet_terms, curator_orcids
+from scripts.apicuron.conf import sheet_terms, curator_orcids
 
 doc_url = 'https://docs.google.com/spreadsheets/d/{doc_id}/gviz/tq?tqx=out:csv&sheet={sheet_id}'
 

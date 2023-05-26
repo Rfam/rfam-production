@@ -49,8 +49,8 @@ def get_timestamp(revision, svn_url):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('end_rev', type=str, help='most recent revision number', action='store')
-    parser.add_argument('start_rev', type=str, help='revision number to start from e.g. revision at last release',
+    parser.add_argument('--end-rev', type=str, help='most recent revision number', action='store')
+    parser.add_argument('--start-rev', type=str, help='revision number to start from e.g. revision at last release',
                         action='store')
     args = parser.parse_args()
     reports_current = []

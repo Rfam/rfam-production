@@ -31,7 +31,7 @@ def get_term(revision, svn_url):
     p = subprocess.Popen(message_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
     activity_term = ''
-    for rfci_term, apicuron_term in conf.rfci_terms:
+    for rfci_term, apicuron_term in conf.rfci_terms.items():
         if rfci_term in output:
             activity_term = apicuron_term
     print(activity_term)
@@ -56,18 +56,24 @@ def main():
     args = parser.parse_args()
     reports_current = []
     reports_other = []
-    url = args.svn_url
+    url = args.svn
     for rev in range(args.start_rev, args.end_rev):
         author = get_author(rev, url)
-        entry = {
-            'activity_term': get_term(rev, url),
-            'timestamp': get_timestamp(rev, url),
-            'curator_orcid': conf.curator_orcids[author],
-            'entity_uri': "https://rfam.org/family/" + get_family(rev, url)
-        }
-        if any(author for author in conf.svn_authors):
+        if any(author == a for a in conf.svn_authors):
+            entry = {
+                'activity_term': get_term(rev, url),
+                'timestamp': get_timestamp(rev, url),
+                'curator_orcid': conf.curator_orcids[author],
+                'entity_uri': "https://rfam.org/family/" + get_family(rev, url)
+            }
             reports_current.append(entry)
         else:
+            entry = {
+                'activity_term': get_term(rev, url),
+                'timestamp': get_timestamp(rev, url),
+                'curator_orcid': author,
+                'entity_uri': "https://rfam.org/family/" + get_family(rev, url)
+            }
             reports_other.append(entry)
     with open('bulk_report_svn.json', "w") as bulk_report:
         json.dump(reports_current, bulk_report, indent=4, sort_keys=True)

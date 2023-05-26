@@ -2,9 +2,10 @@
 
 ## Update miRNA families
 
-Most of these steps use a CSV file as input. This CSV contains the miRBase ID, the Rfam accession number, and the threshold, 
+Most of these steps use a TSV file as input. This TSV contains the miRBase ID, the Rfam accession number, and the threshold, 
 as per the miRBase vs Rfam Dashboard. 
-e.g. MIPF0000056__mir-148,RF00248,53
+e.g. MIPF0000056__mir-148   RF00248 53
+
 Run the miRNA update pipeline to run the process end-to-end. 
 Use the following scripts if you wish to run the processes individually.
 
@@ -24,13 +25,13 @@ Use the following scripts if you wish to run the processes individually.
     `auto_addref.py --input <file> --sequential`
 
 5. Update the fields AU, SE, SS in the DESC files:
-    `update_desc.py --new --input <file>`
+    `update_desc.py --input <file>`
 
 6. Run the QC checks:
     `auto_rqc.py --input <file>`
 
 7. Check in the families:
-   `auto_rfci.py`
+   `auto_rfci.py --input <file>`
 
    
 ## Create new families

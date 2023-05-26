@@ -7,7 +7,7 @@ from config import rfam_local as config
 # examples
 SINGLE_REPORT_PAYLOAD = {
     "activity_term": "update_family",
-    "resource_uri": "https://registry.identifiers.org/registry/rfam",
+    "resource_id": "rfam",
     "timestamp": "2023-04-24T09:59:17.000Z",
     "curator_orcid": "0000-0003-2958-6837",
     "entity_uri": "https://identifiers.org/rfam:RF00657"

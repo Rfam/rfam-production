@@ -1,14 +1,3 @@
-svn_url = ''
-
-doc_url = 'https://docs.google.com/spreadsheets/d/{doc_id}/gviz/tq?tqx=out:csv&sheet={sheet_id}'
-
-report_entry = {
-    'activity_term': '{term}',
-    'timestamp': '{timestamp}',
-    'curator_orcid': '{curator}',
-    'entity_uri': '{uri}'
-}
-
 svn_authors = ['apetrov', 'evan', 'ikalveri', 'jgt', 'joanna', 'nancyontiveros', 'nawrocki', 'rdf', 'rfamprod',
                'ruthe', 'sb30', 'swb', 'testuser']
 

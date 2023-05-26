@@ -49,19 +49,22 @@ def get_timestamp(revision, svn_url):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--end-rev', type=str, help='most recent revision number', action='store')
-    parser.add_argument('--start-rev', type=str, help='revision number to start from e.g. revision at last release',
+    parser.add_argument('--end-rev', type=int, help='most recent revision number', action='store')
+    parser.add_argument('--start-rev', type=int, help='revision number to start from e.g. revision at last release',
                         action='store')
+    parser.add_argument('--svn', type=str, help='SVN repo to query', action='store')
     args = parser.parse_args()
     reports_current = []
     reports_other = []
-    url = conf.svn_url
+    url = args.svn_url
     for rev in range(args.start_rev, args.end_rev):
         author = get_author(rev, url)
-        entry = conf.report_entry.format(term=get_term(rev, url), timstamp=get_timestamp(rev, url),
-                                         curator=conf.curator_orcids[author],
-                                         uri="https://rfam.org/family/" + get_family(rev, url))
-
+        entry = {
+            'activity_term': get_term(rev, url),
+            'timestamp': get_timestamp(rev, url),
+            'curator_orcid': conf.curator_orcids[author],
+            'entity_uri': "https://rfam.org/family/" + get_family(rev, url)
+        }
         if any(author for author in conf.svn_authors):
             reports_current.append(entry)
         else:

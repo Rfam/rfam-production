@@ -4,7 +4,9 @@ import argparse
 from faker import Faker
 import pandas as pd
 
-from scripts.apicuron.apicuron_conf import sheet_terms, curator_orcids, report_entry, doc_url
+from scripts.apicuron.apicuron_conf import sheet_terms, curator_orcids
+
+doc_url = 'https://docs.google.com/spreadsheets/d/{doc_id}/gviz/tq?tqx=out:csv&sheet={sheet_id}'
 
 
 def get_random_timestamp():
@@ -24,11 +26,12 @@ def get_report_entries(doc_id, sheet_id):
     df = pd.read_csv(url)
     reports = []
     for index, row in df.iterrows():
-        family_acc = row['Rfam AC(s)'][:7]
-        entity_uri = 'https://rfam.org/family/' + family_acc
-        activity_term = sheet_terms[row['Action']]
-        curator = curator_orcids[row['Author']]
-        entry = report_entry.format(term=activity_term, timstamp=get_random_timestamp(), curator=curator, uri=entity_uri)
+        entry = {
+            'activity_term': sheet_terms[row['Action']],
+            'timestamp': get_random_timestamp(),
+            'curator_orcid': curator_orcids[row['Author']],
+            'entity_uri': 'https://rfam.org/family/' + row['Rfam AC(s)'][:7]
+        }
         reports.append(entry)
     return reports
 

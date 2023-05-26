@@ -22,7 +22,6 @@ def get_family(revision, svn_url):
     family = ''
     if match:
         family = match.group(0)
-    print(type(family), family)
     return family
 
 
@@ -34,7 +33,6 @@ def get_term(revision, svn_url):
     for rfci_term, apicuron_term in conf.rfci_terms.items():
         if rfci_term in output:
             activity_term = apicuron_term
-    print(activity_term)
     return activity_term
 
 
@@ -43,7 +41,6 @@ def get_timestamp(revision, svn_url):
     p = subprocess.Popen(date_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
     timestamp = output[:19]
-    print(timestamp)
     return timestamp
 
 
@@ -76,9 +73,11 @@ def main():
             }
             reports_other.append(entry)
     with open('bulk_report_svn.json', "w") as bulk_report:
-        json.dump(reports_current, bulk_report, indent=4, sort_keys=True)
+        reports = {'resource_id': 'rfam', 'reports': reports_current}
+        json.dump(reports, bulk_report, indent=4, sort_keys=True)
     with open('bulk_report_svn_others.json', "w") as bulk_report:
-        json.dump(reports_other, bulk_report, indent=4, sort_keys=True)
+        reports = {'resource_id': 'rfam', 'reports': reports_other}
+        json.dump(reports, bulk_report, indent=4, sort_keys=True)
 
 
 if __name__ == '__main__':

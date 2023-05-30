@@ -52,11 +52,10 @@ def parse_args():
 
 def main():
     args = parse_args()
-    doc_id = args.google_doc_id
-    sheet_id = args.google_sheet_id
-    reports = get_report_entries(doc_id, sheet_id)
-    with open('bulk_report_from_sheets.json', 'w') as bulk_report:
-        json.dump(reports, bulk_report, indent=4, sort_keys=True)
+    reports = get_report_entries(args.doc_id, args.sheet_id)
+    with open('bulk_report_from_sheets.json', 'w') as report:
+        reports = {'resource_id': 'rfam', 'reports': reports}
+        json.dump(reports, report, indent=4, sort_keys=True)
 
 
 if __name__ == '__main__':

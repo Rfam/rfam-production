@@ -8,6 +8,13 @@ import scripts.apicuron.conf as conf
 
 
 def get_author(revision, svn_url):
+    """
+    Run svnlook to get the author of the commit
+    :param revision: svn repo revision number
+    :param svn_url: filepath of the svn
+    :return: author
+    """
+
     author_cmd = "svnlook author -r {rev} {url}".format(rev=revision, url=svn_url)
     p = subprocess.Popen(author_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
@@ -15,6 +22,13 @@ def get_author(revision, svn_url):
 
 
 def get_family(revision, svn_url):
+    """
+    Run svnlook to get the directory changed in the commit, then parse this to extract the family name
+    :param revision: svn repo revision number
+    :param svn_url: filepath of the svn
+    :return: Rfam family name
+    """
+
     family_cmd = "svnlook dirs-changed -r {rev} {url}".format(rev=revision, url=svn_url)
     p = subprocess.Popen(family_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
@@ -26,6 +40,13 @@ def get_family(revision, svn_url):
 
 
 def get_term(revision, svn_url):
+    """
+    Run svnlook to get the message associated with the commit
+    :param revision: svn repo revision number
+    :param svn_url: filepath of the svn
+    :return: the activity term, e.g. 'create_family'
+    """
+
     message_cmd = "svnlook log -r {rev} {url}".format(rev=revision, url=svn_url)
     p = subprocess.Popen(message_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
@@ -37,6 +58,13 @@ def get_term(revision, svn_url):
 
 
 def get_timestamp(revision, svn_url):
+    """
+    Run svnlook to get the timestamp of the commit
+    :param revision: svn repo revision number
+    :param svn_url: filepath of the svn
+    :return: timestamp, as string
+    """
+
     date_cmd = "svnlook date -r {rev} {url}".format(rev=revision, url=svn_url)
     p = subprocess.Popen(date_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, stderr = p.communicate()
@@ -44,13 +72,20 @@ def get_timestamp(revision, svn_url):
     return timestamp
 
 
-def main():
+def parse_args():
+    """
+    Parse the CLI arguments
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--end-rev', type=int, help='most recent revision number', action='store')
     parser.add_argument('--start-rev', type=int, help='revision number to start from e.g. revision at last release',
                         action='store')
     parser.add_argument('--svn', type=str, help='SVN repo to query', action='store')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
     reports_current = []
     reports_other = []
     url = args.svn

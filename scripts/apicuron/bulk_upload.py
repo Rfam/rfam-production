@@ -34,7 +34,7 @@ def upload_bulk_report(report):
 
 def parse_args():
     """
-    Parse the cli arguments when calling this script to insert a text file to the PDB table in the database.
+    Parse the CLI arguments
     """
     parser = argparse.ArgumentParser(description='Bulk report submission to apicuron')
     parser.add_argument('-f', '--file', help='JSON file with data to upload', required=True)

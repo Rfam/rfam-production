@@ -10,18 +10,22 @@ doc_url = 'https://docs.google.com/spreadsheets/d/{doc_id}/gviz/tq?tqx=out:csv&s
 
 
 def get_random_timestamp():
+    """
+    Get a random timestamp since the start of the year
+    :return:
+    """
     fake = Faker()
     random_timestamp = fake.date_time_between(start_date='-1y', end_date='now')
     return random_timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
-def write_report(reports):
-    with open('bulk_report.json', 'w') as bulk_report:
-        json.dump(reports, bulk_report, indent=4, sort_keys=True)
-
-
 def get_report_entries(doc_id, sheet_id):
-
+    """
+    Parse the Google sheets doc to get the entries to add to the reports file
+    :param doc_id: ID of the Google sheet
+    :param sheet_id: ID of the individual sheet
+    :return: dict of the entries
+    """
     url = doc_url.format(doc_id=doc_id, sheet_id=sheet_id)
     df = pd.read_csv(url)
     reports = []
@@ -36,18 +40,23 @@ def get_report_entries(doc_id, sheet_id):
     return reports
 
 
-def main():
+def parse_args():
     """
-    Main entry point.
+    Parse the CLI arguments
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('doc_id', type=str, help='Google Doc ID', action='store')
     parser.add_argument('sheet_id', type=str, help='Google Sheet ID', action='store')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
     doc_id = args.google_doc_id
     sheet_id = args.google_sheet_id
     reports = get_report_entries(doc_id, sheet_id)
-    write_report(reports)
+    with open('bulk_report_from_sheets.json', 'w') as bulk_report:
+        json.dump(reports, bulk_report, indent=4, sort_keys=True)
 
 
 if __name__ == '__main__':

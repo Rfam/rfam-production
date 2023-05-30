@@ -13,7 +13,7 @@ SINGLE_REPORT_PAYLOAD = {
     "entity_uri": "https://identifiers.org/rfam:RF00657"
 }
 
-SINGLE_REPORT_URL = "https://dev.apicuron.org/reports/single"
+SINGLE_REPORT_URL = 'https://dev.apicuron.org/api/reports/single'
 
 
 def get_header():
@@ -22,7 +22,7 @@ def get_header():
     """
     token = config.APICURON_TOKEN
     if token is None:
-        raise RuntimeError("No APICURON_TOKEN in config")
+        raise RuntimeError('No APICURON_TOKEN in config')
     header = {
         'accept: application/json',
         'Content-Type: application/json',
@@ -39,5 +39,5 @@ def upload_single_report():
         response = requests.post(SINGLE_REPORT_URL, json=SINGLE_REPORT_PAYLOAD, headers=get_header())
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        logging.debug("HTTP error has occurred uploading to APICURON")
+        logging.debug('HTTP error has occurred uploading to APICURON')
         raise e

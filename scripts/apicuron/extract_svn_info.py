@@ -72,10 +72,10 @@ def main():
                 'entity_uri': "https://rfam.org/family/" + get_family(rev, url)
             }
             reports_other.append(entry)
-    with open('bulk_report_svn.json', "w") as bulk_report:
+    with open('bulk_report_svn.json', 'w') as bulk_report:
         reports = {'resource_id': 'rfam', 'reports': reports_current}
         json.dump(reports, bulk_report, indent=4, sort_keys=True)
-    with open('bulk_report_svn_others.json', "w") as bulk_report:
+    with open('bulk_report_svn_others.json', 'w') as bulk_report:
         reports = {'resource_id': 'rfam', 'reports': reports_other}
         json.dump(reports, bulk_report, indent=4, sort_keys=True)
 

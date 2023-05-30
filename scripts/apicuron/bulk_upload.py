@@ -12,11 +12,10 @@ def get_header():
     """
     token = rfam_config.APICURON_TOKEN
     if token is None:
-        raise RuntimeError("No APICURON_TOKEN in config")
+        raise RuntimeError('No APICURON_TOKEN in config')
     header = {
-        'accept: application/json',
-        'Content-Type: multipart/form-data',
-        'authorization: ' + token
+        'version': '2',
+        'authorization': token,
     }
     return header
 
@@ -26,10 +25,10 @@ def upload_bulk_report(report):
     Upload a bulk report to APICURON.
     """
     try:
-        response = requests.post(rfam_config.BULK_REPORT_URL, json=report, headers=get_header())
+        response = requests.post(rfam_config.BULK_REPORT_URL, files={'reports': open(report, 'r')}, headers=get_header())
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        logging.debug("HTTP error has occurred uploading to APICURON")
+        logging.debug('HTTP error has occurred uploading to APICURON')
         raise e
 
 
@@ -47,4 +46,4 @@ if __name__ == '__main__':
     if args.file:
         upload_bulk_report(args.file)
     else:
-        raise Exception("Please provide a JSON file to upload data to APICURON")
+        raise Exception('Please provide a JSON file to upload data to APICURON')

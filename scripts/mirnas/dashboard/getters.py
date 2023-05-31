@@ -77,9 +77,13 @@ def get_rfam_id(rfam_acc):
     """
     url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Family%22&fields=name&format=json'
     data = requests.get(url.format(rfam_acc))
-    if data.json()['hitCount'] != 0:
-        return (data.json()['entries'][0]['fields']['name'][0])
-    else:
+    try:
+        if data.json()['hitCount'] != 0:
+            return data.json()['entries'][0]['fields']['name'][0]
+        else:
+            return ''
+    except KeyError as e:
+        print('Warning: response from {url} did not contain a hit count, {e}'.format(url=url.format(rfam_acc), e=e))
         return ''
 
 

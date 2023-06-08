@@ -15,7 +15,7 @@ def get_random_timestamp():
     :return:
     """
     fake = Faker()
-    random_timestamp = fake.date_time_between(start_date='-1y', end_date='now')
+    random_timestamp = fake.date_time_between(start_date='-2y', end_date='now')
     return random_timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 

@@ -33,7 +33,7 @@ def get_header():
 
 def upload_single_report():
     """
-    Upload a single report to APICURON.
+    Upload a single report entry to APICURON.
     """
     try:
         response = requests.post(SINGLE_REPORT_URL, json=SINGLE_REPORT_PAYLOAD, headers=get_header())

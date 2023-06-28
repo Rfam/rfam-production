@@ -37,6 +37,9 @@ ENA_SUPPRESED_WGS_FASTA_URL = (
     "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/{prefix}/{name}.fasta.gz"
 )
 
+GLOBUS_WGS_FASTA_URL = "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/{prefix}/{name}.fasta.gz"
+GLOBUS_SUPPRESED_WGS_FASTA_URL = "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/suppressed/{prefix}/{name}.fasta.gz"
+
 
 def internal_path(url: str) -> ty.Optional[Path]:
     base_path = os.environ.get("ENA_PATH", None)
@@ -93,8 +96,8 @@ def wgs_fasta_url(prefix: wgs.WgsPrefix, use_suppressed=False) -> str:
     name = prefix.to_wgs_string().upper()
     name = re.sub("0+$", "", name)
     if use_suppressed:
-        return ENA_SUPPRESED_WGS_FASTA_URL.format(prefix=short, name=name)
-    return ENA_WGS_FASTA_URL.format(prefix=short, name=name)
+        return GLOBUS_SUPPRESED_WGS_FASTA_URL.format(prefix=short, name=name)
+    return GLOBUS_WGS_FASTA_URL.format(prefix=short, name=name)
 
 
 @contextmanager

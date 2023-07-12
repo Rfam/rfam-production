@@ -24,7 +24,7 @@ from urllib.parse import urlparse
 
 from Bio import SeqIO
 
-from rfamseq import fasta, wget, wgs
+from rfamseq import fasta, wget, wgs, rsync
 
 LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
     if filepath := internal_path(url):
         LOGGER.info("Trying to use internal path %s", filepath)
         try:
-            with filepath.open("r") as handle:
+            with rsync.rsync(filepath) as handle:
                 LOGGER.debug("Using local file path %s", filepath)
                 yield handle
             return

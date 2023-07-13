@@ -65,9 +65,8 @@ def fetch(template: str, **data) -> ty.Iterator[ty.IO]:
                 LOGGER.debug("Using local file path %s", filepath)
                 yield handle
             return
-        except Exception as err:
+        except Exception:
             LOGGER.info("Could not open %s", filepath)
-            LOGGER.exception(err)
 
     with wget.wget(url) as handle:
         LOGGER.debug("Using FTP fetch of %s", url)
@@ -109,7 +108,7 @@ def wgs_fasta(
     try:
         with normalized(url) as handle:
             yield handle
-    except wget.FetchError as err:
+    except Exception as err:
         LOGGER.exception(err)
         if max_increase <= 0:
             raise err

@@ -473,7 +473,7 @@ def resolve_ena_wgs(
                     parts = value.split(";")
                     for part in parts:
                         contigs.append(ContigInfo.build(part))
-    except wget.FetchError as e:
+    except Exception as e:
         LOGGER.debug(e)
 
     return (contigs, info)

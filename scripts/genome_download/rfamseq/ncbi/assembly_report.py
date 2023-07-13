@@ -246,7 +246,7 @@ def fetch_assembly_report(info: SqliteDict, accession: str) -> NcbiAssemblyRepor
             if not ainfo:
                 raise UnknownGenomeId(accession)
             return ainfo
-    except wget.FetchError as err:
+    except Exception as err:
         LOGGER.debug(err)
 
     raise ValueError("Failed")

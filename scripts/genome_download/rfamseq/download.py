@@ -137,7 +137,7 @@ def missing_records(missing: Missing) -> Records:
             with ena.wgs_fasta(wgs_set) as handle:
                 yield from fasta.parse(handle)
                 continue
-        except wget.FetchError as err:
+        except Exception:
             LOGGER.debug("Failed to lookup %s, will try suppressed", wgs_set)
 
         with ena.wgs_fasta(wgs_set, max_increase=0, use_suppressed=True) as handle:

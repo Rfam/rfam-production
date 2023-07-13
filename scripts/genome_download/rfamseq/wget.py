@@ -26,14 +26,6 @@ from contextlib import closing, contextmanager
 LOGGER = logging.getLogger(__name__)
 
 
-class FetchError(Exception):
-    """
-    An error raised when fetching and possible decompressing a url fails for some reason
-    """
-
-    pass
-
-
 @contextmanager
 def wget(url: str) -> ty.Iterator[ty.IO]:
     with tempfile.NamedTemporaryFile("wb+", dir=os.curdir) as tmp:
@@ -43,8 +35,7 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
                 shutil.copyfileobj(req, tmp)
         except Exception as err:
             LOGGER.warn("Failed fetching %s", url)
-            LOGGER.debug(err)
-            raise FetchError()
+            raise err
         tmp.flush()
         tmp.seek(0)
 
@@ -56,8 +47,7 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
                     sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)
                 except sp.CalledProcessError as err:
                     LOGGER.warn("Failed to decrompress file %s", tmp.name)
-                    LOGGER.exception(err)
-                    raise FetchError()
+                    raise err
                 decomp.flush()
                 decomp.seek(0)
                 yield decomp

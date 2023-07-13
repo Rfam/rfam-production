@@ -85,7 +85,8 @@ def genomic_records(
         selected, missed = selector.filter_ids(ids)
         missing.update(missed)
         if not selected:
-            raise ValueError("Selected no sequences")
+            LOGGER.error("Selected no sequences")
+            return
         elif selected == ids:
             yield from SeqIO.parse(handle.name, "fasta")
         else:

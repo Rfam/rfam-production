@@ -14,10 +14,14 @@ limitations under the License.
 """
 
 
+import io
 import logging
+import os
 import subprocess as sp
+import tempfile
 import typing as ty
 from contextlib import contextmanager
+from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,14 +34,14 @@ def rsync(path: Path) -> ty.Iterator[ty.IO]:
     """
 
     with tempfile.NamedTemporaryFile("wb+", dir=os.curdir) as tmp:
-        LOGGER.debug("Copying %s to %s", url, tmp.name)
+        LOGGER.debug("Copying %s to %s", path, tmp.name)
         sp.check_call(["rsync", "-av", str(path), tmp.name])
         tmp.flush()
 
         info = sp.check_output(["file", "--mime-type", tmp.name])
         if b"application/gzip" in info:
             with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as decomp:
-                LOGGER.info("Decompressing file for %s to %s", url, decomp.name)
+                LOGGER.info("Decompressing file for %s to %s", path, decomp.name)
                 sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)
                 decomp.flush()
                 decomp.seek(0)
@@ -46,4 +50,4 @@ def rsync(path: Path) -> ty.Iterator[ty.IO]:
             with io.open(tmp.name, "r") as raw:
                 yield raw
         else:
-            raise ValueError(f"Could not handle file type from {url} ({info})")
+            raise ValueError(f"Could not handle file type from {path} ({info})")

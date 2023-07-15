@@ -100,7 +100,7 @@ def cleaned_assembly(handle: ty.IO) -> ty.Iterable[str]:
         if index == 0:
             continue
         if index == 1:
-            yield re.sub(r"#\s*", "", line)
+            yield re.sub(r"^#\s*", "", line)
         else:
             yield line
 

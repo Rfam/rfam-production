@@ -11,7 +11,7 @@ process fetch_ncbi_locations {
 
   """
   mkdir summaries
-  wget --input-file ncbi-urls.txt -P summaries
+  wget --quiet --input-file ncbi-urls.txt -P summaries
   rfamseq parse-assembly-summary \
     summaries/assembly_summary_refseq.txt \
     summaries/assembly_summary_genbank.txt \

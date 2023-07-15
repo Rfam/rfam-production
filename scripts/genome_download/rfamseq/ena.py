@@ -46,7 +46,8 @@ def internal_path(url: str) -> ty.Optional[Path]:
     if not base_path:
         return None
     parsed = urlparse(url)
-    if "ftp" not in parsed.netloc:
+    hostname = getattr(parsed, "hostname", "")
+    if "ftp" not in parsed.netloc and "globus" not in hostname:
         return None
     parts = "/".join(parsed.path.split("/")[2:])
     path = Path(base_path)

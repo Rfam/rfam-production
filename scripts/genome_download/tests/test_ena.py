@@ -51,15 +51,15 @@ def set_env(**environ):
     [
         (
             "CABU01000000",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
         ),
         (
             "CABU01",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/cab/CABU01.fasta.gz",
         ),
         (
             "JABWAI01",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
         ),
     ],
 )
@@ -72,15 +72,15 @@ def test_can_generate_expected_wgs_fasta_url(accession, expected):
     [
         (
             "CABU01000000",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
         ),
         (
             "CABU01",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/suppressed/cab/CABU01.fasta.gz",
         ),
         (
             "JABWAI01",
-            "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/suppressed/jab/JABWAI01.fasta.gz",
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/suppressed/jab/JABWAI01.fasta.gz",
         ),
     ],
 )
@@ -96,6 +96,10 @@ def test_can_generate_expected_suppressed_wgs_fasta_url(accession, expected):
     [
         (
             "ftp://ftp.ebi.ac.uk/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
+            Path("/ftp/ena/databases/ena/wgs/public/jab/JABWAI01.fasta.gz"),
+        ),
+        (
+            "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/jab/JABWAI01.fasta.gz",
             Path("/ftp/ena/databases/ena/wgs/public/jab/JABWAI01.fasta.gz"),
         ),
     ],

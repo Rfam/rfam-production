@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time 1-0:0:0
+#SBATCH --time 4-0:0:0
 #SBATCH --mem=2G
 #SBATCH -p standard
 

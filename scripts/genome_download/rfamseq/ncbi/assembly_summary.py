@@ -81,7 +81,7 @@ class NcbiAssemblySummary:
     genome_rep: GenomeAssemblyRep
     seq_rel_date: str
     asm_name: str
-    submitter: str
+    asm_submitter: str
     gbrs_paired_asm: ty.Optional[str]
     paired_asm_comp: ty.Optional[str]
     ftp_path: ty.Optional[str]

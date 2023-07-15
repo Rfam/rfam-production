@@ -12,9 +12,6 @@ process fetch_ncbi_locations {
   """
   mkdir summaries
   wget --input-file ncbi-urls.txt -P summaries
-  find summaries -type f | xargs cat > merged
-  grep '^#' merged | tail -1 | sed 's|# ||' > info
-  grep -v '^#' merged | sort -u >> info
   rfamseq parse-assembly-summary \
     summaries/assembly_summary_refseq.txt \
     summaries/assembly_summary_genbank.txt \
@@ -104,7 +101,7 @@ process validate_chunk {
 
 process merge_chunks {
   queue 'standard'
-  time '24h'
+  time '2d'
   publishDir 'genomes/rfamseq', mode: 'copy'
 
   input:

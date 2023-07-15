@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import enum
 import logging
+import re
 import typing as ty
 
 import cattrs
@@ -95,11 +96,11 @@ class NcbiAssemblySummary:
 
 
 def cleaned_assembly(handle: ty.IO) -> ty.Iterable[str]:
-    for line in handle:
-        if line.startswith("#"):
-            if line.startswith("#   See"):
-                continue
-            yield line.replace("# ", "")
+    for index, line in enumerate(handle):
+        if index == 0:
+            continue
+        if index == 1:
+            yield re.sub(r"#\s*", "", line)
         else:
             yield line
 

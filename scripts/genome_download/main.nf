@@ -1,5 +1,4 @@
 process fetch_ncbi_locations {
-  queue 'short'
   time '1h'
   errorStrategy 'finish'
 
@@ -22,7 +21,6 @@ process fetch_ncbi_locations {
 }
 
 process download_all_proteomes {
-  queue 'short'
   time '1h'
   publishDir 'genomes/uniprot', mode: 'copy'
 
@@ -35,7 +33,6 @@ process download_all_proteomes {
 }
 
 process find_genomes {
-  queue 'short'
   time '1h'
 
   input:
@@ -78,7 +75,6 @@ process download {
 
 process validate_chunk {
   tag { "$short_name" }
-  queue 'standard'
   time '12h'
   memory { 10.GB * task.attempt }
   errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
@@ -100,7 +96,6 @@ process validate_chunk {
 }
 
 process merge_chunks {
-  queue 'standard'
   time '2d'
   publishDir 'genomes/rfamseq', mode: 'copy'
 
@@ -120,7 +115,6 @@ process merge_chunks {
 }
 
 process build_rfamseq {
-  queue 'standard'
   container ''
   publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
@@ -144,7 +138,6 @@ process build_rfamseq {
 }
 
 process build_rev {
-  queue 'standard'
   publishDir 'genomes/rfamseq', mode: 'copy'
   errorStrategy 'finish'
 

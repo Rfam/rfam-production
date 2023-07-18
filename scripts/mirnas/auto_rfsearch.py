@@ -27,7 +27,7 @@ def launch_new_rfsearch(family_dir, cpu):
     for file_type in file_extensions:
         subprocess.call("rm -f %s/*.%s" % (family_dir, file_type), shell=True)
 
-    cmd = ("srun --mem=8g --time=00:60:00 --ouput {out_file} --error {err_file} "
+    cmd = ("srun --mem=8g --time=00:60:00 --ouput={out_file} --error={err_file} "
            "\"cd {family_dir} && rfsearch.pl -t 25 --scpu 0 -relax {option}\"")
     subprocess.call(
         cmd.format(mem=MEMORY, out_file=out_file, err_file=err_file, cpu=cpu, job_name=job_name,

@@ -5,8 +5,9 @@ from python:3.10.5-buster
 RUN apt-get update && \
     apt-get install -y \
     curl \
-    jq \
     gzip  \
+    jq \
+    rsync \
     wget
 
 ENV PYTHONFAULTHANDLER=1 \

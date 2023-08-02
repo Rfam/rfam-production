@@ -18,7 +18,7 @@ def write_3d_output():
                 line = line.replace("data/output/", "")
                 line = line.replace(".sto", "")
                 if "A" in line:
-                    added = "The following families have been newly added with 3D information: \n"
+                    added = "The following families have newly added 3D information: \n"
                     line = line.replace("A", "")
                     added += line
                 elif "M" in line:

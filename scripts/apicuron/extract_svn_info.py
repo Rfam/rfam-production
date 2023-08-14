@@ -94,7 +94,7 @@ def main():
     reports_current = []
     reports_other = []
     url = args.svn
-    for rev in range(args.start_rev, args.end_rev):
+    for rev in range(args.start, args.end):
         author = get_author(rev, url)
         if any(author == a for a in conf.svn_authors_current):
             entry = {

@@ -1,16 +1,17 @@
-svn_authors = ['apetrov',
-               'evan',
-               'ikalveri',
-               'jgt',
-               'joanna',
-               'nancyontiveros',
-               'nawrocki',
-               'rdf',
-               'rfamprod',
-               'ruthe',
-               'sb30',
-               'swb',
-               'testuser']
+svn_authors_current = ['nancyontiveros']
+
+svn_authors_other = ['apetrov',
+                     'evan',
+                     'ikalveri',
+                     'jgt',
+                     'joanna',
+                     'nawrocki',
+                     'rdf',
+                     'rfamprod',
+                     'ruthe',
+                     'sb30',
+                     'swb',
+                     'testuser']
 
 curator_orcids = {
     'Emma': '0000-0002-7894-8112',
@@ -24,17 +25,15 @@ curator_orcids = {
     'apetrov': '0000-0001-7279-2682',
     'ecooke': '0000-0002-7894-8112'
 }
-
-
-sheet_terms = {
-    'Done (new family)': 'create_family',
-    'Done (updated family)': 'update_family'
-}
-
-rfci_terms = {
+checkin_terms = {
     'CI': 'update_family',
     'NEW': 'create_family',
     'KILL': 'delete_family',
     'CLCI': 'update_clan',
     'CLKILL': 'delete_clan'
+}
+
+sheet_terms = {
+    'Done (new family)': 'create_family',
+    'Done (updated family)': 'update_family'
 }

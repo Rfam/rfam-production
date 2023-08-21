@@ -44,7 +44,7 @@ process run_cmscan {
     path('*.tbl')
     
     """
-    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga $params.pdb_files/Rfam.cm $query
+    cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga --toponly $params.pdb_files/Rfam.cm $query
     """
 }
 

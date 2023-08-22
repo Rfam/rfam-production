@@ -106,8 +106,11 @@ def generate_new_seed(fasta):
     filename = 'replacement.fasta'
     with open(filename, 'w') as f:
         f.write(fasta)
-    if not os.path.exists('CM') or not os.path.exists('SEED'):
-        raise Exception('Error: CM or SEED files not found')
+    if not os.path.exists('CM'):
+        cmd = 'rfsearch.pl -t 30 -nodesc -relax'
+        os.system(cmd)
+    if not os.path.exists('SEED'):
+        raise Exception('Error: SEED file not found')
     cmd = ('cmalign --mapali SEED --noprob CM {} > tempseed && '
            'esl-reformat pfam tempseed > NEWSEEDtemp && '
            'rm tempseed').format(filename)
@@ -219,6 +222,26 @@ def validate():
     os.system(cmd)
     parse_fasta(fasta)
 
+@cli.command()
+def blast_invalid_sequences(file_path, blast_program='blastn'):
+    """
+    Upload the file `invalid.fa` to NCBI BLAST and download results in the `Single-file JSON` format
+    """
+    
+    blast_url = f'https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Put&PROGRAM={blast_program}'
+    
+    with open(file_path, 'rb') as file:
+        file_content = file.read()
+
+    payload = {
+        'QUERY': file_content,
+        'FORMAT_TYPE': 'HTML', 
+    }
+
+    response = requests.post(blast_url, data=payload)
+    return response.text
+
+
 
 @cli.command()
 @click.argument('blast_json', type=click.Path(exists=True))
@@ -228,12 +251,16 @@ def replace(blast_json, identity, query_coverage):
     """
     Replace unknown accessions in SEED alignment using NCBI BLAST results
     """
-    filename = blast_json
-    blast_data = get_blast_data(filename)
+    blast_data = get_blast_data(blast_json)
     fasta = choose_replacement(blast_data, identity, query_coverage)
     generate_new_seed(fasta)
     click.echo('Done')
 
+@cli.command()
+def all():
+    validate() 
+    blast_result = blast_invalid_sequences('invalid.fa')
+    replace(blast_json=blast_result)
 
 if __name__ == '__main__':
     cli()

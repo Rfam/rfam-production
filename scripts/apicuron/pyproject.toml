@@ -3,18 +3,17 @@ name = "apicuron"
 version = "0.1.0"
 description = ""
 authors = ["Emma Cooke <ecooke@ebi.ac.uk>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.31.0"
-logging = "^0.4.9.6"
-argparse = "^1.4.0"
 pandas = "^2.0.3"
-faker = "^19.3.1"
+
+
+[tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

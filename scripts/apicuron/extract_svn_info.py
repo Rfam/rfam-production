@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-import typing as ty
 import datetime
 import json
 import re
@@ -10,7 +8,7 @@ import argparse
 import scripts.apicuron.conf as conf
 
 
-def get_author(revision: int, svn_url: str) -> str:
+def get_author(revision, svn_url):
     """
     Run svnlook to get the author of the commit
     :param revision: svn repo revision number
@@ -23,7 +21,7 @@ def get_author(revision: int, svn_url: str) -> str:
     return output.strip()
 
 
-def get_family(revision: int, svn_url: str):
+def get_family(revision, svn_url):
     """
     Run svnlook to get the directory changed in the commit, then parse this to extract the family name
     :param revision: svn repo revision number
@@ -38,7 +36,7 @@ def get_family(revision: int, svn_url: str):
     return ""
 
 
-def get_term(revision: int, svn_url: str) -> str:
+def get_term(revision, svn_url):
     """
     Run svnlook to get the message associated with the commit
     :param revision: svn repo revision number
@@ -55,7 +53,7 @@ def get_term(revision: int, svn_url: str) -> str:
     return activity_term
 
 
-def get_timestamp(revision: int, svn_url: str) -> str:
+def get_timestamp(revision, svn_url):
     """
     Run svnlook to get the timestamp of the commit
     :param revision: svn repo revision number
@@ -82,7 +80,9 @@ def write_report(args):
             "curator_orcid": author_orcid,
             "entity_uri": get_family(rev, url),
         }
-        if not any(entry.values()):
+        if any(value == "" for value in entry.values()):
+            return
+        else:
             if author in conf.curator_orcids:
                 reports_current.append(entry)
             else:

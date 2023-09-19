@@ -26,7 +26,7 @@ Ensure the directories in `mirna_config.py` are as expected.
     `auto_addref.py --input <file> --sequential`
 
 5. Update the fields AU, SE, SS in the DESC files:
-    `update_desc.py --new --input <file>`
+    `update_desc.py --input <file>`
 
 6. Run the QC checks:
     `auto_rqc.py --input <file>`

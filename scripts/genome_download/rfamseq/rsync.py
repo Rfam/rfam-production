@@ -39,7 +39,7 @@ def rsync(path: Path) -> ty.Iterator[ty.IO]:
         tmp.flush()
 
         info = sp.check_output(["file", "--mime-type", tmp.name])
-        if b"application/gzip" in info:
+        if b"application/gzip" in info or b"application/x-gzip" in info:
             with tempfile.NamedTemporaryFile("w+", dir=os.curdir) as decomp:
                 LOGGER.info("Decompressing file for %s to %s", path, decomp.name)
                 sp.run(["zcat", "-f", tmp.name], check=True, stdout=decomp)

@@ -43,7 +43,7 @@ Alternatively, use virtualenv to install the [requirements](../requirements.txt)
 
 ## Start the release pipeline
 
-1. Update the release version in scripts/release/workflows/nextflow.config 
+1. Update the release version in pipelines/release/nextflow.config 
 
 2. Start the pipeline
 ```
@@ -61,7 +61,7 @@ This workflow will:
 - Load the SEED and CM files into rfam_live 
 
 ```
-nextflow run scripts/release/workflows/annotated_files.nf
+nextflow run pipelines/release/annotated_files.nf
 ```
 
 ---
@@ -193,7 +193,7 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 ## Running view processes
 
 ```
-nextflow run scripts/release/workflows/view_process.nf
+nextflow run pipelines/release/view_process.nf
 ```
 
 ---
@@ -203,7 +203,7 @@ nextflow run scripts/release/workflows/view_process.nf
 Clan competition is a quality assurance measure ran as a pre-processing release step aiming to reduce redundant hits of families belonging to the same clan.
 
 ```
-nextflow run scripts/release/workflows/clan_competition.nf
+nextflow run pipelines/release/clan_competition.nf
 ```
 
 ---
@@ -216,7 +216,7 @@ This workflow runs the following scripts :
 - [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) 
 
 ```
-nextflow run scripts/release/workflows/prepare_rfam_live.nf
+nextflow run pipelines/release/prepare_rfam_live.nf
 ```
 
 ---
@@ -231,7 +231,7 @@ This workflow will generate:
 - `fasta_files` folder
 
 ```
-nextflow run scripts/release/workflows/generate_ftp_files.nf
+nextflow run pipelines/release/generate_ftp_files.nf
 ```
 
 ### Generate `database_files` folder
@@ -280,7 +280,7 @@ The main `rfam_live` database is running with the `secure-file-priv` setting, so
 ## Generate `rfam2go` file
 
 ```
-nextflow run scripts/release/workflows/rfam2go.nf
+nextflow run pipelines/release/rfam2go.nf
 ```
 
 ## Stage RfamLive for a new release
@@ -288,7 +288,7 @@ nextflow run scripts/release/workflows/rfam2go.nf
 This workflow will generate a new MySQL dump to replicate the database on REL and PUBLIC servers. Then the MySQL instance is restored on REL and PUBLIC. 
 
 ```
-nextflow run scripts/release/workflows/stage_rfam_live.nf
+nextflow run pipelines/release/stage_rfam_live.nf
 ```
 
 ---
@@ -313,7 +313,7 @@ The directory for the text search index must have the following structure:
 This workflow will also index the data on dev. Once this is successful, it is necessary to index the data on **prod**
 
 ```
-nextflow run scripts/release/workflows/update_text_search_dev.nf
+nextflow run pipelines/release/update_text_search_dev.nf
 ```
 
 ### Index data on **prod**

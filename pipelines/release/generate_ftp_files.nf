@@ -67,7 +67,7 @@ process generate_3d_seed_file {
     val('done')
 
     """
-    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.3d_families --seed $params.release_ftp/seed
+    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.families_3D --seed $params.release_ftp/seed
     """
 }
 

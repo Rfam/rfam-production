@@ -12,8 +12,9 @@ process fetch_families {
 }
 
 process generate_fasta {
-    queue 'short'
 
+    maxForks 100
+    
     input:
     val(acc)
 

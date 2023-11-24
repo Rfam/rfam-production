@@ -14,7 +14,6 @@ process fetch_families {
 }
 
 process generate_seed_files {
-    queue 'short'
 
     input:
     val(acc)
@@ -30,9 +29,9 @@ process generate_seed_files {
 
 }
 process generate_cm_files {
-    queue 'short'
     publishDir "${params.release_ftp}/cm", mode: "copy"
-
+    input:
+    val(acc)
     output:
     path("Rfam.cm")
 
@@ -122,14 +121,17 @@ process load_into_rfam_live {
 }
 
 workflow generate_annotated_files {
+    take:
+        start
     emit: 
         rfam_cm
         done
     main:
-        fetch_families | set { families }
+        start
+        | fetch_families | set { families }
         families \
         | splitText \
-        | generate_seed_files()
+        | generate_seed_files
         families \
         | splitText \
         | generate_cm_files \
@@ -145,5 +147,5 @@ workflow generate_annotated_files {
 }
 
 workflow {
-    generate_annotated_files()
+    generate_annotated_files(Channel.of('start'))
 }

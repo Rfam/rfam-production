@@ -32,18 +32,15 @@ Alternatively, use virtualenv to install the [requirements](../requirements.txt)
 2. Choose one of the following aliases to move to a specific location on EBI cluster:
 
     ```
+    cd_code - move to rfamprd code folder
     cd_rel - move to release working directories
-    cd_rfamseq - move to Rfamseq location
-    cd_rfam - move to rfam-family-pipeline repo
-    cd_code - move to rfam-production repo
-    cd_main - move to the main Rfam production directory
     ```
 
 ---
 
 ## Start the release pipeline
 
-1. Update the release version in pipelines/release/nextflow.config 
+1. Update the release version in pipelines/release/local.config 
 
 2. Start the pipeline
 ```
@@ -51,6 +48,8 @@ nextflow run scripts/release/workflows/release_pipeline.nf
 ```
 
 This will begin a pipeline that runs the below workflows, in order. If you wish to run these workflows individually, the commands are outlined below. 
+
+**Note:** This is not working correctly, so it is best to run the pipelines individually. 
 
 ## Generate annotated files
 

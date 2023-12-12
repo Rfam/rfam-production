@@ -6,7 +6,7 @@ process checkout_copy_seed {
     val('copied')
 
     """
-    python $params.mirnas/copy_seed.py --csv-input $query
+    python $params.mirnas/copy_seed.py --input $query
     """
 }
 
@@ -18,7 +18,7 @@ process run_searches {
     val('searches_done')
 
     """ 
-    python $params.mirnas/auto_rfsearch.py --csv-input $query
+    python $params.mirnas/auto_rfsearch.py --input $query
     """
 }
 
@@ -30,7 +30,7 @@ process run_makes {
     val('make_done')
 
     """ 
-    python $params.mirnas/auto_rfmake.py --csv-input $query
+    python $params.mirnas/auto_rfmake.py --input $query
     """
 }
 
@@ -42,7 +42,7 @@ process add_refs_to_desc {
     val('refs_done')
 
     """ 
-    python $params.mirnas/auto_addref.py --csv-input $query
+    python $params.mirnas/auto_addref.py --input $query
     """
 }
 
@@ -54,7 +54,7 @@ process update_desc {
     val('desc_done')
 
     """ 
-    python $params.mirnas/update_desc.py --csv-input $query
+    python $params.mirnas/update_desc.py --input $query
     """
 }
 
@@ -66,7 +66,7 @@ process qc_checks {
     val('qc_done')
 
     """ 
-    python $params.mirnas/auto_rqc.py --csv-input $query
+    python $params.mirnas/auto_rqc.py --input $query
     """
 }
 

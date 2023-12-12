@@ -104,14 +104,17 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
     # export xml tree - writes xml tree into a file
     filename = os.path.join(outdir, entry_acc + ".xml")
-    fp_out = open(filename, 'w')
+    if not os.path.exists(filename):
+        fp_out = open(filename, 'w')
 
-    db_str = ET.tostring(db_xml, "utf-8")
-    db_str_reformated = minidom.parseString(db_str)
+        db_str = ET.tostring(db_xml, "utf-8")
+        db_str_reformated = minidom.parseString(db_str)
 
-    fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
+        fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
 
-    fp_out.close()
+        fp_out.close()
+    else:
+        print("File already exists: ", filename)
     # xmllint(filename)
 
 

@@ -19,25 +19,23 @@ process generate_seed_files {
     val(acc)
     
     output:
-    val('done)')
+    val('done')
 
     """
-    rm -rf $params.release_ftp/seed/
-    mkdir -p $params.release_ftp/seed/
     python $params.rfamprod/scripts/export/generate_ftp_files.py --seed --dest-dir $params.release_ftp/seed --acc $acc
     """
 
 }
 process generate_cm_files {
     publishDir "${params.release_ftp}/cm", mode: "copy"
+    
     input:
     val(acc)
+    
     output:
     path("Rfam.cm")
 
     """
-    rm -rf $params.release_ftp/cm
-    mkdir -p $params.release_ftp/cm
     python $params.rfamprod/scripts/export/generate_ftp_files.py --cm --dest-dir . --acc $acc
     """
 }

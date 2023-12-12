@@ -61,7 +61,7 @@ process generate_clanin_file {
 process generate_3d_seed_file {
 
     input:
-    path(query)
+    val('done')
 
     output:
     val('done')
@@ -74,7 +74,7 @@ process generate_3d_seed_file {
 process ena_rfam_mapping {
 
     input:
-    path(query)
+    val('done')
 
     output:
     val('done')

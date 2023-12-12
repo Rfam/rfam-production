@@ -8,13 +8,13 @@ DATABASE_FILE_NAMES = ["alignment_and_tree", "clan", "clan_database_link",
                        "clan_literature_reference", "clan_membership", "database_link",
                        "db_version", "dead_clan", "dead_family", "family",
                        "family_literature_reference", "family_ncbi", "features",
-                       "full_region", "html_alignment", "keywords", "literature_reference",
+                       "full_region", "genome", "genseq", "html_alignment", "keywords", "literature_reference",
                        "matches_and_fasta", "motif", "motif_database_link",
                        "motif_family_stats", "motif_file", "motif_literature",
                        "motif_matches", "motif_pdb", "motif_ss_image", "pdb_full_region",
                        "rfamseq", "secondary_structure_image", "seed_region",
                        "sunburst", "taxonomy", "taxonomy_websearch", "version",
-                       "wikitext", "genome", "genseq"]
+                       "wikitext"]
 
 # -----------------------------------------------------------------------------------------
 

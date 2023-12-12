@@ -11,7 +11,7 @@ process copy_to_release_ftp {
     cd $params.release_ftp
     cp -r fasta_files/ $params.ftp_dir
     cp -r database_files/ $params.ftp_dir
-    cp -r rfam2go/ $params.ftp_dir
+    cp rfam2go/ $params.ftp_dir
     cp Rfam.full_region.gz $params.ftp_dir
     cp Rfam.clanin $params.ftp_dir
     cp Rfam.pdb.gz $params.ftp_dir

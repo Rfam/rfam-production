@@ -61,20 +61,20 @@ process generate_clanin_file {
 process generate_3d_seed_file {
 
     input:
-    path(query)
+    val('done')
 
     output:
     val('done')
 
     """
-    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.3d_families --seed $params.release_ftp/seed
+    python $params.rfamprod/scripts/release/generate_3d_seed_file.py -f $params.families_3D --seed $params.release_ftp/seed
     """
 }
 
 process ena_rfam_mapping {
 
     input:
-    path(query)
+    val('done')
 
     output:
     val('done')

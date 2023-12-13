@@ -34,8 +34,8 @@ Or by running the nextflow script:
 If you need to run this on an executor other than slurm (e.g. LSF) then update the params in `pipelines/pdb/local.config`
 
 ## Notes
-The Slack token can be found in `rfam-production/config/rfam_local.py`. If you are testing it may be a good idea to change this to your personal token so as to not flood the Rfam SLack channel with config are up to date. 
-The most common issue with the pipeline is that it will not run all the way through past the point of running the 3D seed alignment. If this is the case or will simply need to run the 3D alignment script as per instructions in that repo, as opposed to re-running this whole script. It would be nice if this was improved to have better error handling and/or a retry mechanism. 
+The Slack token can be found in `rfam-production/config/rfam_local.py`. If you are testing, it may be a good idea to change this to your personal token so as to not flood the Rfam Slack channel with notifications. Alos, so ensure the email addresses in the bacth scripts and the nf config are up to date. 
+The most common issue with the pipeline is that it will not run all the way through past the point of running the 3D seed alignment. If this is the case you will simply need to run the 3D alignment script as per instructions in that repo, as opposed to re-running this whole pipeline. It would be nice if this was improved to have better error handling and/or a retry mechanism. 
 
 
 

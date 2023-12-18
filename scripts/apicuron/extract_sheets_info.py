@@ -1,3 +1,11 @@
+"""Extract information from Google Sheets
+
+This scripts extracts information from the miRNA summary dashboard, which is a Google Sheets file. The script was initially 
+required to prepare the info from this sheet for APICURON submissions. It is not required to run regularly, as we now
+have a regaulr way to upload APICURON info via bulk_upload.py. However, if any information is lost or needs to be 
+recreated, this script will be useful. 
+"""
+
 import argparse
 import json
 
@@ -12,7 +20,7 @@ doc_url = "https://docs.google.com/spreadsheets/d/{doc_id}/gviz/tq?tqx=out:csv&s
 def get_random_timestamp():
     """
     Get a random timestamp since the start of the year
-    :return:
+    :return: random timestamp 
     """
     fake = Faker()
     random_timestamp = fake.date_time_between(start_date="-2y", end_date="now")

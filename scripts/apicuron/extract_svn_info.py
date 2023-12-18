@@ -1,3 +1,11 @@
+"""Extract information from Rfam SVN
+
+This scripts extracts information from the Rfam SVN repository. The script was initially 
+required to prepare for APICURON submissions. It is not required to run regularly, as we now
+have a regaulr way to upload APICURON info via `bulk_upload.py`. However, if any information is lost or needs to be 
+recreated, this script will be useful. 
+"""
+
 import datetime
 import json
 import re
@@ -102,6 +110,7 @@ def parse_args():
     """
     Parse the CLI arguments
     """
+    
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--end", type=int, help="most recent revision number", action="store"
@@ -123,6 +132,7 @@ def main():
     Example usage:
     extract_svn_info.py --end 16099 --start 15938 --svn /path/to/svn
     """
+    
     args = parse_args()
     write_report(args)
 

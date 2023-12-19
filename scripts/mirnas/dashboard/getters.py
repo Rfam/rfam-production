@@ -77,10 +77,25 @@ def get_rfam_id(rfam_acc):
     """
     url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Family%22&fields=name&format=json'
     data = requests.get(url.format(rfam_acc))
+    try:
+        if data.json()['hitCount'] != 0:
+            return data.json()['entries'][0]['fields']['name'][0]
+        else:
+            return ''
+    except KeyError as e:
+        print('Warning: response from {url} did not contain a hit count, {e}'.format(url=url.format(rfam_acc), e=e))
+        return ''
+
+
+def get_rfam_clan(rfam_acc):
+    """
+    Get Rfam ID for an Rfam accession.
+    """
+    url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query={}%20AND%20entry_type:%22Clan%22&fields=name&format=json'
+    data = requests.get(url.format(rfam_acc))
     if data.json()['hitCount'] != 0:
         return (data.json()['entries'][0]['fields']['name'][0])
-    else:
-        return ''
+    return None
 
 
 def get_mirbase_alignments():
@@ -97,6 +112,15 @@ def get_mirbase_id(identifier):
     """
     Example:
     MIPF0000024__mir-103
+
+    >>> get_mirbase_id('MIPF0000024__mir-103')
+    'mir-103'
+    >>> get_mirbase_id('MIPF0000024')
+    ''
+    >>> get_mirbase_id('MIPF0000024_mir-103')
+    ''
+    >>> get_mirbase_id('MIPF0000024__mir_103')
+    'mir_103'
     """
     if '__' in identifier:
         _, mirbase_id = identifier.split('__')
@@ -109,6 +133,15 @@ def get_mirbase_acc(identifier):
     """
     Example:
     MIPF0000024__mir-103
+
+    >>> get_mirbase_id('MIPF0000024__mir-103')
+    'MIPF0000024'
+    >>> get_mirbase_id('MIPF0000024')
+    ''
+    >>> get_mirbase_id('MIPF0000024_mir-103')
+    ''
+    >>> get_mirbase_id('MIPF0000024__mir_103')
+    'MIPF0000024'
     """
     if '__' in identifier:
         mirbase_acc, _ = identifier.split('__')

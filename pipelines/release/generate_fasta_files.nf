@@ -8,12 +8,14 @@ process fetch_families {
 
     """
     mysql -s `python ${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "select rfam_acc from family" > families
+    mysql -s `python ${params.rfamprod}/scripts/view/mysql_options.py $params.db` <<< "quit"
     """
 }
 
 process generate_fasta {
-    queue 'short'
 
+    maxForks 100
+    
     input:
     val(acc)
 
@@ -35,12 +37,12 @@ process combine_fasta {
 
     """
     cd $params.release_ftp/fasta_files
-    mkdir unzipped
+    mkdir -p unzipped
     cp *.fa.gz unzipped/
     cd unzipped
     gunzip *.gz
     cat *.fa > Rfam.fa.unsorted
-    sort Rfam.fa.unsorted | uniq > Rfam.fa
+    seqkit rmdup Rfam.fa.unsorted > Rfam.fa
     cp Rfam.fa ../
     """
 }

@@ -113,25 +113,33 @@ def get_id_matches(mirbase_id):
     """
     url = 'http://www.ebi.ac.uk/ebisearch/ws/rest/rfam?query="{}"%20AND%20entry_type:%22Family%22&fields=name&format=json'
     data = requests.get(url.format(mirbase_id))
-    if data.json()['hitCount'] == 1:
-        rfam_id = data.json()['entries'][0]['id']
-        return [rfam_id]
-    if data.json()['hitCount'] == 0:
-        query = "SELECT rfam_acc FROM family WHERE rfam_id = '{}'".format(mirbase_id)
-        conn = RfamDB.connect()
-        cursor = conn.cursor()
-        try:
-            cursor.execute(query)
-            rfam_id = cursor.fetchone()
+    try:
+        if data.json()['hitCount'] == 1:
+            rfam_id = data.json()['entries'][0]['id']
+            if not rfam_id:
+                print("Text search gave invalid Rfam id for: %s" % mirbase_id)
+            else:
+                return [rfam_id]
             return [rfam_id]
-        except mysql.connector.Error as e:
-            print("MySQL error has occurred: {0}".format(e))
-            raise e
-        except Exception as e:
-            raise e
-        finally:
-            cursor.close()
-    return []
+        if data.json()['hitCount'] == 0:
+            query = "SELECT rfam_acc FROM family WHERE rfam_id = '{}'".format(mirbase_id)
+            conn = RfamDB.connect()
+            cursor = conn.cursor()
+            try:
+                cursor.execute(query)
+                rfam_id = cursor.fetchone()
+                return [rfam_id]
+            except mysql.connector.Error as e:
+                print("MySQL error has occurred: {0}".format(e))
+                raise e
+            except Exception as e:
+                raise e
+            finally:
+                cursor.close()
+        return []
+    except KeyError as e:
+        print('Warning: response from {url} did not contain a hit count, {e}'.format(url=url.format(mirbase_id), e=e))
+        return []
 
 
 def get_action(identifier, location, overlaps, overlaps_by_id, score):

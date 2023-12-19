@@ -4,7 +4,8 @@
 
 Most of these steps use a TSV file as input. This TSV contains the miRBase ID, the Rfam accession number, and the threshold, 
 as per the miRBase vs Rfam Dashboard. 
-e.g. MIPF0000056__mir-148,RF00248,53
+
+e.g. MIPF0000056__mir-148   RF00248 53
 
 Use the following scripts if you wish to run the processes individually.
 

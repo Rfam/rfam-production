@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "rfblast"
+version = "0.1.0"
+description = ""
+authors = ["Emma Cooke <ecooke@ebi.ac.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.31.0"
+click = "^8.1.7"
+biopython = "^1.81"
+xmltodict = "^0.13.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

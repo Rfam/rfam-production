@@ -8,13 +8,13 @@ from scripts.mirnas.mirna_config import UPDATE_DIR, MEMORY, NEW_DIR
 
 def launch_new_rfsearch(family_dir, cpu):
     """
-    Launches a new LSF job with rfsearch.pl
+    Launches a new SLURM job with rfsearch.pl
     :param family_dir: The location of a valid family directory (directory with Rfam ID)
     :param cpu: Number of CPUs to use per thread
     """
 
-    lsf_err_file = os.path.join(family_dir, "auto_rfsearch.err")
-    lsf_out_file = os.path.join(family_dir, "auto_rfsearch.out")
+    err_file = os.path.join(family_dir, "auto_rfsearch.err")
+    out_file = os.path.join(family_dir, "auto_rfsearch.out")
     job_name = os.path.basename(family_dir)
 
     if os.path.exists(os.path.join(family_dir, "DESC")) is False:
@@ -27,10 +27,10 @@ def launch_new_rfsearch(family_dir, cpu):
     for file_type in file_extensions:
         subprocess.call("rm -f %s/*.%s" % (family_dir, file_type), shell=True)
 
-    cmd = ("bsub -M {mem} -o {out_file} -e {err_file} "
-           "-J {job_name} \"cd {family_dir} && rfsearch.pl -t 25 --scpu 0 -relax {option}\"")
+    cmd = ("srun --mem=8g --time=00:60:00 --output={out_file} --error={err_file} "
+           "\"cd {family_dir} && rfsearch.pl -t 25 --scpu 0 -relax {option}\"")
     subprocess.call(
-        cmd.format(mem=MEMORY, out_file=lsf_out_file, err_file=lsf_err_file, cpu=cpu, job_name=job_name,
+        cmd.format(mem=MEMORY, out_file=out_file, err_file=err_file, cpu=cpu, job_name=job_name,
                    family_dir=family_dir, option=option), shell=True)
     print('Submitting rfsearch job for {dir}'.format(dir=family_dir))
 

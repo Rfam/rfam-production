@@ -161,13 +161,13 @@ Components = ty.Union[All, SelectedComponents]
 @enum.unique
 class GenomeSource(enum.Enum):
     ENA = "ENA/EMBL"
-    REF_SEQ = "Refseq"
-    ENSEMBL_FUNGI = "EnsemblFungi"
-    ENSEMBL_PROTISTS = "EnsemblProtists"
-    WORMBASE = "WormBase"
-    ENSEMBL_PLANTS = "EnsemblPlants"
-    ENSEMBL_METAZOA = "EnsemblMetazoa"
-    ENSEMBL = "Ensembl"
+    REF_SEQ = "REFSEQ"
+    ENSEMBL_FUNGI = "ENSEMBLFUNGI"
+    ENSEMBL_PROTISTS = "ENSEMBLPROTISTS"
+    WORMBASE = "WORMBASE"
+    ENSEMBL_PLANTS = "ENSEMBLPLANTS"
+    ENSEMBL_METAZOA = "ENSEMBLMETAZOA"
+    ENSEMBL = "ENSEMBL"
 
     def from_ebi(self) -> bool:
         match self:
@@ -310,7 +310,7 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
     ):
         LOGGER.debug("Found genome sources: %s", sources)
         if len(sources) == 1:
-            source = cattrs.structure(sources[0], GenomeSource)
+            source = cattrs.structure(sources[0].upper(), GenomeSource)
 
     saw_genome, components, description = proteome_components(upid, root)
 

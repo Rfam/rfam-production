@@ -374,6 +374,19 @@ def genome_info(upid: str, root: ET.Element) -> GenomeInfo:
                 source=source,
             )
 
+    # If given a GCA/GCF accession, just use all components in it. This
+    # simplifies the downloading logic and possible erorr cases quite a bit.
+    # This does increase the amount we download and does mean we use 'extra'
+    # sequences but I think that is ok. It also doesn't appear, at least by
+    # manual checking, make us miss any sequences.
+    if accessions[0].startswith("GCA_") or accessions[0].startswith("GCF_"):
+        return GenomeInfo(
+            accession=accessions[0],
+            description=description,
+            components=ALL_CHROMOSOMES,
+            source=source,
+        )
+
     # Use the simple case of just using the requested components of the given
     # genome
     return GenomeInfo(

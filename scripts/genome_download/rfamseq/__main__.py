@@ -166,6 +166,9 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
                 try:
                     downloader = download.GenomeDownloader.build(db, proteome)
                     SeqIO.write(downloader.records(), fasta, "fasta")
+                except (ncbi.ftp.UnknownGCA, ncbi.ftp.UnknownGCF):
+                    LOGGER.warning("Skipping proteome with unknown genome %s", proteome)
+                    continue
                 except Exception as err:
                     LOGGER.exception(err)
                     LOGGER.error("Failed to download %s", proteome)

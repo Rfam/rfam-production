@@ -32,7 +32,7 @@ def wget(url: str) -> ty.Iterator[ty.IO]:
         LOGGER.debug("Fetching %s to %s", url, tmp.name)
         try:
             with closing(urllib.request.urlopen(str(url))) as req:
-                shutil.copyfileobj(req, tmp)
+                shutil.copyfileobj(req, tmp, length=16 * 1024 * 1024)
         except Exception as err:
             LOGGER.warn("Failed fetching %s", url)
             raise err

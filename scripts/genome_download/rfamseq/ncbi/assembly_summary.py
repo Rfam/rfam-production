@@ -94,6 +94,10 @@ class NcbiAssemblySummary:
         updated = {k: maybe(v) for k, v in row.items()}
         return cattrs.structure(updated, cls)
 
+    @property
+    def is_suppressed(self) -> bool:
+        return self.version_status == AssemblyVersionStatus.SUPPRESSED
+
 
 def cleaned_assembly(handle: ty.IO) -> ty.Iterable[str]:
     for index, line in enumerate(handle):

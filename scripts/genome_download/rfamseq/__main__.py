@@ -114,7 +114,7 @@ def build_metadata_cmd(
             genome = download.GenomeDownloader.build(db, proteome)
             with metadata_out.open("w") as meta:
                 info = metadata.Metadata.build(
-                    version, proteome, genome.assembly_report, fetched
+                    version, proteome, genome._assembly_report, fetched
                 )
                 json.dump(cattrs.unstructure(info), meta, default=serialize)
                 meta.write("\n")

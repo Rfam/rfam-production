@@ -20,7 +20,7 @@ import typing as ty
 from contextlib import contextmanager
 from pathlib import Path
 
-from attrs import define
+from attrs import Factory, define
 from Bio import SeqIO
 from ratelimit import limits, sleep_and_retry
 from sqlitedict import SqliteDict
@@ -62,8 +62,7 @@ def fetch_genome(
                 yield handle
             return
         except Exception as err:
-            LOGGER.info("Fetching from ENA failed")
-            LOGGER.exception(err)
+            LOGGER.info("Fetching from ENA failed, falling back to NCBI")
 
     LOGGER.info("Fetching genome %s from NCBI", genome.accession)
     with ncbi.fetch_fasta(info, genome.accession) as handle:
@@ -88,6 +87,7 @@ def genomic_records(
             LOGGER.error("Selected no sequences")
             return
         elif selected == ids:
+            LOGGER.debug("Using all sequences")
             yield from SeqIO.parse(handle.name, "fasta")
         else:
             LOGGER.debug("Filtering with easel")
@@ -106,8 +106,8 @@ def accession_fetch(accessions: ty.List[str]) -> Records:
             yield from fasta.parse(handle)
             return
     except Exception as err:
+        LOGGER.info("Failed to fetch from NCBI")
         LOGGER.debug(err)
-        LOGGER.debug("Failed to fetch from NCBI")
 
     try:
         for accession in accessions:
@@ -116,8 +116,8 @@ def accession_fetch(accessions: ty.List[str]) -> Records:
                 yield from fasta.parse(handle)
                 return
     except Exception as err:
+        LOGGER.info("Failed to fetch from ENA")
         LOGGER.debug(err)
-        LOGGER.debug("Failed to fetch from ENA")
 
     raise AccessionLookupFailed(f"Failed to lookup {accessions}")
 
@@ -148,10 +148,27 @@ def missing_records(missing: Missing) -> Records:
 
 @define
 class GenomeDownloader:
+    """
+    This class is handles downloading all sequences for a specific proteome
+    from UniProt. This handles fetching the genomic sequences, filtering them
+    and then fetching things from NCBI or ENA with fallbacks if needed. It then
+    tracks all sequences found and produces some metadata files that can be
+    used to update the Rfam database.
+
+    :param SqliteDict info: An SqliteDict of the the assembly summary information
+    as produced by ncbi.parse_assembly_files. This is assumed to cover all
+    possible assemblies.
+    :param ProteomeInfo proteome: The summary of the proteome to download.
+    :param None | NcbiAssemblyReport: The assembly report, if any for this
+    proteome.
+    :param [FromFasta] _from_fasta: A list of all fasta entries seen when
+    downloading the requested sequences. This is populated by the class itself.
+    """
+
     info: SqliteDict
     proteome: uniprot.ProteomeInfo
-    assembly_report: ty.Optional[ncbi.NcbiAssemblyReport]
-    from_fasta: ty.List[FromFasta]
+    _assembly_report: ty.Optional[ncbi.NcbiAssemblyReport] = None
+    _from_fasta: ty.List[FromFasta] = Factory(list)
     prefetched: ty.Optional[Path] = None
 
     @classmethod
@@ -161,6 +178,9 @@ class GenomeDownloader:
         proteome: uniprot.ProteomeInfo,
         prefetched=None,
     ) -> GenomeDownloader:
+        """
+        Create a new GenomeDownloader object. This will lookup
+        """
         genome = proteome.genome_info
         assembly_report = None
         try:
@@ -169,11 +189,12 @@ class GenomeDownloader:
         except Exception as err:
             LOGGER.debug("Failed to load assembly info for %s", genome.accession)
             LOGGER.debug(err)
+
         return cls(
             info=info,
             proteome=proteome,
-            assembly_report=assembly_report,
-            from_fasta=[],
+            _assembly_report=assembly_report,
+            _from_fasta=[],
             prefetched=prefetched,
         )
 
@@ -213,25 +234,35 @@ class GenomeDownloader:
                     assert_never(genome.components)
         else:
             yield from genomic_records(
-                self.info, genome, self.assembly_report, missing, self.prefetched
+                self.info, genome, self._assembly_report, missing, self.prefetched
             )
 
         if missing:
             yield from missing_records(missing)
 
     def metadata(self, version: str) -> Metadata:
+        """
+        Build a metadata object of all seen records. This can only be called
+        after `records`, otherwise there will be no records to build the
+        metadata from.
+        """
         return Metadata.build(
-            version, self.proteome, self.assembly_report, self.from_fasta
+            version, self.proteome, self._assembly_report, self._from_fasta
         )
 
     def records(self) -> Records:
+        """
+        Download all individual sequences for this GenomeDownloader. This will
+        fetch all sequences and produce an iterable of records. This will track
+        all seen records and use them to build the metadata object.
+        """
         seen = set()
-        for record in self.fetch_records():
+        for record in self.__fetch_records():
             if not record.seq:
                 raise ValueError(f"Empty sequence is invalid {record.id}")
             if record.id in seen:
                 LOGGER.error("Somehow got duplicate record id %s", record.id)
                 continue
-            self.from_fasta.append(FromFasta.from_record(record))
+            self._from_fasta.append(FromFasta.from_record(record))
             yield record
             seen.add(record.id)

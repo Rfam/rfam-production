@@ -165,6 +165,11 @@ def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
             with fasta_out.open("w") as fasta:
                 try:
                     downloader = download.GenomeDownloader.build(db, proteome)
+                    if downloader.is_suppressed_proteome():
+                        LOGGER.info(
+                            "Skipping proteome from suppressed genome %s", proteome
+                        )
+                        continue
                     SeqIO.write(downloader.records(), fasta, "fasta")
                 except (ncbi.ftp.UnknownGCA, ncbi.ftp.UnknownGCF):
                     LOGGER.warning("Skipping proteome with unknown genome %s", proteome)

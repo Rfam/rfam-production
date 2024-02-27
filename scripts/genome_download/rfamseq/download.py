@@ -177,7 +177,30 @@ class GenomeDownloader:
             prefetched=prefetched,
         )
 
-    def fetch_records(self) -> Records:
+    def is_suppressed_proteome(self) -> bool:
+        """
+        Check if this genome is suppressed by looking at the assembly report.
+        If no assembly report is assigned, this returns False.
+        """
+        assembly_summary = self.assembly_summary
+        if not assembly_summary:
+            return False
+        return assembly_summary.is_suppressed
+
+    @property
+    def assembly_summary(self) -> None | ncbi.assembly_summary.NcbiAssemblySummary:
+        """
+        Get the assembly summary if any for this genome. This returns None if
+        the proteome's genome does not have an accession. This will also return
+        None if the accession is not a known genome. This assumes the genome
+        accession is versioned.
+        """
+        accession = self.proteome.genome_info.accession
+        if not accession:
+            return None
+        return self.info.get(accession, None)
+
+    def __fetch_records(self) -> Records:
         genome = self.proteome.genome_info
         missing = Missing.empty()
         if not genome.accession:

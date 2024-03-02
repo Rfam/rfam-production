@@ -23,10 +23,15 @@ from contextlib import closing, contextmanager
 from ftplib import FTP
 from io import StringIO
 
+import attr
 import requests
+from attr import frozen
 from sqlitedict import SqliteDict
 
 from rfamseq import wget
+from rfamseq.accession import Accession
+
+# from rfamseq.ncbi import NcbiAssemblySummary
 
 LOGGER = logging.getLogger(__name__)
 
@@ -55,27 +60,87 @@ class InvalidGenomeId(Exception):
     """
 
 
-def add_version_if_missing(info: SqliteDict, id: str) -> str:
-    if "." in id:
-        return id
-    possible = {}
-    pattern = re.compile(f"^{id}.(\\d+)$")
-    for key in info.iterkeys():
-        if match := re.match(pattern, key):
-            index = int(match.group(1))
-            possible[index] = key
-    to_use = max(possible.keys())
-    return possible[to_use]
+@frozen
+class FtpWrapper:
+    """This is a class to wrap the logic of fetching things from the NCBI FTP
+    site. This doesn't actually fetch the data, just finds where it should be
+    on the site. Sometimes things are missing or removed so it is possible the
+    generated URLs are incorrect.
+    """
 
+    info: ty.Dict[str, ty.Any]
+    # info: ty.Dict[str, NcbiAssemblySummary]
 
-def increment_version(id: str) -> str:
-    matches = re.match(r"^(.+)\.(\d+)$", id)
-    if not matches:
-        raise ValueError(f"Failed to parse {id} to increment")
-    prefix = matches.group(1)
-    version = matches.group(2)
-    next_version = int(version) + 1
-    return f"{prefix}.{next_version}"
+    @classmethod
+    def build(cls, info: ty.Dict[str, ty.Any]) -> FtpWrapper:
+        """Create a new FtpWrapper."""
+        return cls(info=info)
+
+    def find_latest_version(self, id: Accession) -> None | Accession:
+        """Find the latest version of the given accession. This will see if
+        there is an assembly summary for a"""
+
+        possible = {}
+        pattern = re.compile(f"^{id.accession}.(\\d+)$")
+        for key in self.info.keys():
+            if match := re.match(pattern, key):
+                index = int(match.group(1))
+                possible[index] = Accession.build(key)
+        to_use = max(possible.keys())
+        if not to_use:
+            raise InvalidGenomeId(f"Could not find genome for {id}")
+        return possible[to_use]
+
+    def assembly_summary(self, accession: Accession) -> None | ncbi.AssemblyReport:
+        """Fetch the assembly report for the given accession, if it exists.
+        This will return None if the accession is not genomic, or if the
+        accession does not have a known assembly report. If the accession is
+        not versioned, this will use the latest.
+        """
+
+        if not accession.is_genomic():
+            LOGGER.info("Accession %s is not genomic", accession)
+            return None
+
+        versioned: None | Accession = accession
+        if not accession.is_versioned():
+            versioned = self.find_latest_version(accession)
+            if not versioned:
+                LOGGER.warning("Could not find versioned accession for %s", accession)
+                return None
+
+        assert versioned, "Should be impossible"
+        key = str(versioned)
+        if key not in self.info:
+            LOGGER.warning("Accession %s not in known set", key)
+            return None
+
+        return self.info.get(key, None)
+
+    def genome_url(self, accession: Accession, suffix="genomic.fna.gz") -> None | str:
+        """Generate the URL for a genome, which should exist for the given
+        accession. This does not validate if it exists, as sometimes things are
+        removed, but this will at least try to generate it.
+        """
+
+        report = self.assembly_summary(accession)
+        if not report:
+            return None
+
+        path = report.ftp_path
+        if path == "na" or path is None:
+            LOGGER.warning("Accession %s has no path", accession)
+            LOGGER.debug("Have %s", self.info[str(accession)])
+            return None
+
+        parts = path.split("/")
+        name = parts[-1]
+        return f"{path}/{name}_{suffix}"
+
+    def efetch_url(self, accessions: ty.List[Accession]) -> str:
+        assert accessions, "Must give at least one accession"
+        ids = ",".join(str(a) for a in accessions)
+        return f"http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={ids}&rettype=fasta&retmode=text"
 
 
 def ftp_path(

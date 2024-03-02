@@ -127,7 +127,7 @@ class NcbiAssemblyReport:
         Find the NcbiSequenceInfo for the given accession.
         """
 
-        versionless = accession.versionless()
+        versionless = accession.strip_version()
         if info := self.sequence_info.get(str(versionless), None):
             if info.matches(accession):
                 return info
@@ -220,10 +220,10 @@ def parse_assembly_info(handle: ty.IO) -> ty.Optional[NcbiAssemblyReport]:
     for sequence in sequences:
         info = cattrs.structure(sequence, NcbiSequenceInfo)
         if info.genbank_accession:
-            acc = str(info.genbank_accession.versionless())
+            acc = str(info.genbank_accession.strip_version())
             raw["sequence_info"][acc] = sequence
         if info.refseq_accession:
-            acc = str(info.refseq_accession.versionless())
+            acc = str(info.refseq_accession.strip_version())
             raw["sequence_info"][acc] = sequence
     assert len(raw["sequence_info"]) >= len(sequences)
     return cattrs.structure(raw, NcbiAssemblyReport)
@@ -233,7 +233,9 @@ def ftp_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
     return ftp.ftp_path(info, accession, "assembly_report.txt")
 
 
-def fetch_assembly_report(info: SqliteDict, accession: str) -> NcbiAssemblyReport:
+def fetch_assembly_report(
+    info: ty.Dict[str, ty.Any], accession: str
+) -> NcbiAssemblyReport:
     LOGGER.info("Getting NCBI assembly information for %s", accession)
     path = ftp_path(info, accession)
     if not path:

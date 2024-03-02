@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -22,9 +24,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
+from attr import frozen
 from Bio import SeqIO
 
-from rfamseq import fasta, wget, wgs, rsync
+from rfamseq import fasta, rsync, wget, wgs
+from rfamseq.accession import Accession
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +43,27 @@ ENA_SUPPRESED_WGS_FASTA_URL = (
 
 GLOBUS_WGS_FASTA_URL = "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/public/{prefix}/{name}.fasta.gz"
 GLOBUS_SUPPRESED_WGS_FASTA_URL = "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/ena/wgs/suppressed/{prefix}/{name}.fasta.gz"
+
+
+@frozen
+class EnaWrapper:
+    internal_path: None | Path
+
+    @classmethod
+    def build(cls) -> EnaWrapper:
+        base_path = os.environ.get("ENA_PATH", None)
+        if base_path:
+            base_path = Path(base_path)
+        return cls(internal_path=base_path)
+
+    def api_url(self, accession: Accession, kind="fasta") -> str:
+        return (
+            f"https://www.ebi.ac.uk/ena/browser/api/{kind}/{str(accession)}?download=true"
+            ""
+        )
+
+    def fasta_url(self, accession: Accession) -> str:
+        return self.api_url(accession, kind="fasta")
 
 
 def internal_path(url: str) -> ty.Optional[Path]:

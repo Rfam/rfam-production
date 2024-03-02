@@ -15,17 +15,18 @@ limitations under the License.
 
 import json
 import logging
-import sys
 import typing as ty
 from pathlib import Path
 
 import cattrs
 import click
-from Bio import SeqIO
+from boltons.fileutils import atomic_save
+from boltons.jsonutils import JSONLIterator
 from sqlitedict import SqliteDict
 
-from rfamseq import download, metadata, ncbi, uniprot
-from rfamseq.utils import serialize
+from rfamseq import download, ncbi
+from rfamseq import uniprot as uni
+from rfamseq.converter import camel_case_converter
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,87 +44,78 @@ LOGGER = logging.getLogger(__name__)
     help="Set the log level",
 )
 def cli(log_level="info", log_file=None):
+    """Main entry point for updating rfamseq for Rfam. This is where the
+    main logic for fetching sequences and building the metadata for the genome
+    live.
     """
-    Main entry point for updating rfamseq for Rfam.
-    """
+    if log_file:
+        path = Path(log_file)
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True)
+
     logging.basicConfig(
         filename=log_file,
         level=getattr(logging, log_level.upper()),
-        format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s",
+        # format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s",
     )
 
 
-@cli.command("build-metadata")
-@click.argument("version")
-@click.argument("ncbi-info", type=click.Path())
-@click.argument(
-    "proteome-file",
-    type=click.File("r"),
-)
-@click.argument(
-    "fasta-directory",
-    type=click.Path(exists=True),
-)
-@click.argument(
-    "output",
-    default=".",
-    type=click.Path(),
-)
-def build_metadata_cmd(
-    version: str,
-    ncbi_info: str,
-    proteome_file: ty.IO,
-    fasta_directory: str,
-    output: str,
-):
+@cli.group("uniprot")
+def uniprot():
+    """Commands dealing with fetching and processing data from UniProt. This is
+    generally focused around getting proteomes, downloading their genomes and
+    then building metadata for the Rfam database from this.
     """
-    Build metadata for downloaded fasta files. This is normally done when
-    downloading files, but we are still tweaking the metadata generation so this
-    will build metadata from fetched fasta files. This assumes the fasta files
-    are named with UP* and stored in one directory.
 
+
+@uniprot.command("fetch-proteomes")
+@click.argument("requested", type=click.File("r"))
+@click.argument("output", default="-", type=click.File("w"))
+def fetch_cmd(requested: ty.IO, output: ty.IO):
+    """Fetch the proteomes specificed in the requested file. This file should
+    be a list of UPID to fetch, one per line with no other content on each
+    line. This is written to the given output file which is overwritten.
+
+    \b
     Arguments:
-      VERSION          Version of the rfamseq database, eg 15.0
-      NCBI-INFO        Path to file produced by parse-assembly-summary
-      PROTEOME-FILE    Path to the file produced by: proteomes2genomes
-      FASTA-DIRECTORY  Path to a directory with all fasta files produced by download
-      OUTPUT           Path to write the up*.jsonl files to
+      REQUESTED       The file of UPID's to fetch
+      OUTPUT          The output file to write to, defaults stdout
     """
-    out = Path(output)
-    fa_dir = Path(fasta_directory)
-    failed = False
-    with SqliteDict(ncbi_info, flag="r") as db:
-        for line in proteome_file:
-            raw = json.loads(line)
-            proteome = cattrs.structure(raw, uniprot.ProteomeInfo)
-            LOGGER.info("Building metadata for %s", proteome.upi)
-
-            fetched = []
-            fasta = fa_dir / f"{proteome.upi}.fa"
-            if not fasta.exists():
-                LOGGER.error(
-                    "Missing fasta file %s for proteome %s", fasta, proteome.upi
-                )
-                failed = True
-                continue
-
-            for record in SeqIO.parse(fasta, "fasta"):
-                fetched.append(metadata.FromFasta.from_record(record))
-
-            metadata_out = out / f"{proteome.upi}.jsonl"
-            genome = download.GenomeDownloader.build(db, proteome)
-            with metadata_out.open("w") as meta:
-                info = metadata.Metadata.build(
-                    version, proteome, genome._assembly_report, fetched
-                )
-                json.dump(cattrs.unstructure(info), meta, default=serialize)
-                meta.write("\n")
-
-    if failed:
-        sys.exit(1)
+    ids = set(l.strip() for l in requested)
+    for proteome in uni.proteome.fetch(ids):
+        LOGGER.debug("Saving %s", proteome.id)
+        data = cattrs.unstructure(proteome)
+        output.write(json.dumps(data))
+        output.write("\n")
 
 
-@cli.command("download")
+@uniprot.command("deduplicate")
+@click.argument("files", nargs=-1)
+@click.argument("output", default="-", type=click.File("w"))
+def dedup_cmd(files: ty.List[str], output: ty.IO):
+    """Parse all given files to remove all duplicate proteomes. Proteomes are
+    duplicated if they have the same id.
+    """
+
+    seen: ty.Set[str] = set()
+    converter = camel_case_converter()
+    for file in files:
+        with open(file, "r") as raw:
+            for raw in JSONLIterator(raw):
+                proteome = converter.structure(raw, uni.proteome.Proteome)
+                if proteome.id in seen:
+                    continue
+                seen.add(proteome.id)
+                json.dump(raw, output)
+                output.write("\n")
+
+
+@uniprot.command("download-genomes")
+@click.option(
+    "--failed-filename",
+    default="failed.jsonl",
+    help="Name of the file to write failed entries to",
+)
 @click.argument("version")
 @click.argument(
     "ncbi-info",
@@ -139,116 +131,71 @@ def build_metadata_cmd(
     default=".",
     type=click.Path(),
 )
-def download_cmd(version: str, ncbi_info: str, proteome_file: str, output: str):
-    """
-    Download the genomes specified in proteome-file. The file is the result of
-    proteomes2genomes or a chunk of that file. This will download the genome and
-    limit it to the specified components. This will produce a UP*.fa and
-    UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
-    and .fa contains the specified metadata.
-
-    \b
-    Arguments:
-      VERSION        Version of the rfamseq database, eg 15.0
-      NCBI-INFO      Path to file produced by parse-assembly-summary
-      PROTEOME-FILE  Path to the file produced by: proteomes2genomes
-      OUTPUT         Path to write the sequence fasta and metadata jsonl files to
-    """
-    out = Path(output)
-    with SqliteDict(ncbi_info, flag="r") as db:
-        for line in proteome_file:
-            raw = json.loads(line)
-            proteome = cattrs.structure(raw, uniprot.ProteomeInfo)
-            LOGGER.info("Downloading %s", proteome.upi)
-
-            fasta_out = out / f"{proteome.upi}.fa"
-            with fasta_out.open("w") as fasta:
-                try:
-                    downloader = download.GenomeDownloader.build(db, proteome)
-                    if downloader.is_suppressed_proteome():
-                        LOGGER.info(
-                            "Skipping proteome from suppressed genome %s", proteome
-                        )
-                        continue
-                    SeqIO.write(downloader.records(), fasta, "fasta")
-                except (ncbi.ftp.UnknownGCA, ncbi.ftp.UnknownGCF):
-                    LOGGER.warning("Skipping proteome with unknown genome %s", proteome)
-                    continue
-                except Exception as err:
-                    LOGGER.exception(err)
-                    LOGGER.error("Failed to download %s", proteome)
-                    raise err
-
-            metadata_out = out / f"{proteome.upi}.jsonl"
-            with metadata_out.open("w") as meta:
-                info = downloader.metadata(version)
-                json.dump(cattrs.unstructure(info), meta, default=serialize)
-                meta.write("\n")
-
-
-@cli.command("filter-fasta")
-@click.argument("version")
-@click.argument(
-    "ncbi-info",
-    type=click.Path(),
-)
-@click.argument(
-    "fasta-file",
-    type=click.Path(),
-)
-@click.argument(
-    "proteome-file",
-    type=click.File("r"),
-)
-@click.argument(
-    "output",
-    type=click.Path(),
-)
-def filter_fasta_cmd(
-    version: str, ncbi_info: str, fasta_file: str, proteome_file: str, output: str
+def download_cmd(
+    version: str,
+    ncbi_info: str,
+    proteome_file: str,
+    output: str,
+    failed_filename="failed.jsonl",
 ):
-    """
-    Download the genomes specified in proteome-file. The file is the result of
-    proteomes2genomes or a chunk of that file. This will download the genome and
-    limit it to the specified components. This will produce a UP*.fa and
-    UP*.jsonl file for all proteomes in the file. The .jsonl contains metadata
-    and .fa contains the specified metadata.
+    """Download the genomes specified in proteome-file. The file is the result
+    of parse-proteomes, fetch-proteomes or a chunk of one of those files. This
+    will download the entire genome for each proteome. This produces a UP*.fa
+    and UP*.jsonl file for all proteomes in the file. The .jsonl contains
+    metadata suitable for import to the Rfam database and .fa contains the
+    sequences for the genome. The output directory will be created if needed.
 
     \b
     Arguments:
       VERSION        Version of the rfamseq database, eg 15.0
-      NCBI-INFO      Path to file produced by parse-assembly-summary
-      FASTA-FILE     Path to the fasta file to parse
-      PROTEOME-FILE  Path to the file produced by: proteomes2genomes
-      OUTPUT         Path to write the sequence fasta and metadata jsonl files to
+      NCBI-INFO      Path to file produced by `ncib parse-assembly-summary`
+      PROTEOME-FILE  JSONL file of proteomes to download.
+      OUTPUT         Path to write the sequence fasta and metadata jsonl files to.
+
+    \b
+    Options:
+      --failed-filename  Name of the file to write the proteomes which were not
+                         downloaded to. This will be a JSONL file with a 'status'
+                         field showing the status and then the data itself.
     """
     out = Path(output)
-    with SqliteDict(ncbi_info, flag="r") as db:
+    if not out.exists():
+        out.mkdir(parents=True)
+
+    converter = camel_case_converter()
+    failed = out / failed_filename
+    with SqliteDict(ncbi_info, flag="r") as db, failed.open("w") as fail:
+        downloader = download.GenomeDownloader.build(version, db)
         for line in proteome_file:
             raw = json.loads(line)
-            proteome = cattrs.structure(raw, uniprot.ProteomeInfo)
-            LOGGER.info("Downloading %s", proteome.upi)
+            proteome = converter.structure(raw, uni.proteome.Proteome)
+            LOGGER.info("Downloading %s", proteome.id)
 
-            fasta_out = out / f"{proteome.upi}.fa"
-            with fasta_out.open("w") as fasta:
-                try:
-                    downloader = download.GenomeDownloader.build(
-                        db, proteome, prefetched=Path(fasta_file)
-                    )
-                    SeqIO.write(downloader.records(), fasta, "fasta")
-                except Exception as err:
-                    LOGGER.error("Failed to download %s", proteome)
-                    LOGGER.exception(err)
-                    raise err
+            fasta_out = out / f"{proteome.id}.fa"
+            metadata_out = out / f"{proteome.id}.jsonl"
+            try:
+                with atomic_save(str(fasta_out), text_mode=True) as fasta, atomic_save(
+                    str(metadata_out), text_mode=True
+                ) as meta:
+                    downloader.download_proteome(proteome, fasta, meta)
+            except download.SuppressedGenome:
+                LOGGER.warning("Skipping proteome with suppressed genome %s", proteome)
+                json.dump({"status": "suppressed", "data": raw}, fail)
+                fail.write("\n")
+                continue
+            except (ncbi.ftp.UnknownGCA, ncbi.ftp.UnknownGCF):
+                LOGGER.warning("Skipping proteome with unknown genome %s", proteome)
+                json.dump({"status": "unknown-genome", "data": raw}, fail)
+                fail.write("\n")
+                continue
+            except Exception as err:
+                LOGGER.exception(err)
+                LOGGER.error("Failed to download %s", proteome)
+                json.dump({"status": "failed", "data": raw}, fail)
+                fail.write("\n")
 
-            metadata_out = out / f"{proteome.upi}.jsonl"
-            with metadata_out.open("w") as meta:
-                info = downloader.metadata(version)
-                json.dump(cattrs.unstructure(info), meta, default=serialize)
-                meta.write("\n")
 
-
-@cli.command("proteomes2genomes")
+@uniprot.command("parse-proteomes")
 @click.option(
     "--ignore",
     default=None,
@@ -256,7 +203,7 @@ def filter_fasta_cmd(
     help="A file with one UPI per line of UPIs to ignore when parsing.",
 )
 @click.argument(
-    "xml",
+    "jsonl",
     type=click.Path(),
 )
 @click.argument(
@@ -264,44 +211,56 @@ def filter_fasta_cmd(
     default="-",
     type=click.File("w"),
 )
-def p2g_cmd(xml, output, ignore=None):
-    """
-    Parse the XML file provided by uniprot to a jsonl file. The jsonl file
+def p2g_cmd(jsonl, output, ignore=None):
+    """Parse the JSON file provided by uniprot to a jsonl file. The jsonl file
     contains one JSON encoded object per line where the object contains
     everything needed to download a genome from NCBI/ENA.
 
     \b
     Arguments:
-      XML     Path to the proteome.xml file fetched from uniprot.
+      JSONL   Path to the proteome.xml file fetched from uniprot.
       OUTPUT  Path to write a summary jsonl to
+
+    \b
+    Options:
+      --ignore   Filename of UPIs to ignore, one per line
     """
     to_skip = set()
     if ignore:
         to_skip.update(l.strip() for l in ignore)
 
-    for proteome in uniprot.proteomes(Path(xml), to_skip):
-        LOGGER.debug("Saving on %s", proteome.upi)
-        data = cattrs.unstructure(proteome)
+    converter = camel_case_converter()
+    for proteome in uni.proteome.parse(Path(jsonl), to_skip):
+        LOGGER.debug("Saving on %s", proteome.id)
+        data = converter.unstructure(proteome)
         output.write(json.dumps(data))
         output.write("\n")
 
 
-@cli.command("parse-assembly-summary")
+@cli.group("ncbi")
+def ncbi_cmd():
+    """This is a group of commands dealing with parsing data from NCBI."""
+
+
+@ncbi_cmd.command("parse-assembly-summary")
 @click.option("--fail-on-duplicate", is_flag=True)
 @click.argument("filenames", nargs=-1)
 @click.argument("output", type=click.Path())
 def parse_assembly_info(filenames, output, fail_on_duplicate=False):
-    """
-    Parse the assembly summaries provided by NCBI to generate an sqlite database
-    that can be used to quickly lookup assembly summary information. The
-    assembly summary information is used in different parts of the downloading
-    pipeline. The files are parsed in the order provided and if there are
-    duplicate ids earlier ones take priority.
+    """Parse the assembly summaries provided by NCBI to generate an sqlite
+    database that can be used to quickly lookup assembly summary information.
+    The assembly summary information is used in different parts of the
+    downloading pipeline. The files are parsed in the order provided and if
+    there are duplicate ids earlier ones take priority.
 
     \b
     Arguments
       FILENAMEs  Path to the TSV files with NCBI assembly summaries to parse
       OUTPUT     Path to write an sqlite database to
+
+    \b
+    Options
+        --fail-on-duplicate    Fail if a duplicate assembly is found
     """
 
     count = 0

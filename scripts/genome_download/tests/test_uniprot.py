@@ -861,6 +861,10 @@ def test_can_get_correct_lineage(taxid, expected):
                 ),
             ),
         ),
+        (
+            Path("test/data/UP000006540.json"),
+            None,  # TODO This is a nice example of a null accesion to handle
+        ),
     ],
 )
 def test_parses_expected_data(path: Path, expected: uniprot.ProteomeInfo):

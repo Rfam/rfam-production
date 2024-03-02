@@ -1,6 +1,5 @@
 process fetch_ncbi_locations {
   time '1h'
-  errorStrategy 'finish'
 
   input:
   path(urls)
@@ -11,16 +10,23 @@ process fetch_ncbi_locations {
   """
   mkdir summaries
   wget --quiet --input-file ncbi-urls.txt -P summaries
-  rfamseq parse-assembly-summary \
-    summaries/assembly_summary_refseq.txt \
-    summaries/assembly_summary_genbank.txt \
-    summaries/assembly_summary_refseq_historical.txt \
-    summaries/assembly_summary_genbank_historical.txt \
-    ncbi.db
+  rfamseq ncbi parse-assembly-summary summaries/*.txt ncbi.db
   """
 }
 
-process download_all_proteomes {
+process fetch_viral_additions {
+  time '1h'
+
+  output:
+  path("additional.xml")
+
+  """
+  wget "${params.additional.viruses.source}" -O pir-virus.txt
+  grep '^>' pir-virus.txt | awk '{ print $$1 }' | tr -d '>' > virus-proteomes.txt
+  """
+}
+
+process download_uniprot_summary {
   time '1h'
   publishDir 'genomes/uniprot', mode: 'copy'
 
@@ -28,23 +34,36 @@ process download_all_proteomes {
   path('summary.xml')
 
   """
-  curl '$params.proteome_xml' > summary.xml
+  curl '$params.proteome_json' > summary.json
   """
 }
 
-process find_genomes {
+process process_uniprot_proteomes {
   time '1h'
 
   input:
-  tuple path(summary), path(to_skip)
+  tuple path(reference), path("additional.txt"), path(to_skip)
+
+  output:
+  path("unique.jsonl")
+
+  """
+  rfamseq uniprot parse proteomes $reference summary.jsonl
+  rfamseq uniprot fetch-proteomes additional.txt - >> summary.jsonl
+  rafmseq uniprot deduplicate summary.json unique.jsonl
+  """
+}
+
+process chunk_genomes {
+  input:
+  path("genomes.json")
 
   output:
   path("parts/*.jsonl")
 
   """
-  rfamseq proteomes2genomes --ignore $to_skip $summary summary.jsonl
-
   mkdir parts
+  find . -name 'proteomes*.jsonl' > summary.jsonl
   shuf summary.jsonl > summary-shuf.jsonl
   split \
     -n l/${params.proteome_chunks} \
@@ -57,7 +76,11 @@ process download {
   tag { "$proteome_file.baseName" }
   queue 'datamover'
   maxForks params.download_forks
-  publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy"
+
+  publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy", pattern: "UP*.fa"
+  publishDir "genomes/metadata/${proteome_file.baseName}", mode: "copy", pattern: "UP*.jsonl"
+  publishDir "genomes/failures/${proteome_file.baseName}", mode: "copy", pattern: "*failed.jsonl"
+
   memory { 6.GB * task.attempt }
   errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
   maxRetries 4
@@ -66,10 +89,14 @@ process download {
   tuple path(proteome_file), path(info)
 
   output:
-  tuple val("${proteome_file.baseName}"), path("UP*.fa"), path("UP*.jsonl")
+  tuple val("${proteome_file.baseName}"), path("UP*.fa"), emit: sequences
+  tuple val("${proteome_file.baseName}"), path("UP*.jsonl"), emit: metadata
+  tuple val("${proteome_file.baseName}"), path("${proteome_file.baseName}-failed.jsonl"), emit: failed
 
   """
-  rfamseq download ${params.version} $info $proteome_file .
+  rfamseq uniprot download-genomes \
+    --failed-filename "${proteome_file.baseName}-failed.jsonl"  \
+    ${params.version} $info $proteome_file .
   """
 }
 
@@ -117,7 +144,6 @@ process merge_chunks {
 process build_rfamseq {
   container ''
   publishDir 'genomes/rfamseq', mode: 'copy'
-  errorStrategy 'finish'
 
   input:
   tuple path(merged), path(ssi)
@@ -139,7 +165,6 @@ process build_rfamseq {
 
 process build_rev {
   publishDir 'genomes/rfamseq', mode: 'copy'
-  errorStrategy 'finish'
 
   input:
   tuple path(merged), path(ssi)
@@ -166,16 +191,19 @@ process build_rev {
 
 workflow genome_download {
   main:
-    Channel.fromPath(params.ignore_upi) | set { to_ignore }
     Channel.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
 
-    download_all_proteomes \
-    | combine(to_ignore)
-    | find_genomes \
+    fetch_viral_additions | set { additional_uniprot }
+
+    download_uniprot_summary \
+    | combine(additional_uniprot) \
+    | process_uniprot_proteomes \
+    | chunk_genomes \
     | flatten \
     | combine(ncbi_info) \
-    | download \
-    | map { s, gs, _ -> [s, gs] } \
+    | download
+
+    download.out.sequences \
     | validate_chunk \
     | collect \
     | merge_chunks \

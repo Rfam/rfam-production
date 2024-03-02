@@ -124,6 +124,18 @@ class Genome:
     created: dt.datetime
     updated: dt.datetime
 
+    # @classmethod
+    # def from_uniprot_genome(cls, genome: UniprotGenome) -> Genome:
+    #     return cls(
+    #         upid=genome.upid,
+    #         assembly_acc=genome.accession,
+    #         assembly_version=genome.version,
+    #         wgs_acc=None,
+    #         wgs_version=None,
+    #         assembly_name=genome.name,
+    #         assembly_level=genome.assembly_level,
+    #     )
+
     @classmethod
     def build(
         cls,

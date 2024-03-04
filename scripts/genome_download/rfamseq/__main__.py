@@ -98,8 +98,10 @@ def dedup_cmd(files: ty.List[str], output: ty.IO):
     """
 
     seen: ty.Set[str] = set()
+    count = 0
     converter = camel_case_converter()
     for file in files:
+        LOGGER.info("Deduplicating file %s", file)
         with open(file, "r") as raw:
             for raw in JSONLIterator(raw):
                 try:
@@ -111,10 +113,12 @@ def dedup_cmd(files: ty.List[str], output: ty.IO):
                 LOGGER.debug("Validating %s", proteome.id)
                 if proteome.id in seen:
                     LOGGER.debug("Skipping duplicate genome %s", proteome.id)
+                    count += 1
                     continue
                 seen.add(proteome.id)
                 json.dump(raw, output)
                 output.write("\n")
+    LOGGER.info("Saw %i duplicates", count)
 
 
 @uniprot.command("download-genomes")

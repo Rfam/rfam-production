@@ -49,7 +49,7 @@ process process_uniprot_proteomes {
 
   """
   rfamseq uniprot parse-proteomes $reference reference.jsonl
-  rfamseq uniprot fetch-proteomes additional.txt addtional.jsonl
+  rfamseq uniprot fetch-proteomes additional.txt additional.jsonl
   rfamseq uniprot deduplicate reference.jsonl additional.jsonl unique.jsonl
   """
 }

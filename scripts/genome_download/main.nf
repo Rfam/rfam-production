@@ -56,19 +56,18 @@ process process_uniprot_proteomes {
 
 process chunk_genomes {
   input:
-  path("genomes.json")
+  path("genomes.jsonl")
 
   output:
   path("parts/*.jsonl")
 
   """
   mkdir parts
-  find . -name 'proteomes*.jsonl' > summary.jsonl
-  shuf summary.jsonl > summary-shuf.jsonl
+  shuf genomes.jsonl > genomes-shuf.jsonl
   split \
     -n l/${params.proteome_chunks} \
     --additional-suffix='.jsonl' \
-    summary-shuf.jsonl parts/
+    genomes-shuf.jsonl parts/
   """
 }
 

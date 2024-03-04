@@ -48,9 +48,9 @@ process process_uniprot_proteomes {
   path("unique.jsonl")
 
   """
-  rfamseq uniprot parse-proteomes $reference summary.jsonl
-  rfamseq uniprot fetch-proteomes additional.txt - >> summary.jsonl
-  rfamseq uniprot deduplicate summary.jsonl unique.jsonl
+  rfamseq uniprot parse-proteomes $reference reference.jsonl
+  rfamseq uniprot fetch-proteomes additional.txt addtional.jsonl
+  rfamseq uniprot deduplicate reference.jsonl additional.jsonl unique.jsonl
   """
 }
 

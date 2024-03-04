@@ -102,8 +102,15 @@ def dedup_cmd(files: ty.List[str], output: ty.IO):
     for file in files:
         with open(file, "r") as raw:
             for raw in JSONLIterator(raw):
-                proteome = converter.structure(raw, uni.proteome.Proteome)
+                try:
+                    proteome = converter.structure(raw, uni.proteome.Proteome)
+                except Exception as err:
+                    LOGGER.error("Failed to handle %s", raw)
+                    raise err
+
+                LOGGER.debug("Validating %s", proteome.id)
                 if proteome.id in seen:
+                    LOGGER.debug("Skipping duplicate genome %s", proteome.id)
                     continue
                 seen.add(proteome.id)
                 json.dump(raw, output)

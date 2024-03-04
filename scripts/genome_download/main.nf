@@ -22,7 +22,7 @@ process fetch_viral_additions {
 
   """
   wget "${params.additional.viruses.source}" -O pir-virus.txt
-  grep '^>' pir-virus.txt | awk '{ print $$1 }' | tr -d '>' > virus-proteomes.txt
+  grep '^>' pir-virus.txt | awk '{ print \$1 }' | tr -d '>' > virus-proteomes.txt
   """
 }
 

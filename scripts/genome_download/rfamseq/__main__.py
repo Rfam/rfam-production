@@ -82,9 +82,10 @@ def fetch_cmd(requested: ty.IO, output: ty.IO):
       OUTPUT          The output file to write to, defaults stdout
     """
     ids = set(l.strip() for l in requested)
+    converter = camel_case_converter()
     for proteome in uni.proteome.fetch(ids):
         LOGGER.debug("Saving %s", proteome.id)
-        data = cattrs.unstructure(proteome)
+        data = converter.unstructure(proteome)
         output.write(json.dumps(data))
         output.write("\n")
 

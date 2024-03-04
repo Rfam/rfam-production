@@ -50,7 +50,7 @@ process process_uniprot_proteomes {
   """
   rfamseq uniprot parse-proteomes $reference summary.jsonl
   rfamseq uniprot fetch-proteomes additional.txt - >> summary.jsonl
-  rfamseq uniprot deduplicate summary.json unique.jsonl
+  rfamseq uniprot deduplicate summary.jsonl unique.jsonl
   """
 }
 

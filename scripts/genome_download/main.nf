@@ -18,7 +18,7 @@ process fetch_viral_additions {
   time '1h'
 
   output:
-  path("additional.xml")
+  path("virus-proteomes.txt")
 
   """
   wget "${params.additional.viruses.source}" -O pir-virus.txt
@@ -31,7 +31,7 @@ process download_uniprot_summary {
   publishDir 'genomes/uniprot', mode: 'copy'
 
   output:
-  path('summary.xml')
+  path('summary.json')
 
   """
   curl '$params.proteome_json' > summary.json
@@ -42,7 +42,7 @@ process process_uniprot_proteomes {
   time '1h'
 
   input:
-  tuple path(reference), path("additional.txt"), path(to_skip)
+  tuple path(reference), path("additional.txt")
 
   output:
   path("unique.jsonl")
@@ -50,7 +50,7 @@ process process_uniprot_proteomes {
   """
   rfamseq uniprot parse proteomes $reference summary.jsonl
   rfamseq uniprot fetch-proteomes additional.txt - >> summary.jsonl
-  rafmseq uniprot deduplicate summary.json unique.jsonl
+  rfamseq uniprot deduplicate summary.json unique.jsonl
   """
 }
 
@@ -197,6 +197,7 @@ workflow genome_download {
 
     download_uniprot_summary \
     | combine(additional_uniprot) \
+
     | process_uniprot_proteomes \
     | chunk_genomes \
     | flatten \

@@ -15,7 +15,9 @@ limitations under the License.
 
 from datetime import date, datetime
 from itertools import islice
-from typing import NoReturn
+from typing import Iterable, List, NoReturn, TypeVar
+
+T = TypeVar("T")
 
 
 def assert_never(x: NoReturn) -> NoReturn:
@@ -32,11 +34,10 @@ def serialize(obj):
     raise TypeError("Type {obj} is not JSON serializable".format(obj=type(obj)))
 
 
-def batched(iterable, n):
+def batched(iterable: Iterable[T], n: int) -> Iterable[List[T]]:
     "Batch data into tuples of length n. The last batch may be shorter."
-    # batched('ABCDEFG', 3) --> ABC DEF G
     if n < 1:
         raise ValueError("n must be at least one")
     it = iter(iterable)
-    while batch := tuple(islice(it, n)):
+    while batch := list(islice(it, n)):
         yield batch

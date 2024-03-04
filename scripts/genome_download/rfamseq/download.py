@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
-"""
-Copyright [2009-2023] EMBL-European Bioinformatics Institute
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright [2009-2023] EMBL-European Bioinformatics Institute
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import annotations
 
@@ -21,7 +19,7 @@ import typing as ty
 from contextlib import contextmanager
 
 from attrs import frozen
-from Bio import SeqIO
+from Bio import SeqIO, SeqRecord
 from boltons import iterutils
 from sqlitedict import SqliteDict
 
@@ -31,7 +29,7 @@ from rfamseq.metadata import FromFasta, Metadata
 from rfamseq.missing import Missing
 from rfamseq.utils import assert_never, batched
 
-Records = ty.Iterable[SeqIO.SeqRecord]
+Records = ty.Iterable[SeqRecord.SeqRecord]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,110 +60,6 @@ class AccessionLookupFailed(Exception):
     """
 
 
-# @contextmanager
-# def fetch_genome(
-#     info: SqliteDict, genome: uniprot.GenomeInfo, fetched: ty.Optional[Path]
-# ) -> ty.Iterator[ty.IO]:
-#     assert genome.accession, "Genome must have a primary accession"
-#
-#     LOGGER.info("Fetching the requested genome %s", genome)
-#     if fetched and fetched.exists():
-#         LOGGER.info("Using given file %s", fetched)
-#         with fetched.open("rb") as raw:
-#             yield raw
-#         return
-#
-#     if genome.source and genome.source.from_ebi():
-#         try:
-#             LOGGER.info("Trying to fetch %s from ENA", genome.accession)
-#             with ena.fetch_fasta(genome.accession) as handle:
-#                 yield handle
-#             return
-#         except Exception as err:
-#             LOGGER.info("Fetching from ENA failed, falling back to NCBI")
-#
-#     LOGGER.info("Fetching genome %s from NCBI", genome.accession)
-#     with ncbi.fetch_fasta(info, genome.accession) as handle:
-#         yield handle
-#
-#
-# def genomic_records(
-#     info: SqliteDict,
-#     genome: uniprot.GenomeInfo,
-#     assembly_report: ty.Optional[ncbi.NcbiAssemblyReport],
-#     missing: Missing,
-#     fetched: ty.Optional[Path],
-# ) -> Records:
-#     assert genome.accession, "Genome must have a primary accession"
-#
-#     selector = FastaFilter.from_selected(assembly_report, genome.components)
-#     with fetch_genome(info, genome, fetched) as handle:
-#         ids = fasta.extract_ids(Path(handle.name))
-#         selected, missed = selector.filter_ids(ids)
-#         missing.update(missed)
-#         if not selected:
-#             LOGGER.error("Selected no sequences")
-#             return
-#         elif selected == ids:
-#             LOGGER.debug("Using all sequences")
-#             yield from SeqIO.parse(handle.name, "fasta")
-#         else:
-#             LOGGER.debug("Filtering with easel")
-#             with easel.filtered(Path(handle.name), selected) as filtered:
-#                 yield from SeqIO.parse(filtered.name, "fasta")
-#
-#
-# @sleep_and_retry
-# @limits(calls=3, period=1)
-# def accession_fetch(accessions: ty.List[str]) -> Records:
-#     try:
-#         LOGGER.info("Trying to fetch %s from NCBI", accessions)
-#         accession = ",".join(accessions)
-#         url = ncbi.efetch_fasta_url(accession)
-#         with wget.wget(url) as handle:
-#             yield from fasta.parse(handle)
-#             return
-#     except Exception as err:
-#         LOGGER.info("Failed to fetch from NCBI")
-#         LOGGER.debug(err)
-#
-#     try:
-#         for accession in accessions:
-#             LOGGER.info("Trying to fetch %s from ENA", accession)
-#             with ena.fetch_fasta(accession) as handle:
-#                 yield from fasta.parse(handle)
-#                 return
-#     except Exception as err:
-#         LOGGER.info("Failed to fetch from ENA")
-#         LOGGER.debug(err)
-#
-#     raise AccessionLookupFailed(f"Failed to lookup {accessions}")
-#
-#
-# def missing_records(missing: Missing) -> Records:
-#     LOGGER.info("Will fetch missing records %s", missing)
-#
-#     for chunk in batched(missing.accessions, 3):
-#         ids = [str(c) for c in chunk]
-#         yield from accession_fetch(ids)
-#
-#     for chunk in batched(missing.wgs_sequences, 5):
-#         ids = [c.to_wgs_string() for c in chunk]
-#         yield from accession_fetch(ids)
-#
-#     for wgs_set in missing.wgs_sets:
-#         try:
-#             with ena.wgs_fasta(wgs_set) as handle:
-#                 yield from fasta.parse(handle)
-#                 continue
-#         except Exception:
-#             LOGGER.debug("Failed to lookup %s, will try suppressed", wgs_set)
-#
-#         with ena.wgs_fasta(wgs_set, max_increase=0, use_suppressed=True) as handle:
-#             yield from fasta.parse(handle)
-#             continue
-
-
 @frozen
 class GenomeDownloader:
     """
@@ -194,7 +88,7 @@ class GenomeDownloader:
         )
 
     def __ncbi_fetch__(self, accessions: ty.List[Accession], batch_size=3) -> Records:
-        for batch in iterutils.chunked_iter(accessions, batch_size):
+        for batch in batched(accessions, batch_size):
             LOGGER.info("NCBI Fetching accessions %s", batch)
             url = self.ncbi.efetch_url(batch)
             with wget.wget(url) as handle:

@@ -203,7 +203,7 @@ def download_cmd(
     help="A file with one UPI per line of UPIs to ignore when parsing.",
 )
 @click.argument(
-    "jsonl",
+    "reference",
     type=click.Path(),
 )
 @click.argument(
@@ -211,7 +211,7 @@ def download_cmd(
     default="-",
     type=click.File("w"),
 )
-def p2g_cmd(jsonl, output, ignore=None):
+def p2g_cmd(reference, output, ignore=None):
     """Parse the JSON file provided by uniprot to a jsonl file. The jsonl file
     contains one JSON encoded object per line where the object contains
     everything needed to download a genome from NCBI/ENA.
@@ -230,7 +230,7 @@ def p2g_cmd(jsonl, output, ignore=None):
         to_skip.update(l.strip() for l in ignore)
 
     converter = camel_case_converter()
-    for proteome in uni.proteome.parse(Path(jsonl), to_skip):
+    for proteome in uni.proteome.parse(Path(reference), to_skip):
         LOGGER.debug("Saving on %s", proteome.id)
         data = converter.unstructure(proteome)
         output.write(json.dumps(data))

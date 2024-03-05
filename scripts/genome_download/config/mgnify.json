@@ -1,0 +1,5 @@
+{
+	"require_species": true,
+	"min_completeness": 90.0,
+	"max_contamination": 1.0
+}

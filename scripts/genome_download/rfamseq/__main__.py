@@ -57,7 +57,6 @@ def cli(log_level="info", log_file=None):
     logging.basicConfig(
         filename=log_file,
         level=getattr(logging, log_level.upper()),
-        # format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s",
     )
 
 
@@ -190,6 +189,10 @@ def download_cmd(
                 with atomic_save(str(fasta_out), text_mode=True) as fasta, atomic_save(
                     str(metadata_out), text_mode=True
                 ) as meta:
+                    if not fasta:
+                        raise ValueError(f"Failed to open fasta file {fasta_out}")
+                    if not meta:
+                        raise ValueError(f"Failed to open metadata file {metadata_out}")
                     downloader.download_proteome(proteome, fasta, meta)
             except download.SuppressedGenome:
                 LOGGER.warning("Skipping proteome with suppressed genome %s", proteome)
@@ -310,16 +313,18 @@ def parse_assembly_info(filenames, output, fail_on_duplicate=False):
 @cli.group("mgnify")
 def mgnify_cmd():
     """This is a set of commands dealing with selecting and downloading mgnify
-    genomes"""
+    genomes."""
 
 
 @mgnify_cmd.command("select-mags")
 @click.argument("summary-file", type=click.File("r"))
 @click.argument("metric-file", type=click.File("r"))
-@click.argument("output", default="-", type=click.File("w"))
+@click.argument("output-file", default="-", type=click.File("w"))
 def select_mags(summary_file, metric_file, output_file):
     """This is a command to select mags matching some quality cutoffs and
-    completeness.
+    completeness. This will load all MAG information from the given summary-file
+    and then filter it to only those which match the criteria in the
+    metric-file. This writes a JSONL formatted file out.
 
     ARGUMENTS:
       summary-file   A TSV file that summarises the status of all MAGs. This is
@@ -330,10 +335,16 @@ def select_mags(summary_file, metric_file, output_file):
 
     metric = cattrs.structure(json.load(metric_file), mgnify.Selector)
     reader = csv.DictReader(summary_file, delimiter="\t")
+    count = 0
+    accepted = 0
     for row in reader:
-        mag = cattrs.structure(row, mgnify.MAGInfo)
+        count += 1
+        mag = mgnify.MAGInfo.from_mgnify(row)
         if metric.accepts(mag):
+            accepted += 1
             json.dump(cattrs.unstructure(mag), output_file)
+            output_file.write("\n")
+    LOGGER.info("Accepted %i of %i sequences", accepted, count)
 
 
 @mgnify_cmd.command("download")
@@ -378,6 +389,10 @@ def mgnify_download(
                 with atomic_save(str(fasta_out), text_mode=True) as fasta, atomic_save(
                     str(metadata_out), text_mode=True
                 ) as meta:
+                    if not fasta:
+                        raise ValueError(f"Failed to open fasta file {fasta_out}")
+                    if not meta:
+                        raise ValueError(f"Failed to open metadata file {metadata_out}")
                     downloader.download_mag(mag, fasta, meta)
             except Exception as err:
                 LOGGER.exception(err)

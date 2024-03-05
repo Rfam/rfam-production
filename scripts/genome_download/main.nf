@@ -78,7 +78,7 @@ process download {
 
   publishDir "genomes/fasta/${proteome_file.baseName}", mode: "copy", pattern: "UP*.fa"
   publishDir "genomes/metadata/${proteome_file.baseName}", mode: "copy", pattern: "UP*.jsonl"
-  publishDir "genomes/failures/${proteome_file.baseName}", mode: "copy", pattern: "*failed.jsonl"
+  publishDir "genomes/failures/", mode: "copy", pattern: "*-failed.jsonl"
 
   memory { 6.GB * task.attempt }
   errorStrategy { task.exitStatus in 125..140 ? 'retry' : 'finish' }
@@ -124,6 +124,7 @@ process validate_chunk {
 process merge_chunks {
   time '2d'
   publishDir 'genomes/rfamseq', mode: 'copy'
+  memory 10.GB
 
   input:
   path('genomes*.fa')

@@ -18,15 +18,15 @@ import logging
 import typing as ty
 from contextlib import contextmanager
 
+import requests
 from attrs import frozen
 from Bio import SeqIO, SeqRecord
 from boltons import iterutils
 from sqlitedict import SqliteDict
 
-from rfamseq import ena, fasta, ncbi, uniprot, wget
+from rfamseq import ena, fasta, mgnify, ncbi, uniprot, wget
 from rfamseq.accession import Accession
 from rfamseq.metadata import FromFasta, Metadata
-from rfamseq.missing import Missing
 from rfamseq.utils import assert_never, batched
 
 Records = ty.Iterable[SeqRecord.SeqRecord]
@@ -77,6 +77,7 @@ class GenomeDownloader:
     version: str
     ncbi: ncbi.FtpWrapper
     ena: ena.EnaWrapper
+    mgnify_session: requests.Session
 
     @classmethod
     def build(cls, version: str, info: SqliteDict) -> GenomeDownloader:
@@ -85,6 +86,7 @@ class GenomeDownloader:
             version=version,
             ncbi=ncbi.FtpWrapper.build(info),
             ena=ena.EnaWrapper.build(),
+            mgnify_session=requests.Session(),
         )
 
     def __ncbi_fetch__(self, accessions: ty.List[Accession], batch_size=3) -> Records:
@@ -92,14 +94,14 @@ class GenomeDownloader:
             LOGGER.info("NCBI Fetching accessions %s", batch)
             url = self.ncbi.efetch_url(batch)
             with wget.wget(url) as handle:
-                yield from fasta.parse(handle)
+                yield from fasta.parse(handle, validate_file=True)
 
     def __ebi_fetch__(self, accessions: ty.List[Accession], **kwargs) -> Records:
         for accession in accessions:
             LOGGER.info("ENA Fetching accession %s", accession)
             url = self.ena.fasta_url(accession)
             with wget.wget(url) as handle:
-                yield from fasta.parse(handle)
+                yield from fasta.parse(handle, validate_file=True)
 
     def __fetch_accessions__(
         self, accessions: ty.List[Accession], batch_size=3
@@ -155,7 +157,7 @@ class GenomeDownloader:
         for url in urls:
             try:
                 with wget.wget(url) as tmp:
-                    yield from fasta.parse(tmp)
+                    yield from fasta.parse(tmp, validate_file=True)
                 break
             except Exception as err:
                 LOGGER.debug("Failed to get %s", url)
@@ -211,6 +213,16 @@ class GenomeDownloader:
                 "Fetching via components %s", ", ".join(str(a) for a in accessions)
             )
             yield from self.__fetch_accessions__(accessions)
+
+    def download_mag(
+        self, mag: mgnify.MAGInfo, fasta_handle: ty.IO, metadata_handle: ty.IO
+    ):
+        """Download the specified MAG from the MAGnify API."""
+        from_fasta = []
+        with wget.wget(mag.genome_url) as tmp:
+            for record in fasta.parse(tmp, validate_file=True):
+                from_fasta.append(FromFasta.from_record(record))
+                SeqIO.write(record, fasta_handle, "fasta")
 
     def download_proteome(
         self, proteome: uniprot.proteome.Proteome, fasta: ty.IO, metadata: ty.IO

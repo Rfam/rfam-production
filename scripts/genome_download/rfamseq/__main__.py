@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import csv
 import json
 import logging
 import typing as ty
@@ -24,7 +25,7 @@ from boltons.fileutils import atomic_save
 from boltons.jsonutils import JSONLIterator
 from sqlitedict import SqliteDict
 
-from rfamseq import download, ncbi
+from rfamseq import download, mgnify, ncbi
 from rfamseq import uniprot as uni
 from rfamseq.converter import camel_case_converter
 
@@ -304,6 +305,85 @@ def parse_assembly_info(filenames, output, fail_on_duplicate=False):
 
     with SqliteDict(output, flag="r") as db:
         assert len(db) == count, "Did not load all assemblies"
+
+
+@cli.group("mgnify")
+def mgnify_cmd():
+    """This is a set of commands dealing with selecting and downloading mgnify
+    genomes"""
+
+
+@mgnify_cmd.command("select-mags")
+@click.argument("summary-file", type=click.File("r"))
+@click.argument("metric-file", type=click.File("r"))
+@click.argument("output", default="-", type=click.File("w"))
+def select_mags(summary_file, metric_file, output_file):
+    """This is a command to select mags matching some quality cutoffs and
+    completeness.
+
+    ARGUMENTS:
+      summary-file   A TSV file that summarises the status of all MAGs. This is
+                     provided by MGnify.
+      metric-file    A JSON file which lists the quality cutoffs to use.
+      output         The file to write to, defaults to stdout.
+    """
+
+    metric = cattrs.structure(json.load(metric_file), mgnify.Selector)
+    reader = csv.DictReader(summary_file, delimiter="\t")
+    for row in reader:
+        mag = cattrs.structure(row, mgnify.MAGInfo)
+        if metric.accepts(mag):
+            json.dump(cattrs.unstructure(mag), output_file)
+
+
+@mgnify_cmd.command("download")
+@click.option(
+    "--failed-filename",
+    default="failed.jsonl",
+    help="Name of the file to write failed entries to",
+)
+@click.argument("version")
+@click.argument(
+    "ncbi-info",
+    type=click.Path(),
+)
+@click.argument(
+    "mag-file",
+    default="-",
+    type=click.File("r"),
+)
+@click.argument(
+    "output",
+    default=".",
+    type=click.Path(),
+)
+def mgnify_download(
+    version, ncbi_info, mag_file, output, failed_filename="failed.jsonl"
+):
+    out = Path(output)
+    if not out.exists():
+        out.mkdir(parents=True)
+
+    failed = out / failed_filename
+    with SqliteDict(ncbi_info, flag="r") as db, failed.open("w") as fail:
+        downloader = download.GenomeDownloader.build(version, db)
+        for line in mag_file:
+            raw = json.loads(line)
+            mag = cattrs.structure(raw, mgnify.MAGInfo)
+            LOGGER.info("Downloading %s", mag.accession)
+
+            fasta_out = out / f"{mag.accession}.fa"
+            metadata_out = out / f"{mag.accession}.jsonl"
+            try:
+                with atomic_save(str(fasta_out), text_mode=True) as fasta, atomic_save(
+                    str(metadata_out), text_mode=True
+                ) as meta:
+                    downloader.download_mag(mag, fasta, meta)
+            except Exception as err:
+                LOGGER.exception(err)
+                LOGGER.error("Failed to download %s", mag)
+                json.dump({"status": "failed", "data": raw}, fail)
+                fail.write("\n")
 
 
 if __name__ == "__main__":

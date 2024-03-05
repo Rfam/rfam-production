@@ -15,6 +15,7 @@ limitations under the License.
 
 import io
 import logging
+import os
 import subprocess as sp
 import typing as ty
 from pathlib import Path
@@ -22,6 +23,10 @@ from pathlib import Path
 from Bio import SeqIO
 
 LOGGER = logging.getLogger(__name__)
+
+
+class EaselValidationFailed(Exception):
+    """Raised when easel validation fails for any reason."""
 
 
 def extract_ids(path: Path) -> ty.Set[str]:
@@ -42,12 +47,38 @@ def extract_ids(path: Path) -> ty.Set[str]:
     return ids
 
 
-def parse(handle: ty.IO) -> ty.Iterable[SeqIO.SeqRecord]:
+def validate(path: Path):
+    """Validate that the file at the given path contains contains valid
+    sequences according to easel. This is a stricker parsing than what
+    biopython offers and is what infernal will use when the sequences are
+    searched.
+    """
+
+    if not path.exists():
+        raise EaselValidationFailed(f"Cannot validate missing file {path}")
+
+    ssi = path.with_suffix(path.suffix + ".ssi")
+    LOGGER.info("Validating sequences in file %s", path)
+    try:
+        sp.check_call(
+            ["esl-sfetch", "--index", str(path)], stderr=sp.PIPE, stdout=sp.PIPE
+        )
+    except Exception as err:
+        raise err
+    if not ssi.exists():
+        raise EaselValidationFailed(f"Could not validate {path}")
+    ssi.unlink()
+
+
+def parse(handle: ty.IO, validate_file=False) -> ty.Iterable[SeqIO.SeqRecord]:
     """
     Parses a fasta file and removes any entries with duplicate ids, handle ids
     that use the '|' style and use the third section as the id and ensure that
     the handle contains fasta entries.
     """
+
+    if validate_file:
+        validate(Path(handle.name))
 
     seen_ids = set()
     for record in SeqIO.parse(handle, "fasta"):

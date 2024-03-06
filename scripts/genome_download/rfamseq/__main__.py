@@ -23,9 +23,10 @@ import cattrs
 import click
 from boltons.fileutils import atomic_save
 from boltons.jsonutils import JSONLIterator
+from humanfriendly import parse_size
 from sqlitedict import SqliteDict
 
-from rfamseq import download, mgnify, ncbi
+from rfamseq import download, mgnify, ncbi, seqstat
 from rfamseq import uniprot as uni
 from rfamseq.converter import camel_case_converter
 
@@ -399,6 +400,100 @@ def mgnify_download(
                 LOGGER.error("Failed to download %s", mag)
                 json.dump({"status": "failed", "data": raw}, fail)
                 fail.write("\n")
+
+
+@cli.group("seqstat")
+def seqstat_group():
+    """A series of commands dealing with seqstat files. These are produced by
+    esl-seqstat and summarize the sequences in a fasta file.
+    """
+    pass
+
+
+@seqstat_group.command("chunk-ids")
+@click.option(
+    "--prefix",
+    default="chunk_",
+    help="The prefix for each chunk filename to use",
+)
+@click.option(
+    "--extension",
+    default=".txt",
+    help="The file extension for each chunk to use",
+)
+@click.argument("seqstat-file", type=click.File("r"))
+@click.argument("chunk-size")
+@click.argument("output", default=".", type=click.Path())
+def chunk_ids_cmd(seqstat_file, chunk_size, output, prefix="chunk_", extension=".fa"):
+    """Chunk the given seqstat file into several files where each
+    file only contains the ids from the file and the size of the file that will
+    be produced by fetching those sequences is roughly chunk-size. Each chunk
+    will be named: ${prefix}_${index}${extension}. This assumes that each
+    sequence is about 1 bytes per nucleotide and uses that to compute the
+    expected size of the resulting file. The output directory will be created
+    if needed.
+
+    Arguments:
+      seqstat-file    The file produced by esl-seqstat.
+      chunk-size      The size of the chunk, may be values like '1GB', '10MB'.
+      output          The output directory to write chunks to
+    """
+
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+
+    byte_size = parse_size(chunk_size)
+    chunks = seqstat.chunk(seqstat.parse(seqstat_file), byte_size)
+    for index, chunk in enumerate(chunks):
+        out_path = output / f"{prefix}{index}{extension}"
+        with open(out_path, "w") as out:
+            for info in chunk.entries:
+                out.write(info.sequence_id)
+                out.write("\n")
+
+
+@seqstat_group.command("take-fraction")
+@click.argument("seqstat-file", type=click.Path())
+@click.argument("fraction", type=float)
+@click.argument("output", default="-", type=click.File("w"))
+def take_fraction_cmd(seqstat_file, fraction, output):
+    """This takes the given fraction of entries from the seqstat file and writes
+    them out. The entries are taken from the start of the file and
+
+    Arguments:
+      seqstat-file    The file produced by esl-seqstat.
+      fraction        The fraction of the file to take, between 0 and 1
+      output          The output file to write to, default stdout.
+    """
+    assert (
+        0 < fraction < 1
+    ), f"Fraction ${fraction} must be between 0 and 1, exclusively"
+
+    count = 0
+    with open(seqstat_file, "r") as raw:
+        for line in raw:
+            if line.startswith("="):
+                count += 1
+
+    if not count:
+        raise ValueError("Cannot work with an empty file")
+    LOGGER.info("Found %i seqstat entries", count)
+
+    take = round(count * fraction)
+    if not take:
+        raise ValueError(f"Asked to take ${count} * ${fraction} = ${take}")
+    LOGGER.info("Will take %i lines", take)
+
+    with open(seqstat_file, "r") as raw:
+        written = 0
+        for index, line in enumerate(raw):
+            if index >= take:
+                break
+            output.write(line)
+            written += 1
+
+        if written != take:
+            raise ValueError(f"Only wrote {written} of {take}")
 
 
 if __name__ == "__main__":

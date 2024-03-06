@@ -130,7 +130,8 @@ process merge_chunks {
   path('genomes*.fa')
 
   output:
-  tuple path("rfamseq_${params.version}.fa"), path("rfamseq_${params.version}.fa.ssi")
+  tuple path("rfamseq_${params.version}.fa"), path("rfamseq_${params.version}.fa.ssi"), emit: sequences
+  path("rfamseq_${params.version}.seqstat"), emit: seqstat
 
   """
   set -euo pipefail
@@ -141,51 +142,57 @@ process merge_chunks {
   """
 }
 
-process build_rfamseq {
-  container ''
-  publishDir 'genomes/rfamseq', mode: 'copy'
+process split_seqstat {
+  memory 10.GB
 
   input:
-  tuple path(merged), path(ssi)
+  path(seqstat)
 
   output:
-  path('*.fa.gz')
+  path("rfamseq-chunks/*"), emit: rfamseq_chunks
+  path("rev-chunks/*"), emit: rev_chunks
 
-  script:
-  name = "r${params.rfam_seq.main_chunks}_rfamseq${params.version}"
   """
-  mkdir rfamseq
-  pushd rfamseq
-  /homes/rfamprod/Bio-Easel/scripts/esl-ssplit.pl -v --oroot ${name}.fa -n -r -z ../${merged} ${params.rfam_seq.main_chunks}
-  for((i = 1; i <= ${params.rfam_seq.main_chunks}; i++)); do mv ${name}.fa.\$i ${name}_\$i.fa; done
-  find . -name '*.fa' | xargs -P 4 -I {} gzip {}
-  popd
+  shuf ${seqstat} > shuffled.seqstat
+  rfamseq seqstat chunk-ids shuffled.seqstat ${params.rfam_seq.chunk_size} rfamseq-chunks/
+
+  rfamseq seqstat take-fraction shuffled.seqstat ${params.rfam_seq.rev_fraction} rev-selected.seqstat
+  rfamseq seqstat chunk-ids rev-selected.seqstat ${params.rfam_seq.chunk_size} rev-chunks/
   """
 }
 
-process build_rev {
+process chunk_rfamseq {
+  tag { "${ids.baseName}" }
   publishDir 'genomes/rfamseq', mode: 'copy'
 
   input:
-  tuple path(merged), path(ssi)
+  tuple path(merged), path(ssi), path(ids)
 
   output:
-  path 'rev-rfamseq*', emit: to_rev
+  path("rfamseq_${ids.baseName}.fa.gz")
 
+  script:
   """
-  mkdir to-rev
-  export SEED=\$RANDOM
-  echo \$SEED
-  seqkit sample --rand-seed \$SEED -p ${params.rfam_seq.rev_fraction} merged.fa > sampled.fa
-  seqkit split2 --out-dir to-rev -p ${params.rfam_seq.rev_chunks} sampled.fa
-  pushd to-rev
-  for((i = 1; i <= ${params.rfam_seq.rev_chunks}; i++)); do
-    pretty_count="\$(printf '%03i' \$i)"
-    esl-shuffle -r sampled.part_\$pretty_count.fa > rev-rfamseq${params.version}_\$i.fa
-  done
-  esl-seqstat ../sampled.fa > rev-rfamseq${params.version}-all.seqstat
-  find . -name '*.fa' | xargs -P 4 -I {} gzip {}
-  popd
+  esl-sfetch -f $merged $ids > rfamseq_${ids.baseName}.fa
+  gzip rfamseq_${ids.baseName}.fa
+  """
+}
+
+process chunk_rev_rfamseq {
+  tag { "${ids.baseName}" }
+  publishDir 'genomes/rfamseq', mode: 'copy'
+
+  input:
+  tuple path(merged), path(ssi), path(ids)
+
+  output:
+  path("rev-rfamseq_${ids.baseName}.fa.gz")
+
+  script:
+  """
+  esl-sfetch -f $merged $ids > rfamseq_${ids.baseName}.fa
+  esl-shuffle -r rfamseq_${ids.baseName}.fa > rev-rfamseq_${ids.baseName}.fa
+  gzip rev-rfamseq_${ids.baseName}.fa
   """
 }
 
@@ -207,8 +214,19 @@ workflow genome_download {
     download.out.sequences \
     | validate_chunk \
     | collect \
-    | merge_chunks \
-    | (build_rfamseq & build_rev)
+    | merge_chunks
+
+    merge_chunks.out.seqstat | split_seqstat
+    split_seqstat.out.rfam_chunks | flatten | set { rfam_chunks }
+    split_seqstat.out.rev_chunks | flatten | set { rev_chunks }
+
+    merge_chunks.out.sequences \
+    | combine(rfam_chunks) \
+    | chunk_rfamseq
+
+    merge_chunks.out.sequences \
+    | combine(rev_chunks) \
+    | chunk_rev_rfamseq
 }
 
 workflow {

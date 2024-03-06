@@ -150,7 +150,7 @@ process split_seqstat {
 
   output:
   path("rfamseq-chunks/*"), emit: rfamseq_chunks
-  path("rev-chunks/*"), emit: rev_chunks
+  path("rev-chunks/*"), emit: rev_rfamseq_chunks
 
   """
   shuf ${seqstat} > shuffled.seqstat
@@ -217,16 +217,11 @@ workflow genome_download {
     | merge_chunks
 
     merge_chunks.out.seqstat | split_seqstat
-    split_seqstat.out.rfam_chunks | flatten | set { rfam_chunks }
-    split_seqstat.out.rev_chunks | flatten | set { rev_chunks }
+    split_seqstat.out.rfamseq_chunks | flatten | set { rfam_chunks }
+    split_seqstat.out.rev_rfamseq_chunks | flatten | set { rev_chunks }
 
-    merge_chunks.out.sequences \
-    | combine(rfam_chunks) \
-    | chunk_rfamseq
-
-    merge_chunks.out.sequences \
-    | combine(rev_chunks) \
-    | chunk_rev_rfamseq
+    merge_chunks.out.sequences | combine(rfam_chunks) | chunk_rfamseq
+    merge_chunks.out.sequences | combine(rev_chunks) | chunk_rev_rfamseq
 }
 
 workflow {

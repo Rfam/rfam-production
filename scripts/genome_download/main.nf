@@ -162,44 +162,82 @@ process split_seqstat {
 }
 
 process chunk_rfamseq {
-  tag { "${ids.baseName}" }
+  tag { "${index}" }
   publishDir 'genomes/rfamseq', mode: 'copy'
 
   input:
-  tuple path(merged), path(ssi), path(ids)
+  tuple path(merged), path(ssi), path(ids), val(index)
 
   output:
-  path("rfamseq_${ids.baseName}.fa.gz")
+  path("${name}.gz")
 
   script:
+  name = "rfamseq_${index}${params.rfamseq.suffix}"
   """
-  esl-sfetch -f $merged $ids > rfamseq_${ids.baseName}.fa
-  gzip rfamseq_${ids.baseName}.fa
+  esl-sfetch -f $merged $ids > ${name}
+  gzip ${name}
   """
 }
 
 process chunk_rev_rfamseq {
-  tag { "${ids.baseName}" }
+  tag { "${index}" }
   publishDir 'genomes/rfamseq', mode: 'copy'
 
   input:
-  tuple path(merged), path(ssi), path(ids)
+  tuple path(merged), vpath(ssi), path(ids), val(index)
 
   output:
-  path("rev-rfamseq_${ids.baseName}.fa.gz")
+  path("rev-rfamseq_${index}.fa.gz"), emit sequences
+  path("rev-rfamseq_${index}.seqstat"), emit: seqstat
 
   script:
   """
-  esl-sfetch -f $merged $ids > rfamseq_${ids.baseName}.fa
-  esl-shuffle -r rfamseq_${ids.baseName}.fa > rev-rfamseq_${ids.baseName}.fa
-  esl-seqstat rfamseq_${ids.baseName}.fa > rfamseq_${ids.baseName}.seqstat
-  gzip rev-rfamseq_${ids.baseName}.fa
+  esl-sfetch -f $merged $ids > rfamseq_${index}.fa
+  esl-shuffle -r rfamseq_${index}.fa > rev-rfamseq_${index}.fa
+  esl-seqstat rfamseq_${index}.fa > rev-rfamseq_${index}.seqstat
+  gzip rev-rfamseq_${index}.fa
+  """
+}
+
+process compute_database_size {
+  input:
+  path(seqstat)
+
+  output:
+  path("size")
+
+  """
+  rfamseq database-size $seqstat > size
+  """
+}
+
+process build_config {
+  publishDir 'genomes/config', mode: 'copy'
+
+  input:
+  tuple val(full_size), val(rev_size)
+  tuple val(full_chunk_count), val(rev_chunk_count)
+  path(tmpl)
+
+  output:
+  path("rfam.config")
+
+  """
+  rfamseq build-config
+    --define production_path=${params.paths.production} \
+    --define software_path=${params.paths.software} \
+    --define full_chunks=$full_chunk_count \
+    --define rev_chunks=$rev_chunk_count \
+    --define full_db_size=$full_size \
+    --define rev_db_size=$rev_size \
+    ${params.version} $tmpl rfam.config
   """
 }
 
 workflow genome_download {
   main:
     Channel.fromPath('ncbi-urls.txt') | fetch_ncbi_locations | set { ncbi_info }
+    Channel.fromPath("config/rfam.conf.template") | set { config_template }
 
     fetch_viral_additions | set { additional_uniprot }
 
@@ -218,11 +256,32 @@ workflow genome_download {
     | merge_chunks
 
     merge_chunks.out.seqstat | split_seqstat
-    split_seqstat.out.rfamseq_chunks | flatten | set { rfam_chunks }
-    split_seqstat.out.rev_rfamseq_chunks | flatten | set { rev_chunks }
+    split_seqstat.out.rfamseq_chunks \
+    | flatten \
+    | map { fn ->
+      [fn, fn.baseName.split("_").last().toInteger()]
+    } \
+    | set { rfam_chunks }
+
+    split_seqstat.out.rev_rfamseq_chunks \
+    | flatten \
+    | map { fn ->
+      [fn, fn.baseName.split("_").last().toInteger()]
+    } \
+    | set { rev_chunks }
 
     merge_chunks.out.sequences | combine(rfam_chunks) | chunk_rfamseq
     merge_chunks.out.sequences | combine(rev_chunks) | chunk_rev_rfamseq
+
+    chunk_rfamseq.out.sequences | count | set { full_count }
+    chunk_rev_rfamseq.out.sequences | count | set { rev_count }
+    full_count | combine(rev_count) | set { counts }
+
+    chunk_rev_rfamseq.out.seqstat | collect | compute_database_size | splitText | set { rev_size }
+    merge_chunks.out.seqstat | compute_database_size | splitText | set { full_size }
+    full_size | combine(rev_size) | set { sizes }
+
+    build_config(sizes, counts, config_template)
 }
 
 workflow {

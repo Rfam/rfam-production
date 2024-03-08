@@ -118,3 +118,14 @@ def chunk(
             yield chunk
             chunk = chunk.empty()
     yield chunk
+
+
+def total_residues(handle: ty.IO) -> int:
+    """Extract the total number of residues from the seqstat file. If the line
+    with this information is not found a ValueError will be raised.
+    """
+    for line in handle:
+        if line.startswith("Total # residues:"):
+            parts = line.split(": ", 1)
+            return int(parts[1])
+    raise ValueError("Failed to find the size in the file")

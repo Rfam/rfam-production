@@ -16,8 +16,10 @@ limitations under the License.
 import csv
 import json
 import logging
+import math
 import typing as ty
 from pathlib import Path
+from string import Template
 
 import cattrs
 import click
@@ -425,13 +427,13 @@ def seqstat_group():
 @click.argument("chunk-size")
 @click.argument("output", default=".", type=click.Path())
 def chunk_ids_cmd(seqstat_file, chunk_size, output, prefix="chunk_", extension=".fa"):
-    """Chunk the given seqstat file into several files where each
-    file only contains the ids from the file and the size of the file that will
-    be produced by fetching those sequences is roughly chunk-size. Each chunk
-    will be named: ${prefix}_${index}${extension}. This assumes that each
-    sequence is about 1 bytes per nucleotide and uses that to compute the
-    expected size of the resulting file. The output directory will be created
-    if needed.
+    """Chunk the given seqstat file into several files where each file only
+    contains the ids from the file and the size of the file that will be
+    produced by fetching those sequences is roughly chunk-size. Each chunk will
+    be named: ${prefix}${index}${extension}. The indexes are 1 indexed. This
+    assumes that each sequence is about 1 bytes per nucleotide and uses that to
+    compute the expected size of the resulting file. The output directory will
+    be created if needed.
 
     Arguments:
       seqstat-file    The file produced by esl-seqstat.
@@ -494,6 +496,49 @@ def take_fraction_cmd(seqstat_file, fraction, output):
 
         if written != take:
             raise ValueError(f"Only wrote {written} of {take}")
+
+
+@cli.command("database-size")
+@click.argument("seqstat-files", nargs=-1, type=click.File("r"))
+def db_size_cmd(seqstat_files):
+    """Compute the database size based upon the given seqstat files."""
+    total = 0
+    for file in seqstat_files:
+        total += 2 * seqstat.total_residues(file)
+    size = total / 1_000_000.0
+    print(math.ceil(size))
+
+
+@cli.command("build-config")
+@click.option("--define", multiple=True, help="Define a key=vaue value")
+@click.argument("version")
+@click.argument("template-file", type=click.File("r"))
+@click.argument("output", default="-", type=click.File("w"))
+def build_command(version, template_file, output, define=None):
+    """Build a new Rfamseq database. This will fill out the template file to
+    create the required structure. If there are keys from the template not
+    present in the --define options then this will fail.
+
+    Arguments:
+      version        Rfam version
+      template-file  Path to the template file to fill out
+
+    Options:
+      --define key=value   Define some key value pairs for the template. This
+                           can be done as many times as needed.
+    """
+
+    data = {}
+    if define:
+        for entry in data:
+            key, value = entry.split("=", 1)
+            data[key] = value
+
+    data["version"] = version
+
+    template = Template(template_file.read())
+    assert template.is_valid(), "Invalid template"
+    output.write(template.substitute(data))
 
 
 if __name__ == "__main__":

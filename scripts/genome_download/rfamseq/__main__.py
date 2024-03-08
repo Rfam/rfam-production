@@ -445,7 +445,7 @@ def chunk_ids_cmd(seqstat_file, chunk_size, output, prefix="chunk_", extension="
     byte_size = parse_size(chunk_size)
     chunks = seqstat.chunk(seqstat.parse(seqstat_file), byte_size)
     for index, chunk in enumerate(chunks):
-        out_path = output / f"{prefix}{index}{extension}"
+        out_path = output / f"{prefix}{index + 1}{extension}"
         with open(out_path, "w") as out:
             for info in chunk.entries:
                 out.write(info.sequence_id)

@@ -192,6 +192,7 @@ process chunk_rev_rfamseq {
   """
   esl-sfetch -f $merged $ids > rfamseq_${ids.baseName}.fa
   esl-shuffle -r rfamseq_${ids.baseName}.fa > rev-rfamseq_${ids.baseName}.fa
+  esl-seqstat rfamseq_${ids.baseName}.fa > rfamseq_${ids.baseName}.seqstat
   gzip rev-rfamseq_${ids.baseName}.fa
   """
 }

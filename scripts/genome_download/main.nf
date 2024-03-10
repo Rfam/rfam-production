@@ -164,6 +164,7 @@ process split_seqstat {
 process chunk_rfamseq {
   tag { "${index}" }
   publishDir 'genomes/rfamseq', mode: 'copy'
+  memory 4.GB
 
   input:
   tuple path(merged), path(ssi), path(ids), val(index)
@@ -182,20 +183,22 @@ process chunk_rfamseq {
 process chunk_rev_rfamseq {
   tag { "${index}" }
   publishDir 'genomes/rfamseq', mode: 'copy'
+  memory 4.GB
 
   input:
-  tuple path(merged), vpath(ssi), path(ids), val(index)
+  tuple path(merged), path(ssi), path(ids), val(index)
 
   output:
-  path("rev-rfamseq_${index}.fa.gz"), emit sequences
-  path("rev-rfamseq_${index}.seqstat"), emit: seqstat
+  path "${name}.fa.gz", emit: sequences
+  path "${name}.seqstat", emit: seqstat
 
   script:
+  name = "rev-rfamseq_${index}"
   """
-  esl-sfetch -f $merged $ids > rfamseq_${index}.fa
-  esl-shuffle -r rfamseq_${index}.fa > rev-rfamseq_${index}.fa
-  esl-seqstat rfamseq_${index}.fa > rev-rfamseq_${index}.seqstat
-  gzip rev-rfamseq_${index}.fa
+  esl-sfetch -f $merged $ids > to-rev.fa
+  esl-shuffle -r to-rev.fa > ${name}.fa
+  esl-seqstat ${name}.fa > ${name}.seqstat
+  gzip ${name}.fa
   """
 }
 
@@ -273,12 +276,12 @@ workflow genome_download {
     merge_chunks.out.sequences | combine(rfam_chunks) | chunk_rfamseq
     merge_chunks.out.sequences | combine(rev_chunks) | chunk_rev_rfamseq
 
-    chunk_rfamseq.out.sequences | count | set { full_count }
+    chunk_rfamseq.out | count | set { full_count }
     chunk_rev_rfamseq.out.sequences | count | set { rev_count }
     full_count | combine(rev_count) | set { counts }
 
-    chunk_rev_rfamseq.out.seqstat | collect | compute_database_size | splitText | set { rev_size }
-    merge_chunks.out.seqstat | compute_database_size | splitText | set { full_size }
+    chunk_rev_rfamseq.out.seqstat | collect | compute_database_size | splitText | map { it.trim() } | set { rev_size }
+    merge_chunks.out.seqstat | compute_database_size | splitText | map { it.trim() } | set { full_size }
     full_size | combine(rev_size) | set { sizes }
 
     build_config(sizes, counts, config_template)

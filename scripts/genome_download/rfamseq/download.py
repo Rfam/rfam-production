@@ -16,12 +16,11 @@ from __future__ import annotations
 import json
 import logging
 import typing as ty
-from contextlib import contextmanager
 
+import cattrs
 import requests
 from attrs import frozen
 from Bio import SeqIO, SeqRecord
-from boltons import iterutils
 from sqlitedict import SqliteDict
 
 from rfamseq import ena, fasta, mgnify, ncbi, uniprot, wget
@@ -241,8 +240,13 @@ class GenomeDownloader:
         if not from_fasta:
             raise NoRecordsFetched(f"Found no records for {proteome.id}")
 
-        # assembly_report = None
-        # if genome.assembly_id:
-        #     assembly_report = self.ncbi.assembly_summary(genome.assembly_id)
-        # meta = Metadata.build(self.version, proteome, assembly_report, from_fasta)
-        # json.dump(cattrs.unstructure(meta), metadata)
+        assembly_report = None
+        if proteome.genome_assembly.assembly_id:
+            accession = Accession.build(proteome.genome_assembly.assembly_id)
+            assembly_report = self.ncbi.assembly_summary(accession)
+        meta = {
+            "assembly_report": assembly_report,
+            "fasta_entries": from_fasta,
+            "proteome": proteome,
+        }
+        json.dump(meta, metadata)

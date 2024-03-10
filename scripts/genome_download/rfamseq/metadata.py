@@ -257,7 +257,7 @@ class Metadata:
     def build(
         cls,
         version: str,
-        pinfo: uniprot.ProteomeInfo,
+        pinfo: uniprot.proteome.Proteome,
         assembly_info: ty.Optional[ncbi.NcbiAssemblyReport],
         records: ty.List[FromFasta],
     ) -> Metadata:
@@ -270,8 +270,8 @@ class Metadata:
                 seq_info = assembly_info.info_for(
                     ncbi.Accession.build(info.rfamseq_acc)
                 )
-            rfamseq.append(RfamSeq.from_fasta(int(pinfo.taxid), info))
-            genseq.append(GenSeq.from_fasta(pinfo.upi, version, seq_info, info))
+            rfamseq.append(RfamSeq.from_fasta(int(pinfo.taxonomy.taxon_id), info))
+            genseq.append(GenSeq.from_fasta(pinfo.id, version, seq_info, info))
             total_length += info.length
 
         taxonomy = Taxonomy.from_lineage(pinfo.lineage_info)

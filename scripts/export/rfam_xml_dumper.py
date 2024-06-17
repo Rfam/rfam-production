@@ -726,6 +726,10 @@ def build_additional_fields(
             fields["num_full"]
         )
 
+        previous = fields["previous_names"] or ""
+        for prev_name in previous.split("; "):
+            ET.SubElement(add_fields, "field", name="previous_name").text = prev_name
+
         # rna types
         rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)
 

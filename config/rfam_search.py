@@ -28,15 +28,15 @@ DB_RELEASE = "14.8"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
-RNA_TYPE_DEL = ';'
-AUTH_DEL = ','
+RNA_TYPE_DEL = ";"
+AUTH_DEL = ","
 
 # ENTRY TYPES
-MOTIF = 'M'
-CLAN = 'C'
-FAMILY = 'F'
-GENOME = 'G'
-MATCH = 'R'
+MOTIF = "M"
+CLAN = "C"
+FAMILY = "F"
+GENOME = "G"
+MATCH = "R"
 
 
 # 9606 - human
@@ -51,7 +51,16 @@ MATCH = 'R'
 
 # MODEL ORGANISMS - popular species
 POPULAR_SPECIES = (
-    '9606', '10090', '7955', '3702', '6239', '7227', '559292', '4896', '511145')
+    "9606",
+    "10090",
+    "7955",
+    "3702",
+    "6239",
+    "7227",
+    "559292",
+    "4896",
+    "511145",
+)
 
 
 # RFAM SEARCH QUERIES
@@ -73,10 +82,19 @@ GENOME_ACC = "SELECT upid FROM genome WHERE num_families > 0"
 # ---------------------------------RFAM FIELDS----------------------------
 
 # Select all family related fields joining tables to fetch pubmed,go and so ids
-FAM_FIELDS ="""SELECT f.rfam_acc as id, f.rfam_id as name, f.description,f.author, 
+FAM_FIELDS = """
+SELECT
+f.rfam_acc as id,
+f.rfam_id as name,
+f.previous_id as previous_names,
+f.description,f.author,
 f.number_of_species as num_species,
-f.number_3d_structures as num_3d_structures, f.num_seed,
-f.num_full, f.type as rna_type, f.created, f.updated,
+f.number_3d_structures as num_3d_structures,
+f.num_seed,
+f.num_full,
+f.type as rna_type,
+f.created,
+f.updated,
 group_concat(distinct concat(dl.db_id,':',dl.db_link)) as dbxrefs,
 group_concat(distinct concat(fl.pmid)) as pmids
 FROM family f JOIN database_link dl using (rfam_acc)
@@ -84,7 +102,8 @@ JOIN family_literature_reference fl USING (rfam_acc)
 WHERE f.rfam_acc = '%s'
 AND (dl.db_id like 'GO' OR dl.db_id like 'SO')
 GROUP BY f.rfam_acc, f.rfam_id, f.description, f.author, f.number_of_species,
-f.number_3d_structures, f.num_seed, f.num_full, f.type, f.created, f.updated"""
+f.number_3d_structures, f.num_seed, f.num_full, f.type, f.created, f.updated
+"""
 
 # Fetching clan fields from the db
 CLAN_FIELDS = """
@@ -134,7 +153,7 @@ FULL_REGION_SEEDS = """
     SELECT
     fr.rfamseq_acc, fr.seq_start, fr.seq_end, fr.cm_start, fr.cm_end, fr.evalue_score,
     fr.bit_score, fr.type as alignment_type, fr.truncated, fr.rfam_acc,
-    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description, 
+    f.rfam_id, f.type as rna_type, rs.description as rfamseq_acc_description,
     tx.species as scientific_name, rs.ncbi_id as ncbi_id, tx.tax_string
     FROM full_region fr, family f, genseq gs, rfamseq rs, taxonomy tx
     WHERE fr.rfamseq_acc=rs.rfamseq_acc
@@ -284,5 +303,5 @@ RSCAPE_PK_NO_COV = """
     """
 # -----------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

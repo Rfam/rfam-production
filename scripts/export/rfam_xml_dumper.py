@@ -238,7 +238,9 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     entry = ET.SubElement(entries, "entry", id=rfam_acc)
 
     # entry name
-    ET.SubElement(entry, "name").text = str(fam_fields["name"])
+    family_name = str(fam_fields["name"])
+    simple_name = family_name.replace("_", " ")
+    ET.SubElement(entry, "name").text = simple_name
 
     # entry description
     ET.SubElement(entry, "description").text = str(fam_fields["description"])

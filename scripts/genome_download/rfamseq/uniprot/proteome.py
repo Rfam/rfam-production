@@ -110,7 +110,12 @@ def parse_response(
             yield proteome
     else:
         for entry in data.get("results", []):
-            proteome = converter.structure(entry, Proteome)
+            try:
+                proteome = converter.structure(entry, Proteome)
+            except Exception as err:
+               LOGGER.warn("Failed to parse proteome: %s", entry)
+               LOGGER.exception(err)
+               continue
             if ignore and proteome.id in ignore:
                 LOGGER.debug("Skipping ignored proteome %s", proteome)
                 continue

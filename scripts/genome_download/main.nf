@@ -173,7 +173,7 @@ process chunk_rfamseq {
   path("${name}.gz")
 
   script:
-  name = "rfamseq_${index}${params.rfamseq.suffix}"
+  name = "rfamseq_${index}.fa"
   """
   esl-sfetch -f $merged $ids > ${name}
   gzip ${name}
@@ -259,6 +259,7 @@ workflow genome_download {
     | merge_chunks
 
     merge_chunks.out.seqstat | split_seqstat
+
     split_seqstat.out.rfamseq_chunks \
     | flatten \
     | map { fn ->

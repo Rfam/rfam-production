@@ -243,10 +243,10 @@ class GenomeDownloader:
         assembly_report = None
         if proteome.genome_assembly.assembly_id:
             accession = Accession.build(proteome.genome_assembly.assembly_id)
-            assembly_report = self.ncbi.assembly_summary(accession)
+            assembly_report = cattrs.unstructure(self.ncbi.assembly_summary(accession))
         meta = {
             "assembly_report": assembly_report,
-            "fasta_entries": from_fasta,
-            "proteome": proteome,
+            "fasta_entries": [cattrs.unstructure(f) for f in from_fasta],
+            "proteome": cattrs.unstructure(proteome),
         }
         json.dump(meta, metadata)

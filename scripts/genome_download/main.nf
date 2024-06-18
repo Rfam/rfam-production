@@ -136,9 +136,9 @@ process merge_chunks {
   """
   set -euo pipefail
 
-  find . -name 'genomes*.fa' | xargs cat > rfamseq_${params.version}.fa
-  esl-seqstat -a rfamseq_${params.version}.fa > rfamseq_${params.version}.seqstat
-  esl-sfetch --index rfamseq_${params.version}.fa
+  find . -name 'genomes*.fa' | xargs cat > rfamseq${params.version}.fa
+  esl-seqstat -a rfamseq${params.version}.fa > rfamseq${params.version}.seqstat
+  esl-sfetch --index rfamseq${params.version}.fa
   """
 }
 

@@ -228,14 +228,14 @@ process build_config {
   path("rfam.config")
 
   """
-  rfamseq build-config
-    --define production_path=${params.paths.production} \
-    --define software_path=${params.paths.software} \
-    --define full_chunks=$full_chunk_count \
-    --define rev_chunks=$rev_chunk_count \
-    --define full_db_size=$full_size \
-    --define rev_db_size=$rev_size \
-    ${params.version} $tmpl rfam.config
+  rfamseq build-config \
+    --define production_path="${params.paths.production}" \
+    --define software_path="${params.paths.software}" \
+    --define full_chunks="$full_chunk_count" \
+    --define rev_chunks="$rev_chunk_count" \
+    --define full_db_size="$full_size" \
+    --define rev_db_size="$rev_size" \
+    "${params.version}" "$tmpl" rfam.config
   """
 }
 

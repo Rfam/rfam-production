@@ -510,7 +510,7 @@ def db_size_cmd(seqstat_files):
 
 
 @cli.command("build-config")
-@click.option("--define", multiple=True, help="Define a key=vaue value")
+@click.option("--define", multiple=True, help="Define a key=value pair")
 @click.argument("version")
 @click.argument("template-file", type=click.File("r"))
 @click.argument("output", default="-", type=click.File("w"))
@@ -530,7 +530,7 @@ def build_command(version, template_file, output, define=None):
 
     data = {}
     if define:
-        for entry in data:
+        for entry in define:
             key, value = entry.split("=", 1)
             data[key] = value
 

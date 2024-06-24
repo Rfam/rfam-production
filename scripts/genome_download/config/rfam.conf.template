@@ -17,7 +17,7 @@ location EBI
 
 <seqdb>
   <rfamseq>
-    dbSize            ${primary_size}
+    dbSize            ${full_db_size}
     dbPath            ${production_path}/rfamseq/${version}/rfamseq_${version}.fa
     fetchPath         ${production_path}/rfamseq/${version}/rfamseq_${version}.fa
     nSearchFiles      ${full_chunks}
@@ -31,7 +31,7 @@ location EBI
 
 <revseqdb>
   <revrfamseq>
-    dbSize            ${reverse_size}
+    dbSize            ${rev_db_size}
     nSearchFiles      ${rev_chunks}
     searchPathPrefix  ${production_path}/rfamseq/${version}/rev-rfamseq_${version}_
     searchPathSuffix  .fa.gz

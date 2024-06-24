@@ -202,15 +202,17 @@ process chunk_rev_rfamseq {
   """
 }
 
-process compute_database_size {
+process compute_seqstat_size {
   input:
-  path(seqstat)
+  path(full_seqstat)
+  path(rev_seqstat)
 
   output:
-  path("size")
+  tuple path("full-size"), path("rev-size")
 
   """
-  rfamseq database-size $seqstat > size
+  rfamseq database-size ${full_seqstat} > full-size
+  rfamseq database-size ${rev_seqstat} > rev-size
   """
 }
 
@@ -279,13 +281,12 @@ workflow genome_download {
 
     chunk_rfamseq.out | count | set { full_count }
     chunk_rev_rfamseq.out.sequences | count | set { rev_count }
-    full_count | combine(rev_count) | set { counts }
+    full_count | combine(rev_count) | set { total_counts }
 
-    chunk_rev_rfamseq.out.seqstat | collect | compute_database_size | splitText | map { it.trim() } | set { rev_size }
-    merge_chunks.out.seqstat | compute_database_size | splitText | map { it.trim() } | set { full_size }
-    full_size | combine(rev_size) | set { sizes }
-
-    build_config(sizes, counts, config_template)
+    chunk_rev_rfamseq.out.seqstat | collect |  set { rev_seqstat }
+    merge_chunks.out.seqstat | collect |  set { seqstat }
+    compute_seqstat_size(seqstat, rev_seqstat) | set { sizes }
+    build_config(sizes, total_counts, config_template)
 }
 
 workflow {

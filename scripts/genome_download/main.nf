@@ -130,8 +130,8 @@ process merge_chunks {
   path('genomes*.fa')
 
   output:
-  tuple path("rfamseq_${params.version}.fa"), path("rfamseq_${params.version}.fa.ssi"), emit: sequences
-  path("rfamseq_${params.version}.seqstat"), emit: seqstat
+  tuple path("rfamseq${params.version}.fa"), path("rfamseq${params.version}.fa.ssi"), emit: sequences
+  path("rfamseq${params.version}.seqstat"), emit: seqstat
 
   """
   set -euo pipefail

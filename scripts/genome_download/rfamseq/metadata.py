@@ -21,32 +21,36 @@ import typing as ty
 
 import attrs
 from attrs import frozen
-from Bio import SeqIO
-from pypika import Query, Table
+from Bio.SeqRecord import SeqRecord
+from pypika import MySQLQuery, Table
 
 from rfamseq import ncbi, uniprot
+from rfamseq.utils import batched
 
 
-def as_value(raw) -> ty.Union[int, str, bool]:
+def as_value(raw) -> ty.Union[int, str, bool, dt.datetime]:
     if isinstance(raw, enum.Enum):
         return as_value(raw.value)
-    if raw is None or isinstance(raw, (int, str, bool)):
+    if raw is None or isinstance(raw, (int, str, bool, dt.datetime)):
         return raw
     raise ValueError(f"Cannot convert {raw} to sql")
 
 
-def as_insert(column: str, data: ty.Any) -> Query:
+def as_insert(
+    column: str, data: ty.Any, ignore: bool = False, chunk_size: int = 100
+) -> ty.Iterable[MySQLQuery]:
     table = Table(column)
     if not isinstance(data, list):
         data = [data]
 
     fields = attrs.fields(data[0].__class__)
     columns = [f.metadata.get("column_name", f.name) for f in fields]
-    query = Query.into(table).columns(columns)
-    for datum in data:
+    for datum in batched(data, chunk_size):
+        query = MySQLQuery.into(table).columns(columns)
+        if ignore:
+            query = query.ignore()
         values = [as_value(getattr(datum, f.name)) for f in fields]
-        query = query.insert(tuple(values))
-    return query
+        yield query.insert(tuple(values))
 
 
 @enum.unique
@@ -114,7 +118,7 @@ class Genome:
     ungapped_length: ty.Optional[int]
     circular: ty.Optional[bool]
     ncbi_id: int
-    scientific_name: str
+    scientific_name: str | None
     common_name: ty.Optional[str]
     kingdom: str
     num_rfam_regions: int
@@ -139,7 +143,7 @@ class Genome:
     @classmethod
     def build(
         cls,
-        pinfo: uniprot.ProteomeInfo,
+        pinfo: uniprot.proteome.Proteome,
         ncbi_info: ty.Optional[ncbi.NcbiAssemblyReport],
         taxonomy: Taxonomy,
         total_length: int,
@@ -161,26 +165,26 @@ class Genome:
 
         now = dt.datetime.now()
         return cls(
-            upid=pinfo.upi,
-            assembly_acc=pinfo.genome_info.accession,
+            upid=pinfo.id,
+            assembly_acc=pinfo.genome_assembly.assembly_id,
             wgs_acc=wgs_acc,
             wgs_version=wgs_version,
             assembly_name=assembly_name,
             assembly_level=assembly_level,
-            assembly_version=pinfo.genome_info.version,
+            assembly_version=pinfo.genome_assembly.version(),
             study_ref=study_ref,
             description=pinfo.description,
             total_length=total_length,
             ungapped_length=None,
             circular=None,
-            ncbi_id=pinfo.taxid,
-            scientific_name=pinfo.lineage_info.species,
-            common_name=pinfo.lineage_info.common_name,
+            ncbi_id=int(pinfo.taxonomy.taxon_id),
+            scientific_name=pinfo.taxonomy.scientific_name,
+            common_name=pinfo.taxonomy.common_name,
             kingdom=taxonomy.kingdom(),
             num_rfam_regions=0,
             num_families=0,
-            is_reference=pinfo.is_reference,
-            is_representative=pinfo.is_representative,
+            is_reference=pinfo.proteome_type.is_reference(),
+            is_representative=pinfo.proteome_type.is_representative(),
             created=now,
             updated=now,
         )
@@ -228,7 +232,7 @@ class Taxonomy:
     align_display_name: str
 
     @classmethod
-    def from_lineage(cls, info: uniprot.LineageInfo) -> Taxonomy:
+    def from_lineage(cls, info: uniprot.taxonomy.LineageInfo) -> Taxonomy:
         species = info.species
         if info.common_name and "virus" not in info.tax_string:
             species = f"{species} ({info.common_name.lower()})"
@@ -258,7 +262,7 @@ class Metadata:
         cls,
         version: str,
         pinfo: uniprot.proteome.Proteome,
-        assembly_info: ty.Optional[ncbi.NcbiAssemblyReport],
+        report: None | ncbi.NcbiAssemblyReport,
         records: ty.List[FromFasta],
     ) -> Metadata:
         genseq = []
@@ -266,30 +270,27 @@ class Metadata:
         total_length = 0
         for info in records:
             seq_info = None
-            if assembly_info:
-                seq_info = assembly_info.info_for(
-                    ncbi.Accession.build(info.rfamseq_acc)
-                )
+            if report:
+                seq_info = report.info_for(ncbi.Accession.build(info.rfamseq_acc))
             rfamseq.append(RfamSeq.from_fasta(int(pinfo.taxonomy.taxon_id), info))
             genseq.append(GenSeq.from_fasta(pinfo.id, version, seq_info, info))
             total_length += info.length
 
-        taxonomy = Taxonomy.from_lineage(pinfo.lineage_info)
+        lineage_info = uniprot.taxonomy.lineage_info(pinfo.taxonomy.taxon_id)
+        taxonomy = Taxonomy.from_lineage(lineage_info)
         return Metadata(
-            upid=pinfo.upi,
+            upid=pinfo.id,
             genseq=genseq,
             rfamseq=rfamseq,
-            genome=Genome.build(pinfo, assembly_info, taxonomy, total_length),
+            genome=Genome.build(pinfo, report, taxonomy, total_length),
             taxonomy=taxonomy,
         )
 
-    def as_inserts(self) -> ty.List[Query]:
-        return [
-            as_insert("rfamseq", self.rfamseq),
-            as_insert("genseq", self.genseq),
-            as_insert("genome", self.genome),
-            as_insert("taxonomy", self.taxonomy),
-        ]
+    def as_inserts(self) -> ty.Iterable[MySQLQuery]:
+        yield from as_insert("rfamseq", self.rfamseq, ignore=True)
+        yield from as_insert("genseq", self.genseq, ignore=True)
+        yield from as_insert("genome", self.genome, ignore=True)
+        yield from as_insert("taxonomy", self.taxonomy, ignore=True)
 
 
 @frozen
@@ -299,7 +300,8 @@ class FromFasta:
     description: str
 
     @classmethod
-    def from_record(cls, record: SeqIO.SeqRecord) -> FromFasta:
+    def from_record(cls, record: SeqRecord) -> FromFasta:
+        assert record.id, "Must have record"
         return cls(
             rfamseq_acc=record.id,
             length=len(record.seq),

@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 
-"""
-Copyright [2009-2022] EMBL-European Bioinformatics Institute
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright [2009-2024] EMBL-European Bioinformatics Institute
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import csv
 import json
 import logging
-import math
 import typing as ty
 from pathlib import Path
 from string import Template
@@ -28,8 +25,9 @@ from boltons.jsonutils import JSONLIterator
 from humanfriendly import parse_size
 from sqlitedict import SqliteDict
 
-from rfamseq import download, mgnify, ncbi, seqstat
+from rfamseq import download, metadata, mgnify, ncbi, seqstat
 from rfamseq import uniprot as uni
+from rfamseq.accession import Accession
 from rfamseq.converter import camel_case_converter
 
 LOGGER = logging.getLogger(__name__)
@@ -505,8 +503,8 @@ def db_size_cmd(seqstat_files):
     total = 0
     for file in seqstat_files:
         total += 2 * seqstat.total_residues(file)
-    size = total / 1_000_000.0
-    print(math.ceil(size))
+    size = float(total) / float(1_000_000)
+    print(size)
 
 
 @cli.command("build-config")
@@ -539,6 +537,37 @@ def build_command(version, template_file, output, define=None):
     template = Template(template_file.read())
     assert template.is_valid(), "Invalid template"
     output.write(template.substitute(data))
+
+
+@cli.command("build-sql")
+# @click.option("commit-size", default=100)
+# @click.option("items-per-commit", default=100)
+@click.argument("ncbi-info")
+@click.argument("version")
+@click.argument("json-files", nargs=-1, type=click.File("r"))
+def build_sql_cmd(ncbi_info, version, json_files):
+    """Create an SQL file to update the database with the new rfamseq information."""
+    print("BEGIN TRANSACTION;")
+    with SqliteDict(ncbi_info, flag="r") as db:
+        wrapper = ncbi.FtpWrapper.build(db)
+        for file in json_files:
+            for line in file:
+                data = json.loads(line)
+                proteome = cattrs.structure(data["proteome"], uni.proteome.Proteome)
+                LOGGER.info("Building metadata for %s", proteome.id)
+                records = [
+                    cattrs.structure(r, metadata.FromFasta)
+                    for r in data["fasta_entries"]
+                ]
+                report = None
+                genome_id = proteome.genome_assembly.assembly_id
+                if genome_id:
+                    accession = Accession.build(genome_id)
+                    report = wrapper.report(accession)
+                meta = metadata.Metadata.build(version, proteome, report, records)
+                for command in meta.as_inserts():
+                    print(f"{str(command)};")
+    print("COMMIT;")
 
 
 if __name__ == "__main__":

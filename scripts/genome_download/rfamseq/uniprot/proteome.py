@@ -44,6 +44,11 @@ class ProteomeGenomeAssembly:
     genome_assembly_url: str | None = None
     level: str | None = None
 
+    def version(self) -> str | None:
+        if not self.assembly_id:
+            return None
+        return self.assembly_id.split(".", 1)[1]
+
 
 @enum.unique
 class ProteomeType(enum.Enum):
@@ -51,6 +56,18 @@ class ProteomeType(enum.Enum):
     REFERENCE = "Reference proteome"
     REPRESENTATIVE_REFERENCE = "Reference and representative proteome"
     OTHER = "Other proteome"
+
+    def is_reference(self) -> bool:
+        return (
+            self == ProteomeType.REFERENCE
+            or self == ProteomeType.REPRESENTATIVE_REFERENCE
+        )
+
+    def is_representative(self) -> bool:
+        return (
+            self == ProteomeType.REPRESENTATIVE
+            or self == ProteomeType.REPRESENTATIVE_REFERENCE
+        )
 
 
 @enum.unique
@@ -113,9 +130,9 @@ def parse_response(
             try:
                 proteome = converter.structure(entry, Proteome)
             except Exception as err:
-               LOGGER.warn("Failed to parse proteome: %s", entry)
-               LOGGER.exception(err)
-               continue
+                LOGGER.warn("Failed to parse proteome: %s", entry)
+                LOGGER.exception(err)
+                continue
             if ignore and proteome.id in ignore:
                 LOGGER.debug("Skipping ignored proteome %s", proteome)
                 continue

@@ -233,9 +233,7 @@ def ftp_path(info: SqliteDict, accession: str) -> ty.Optional[str]:
     return ftp.ftp_path(info, accession, "assembly_report.txt")
 
 
-def fetch_assembly_report(
-    info: ty.Dict[str, ty.Any], accession: str
-) -> NcbiAssemblyReport:
+def fetch_assembly_report(info: SqliteDict, accession: str) -> NcbiAssemblyReport:
     LOGGER.info("Getting NCBI assembly information for %s", accession)
     path = ftp_path(info, accession)
     if not path:

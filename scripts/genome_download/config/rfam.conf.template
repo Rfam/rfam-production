@@ -18,10 +18,10 @@ location EBI
 <seqdb>
   <rfamseq>
     dbSize            ${full_db_size}
-    dbPath            ${production_path}/rfamseq/${version}/rfamseq_${version}.fa
-    fetchPath         ${production_path}/rfamseq/${version}/rfamseq_${version}.fa
+    dbPath            ${production_path}/rfamseq/${version}/rfamseq${version}.fa
+    fetchPath         ${production_path}/rfamseq/${version}/rfamseq${version}.fa
     nSearchFiles      ${full_chunks}
-    searchPathPrefix  ${production_path}/rfamseq/${version}/rfamseq_${version}_
+    searchPathPrefix  ${production_path}/rfamseq/${version}/rfamseq${version}_
     searchPathSuffix  .fa
     revMate           revrfamseq
     haveTax           1
@@ -33,7 +33,7 @@ location EBI
   <revrfamseq>
     dbSize            ${rev_db_size}
     nSearchFiles      ${rev_chunks}
-    searchPathPrefix  ${production_path}/rfamseq/${version}/rev-rfamseq_${version}_
+    searchPathPrefix  ${production_path}/rfamseq/${version}/rev-rfamseq_
     searchPathSuffix  .fa.gz
   </revrfamseq>
 </revseqdb>
@@ -186,3 +186,4 @@ Stockholm2ArcScript  ${software_path}/agb/rfam/rfam-family-pipeline/dependencies
 productionPath ${production_path}
 
 ssImages ${production_path}/RELEASES/${version}/ss_images/
+scheduler slurm

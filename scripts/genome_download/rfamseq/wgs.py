@@ -479,14 +479,14 @@ def resolve_ena_wgs(
     return (contigs, info)
 
 
-def resolve_wgs(accession: WgsPrefix) -> ty.Optional[WgsSummary]:
-    (contigs, ena_info) = resolve_ena_wgs(accession.to_wgs_string())
-    ncbi_ids = ncbi.resolve_wgs(accession.to_wgs_string())
-    if not ncbi_ids and not ena_info and not contigs:
-        return None
-    return WgsSummary(
-        prefix=accession,
-        contigs=contigs,
-        sequences=ena_info,
-        ncbi_ids=(ncbi_ids or []),
-    )
+# def resolve_wgs(accession: WgsPrefix) -> ty.Optional[WgsSummary]:
+#     (contigs, ena_info) = resolve_ena_wgs(accession.to_wgs_string())
+#     ncbi_ids = ncbi.resolve_wgs(accession.to_wgs_string())
+#     if not ncbi_ids and not ena_info and not contigs:
+#         return None
+#     return WgsSummary(
+#         prefix=accession,
+#         contigs=contigs,
+#         sequences=ena_info,
+#         ncbi_ids=(ncbi_ids or []),
+#     )

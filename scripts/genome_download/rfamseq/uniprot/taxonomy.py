@@ -66,5 +66,5 @@ def lineage_info(taxid: str) -> LineageInfo:
     )
 
 
-def build_info(entries: ty.List[LineageEntry]) -> LineageInfo:
-    pass
+# def build_info(entries: ty.List[LineageEntry]) -> LineageInfo:
+#     pass

@@ -18,6 +18,7 @@ from __future__ import annotations
 import datetime as dt
 import enum
 import typing as ty
+from pathlib import Path
 
 import attrs
 from attrs import frozen
@@ -45,12 +46,14 @@ def as_insert(
 
     fields = attrs.fields(data[0].__class__)
     columns = [f.metadata.get("column_name", f.name) for f in fields]
-    for datum in batched(data, chunk_size):
+    for batch in batched(data, chunk_size):
         query = MySQLQuery.into(table).columns(columns)
         if ignore:
             query = query.ignore()
-        values = [as_value(getattr(datum, f.name)) for f in fields]
-        yield query.insert(tuple(values))
+        for datum in batch:
+            values = [as_value(getattr(datum, f.name)) for f in fields]
+            query = query.insert(values)
+        yield query
 
 
 @enum.unique
@@ -232,13 +235,13 @@ class Taxonomy:
     align_display_name: str
 
     @classmethod
-    def from_lineage(cls, info: uniprot.taxonomy.LineageInfo) -> Taxonomy:
+    def from_lineage(cls, ncbi_id: int, info: uniprot.taxonomy.LineageInfo) -> Taxonomy:
         species = info.species
         if info.common_name and "virus" not in info.tax_string:
             species = f"{species} ({info.common_name.lower()})"
         tree_name = species.replace(" ", "_")
         return Taxonomy(
-            ncbi_id=info.ncbi_id,
+            ncbi_id=ncbi_id,
             species=species,
             tax_string=info.tax_string,
             tree_display_name=tree_name,
@@ -277,7 +280,7 @@ class Metadata:
             total_length += info.length
 
         lineage_info = uniprot.taxonomy.lineage_info(pinfo.taxonomy.taxon_id)
-        taxonomy = Taxonomy.from_lineage(lineage_info)
+        taxonomy = Taxonomy.from_lineage(int(pinfo.taxonomy.taxon_id), lineage_info)
         return Metadata(
             upid=pinfo.id,
             genseq=genseq,
@@ -286,11 +289,21 @@ class Metadata:
             taxonomy=taxonomy,
         )
 
+    def write_csvs(self, base: Path):
+        with open(base / "taxonomy.csv") as handle:
+            self.taxonomy.as_csv(handle)
+        with open(base / "rfamseq.csv") as handle:
+            self.rfamseq.as_csv(handle)
+        with open(base / "genome.csv") as handle:
+            self.genome.as_csv(handle)
+        with open(base / "genseq.csv") as handle:
+            self.genseq.as_csv(handle)
+
     def as_inserts(self) -> ty.Iterable[MySQLQuery]:
-        yield from as_insert("rfamseq", self.rfamseq, ignore=True)
-        yield from as_insert("genseq", self.genseq, ignore=True)
-        yield from as_insert("genome", self.genome, ignore=True)
         yield from as_insert("taxonomy", self.taxonomy, ignore=True)
+        yield from as_insert("rfamseq", self.rfamseq, ignore=True)
+        yield from as_insert("genome", self.genome, ignore=True)
+        yield from as_insert("genseq", self.genseq, ignore=True)
 
 
 @frozen

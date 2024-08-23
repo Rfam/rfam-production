@@ -570,5 +570,18 @@ def build_sql_cmd(ncbi_info, version, json_files):
     print("COMMIT;")
 
 
+@cli.command("build-taxonomy-sql")
+@click.argument("tax-ids", type=click.File("r"))
+def build_tax_sql(tax_ids):
+    """Create an SQL file to update the database with the new taxonomy information."""
+    for taxid in tax_ids:
+        taxid = taxid.strip()
+        lineage_info = uni.taxonomy.lineage_info(taxid)
+        taxonomy = metadata.Taxonomy.from_lineage(int(taxid), lineage_info)
+        inserts = metadata.as_insert("taxonomy", taxonomy)
+        for insert in inserts:
+            print(f"{insert};")
+
+
 if __name__ == "__main__":
     cli()

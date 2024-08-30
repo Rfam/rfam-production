@@ -20,18 +20,16 @@ import subprocess
 import timeit
 import traceback
 import xml.etree.ElementTree as ET
-from sets import Set
 from xml.dom import minidom
 
 import django
-
 from config import rfam_config as rfc
 from config import rfam_search as rs
-from config.rfam_config import RFAMREL, RFAMLIVE
+from config.rfam_config import RFAMLIVE, RFAMREL
+from rfam_schemas.RfamLive.models import Genome, Genseq
+from sets import Set
 from utils import RfamDB
 from utils.parse_taxbrowser import *
-
-from rfam_schemas.RfamLive.models import Genseq, Genome
 
 """
 Description: This module exports Rfam data for the search engine
@@ -237,10 +235,10 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     entry = ET.SubElement(entries, "entry", id=rfam_acc)
 
     # entry name
-    ET.SubElement(entry, "name").text = str(fam_fields["name"])
+    ET.SubElement(entry, "name").text = str(fam_fields["name"]).replace("_", " ")
 
     # entry description
-    ET.SubElement(entry, "description").text = str(fam_fields["description"])
+    ET.SubElement(entry, "description").text = str(fam_fields["description"]).replace("_", " ")
 
     # entry dates - common to motifs and clans
     dates = ET.SubElement(entry, "dates")

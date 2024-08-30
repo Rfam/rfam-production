@@ -1,0 +1,28 @@
+# Assembly name:  ViralProj361950
+# Organism name:  Cynomolgus cytomegalovirus (viruses)
+# Isolate:  31908
+# Taxid:          1919083
+# BioProject:     PRJNA485481
+# Submitter:      na
+# Date:           2017-01-17
+# Assembly type:  na
+# Release type:   major
+# Assembly level: 
+# Genome representation: full
+# Assembly method: Geneious v. 8.1.4
+# Sequencing technology: Illumina
+# GenBank assembly accession: GCA_001963235.1
+# RefSeq assembly accession: GCF_001963235.1
+# RefSeq assembly and GenBank assemblies identical: yes
+#
+## Assembly-Units:
+## GenBank Unit Accession	RefSeq Unit Accession	Assembly-Unit name
+## GCA_001963225.1	GCF_001963225.1	Primary Assembly
+#
+# Ordered by chromosome/plasmid; the chromosomes/plasmids are followed by
+# unlocalized scaffolds.
+# Unplaced scaffolds are listed at the end.
+# RefSeq is equal or derived from GenBank object.
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+NC_033176.1	assembled-molecule	na	Segment	KX689265.1	=	NC_033176.1	Primary Assembly	na	na

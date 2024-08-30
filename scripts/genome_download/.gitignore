@@ -1,0 +1,5 @@
+genomes/
+work/
+.nextflow/
+local.config
+singularity/

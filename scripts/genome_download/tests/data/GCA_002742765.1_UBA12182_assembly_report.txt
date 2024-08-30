@@ -1,0 +1,150 @@
+# Assembly name:  UBA12182
+# Organism name:  Sulfurospirillum sp. UBA12182 (e-proteobacteria)
+# Isolate:  UBA12182
+# Taxid:          2015905
+# BioSample:      SAMN07280043
+# BioProject:     PRJNA391989
+# Submitter:      University of Queensland
+# Date:           2017-11-03
+# Assembly type:  na
+# Release type:   major
+# Assembly level: Scaffold
+# Genome representation: full
+# WGS project:    DLUF01
+# Assembly method: CLC NGS Cell v. 4.4.0.122465
+# Expected final version: yes
+# Genome coverage: 48.35x
+# Sequencing technology: Illumina HiSeq
+# Excluded from RefSeq: derived from metagenome
+# GenBank assembly accession: GCA_002742765.1
+#
+## Assembly-Units:
+## GenBank Unit Accession	RefSeq Unit Accession	Assembly-Unit name
+## GCA_002742795.1		Primary Assembly
+#
+# Ordered by chromosome/plasmid; the chromosomes/plasmids are followed by
+# unlocalized scaffolds.
+# Unplaced scaffolds are listed at the end.
+# RefSeq is equal or derived from GenBank object.
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+contig_1000	unplaced-scaffold	na	na	DLUF01000089.1	<>	na	Primary Assembly	20457	na
+contig_10052	unplaced-scaffold	na	na	DLUF01000084.1	<>	na	Primary Assembly	3284	na
+contig_1015	unplaced-scaffold	na	na	DLUF01000006.1	<>	na	Primary Assembly	16110	na
+contig_1038	unplaced-scaffold	na	na	DLUF01000009.1	<>	na	Primary Assembly	11005	na
+contig_1044	unplaced-scaffold	na	na	DLUF01000025.1	<>	na	Primary Assembly	9220	na
+contig_1066	unplaced-scaffold	na	na	DLUF01000055.1	<>	na	Primary Assembly	13499	na
+contig_115	unplaced-scaffold	na	na	DLUF01000048.1	<>	na	Primary Assembly	39975	na
+contig_1166	unplaced-scaffold	na	na	DLUF01000086.1	<>	na	Primary Assembly	15124	na
+contig_1189	unplaced-scaffold	na	na	DLUF01000050.1	<>	na	Primary Assembly	27926	na
+contig_1199	unplaced-scaffold	na	na	DLUF01000103.1	<>	na	Primary Assembly	30293	na
+contig_1221	unplaced-scaffold	na	na	DLUF01000112.1	<>	na	Primary Assembly	25680	na
+contig_1247	unplaced-scaffold	na	na	DLUF01000088.1	<>	na	Primary Assembly	38881	na
+contig_1266	unplaced-scaffold	na	na	DLUF01000096.1	<>	na	Primary Assembly	19623	na
+contig_127	unplaced-scaffold	na	na	DLUF01000060.1	<>	na	Primary Assembly	32953	na
+contig_1277	unplaced-scaffold	na	na	DLUF01000072.1	<>	na	Primary Assembly	11056	na
+contig_1283	unplaced-scaffold	na	na	DLUF01000017.1	<>	na	Primary Assembly	5712	na
+contig_1320	unplaced-scaffold	na	na	DLUF01000019.1	<>	na	Primary Assembly	12123	na
+contig_1392	unplaced-scaffold	na	na	DLUF01000118.1	<>	na	Primary Assembly	8185	na
+contig_1406	unplaced-scaffold	na	na	DLUF01000083.1	<>	na	Primary Assembly	5379	na
+contig_1477	unplaced-scaffold	na	na	DLUF01000066.1	<>	na	Primary Assembly	45575	na
+contig_1494	unplaced-scaffold	na	na	DLUF01000101.1	<>	na	Primary Assembly	5709	na
+contig_1536	unplaced-scaffold	na	na	DLUF01000013.1	<>	na	Primary Assembly	15249	na
+contig_1558	unplaced-scaffold	na	na	DLUF01000099.1	<>	na	Primary Assembly	14112	na
+contig_1590	unplaced-scaffold	na	na	DLUF01000035.1	<>	na	Primary Assembly	16880	na
+contig_1599	unplaced-scaffold	na	na	DLUF01000031.1	<>	na	Primary Assembly	13908	na
+contig_1610	unplaced-scaffold	na	na	DLUF01000021.1	<>	na	Primary Assembly	19232	na
+contig_1614	unplaced-scaffold	na	na	DLUF01000023.1	<>	na	Primary Assembly	6632	na
+contig_162	unplaced-scaffold	na	na	DLUF01000113.1	<>	na	Primary Assembly	14928	na
+contig_1658	unplaced-scaffold	na	na	DLUF01000102.1	<>	na	Primary Assembly	35812	na
+contig_1669	unplaced-scaffold	na	na	DLUF01000038.1	<>	na	Primary Assembly	3479	na
+contig_1673	unplaced-scaffold	na	na	DLUF01000054.1	<>	na	Primary Assembly	4495	na
+contig_1733	unplaced-scaffold	na	na	DLUF01000106.1	<>	na	Primary Assembly	17060	na
+contig_177	unplaced-scaffold	na	na	DLUF01000008.1	<>	na	Primary Assembly	3833	na
+contig_1785	unplaced-scaffold	na	na	DLUF01000119.1	<>	na	Primary Assembly	14805	na
+contig_1805	unplaced-scaffold	na	na	DLUF01000063.1	<>	na	Primary Assembly	16272	na
+contig_1816	unplaced-scaffold	na	na	DLUF01000081.1	<>	na	Primary Assembly	7834	na
+contig_182	unplaced-scaffold	na	na	DLUF01000024.1	<>	na	Primary Assembly	29528	na
+contig_1877	unplaced-scaffold	na	na	DLUF01000073.1	<>	na	Primary Assembly	18752	na
+contig_1905	unplaced-scaffold	na	na	DLUF01000062.1	<>	na	Primary Assembly	15915	na
+contig_1938	unplaced-scaffold	na	na	DLUF01000107.1	<>	na	Primary Assembly	12523	na
+contig_1941	unplaced-scaffold	na	na	DLUF01000082.1	<>	na	Primary Assembly	29970	na
+contig_196	unplaced-scaffold	na	na	DLUF01000114.1	<>	na	Primary Assembly	36630	na
+contig_198	unplaced-scaffold	na	na	DLUF01000042.1	<>	na	Primary Assembly	168760	na
+contig_1986	unplaced-scaffold	na	na	DLUF01000034.1	<>	na	Primary Assembly	13482	na
+contig_2063	unplaced-scaffold	na	na	DLUF01000016.1	<>	na	Primary Assembly	16538	na
+contig_2068	unplaced-scaffold	na	na	DLUF01000011.1	<>	na	Primary Assembly	5340	na
+contig_2236	unplaced-scaffold	na	na	DLUF01000020.1	<>	na	Primary Assembly	23485	na
+contig_2299	unplaced-scaffold	na	na	DLUF01000014.1	<>	na	Primary Assembly	2444	na
+contig_2315	unplaced-scaffold	na	na	DLUF01000091.1	<>	na	Primary Assembly	2862	na
+contig_2361	unplaced-scaffold	na	na	DLUF01000080.1	<>	na	Primary Assembly	16679	na
+contig_2405	unplaced-scaffold	na	na	DLUF01000092.1	<>	na	Primary Assembly	10485	na
+contig_2413	unplaced-scaffold	na	na	DLUF01000077.1	<>	na	Primary Assembly	9223	na
+contig_2492	unplaced-scaffold	na	na	DLUF01000069.1	<>	na	Primary Assembly	13320	na
+contig_2496	unplaced-scaffold	na	na	DLUF01000070.1	<>	na	Primary Assembly	10992	na
+contig_2530	unplaced-scaffold	na	na	DLUF01000049.1	<>	na	Primary Assembly	38369	na
+contig_255	unplaced-scaffold	na	na	DLUF01000097.1	<>	na	Primary Assembly	26821	na
+contig_2694	unplaced-scaffold	na	na	DLUF01000105.1	<>	na	Primary Assembly	25424	na
+contig_2726	unplaced-scaffold	na	na	DLUF01000026.1	<>	na	Primary Assembly	12263	na
+contig_2771	unplaced-scaffold	na	na	DLUF01000104.1	<>	na	Primary Assembly	9060	na
+contig_2782	unplaced-scaffold	na	na	DLUF01000030.1	<>	na	Primary Assembly	16910	na
+contig_2796	unplaced-scaffold	na	na	DLUF01000051.1	<>	na	Primary Assembly	31186	na
+contig_2923	unplaced-scaffold	na	na	DLUF01000044.1	<>	na	Primary Assembly	8841	na
+contig_2927	unplaced-scaffold	na	na	DLUF01000043.1	<>	na	Primary Assembly	4695	na
+contig_3052	unplaced-scaffold	na	na	DLUF01000108.1	<>	na	Primary Assembly	6590	na
+contig_336	unplaced-scaffold	na	na	DLUF01000074.1	<>	na	Primary Assembly	16595	na
+contig_338	unplaced-scaffold	na	na	DLUF01000078.1	<>	na	Primary Assembly	22577	na
+contig_3519	unplaced-scaffold	na	na	DLUF01000007.1	<>	na	Primary Assembly	11396	na
+contig_357	unplaced-scaffold	na	na	DLUF01000046.1	<>	na	Primary Assembly	3706	na
+contig_3616	unplaced-scaffold	na	na	DLUF01000010.1	<>	na	Primary Assembly	15021	na
+contig_3635	unplaced-scaffold	na	na	DLUF01000041.1	<>	na	Primary Assembly	8410	na
+contig_3671	unplaced-scaffold	na	na	DLUF01000100.1	<>	na	Primary Assembly	6378	na
+contig_3826	unplaced-scaffold	na	na	DLUF01000012.1	<>	na	Primary Assembly	4952	na
+contig_3860	unplaced-scaffold	na	na	DLUF01000068.1	<>	na	Primary Assembly	17471	na
+contig_388	unplaced-scaffold	na	na	DLUF01000085.1	<>	na	Primary Assembly	14989	na
+contig_3978	unplaced-scaffold	na	na	DLUF01000058.1	<>	na	Primary Assembly	17622	na
+contig_40	unplaced-scaffold	na	na	DLUF01000003.1	<>	na	Primary Assembly	18424	na
+contig_4044	unplaced-scaffold	na	na	DLUF01000117.1	<>	na	Primary Assembly	18621	na
+contig_4108	unplaced-scaffold	na	na	DLUF01000093.1	<>	na	Primary Assembly	42096	na
+contig_4232	unplaced-scaffold	na	na	DLUF01000052.1	<>	na	Primary Assembly	2728	na
+contig_4327	unplaced-scaffold	na	na	DLUF01000061.1	<>	na	Primary Assembly	2742	na
+contig_4331	unplaced-scaffold	na	na	DLUF01000079.1	<>	na	Primary Assembly	3008	na
+contig_4338	unplaced-scaffold	na	na	DLUF01000076.1	<>	na	Primary Assembly	3107	na
+contig_4403	unplaced-scaffold	na	na	DLUF01000029.1	<>	na	Primary Assembly	7850	na
+contig_450	unplaced-scaffold	na	na	DLUF01000040.1	<>	na	Primary Assembly	19441	na
+contig_4532	unplaced-scaffold	na	na	DLUF01000094.1	<>	na	Primary Assembly	5201	na
+contig_4684	unplaced-scaffold	na	na	DLUF01000110.1	<>	na	Primary Assembly	15761	na
+contig_4752	unplaced-scaffold	na	na	DLUF01000120.1	<>	na	Primary Assembly	6575	na
+contig_4799	unplaced-scaffold	na	na	DLUF01000087.1	<>	na	Primary Assembly	2943	na
+contig_511	unplaced-scaffold	na	na	DLUF01000036.1	<>	na	Primary Assembly	9402	na
+contig_522	unplaced-scaffold	na	na	DLUF01000053.1	<>	na	Primary Assembly	46711	na
+contig_5226	unplaced-scaffold	na	na	DLUF01000047.1	<>	na	Primary Assembly	5737	na
+contig_5273	unplaced-scaffold	na	na	DLUF01000116.1	<>	na	Primary Assembly	11165	na
+contig_5640	unplaced-scaffold	na	na	DLUF01000002.1	<>	na	Primary Assembly	5344	na
+contig_580	unplaced-scaffold	na	na	DLUF01000027.1	<>	na	Primary Assembly	66203	na
+contig_5894	unplaced-scaffold	na	na	DLUF01000039.1	<>	na	Primary Assembly	3222	na
+contig_596	unplaced-scaffold	na	na	DLUF01000045.1	<>	na	Primary Assembly	71517	na
+contig_622	unplaced-scaffold	na	na	DLUF01000037.1	<>	na	Primary Assembly	20251	na
+contig_641	unplaced-scaffold	na	na	DLUF01000071.1	<>	na	Primary Assembly	10349	na
+contig_673	unplaced-scaffold	na	na	DLUF01000090.1	<>	na	Primary Assembly	5033	na
+contig_677	unplaced-scaffold	na	na	DLUF01000028.1	<>	na	Primary Assembly	28027	na
+contig_684	unplaced-scaffold	na	na	DLUF01000005.1	<>	na	Primary Assembly	9253	na
+contig_685	unplaced-scaffold	na	na	DLUF01000004.1	<>	na	Primary Assembly	24418	na
+contig_69	unplaced-scaffold	na	na	DLUF01000059.1	<>	na	Primary Assembly	115790	na
+contig_695	unplaced-scaffold	na	na	DLUF01000015.1	<>	na	Primary Assembly	16452	na
+contig_7053	unplaced-scaffold	na	na	DLUF01000032.1	<>	na	Primary Assembly	2817	na
+contig_7361	unplaced-scaffold	na	na	DLUF01000022.1	<>	na	Primary Assembly	5434	na
+contig_744	unplaced-scaffold	na	na	DLUF01000098.1	<>	na	Primary Assembly	35323	na
+contig_801	unplaced-scaffold	na	na	DLUF01000064.1	<>	na	Primary Assembly	18503	na
+contig_805	unplaced-scaffold	na	na	DLUF01000067.1	<>	na	Primary Assembly	22871	na
+contig_813	unplaced-scaffold	na	na	DLUF01000065.1	<>	na	Primary Assembly	17131	na
+contig_816	unplaced-scaffold	na	na	DLUF01000057.1	<>	na	Primary Assembly	18177	na
+contig_845	unplaced-scaffold	na	na	DLUF01000001.1	<>	na	Primary Assembly	2732	na
+contig_853	unplaced-scaffold	na	na	DLUF01000033.1	<>	na	Primary Assembly	28376	na
+contig_895	unplaced-scaffold	na	na	DLUF01000056.1	<>	na	Primary Assembly	12784	na
+contig_913	unplaced-scaffold	na	na	DLUF01000109.1	<>	na	Primary Assembly	11763	na
+contig_918	unplaced-scaffold	na	na	DLUF01000111.1	<>	na	Primary Assembly	16663	na
+contig_932	unplaced-scaffold	na	na	DLUF01000018.1	<>	na	Primary Assembly	12478	na
+contig_95	unplaced-scaffold	na	na	DLUF01000075.1	<>	na	Primary Assembly	15671	na
+contig_992	unplaced-scaffold	na	na	DLUF01000095.1	<>	na	Primary Assembly	32044	na
+contig_995	unplaced-scaffold	na	na	DLUF01000115.1	<>	na	Primary Assembly	44028	na

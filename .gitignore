@@ -150,3 +150,5 @@ work/
 
 #py2to3 backup files
 *.py.bak
+
+nextflow

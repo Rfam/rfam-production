@@ -1,0 +1,34 @@
+# Assembly name:  ASM45574v1
+# Organism name:  Alligator sinensis (Chinese alligator)
+# Sex:  male
+# Taxid:          38654
+# BioSample:      SAMN02981559
+# BioProject:     PRJNA215016
+# Submitter:      BGI-shenzhen
+# Date:           2013-08-29
+# Assembly type:  haploid
+# Release type:   major
+# Assembly level: Scaffold
+# Genome representation: full
+# WGS project:    AVPB01
+# Assembly method: SOAPdenovo v. 1.05
+# Genome coverage: 109x
+# Sequencing technology: Illumina GA II
+# RefSeq category: Representative Genome
+# GenBank assembly accession: GCA_000455745.1
+# RefSeq assembly accession: GCF_000455745.1
+# RefSeq assembly and GenBank assemblies identical: no
+#
+## Assembly-Units:
+## GenBank Unit Accession	RefSeq Unit Accession	Assembly-Unit name
+## GCA_000455755.1	GCF_000455755.1	Primary Assembly
+## 	GCF_000039675.1	non-nuclear
+#
+# Ordered by chromosome/plasmid; the chromosomes/plasmids are followed by
+# unlocalized scaffolds.
+# Unplaced scaffolds are listed at the end.
+# RefSeq is equal or derived from GenBank object.
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+scaffold3284_1	unplaced-scaffold	na	na	KE698715.1	=	NW_005847012.1	Primary Assembly	500	na
+MT	assembled-molecule	MT	Mitochondrion	na	<>	NC_004448.1	non-nuclear	16746	na

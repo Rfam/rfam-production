@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+base="$(dirname $0)/.."
+export PYTHONPATH="$PYTHONPATH:$base"
+exec python3 -m rfam_export "$@"

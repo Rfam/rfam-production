@@ -147,6 +147,7 @@ publish
 # nextflow
 work/
 .nextflow*
+local.config
 
 #py2to3 backup files
 *.py.bak

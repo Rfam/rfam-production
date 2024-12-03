@@ -1,6 +1,3 @@
-import sys
-import argparse
-
 from utils import db_utils as RfamDB
 
 """
@@ -9,7 +6,7 @@ To be used for updating all fields prior to indexing
 
 # -----------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     """
     parser = argparse.ArgumentParser(description='Update table fields for a new release')
@@ -29,8 +26,3 @@ if __name__ == '__main__':
     RfamDB.set_genome_size(upid=None)
     RfamDB.set_number_of_distinct_families_in_genome(upid=None)
     RfamDB.set_number_of_genomic_significant_hits(upid=None)
-
-
-
-
-

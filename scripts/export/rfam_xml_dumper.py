@@ -23,13 +23,14 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
 import django
-from config import rfam_config as rfc
-from config import rfam_search as rs
 from config.rfam_config import RFAMLIVE, RFAMREL
 from rfam_schemas.RfamLive.models import Genome, Genseq
 from sets import Set
 from utils import RfamDB
 from utils.parse_taxbrowser import *
+
+from config import rfam_config as rfc
+from config import rfam_search as rs
 
 """
 Description: This module exports Rfam data for the search engine
@@ -45,7 +46,9 @@ django.setup()
 DB_CONFIG = None
 
 
-def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir):
+def xml4db_dumper(
+    name_dict, name_object, entry_type, entry_acc, hfields: bool, outdir: str
+):
     """
     Exports query results into EB-eye's XML4dbDUMP format
 
@@ -77,7 +80,8 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     # call family xml builder to add a new family to the xml tree
     if entry_type == rs.FAMILY:
         family_xml_builder(
-            name_dict, name_object, entries, rfam_acc=entry_acc, hfields=hfields)
+            name_dict, name_object, entries, rfam_acc=entry_acc, hfields=hfields
+        )
 
     elif entry_type == rs.CLAN:
         clan_xml_builder(entries, clan_acc=entry_acc)
@@ -103,12 +107,12 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
     # export xml tree - writes xml tree into a file
     filename = os.path.join(outdir, entry_acc + ".xml")
     if not os.path.exists(filename):
-        fp_out = open(filename, 'w')
+        fp_out = open(filename, "w")
 
         db_str = ET.tostring(db_xml, "utf-8")
         db_str_reformated = minidom.parseString(db_str)
 
-        fp_out.write(db_str_reformated.toprettyxml(indent='\t'))
+        fp_out.write(db_str_reformated.toprettyxml(indent="\t"))
 
         fp_out.close()
     else:
@@ -117,6 +121,7 @@ def xml4db_dumper(name_dict, name_object, entry_type, entry_acc, hfields, outdir
 
 
 # ----------------------------------------------------------------------------
+
 
 def get_taxonomy_info(rfam_acc):
     """
@@ -128,14 +133,15 @@ def get_taxonomy_info(rfam_acc):
     ncbi_ids = []
     tax_strings = set()  # distinct ncbi_ids can have identical tax_strings
     for row in result_iterator(cursor):
-        ncbi_ids.append(row['ncbi_id'])
-        tax_strings.add(row['tax_string'])
+        ncbi_ids.append(row["ncbi_id"])
+        tax_strings.add(row["tax_string"])
     cursor.close()
     cnx.disconnect()
     return ncbi_ids, tax_strings
 
 
 # ----------------------------------------------------------------------------
+
 
 def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=True):
     """
@@ -175,10 +181,10 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     upids = fetch_value_list(rfam_acc, rs.FAMILY_UPIDS)
 
     # get pubmed ids
-    pmids = get_value_list(fam_fields["pmids"], ',')
+    pmids = get_value_list(fam_fields["pmids"], ",")
 
     # get dbxrefs (GO, SO)
-    dbxrefs = get_value_list(fam_fields["dbxrefs"], ',')
+    dbxrefs = get_value_list(fam_fields["dbxrefs"], ",")
 
     # get associated clan
     clan = fetch_value(rs.FAM_CLAN, rfam_acc)
@@ -238,7 +244,9 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
     ET.SubElement(entry, "name").text = str(fam_fields["name"]).replace("_", " ")
 
     # entry description
-    ET.SubElement(entry, "description").text = str(fam_fields["description"]).replace("_", " ")
+    ET.SubElement(entry, "description").text = str(fam_fields["description"]).replace(
+        "_", " "
+    )
 
     # entry dates - common to motifs and clans
     dates = ET.SubElement(entry, "dates")
@@ -254,16 +262,22 @@ def family_xml_builder(name_dict, name_object, entries, rfam_acc=None, hfields=T
 
     # expand xml tree with additional fields
     add_fields = build_additional_fields(
-        entry, fam_fields, len(pdb_ids), valid_ncbi_ids, entry_type=entry_type, tax_strings=tax_strings)
+        entry,
+        fam_fields,
+        len(pdb_ids),
+        valid_ncbi_ids,
+        entry_type=entry_type,
+        tax_strings=tax_strings,
+    )
 
     if hfields is True:
-        species_tax_trees = get_family_tax_tree(
-            name_object, name_dict, valid_ncbi_ids)
+        species_tax_trees = get_family_tax_tree(name_object, name_dict, valid_ncbi_ids)
         if len(species_tax_trees.keys()) > 1:
             add_hierarchical_fields(add_fields, species_tax_trees, name_dict)
 
 
 # ----------------------------------------------------------------------------
+
 
 def clan_xml_builder(entries, clan_acc=None):
     """
@@ -302,10 +316,12 @@ def clan_xml_builder(entries, clan_acc=None):
 
     # clan additional fields
     build_additional_fields(
-        entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type)
+        entry, clan_fields, clan_fields["num_families"], None, entry_type=entry_type
+    )
 
 
 # ----------------------------------------------------------------------------
+
 
 def motif_xml_builder(entries, motif_acc=None):
     """
@@ -342,11 +358,11 @@ def motif_xml_builder(entries, motif_acc=None):
     cross_ref_dict["RFAM"] = motif_fams
     build_cross_references(entry, cross_ref_dict)
 
-    build_additional_fields(
-        entry, motif_fields, 0, None, entry_type=entry_type)
+    build_additional_fields(entry, motif_fields, 0, None, entry_type=entry_type)
 
 
 # ----------------------------------------------------------------------------
+
 
 def genome_xml_builder(entries, gen_acc=None):
     """
@@ -369,12 +385,12 @@ def genome_xml_builder(entries, gen_acc=None):
     if genome_fields["name"] is not None:
         ET.SubElement(entry, "name").text = genome_fields["name"]
     else:
-        ET.SubElement(entry, "name").text = ''
+        ET.SubElement(entry, "name").text = ""
 
     if genome_fields["description"] is not None:
         ET.SubElement(entry, "description").text = genome_fields["description"]
     else:
-        ET.SubElement(entry, "description").text = ''
+        ET.SubElement(entry, "description").text = ""
 
     # entry dates - common to motifs and clans
     dates = ET.SubElement(entry, "dates")
@@ -399,6 +415,7 @@ def genome_xml_builder(entries, gen_acc=None):
 
 # ----------------------------------------------------------------------------
 
+
 def result_iterator(cursor, arraysize=1000):
     """
     An iterator that uses fetchmany to keep memory usage down
@@ -413,23 +430,30 @@ def result_iterator(cursor, arraysize=1000):
 
 # ----------------------------------------------------------------------------
 
-def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
+
+def format_full_region(
+    entries: ET.Element, region, genome, chromosome, rnacentral_ids: ty.Dict[str, str]
+):
     """
     Format full regions for a genome. Genome metadata is retrieved only once.
     """
     timestamp = datetime.datetime.now().strftime("%d %b %Y")
-    name = '%s/%s:%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+    name = "%s/%s:%s" % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
 
     scientific_name = None
     if genome is not None:
         scientific_name = genome.scientific_name
     else:
-        scientific_name = region['scientific_name']
+        scientific_name = region["scientific_name"]
 
-    description = '%s %s' % (scientific_name, region["rfam_id"])
+    description = "%s %s" % (scientific_name, region["rfam_id"])
 
     # add a new family entry to the xml tree
-    entry_id = '%s_%s_%s' % (region["rfamseq_acc"], region["seq_start"], region["seq_end"])
+    entry_id = "%s_%s_%s" % (
+        region["rfamseq_acc"],
+        region["seq_start"],
+        region["seq_end"],
+    )
     entry = ET.SubElement(entries, "entry", id=entry_id)
 
     ET.SubElement(entry, "name").text = name
@@ -448,15 +472,15 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
     if genome is not None:
         ncbi_id = genome.ncbi_id
     else:
-        ncbi_id = region['ncbi_id']
+        ncbi_id = region["ncbi_id"]
 
     # create cross references dictionary
     cross_refs["ncbi_taxonomy_id"] = [ncbi_id]
     cross_refs["RFAM"] = [region["rfam_acc"]]
 
-    ena_accession = ''
-    if region["rfamseq_acc"].find('.') != -1:
-        ena_accession = region["rfamseq_acc"].partition('.')[0]
+    ena_accession = ""
+    if region["rfamseq_acc"].find(".") != -1:
+        ena_accession = region["rfamseq_acc"].partition(".")[0]
         cross_refs["ENA"] = [ena_accession]
 
     elif region["rfamseq_acc"][0:3] != "URS":
@@ -467,7 +491,7 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
         cross_refs["Uniprot"] = [genome.upid]
 
     if name in rnacentral_ids:
-        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + '_' + str(ncbi_id)]
+        cross_refs["RNACENTRAL"] = [rnacentral_ids[name] + "_" + str(ncbi_id)]
     else:
         if "/" in name:
             name = name.partition("/")[0]
@@ -478,17 +502,19 @@ def format_full_region(entries, region, genome, chromosome, rnacentral_ids):
 
 # ----------------------------------------------------------------------------
 
+
 def get_chromosome_metadata():
     """
     Get chromosome metadata as a dictionary.
     """
     chromosomes = {}
     for genseq in Genseq.objects.exclude(chromosome_name__isnull=True).values():
-        chromosomes[genseq['rfamseq_acc']] = genseq
+        chromosomes[genseq["rfamseq_acc"]] = genseq
     return chromosomes
 
 
 # ----------------------------------------------------------------------------
+
 
 def get_rnacentral_mapping(upid):
     """
@@ -505,7 +531,7 @@ def get_rnacentral_mapping(upid):
     AND fr.is_significant = 1
     AND rm.rnacentral_id IS NOT NULL
     AND gs.upid = '%s'
-    AND gs.version='14.0'
+    AND gs.version='15.0'
     """
     cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True, buffered=True)
@@ -513,7 +539,7 @@ def get_rnacentral_mapping(upid):
     rnacentral_ids = {}
     for row in result_iterator(cursor):
         rfamseq_acc = row["rfamseq_acc"]
-        name = '%s/%s:%s' % (row["rfamseq_acc"], row["seq_start"], row["seq_end"])
+        name = "%s/%s:%s" % (row["rfamseq_acc"], row["seq_start"], row["seq_end"])
         rnacentral_ids[name] = str(row["rnacentral_id"])
     cursor.close()
     cnx.disconnect()
@@ -522,7 +548,8 @@ def get_rnacentral_mapping(upid):
 
 # ----------------------------------------------------------------------------
 
-def full_region_xml_builder(entries, upid):
+
+def full_region_xml_builder(entries: ET.Element, upid: str):
     """
     Export full region entries for a genome.
 
@@ -530,15 +557,34 @@ def full_region_xml_builder(entries, upid):
     upid:  Genome identifier.
     """
 
-    tax_id_duplicates = {'562': 1, '1280': 1, '7209': 1, '10679': 1, '10717': 1,
-                         '11021': 1, '11036': 1, '11072': 1, '11082': 1, '11228': 1,
-                         '11636': 1, '11963': 1, '31649': 1, '84589': 1, '90370': 1,
-                         '93838': 1, '186617': 1, '229533': 1, '351048': 1,
-                         '456327': 1, '766192': 1, '1891747': 1}
+    tax_id_duplicates = {
+        "562": 1,
+        "1280": 1,
+        "7209": 1,
+        "10679": 1,
+        "10717": 1,
+        "11021": 1,
+        "11036": 1,
+        "11072": 1,
+        "11082": 1,
+        "11228": 1,
+        "11636": 1,
+        "11963": 1,
+        "31649": 1,
+        "84589": 1,
+        "90370": 1,
+        "93838": 1,
+        "186617": 1,
+        "229533": 1,
+        "351048": 1,
+        "456327": 1,
+        "766192": 1,
+        "1891747": 1,
+    }
     genome = None
     chromosomes = []
-    if upid[0:2] == 'UP':
-        genome = Genome.objects.select_related('ncbi').get(upid=upid)
+    if upid[0:2] == "UP":
+        genome = Genome.objects.select_related("ncbi").get(upid=upid)
         chromosomes = get_chromosome_metadata()
 
     rnacentral_ids = get_rnacentral_mapping(upid=upid)
@@ -574,6 +620,7 @@ def full_region_xml_builder(entries, upid):
 
 # ----------------------------------------------------------------------------
 
+
 def build_cross_references(entry, cross_ref_dict):
     """
     Expands the entry xml tree by adding the entry's cross references.
@@ -595,13 +642,13 @@ def build_cross_references(entry, cross_ref_dict):
         db_keys = cross_ref_dict[db_name]
         if len(db_keys) > 0:
             for value in db_keys:
-                ET.SubElement(
-                    cross_refs, "ref", dbkey=str(value), dbname=db_name)
+                ET.SubElement(cross_refs, "ref", dbkey=str(value), dbname=db_name)
 
     return cross_refs
 
 
 # ----------------------------------------------------------------------------
+
 
 def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
     """
@@ -617,8 +664,9 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
 
     # add a new hierarchical ref for every tax_id in the family
     for tax_id in tax_tree_dict.keys():
-        hfields = ET.SubElement(xml_tree_node, "hierarchical_field",
-                                name="taxonomy_lineage")
+        hfields = ET.SubElement(
+            xml_tree_node, "hierarchical_field", name="taxonomy_lineage"
+        )
 
         # fetch lineage
         lineage = tax_tree_dict[tax_id]
@@ -626,20 +674,24 @@ def add_hierarchical_fields(xml_tree_node, tax_tree_dict, name_dict):
 
         for tax_tree_node in tax_tree:
             # create the root node
-            if tax_tree_node == '1':
+            if tax_tree_node == "1":
                 # need to create one root node in order for the xml dump to
                 # validate
-                ET.SubElement(hfields, "root", label="root").text = '1'
+                ET.SubElement(hfields, "root", label="root").text = "1"
             else:
                 # skip root while creating child nodes
-                if tax_tree_node != '1':
+                if tax_tree_node != "1":
                     ET.SubElement(
-                        hfields, "child", label=name_dict[tax_tree_node]).text = tax_tree_node
+                        hfields, "child", label=name_dict[tax_tree_node]
+                    ).text = tax_tree_node
 
 
 # ----------------------------------------------------------------------------
 
-def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entry_type, tax_strings=None):
+
+def build_additional_fields(
+    entry, fields, num_3d_structures, fam_ncbi_ids, entry_type, tax_strings=None
+):
     """
     This function expands the entry xml field with the additional fields
 
@@ -654,7 +706,7 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
     # adding authors
     authors = fields["author"]
-    authors = authors.replace(';', ',')
+    authors = authors.replace(";", ",")
     author_list = get_value_list(authors, rs.AUTH_DEL)
 
     for author in author_list:
@@ -663,14 +715,21 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
     if entry_type == "Family":
 
         # number of species
-        ET.SubElement(add_fields, "field", name="num_species").text = str(fields["num_species"])
+        ET.SubElement(add_fields, "field", name="num_species").text = str(
+            fields["num_species"]
+        )
         # number of 3D structures
-        ET.SubElement(
-            add_fields, "field", name="num_3d_structures").text = str(num_3d_structures)
+        ET.SubElement(add_fields, "field", name="num_3d_structures").text = str(
+            num_3d_structures
+        )
         # num seed
-        ET.SubElement(add_fields, "field", name="num_seed").text = str(fields["num_seed"])
+        ET.SubElement(add_fields, "field", name="num_seed").text = str(
+            fields["num_seed"]
+        )
         # num full
-        ET.SubElement(add_fields, "field", name="num_full").text = str(fields["num_full"])
+        ET.SubElement(add_fields, "field", name="num_full").text = str(
+            fields["num_full"]
+        )
 
         # rna types
         rna_types = get_value_list(fields["rna_type"], rs.RNA_TYPE_DEL)
@@ -680,17 +739,16 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
 
         # has 3d structure
         if num_3d_structures > 0:
-            ET.SubElement(
-                add_fields, "field", name="has_3d_structure").text = "Yes"
+            ET.SubElement(add_fields, "field", name="has_3d_structure").text = "Yes"
         else:
-            ET.SubElement(
-                add_fields, "field", name="has_3d_structure").text = "No"
+            ET.SubElement(add_fields, "field", name="has_3d_structure").text = "No"
 
         # add popular species if any
         for species in rs.POPULAR_SPECIES:
             if species in fam_ncbi_ids:
-                ET.SubElement(
-                    add_fields, "field", name="popular_species").text = str(species)
+                ET.SubElement(add_fields, "field", name="popular_species").text = str(
+                    species
+                )
 
         for tax_string in tax_strings:
             ET.SubElement(add_fields, "field", name="tax_string").text = str(tax_string)
@@ -702,7 +760,9 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
             ET.SubElement(add_fields, "field", name="has_pseudoknot").text = "Yes"
 
             for pk_evidence in pseudoknots:
-                ET.SubElement(add_fields, "field", name="pseudoknot_evidence").text = pk_evidence
+                ET.SubElement(
+                    add_fields, "field", name="pseudoknot_evidence"
+                ).text = pk_evidence
         else:
             ET.SubElement(add_fields, "field", name="has_pseudoknot").text = "No"
 
@@ -713,20 +773,19 @@ def build_additional_fields(entry, fields, num_3d_structures, fam_ncbi_ids, entr
         num_families = None
 
         if entry_type == "Motif":
-            num_families = fetch_value(
-                rs.NUM_FAMS_MOTIF, fields["id"])
+            num_families = fetch_value(rs.NUM_FAMS_MOTIF, fields["id"])
 
         elif entry_type == "Clan":
             num_families = fields["num_families"]
 
-        ET.SubElement(add_fields, "field", name="num_families").text = str(
-            num_families)
+        ET.SubElement(add_fields, "field", name="num_families").text = str(num_families)
 
     # returning node
     return add_fields
 
 
 # ----------------------------------------------------------------------------
+
 
 def build_genome_additional_fields(entry, fields):
     """
@@ -747,16 +806,24 @@ def build_genome_additional_fields(entry, fields):
     ET.SubElement(add_fields, "field", name="entry_type").text = "Genome"
 
     if fields["assembly_acc"] is None:
-        ET.SubElement(add_fields, "field", name="gca_accession").text = ''
+        ET.SubElement(add_fields, "field", name="gca_accession").text = ""
     else:
-        ET.SubElement(add_fields, "field", name="gca_accession").text = fields["assembly_acc"]
+        ET.SubElement(add_fields, "field", name="gca_accession").text = fields[
+            "assembly_acc"
+        ]
 
     ET.SubElement(add_fields, "field", name="length").text = str(fields["total_length"])
     ET.SubElement(add_fields, "field", name="tax_string").text = fields["tax_string"]
     ET.SubElement(add_fields, "field", name="ncbi_taxid").text = str(fields["ncbi_id"])
-    ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(fields["num_rfam_regions"])
-    ET.SubElement(add_fields, "field", name="num_families").text = str(fields["num_families"])
-    ET.SubElement(add_fields, "field", name="scientific_name").text = str(fields["name"])  # redundant
+    ET.SubElement(add_fields, "field", name="num_rfam_hits").text = str(
+        fields["num_rfam_regions"]
+    )
+    ET.SubElement(add_fields, "field", name="num_families").text = str(
+        fields["num_families"]
+    )
+    ET.SubElement(add_fields, "field", name="scientific_name").text = str(
+        fields["name"]
+    )  # redundant
 
     # add popular species if any
     species = str(fields["ncbi_id"])
@@ -764,18 +831,25 @@ def build_genome_additional_fields(entry, fields):
         ET.SubElement(add_fields, "field", name="popular_species").text = species
 
     if fields["common_name"] is not None:
-        ET.SubElement(add_fields, "field", name="common_name").text = str(fields["common_name"])
+        ET.SubElement(add_fields, "field", name="common_name").text = str(
+            fields["common_name"]
+        )
 
     if fields["assembly_level"] is not None:
-        ET.SubElement(add_fields, "field", name="assembly_level").text = str(fields["assembly_level"])
+        ET.SubElement(add_fields, "field", name="assembly_level").text = str(
+            fields["assembly_level"]
+        )
 
     if fields["assembly_name"] is not None:
-        ET.SubElement(add_fields, "field", name="assembly_name").text = str(fields["assembly_name"])
+        ET.SubElement(add_fields, "field", name="assembly_name").text = str(
+            fields["assembly_name"]
+        )
 
     return add_fields
 
 
 # ----------------------------------------------------------------------------
+
 
 def build_full_region_additional_fields(entry, fields, genome, chromosomes):
     """
@@ -792,10 +866,10 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
 
     add_fields = ET.SubElement(entry, "additional_fields")
 
-    tax_string = ''
-    species = ''
-    common_name = ''
-    scientific_name = ''
+    tax_string = ""
+    species = ""
+    common_name = ""
+    scientific_name = ""
     if genome is not None:
         tax_string = genome.ncbi.tax_string
         species = genome.ncbi_id
@@ -808,25 +882,35 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
 
     # adding entry type
     ET.SubElement(add_fields, "field", name="entry_type").text = "Sequence"
-    ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(fields["rfamseq_acc"])
-    ET.SubElement(add_fields, "field", name="rfamseq_acc_description").text = str(fields["rfamseq_acc_description"])
+    ET.SubElement(add_fields, "field", name="rfamseq_acc").text = str(
+        fields["rfamseq_acc"]
+    )
+    ET.SubElement(add_fields, "field", name="rfamseq_acc_description").text = str(
+        fields["rfamseq_acc_description"]
+    )
     ET.SubElement(add_fields, "field", name="seq_start").text = str(fields["seq_start"])
     ET.SubElement(add_fields, "field", name="seq_end").text = str(fields["seq_end"])
     ET.SubElement(add_fields, "field", name="cm_start").text = str(fields["cm_start"])
     ET.SubElement(add_fields, "field", name="cm_end").text = str(fields["cm_end"])
 
-    ET.SubElement(add_fields, "field", name="evalue_score").text = str(fields["evalue_score"])
+    ET.SubElement(add_fields, "field", name="evalue_score").text = str(
+        fields["evalue_score"]
+    )
     ET.SubElement(add_fields, "field", name="bit_score").text = str(fields["bit_score"])
-    ET.SubElement(add_fields, "field", name="alignment_type").text = str(fields["alignment_type"])
+    ET.SubElement(add_fields, "field", name="alignment_type").text = str(
+        fields["alignment_type"]
+    )
     ET.SubElement(add_fields, "field", name="truncated").text = str(fields["truncated"])
     # ET.SubElement(add_fields, "field", name="tax_string").text = genome.ncbi.tax_string
     ET.SubElement(add_fields, "field", name="tax_string").text = tax_string
 
     if fields["rfamseq_acc"] in chromosomes:
-        ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[fields["rfamseq_acc"]][
-            "chromosome_name"]
-        ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[fields["rfamseq_acc"]][
-            "chromosome_type"]
+        ET.SubElement(add_fields, "field", name="chromosome_name").text = chromosomes[
+            fields["rfamseq_acc"]
+        ]["chromosome_name"]
+        ET.SubElement(add_fields, "field", name="chromosome_type").text = chromosomes[
+            fields["rfamseq_acc"]
+        ]["chromosome_type"]
 
     # add popular species if any
     # species = genome.ncbi_id
@@ -850,7 +934,8 @@ def build_full_region_additional_fields(entry, fields, genome, chromosomes):
 
 # ----------------------------------------------------------------------------
 
-def get_value_list(val_str, delimiter=','):
+
+def get_value_list(val_str, delimiter=","):
     """
     Splits an input string using delimiter and returns a list of the
     elements
@@ -864,12 +949,13 @@ def get_value_list(val_str, delimiter=','):
     # split string
     values = val_str.split(delimiter)
     # filter values
-    value_list = [x.strip() for x in values if x != '']
+    value_list = [x.strip() for x in values if x != ""]
 
     return value_list
 
 
 # ----------------------------------------------------------------------------
+
 
 def fetch_value_list(rfam_acc, query):
     """
@@ -905,6 +991,7 @@ def fetch_value_list(rfam_acc, query):
 
 
 # ----------------------------------------------------------------------------
+
 
 def fetch_entry_fields(entry_acc, entry_type):
     """
@@ -949,6 +1036,7 @@ def fetch_entry_fields(entry_acc, entry_type):
 
 # ----------------------------------------------------------------------------
 
+
 def fetch_value(query, accession):
     """
     Retrieves and returns a value from the database depending to the query
@@ -981,6 +1069,7 @@ def fetch_value(query, accession):
 
 
 # ----------------------------------------------------------------------------
+
 
 def main(entry_type, rfam_acc, outdir, hfields=False):
     """
@@ -1032,35 +1121,53 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                 if hfields:
                     # load ncbi taxonomy browser here
                     name_dict, name_dict_reverse = read_ncbi_names_dmp(
-                        rfc.TAX_NAMES_DUMP)
+                        rfc.TAX_NAMES_DUMP
+                    )
                     name_object = read_ncbi_taxonomy_nodes(
-                        name_dict, rfc.TAX_NODES_DUMP)
+                        name_dict, rfc.TAX_NODES_DUMP
+                    )
 
                 rfam_accs = fetch_value_list(None, rs.FAM_ACC)
 
                 for entry in rfam_accs:
                     print(entry)
                     t0 = timeit.default_timer()
-                    xml4db_dumper(name_dict, name_object, entry_type, entry, hfields, outdir)
-                    print("%s execution time: %.1fs" % (entry, timeit.default_timer() - t0))
+                    xml4db_dumper(
+                        name_dict, name_object, entry_type, entry, hfields, outdir
+                    )
+                    print(
+                        "%s execution time: %.1fs"
+                        % (entry, timeit.default_timer() - t0)
+                    )
 
                 return
 
             # Don't build hierarchical references for Clans and Motifs
             for entry in rfam_accs:
                 print(entry)
-                entry_file = os.path.join(outdir, entry + '.xml')
+                entry_file = os.path.join(outdir, entry + ".xml")
                 if os.path.exists(entry_file):
-                    print("Skipping {acc}. File already exists {f}".format(acc=entry, f=entry_file))
+                    print(
+                        "Skipping {acc}. File already exists {f}".format(
+                            acc=entry, f=entry_file
+                        )
+                    )
                 else:
                     t0 = timeit.default_timer()
                     xml4db_dumper(None, None, entry_type, entry, False, outdir)
-                    print("%s execution time: %.1fs" % (entry, timeit.default_timer() - t0))
+                    print(
+                        "%s execution time: %.1fs"
+                        % (entry, timeit.default_timer() - t0)
+                    )
 
         # export single entry
         else:
             # need to check the validity of an rfam_acc (rfam, motif, clan)
-            if entry_type == rs.MOTIF or entry_type == rs.CLAN or entry_type == rs.GENOME:
+            if (
+                entry_type == rs.MOTIF
+                or entry_type == rs.CLAN
+                or entry_type == rs.GENOME
+            ):
                 xml4db_dumper(None, None, entry_type, rfam_acc, False, outdir)
 
             # export single family entry
@@ -1068,25 +1175,31 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
                 if hfields:
                     # load ncbi taxonomy browser here
                     name_dict, name_dict_reverse = read_ncbi_names_dmp(
-                        rfc.TAX_NAMES_DUMP)
+                        rfc.TAX_NAMES_DUMP
+                    )
                     name_object = read_ncbi_taxonomy_nodes(
-                        name_dict, rfc.TAX_NODES_DUMP)
+                        name_dict, rfc.TAX_NODES_DUMP
+                    )
 
                 xml4db_dumper(
-                    name_dict, name_object, entry_type, rfam_acc, hfields, outdir)
+                    name_dict, name_object, entry_type, rfam_acc, hfields, outdir
+                )
 
     except:
         traceback.print_exc()
         # need to correct this one
         if rfam_acc is None:
-            gen_fams = Set([x.partition('.')[0] for x in os.listdir(outdir)])
+            gen_fams = Set([x.partition(".")[0] for x in os.listdir(outdir)])
             loaded_fams = Set(rfam_accs)
             # get remaining families
             rem_fams = loaded_fams - gen_fams
 
             # open a log file
             logging.basicConfig(
-                filename=os.path.join("missing_accs" + ".log"), filemode='w', level=logging.DEBUG)
+                filename=os.path.join("missing_accs" + ".log"),
+                filemode="w",
+                level=logging.DEBUG,
+            )
 
             # write accessions to log file
             for rfam_acc in rem_fams:
@@ -1096,6 +1209,7 @@ def main(entry_type, rfam_acc, outdir, hfields=False):
 
 
 # ----------------------------------------------------------------------------
+
 
 def get_valid_family_tax_ids(name_object, family_tax_ids):
     """
@@ -1116,6 +1230,7 @@ def get_valid_family_tax_ids(name_object, family_tax_ids):
 
 # ----------------------------------------------------------------------------
 
+
 def get_family_tax_tree(name_object, name_dict, family_tax_ids):
     """
     Returns the family genealogy list
@@ -1130,33 +1245,35 @@ def get_family_tax_tree(name_object, name_dict, family_tax_ids):
     for taxid in family_tax_ids:
 
         if taxid in name_object:
-            species_tax_trees[taxid] = name_object[
-                taxid].get_lineage(name_object)
+            species_tax_trees[taxid] = name_object[taxid].get_lineage(name_object)
 
     return species_tax_trees
 
 
 # ----------------------------------------------------------------------------
 
+
 def xmllint(filepath):
     """
     Validate xml files against EBI Search schema.
     Run xmllint on the output file and print the resulting report.
     """
-    schema_url = 'http://www.ebi.ac.uk/ebisearch/XML4dbDumps.xsd'
-    cmd = ('xmllint {filepath} --schema {schema_url} --noout --stream') \
-        .format(filepath=filepath, schema_url=schema_url)
+    schema_url = "http://www.ebi.ac.uk/ebisearch/XML4dbDumps.xsd"
+    cmd = ("xmllint {filepath} --schema {schema_url} --noout --stream").format(
+        filepath=filepath, schema_url=schema_url
+    )
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print('ERROR: xmllint validation failed')
+        print("ERROR: xmllint validation failed")
         print(e.output)
         print(e.cmd)
-        print('Return code {0}'.format(e.returncode))
+        print("Return code {0}".format(e.returncode))
         sys.exit(1)
 
 
 # ----------------------------------------------------------------------------
+
 
 def usage():
     """
@@ -1164,32 +1281,45 @@ def usage():
     """
 
     parser = argparse.ArgumentParser(
-        description="Rfam Search Xml4db Dumper.", epilog='')
+        description="Rfam Search Xml4db Dumper.", epilog=""
+    )
 
     # group required arguments together
     req_args = parser.add_argument_group("required arguments")
 
-    req_args.add_argument("--type", help="rfam entry type (F: Family, M: Motif, C: Clan, G: Genome, R: Regions)",
-                          type=str, choices=['F', 'M', 'C', 'G', 'R'], required=True)
+    req_args.add_argument(
+        "--type",
+        help="rfam entry type (F: Family, M: Motif, C: Clan, G: Genome, R: Regions)",
+        type=str,
+        choices=["F", "M", "C", "G", "R"],
+        required=True,
+    )
 
     parser.add_argument(
-        "--acc", help="a valid rfam entry accession (RF*|CL*|RM*)",
-        type=str, default=None)
+        "--acc",
+        help="a valid rfam entry accession (RF*|CL*|RM*)",
+        type=str,
+        default=None,
+    )
 
     parser.add_argument(
-        "--hfields", help="include hierarchical fields", action="store_true")
+        "--hfields", help="include hierarchical fields", action="store_true"
+    )
 
     req_args.add_argument(
-        "--out", help="path to output directory", type=str, required=True)
+        "--out", help="path to output directory", type=str, required=True
+    )
 
-    parser.add_argument("--db", help="database to use - rel or live", type=str, default=None)
+    parser.add_argument(
+        "--db", help="database to use - rel or live", type=str, default=None
+    )
 
     return parser
 
 
 # ----------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     parser = usage()
     args = parser.parse_args()
@@ -1198,13 +1328,13 @@ if __name__ == '__main__':
     # Check if export type matches accession
     wrong_input = False
     if args.acc is not None:
-        if args.type == 'F' and args.acc[0:2] != "RF":
+        if args.type == "F" and args.acc[0:2] != "RF":
             wrong_input = True
-        elif args.type == 'M' and args.acc[0:2] != "RM":
+        elif args.type == "M" and args.acc[0:2] != "RM":
             wrong_input = True
-        elif args.type == 'C' and args.acc[0:2] != "CL":
+        elif args.type == "C" and args.acc[0:2] != "CL":
             wrong_input = True
-        elif args.type == 'G' and (args.acc[0:2] != "UP" and args.acc[0:2] != "RG"):
+        elif args.type == "G" and (args.acc[0:2] != "UP" and args.acc[0:2] != "RG"):
             wrong_input = True
 
     if wrong_input is True:
@@ -1221,9 +1351,9 @@ if __name__ == '__main__':
     if not args.db:
         DB_CONFIG = RFAMLIVE
     else:
-        if args.db == 'rfamrel':
+        if args.db == "rfamrel":
             DB_CONFIG = RFAMREL
-        elif args.db == 'rfamlive':
+        elif args.db == "rfamlive":
             DB_CONFIG = RFAMLIVE
         else:
             print("\nPlease provide a valid database option: rfamrel or rfamlive\n")

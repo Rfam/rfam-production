@@ -1,0 +1,243 @@
+The Rfam database of non-coding RNA families
+--------------------------------------------
+
+This document describes the format of Rfam flat files.
+See https://docs.rfam.org for more information.
+
+
+Alignment format
+----------------
+
+Rfam alignments are in a blocked format called Stockholm format.  This
+allows mark-ups of four types:
+
+  #=GF <featurename> <Generic per-file annotation, free text>
+
+  #=GC <featurename> <Generic per-column annotation, exactly 1
+       character per column>
+
+  #=GS <seqname> <featurename> <Generic per-sequence annotation, free
+       text>
+
+  #=GR <seqname> <featurename> <Generic per-sequence AND per-column
+       mark up, exactly 1 character per column>
+
+The full description of Stockholm format can be found at:
+
+  http://en.wikipedia.org/wiki/Stockholm_format
+
+Rfam alignments contain #=GC SS_cons lines describing the consensus
+secondary structure of the sequences in the family, and #=GC RF lines
+which describe the match/insert states of the model.  Rfam uses #=GF
+lines extensively to provide family mark-up and annotation in the
+fields described below.
+
+
+Compulsory fields
+-----------------
+
+  AC   Accession number:          RFxxxxx
+
+       The Rfam accession numbers RFxxxxx are the stable identifier
+       for each Rfam family.
+
+  ID   Identification:            15 characters or less
+
+       This field is designed to be a meaningful identifier for the
+       family.  The identifier is not necessarily stable between
+       releases.
+
+  DE   Description:               80 characters or less
+
+       A one line description of the family.
+
+  AU   Author:
+
+       Author of the entry -- format shown below.
+
+       AU   Bloggs JJ, Bloggs JE
+
+  SE   Source of seed alignment:
+
+       Where Rfam has repackaged data from other sources, these
+       sources will be referenced here.  This field may also point to
+       key references for the alignment, or the name of the author of
+       the seed alignment.
+
+  SS   Source of secondary structure
+
+       This field indicates whether the secondary structure is
+       predicted or published.  Structure prediction software or
+       PUBMED identifier for a publication are shown.  Either may
+       be qualified with an author name.  Examples of format are
+       shown below:
+
+       SS   Predicted; PFOLD
+       SS   Published; PMID:11283358
+
+  BM   Family build command lines.
+
+       The INFERNAL commands used to build the Rfam family.  The user
+       should be able to replicate the Rfam database given the seed
+       alignments, INFERNAL software (http://infernal.wustl.edu) and
+       these build lines.
+
+       An example of the BM lines from a single entry
+
+       BM   cmbuild --rf CM SEED
+       BM   cmsearch -W 220 CM SEQDB
+
+  GA   Gathering threshold:
+
+       The bit score threshold above which all hits are considered
+       real.
+
+  TC   Trusted cutoff:
+
+       This field refers to the bit score of the lowest scoring match
+       in the full alignment.
+
+  NC   Noise cutoff:
+
+       This field contains the bit score of the highest scoring
+       match from Rfamseq not in the full alignment.
+
+  TP   Entry type:
+
+       This field specifies the type of the Rfam entry according to
+       the following tree:
+
+         |
+         +-- Gene
+         |     |
+         |     +-- CRISPR
+         |     |
+         |     +-- antisense
+         |     |
+         |     +-- antitoxin
+         |     |
+         |     +-- lncRNA
+         |     |
+         |     +-- microRNA
+         |     |
+         |     +-- rRNA
+         |     |
+         |     +-- ribozyme
+         |     |
+         |     +-- sRNA
+         |     |
+         |     +-- snRNA
+         |     |     |
+         |     |     +-- snoRNA
+         |     |     |     |
+         |     |     |     +-- CD-box
+         |     |     |     |
+         |     |     |     +-- HACA-box
+         |     |     |     |
+         |     |     |     +-- scaRNA
+         |     |     |
+         |     |     +-- splicing
+         |     |
+         |     +-- tRNA
+         |
+         +-- Intron
+         |
+         +-- Cis-reg
+               |
+               +-- IRES
+               |
+               +-- frameshift element
+               |
+               +-- riboswitch
+               |
+               +-- thermoregulator
+               |
+               +-- leader
+
+
+  SQ   Sequences:
+
+       Number of sequences in the alignment.
+
+  //   End of record
+
+
+Non-compulsory fields
+---------------------
+
+  PI   Previous IDs:             Semi-colon list
+
+       The most recent names are stored on the left.
+
+  DC   Database Comment:         Comment for database reference.
+
+  DR   Database Reference:       Reference to external database source.
+
+       All DR lines end in a semicolon.  For example:
+
+       DR   URL; http://jwbrown.mbio.ncsu.edu/RNaseP/home.html;
+
+  RC   Reference Comment:
+
+       Comment for literature reference.
+
+  RN   Reference Number:         Digit in square brackets
+
+       Reference numbers are used to precede literature references,
+       which have multiple line entries
+
+       RN   [1]
+
+  RM   Reference Medline:        Eight digit number
+
+       An example RM line is shown below
+
+       RM   91006031
+
+       The number can be found as the UI number in pubmed
+       http://www.ncbi.nlm.nih.gov/PubMed/
+
+  RT   Reference Title:
+
+       Title of paper.
+
+  RA   Reference Author:
+
+       All RA lines use the following format
+
+       RA   Bateman A, Eddy SR, Mesyanzhinov VV;
+
+  RL   Reference Location:
+
+       The reference line is in the format below.
+       RL  Journal abbreviation year;volume:page-page.
+
+       RL   Virus Genes 1997;14:163-165.
+       RL   J Mol Biol 1994;242:309-320.
+
+       Journal abbreviations can be checked at
+       http://expasy.hcuge.ch/cgi-bin/jourlist?jourlist.txt. Journal
+       abbreviation have no full stops, and page numbers are not
+       abbreviated.
+
+  CC   Comment:
+
+       Comment lines provide annotation and other information.
+       Annotation in CC lines does not have a strict format.
+
+       Links to other Rfam families can be provided with the following
+       syntax:
+
+       RFAM:RFxxxxx.
+
+       Links to EMBL sequences can be provided with the following
+       syntax:
+
+       EMBL:Accession.
+
+       Links to miRBase precursor familes can be provided with the
+       following syntax:
+
+       MIPF:MIPFxxxxxxx
+
+----------------------------------------------------------------------

@@ -1,0 +1,7 @@
+hub rfam{{ short_release }}
+shortLabel rfam{{ short_release }}
+longLabel Rfam {{ release_number }} non-coding RNA annotation
+genomesFile genomes.txt
+email rfam-help@ebi.ac.uk
+descriptionUrl ftp://ftp.ebi.ac.uk/pub/databases/Rfam/{{ release_number }}/genome_browser_hub/hub_description.html
+hub_description.html

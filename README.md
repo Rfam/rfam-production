@@ -1,13 +1,16 @@
 # Rfam Production Code
 
 ### About
---------
 This repository provides a set of tools related to the Rfam production pipeline.
 The collection includes script for data export, database processing, visualisation
-and validation, as well as detailed [Rfam release documentation](./docs/release/Readme.md).
+and validation, as well as detailed [Rfam release documentation](./release/docs/Release Procedure.md).
 
-### Scripts
---------
+### Organisation
+
+This is a mono-repo of several different related tools. Generally these tools
+are [nextflow] pipelines.
+
+* **genome-download**: The [nextflow] pipeline for updating genomes in Rfamseq.
 * **Export:** Data export tools
 * **Processing:** Database processing tools
 * **View:** Rfam family view process related scripts
@@ -45,5 +48,6 @@ cp config/rfam_local_template.py config/rfam_local.py
 ```
 
 ### Contact us
--------------
 Feel free to submit an [issue](https://github.com/Rfam/rfam-production/issues) if you have any questions or suggestions.
+
+[nextflow]: <https://www.nextflow.io/>

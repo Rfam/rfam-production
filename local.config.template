@@ -1,0 +1,12 @@
+// This file is template of what local.config should contain.
+
+env {
+  // The values below are the configuration values for the Rfam database to use,
+  // shown in variables are the values for Rfam's public database. This *should*
+  // never be used in production.
+  DB_HOST = "mysql-rfam-public.ebi.ac.uk"
+  DB_USER = "rfamro"
+  DB_PASSWORD = ""
+  DB_PORT = 4497
+  DB_DATABASE = "Rfam"
+}

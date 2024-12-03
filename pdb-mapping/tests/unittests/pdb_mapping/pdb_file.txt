@@ -1,0 +1,5 @@
+Number of families with 3D before: 126
+Number of families with 3D after: 126
+Number of `is_significant` entries before: 8180
+Number of `is_significant` entries after: 8198
+There are no new families.

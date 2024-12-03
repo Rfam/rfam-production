@@ -1,0 +1,9 @@
+track Rfam
+bigDataUrl ftp://ftp.ebi.ac.uk/pub/databases/Rfam/{{ release_number }}/genome_browser_hub/{{ genome.short_name }}/bigBed
+shortLabel Rfam ncRNA
+longLabel Rfam ncRNA annotations
+type bigBed 4
+url http://rfam.org/family/$$
+visibility 3
+color 102,0,0
+html ftp://ftp.ebi.ac.uk/pub/databases/Rfam/{{ release_number }}/genome_browser_hub/hub_description.html

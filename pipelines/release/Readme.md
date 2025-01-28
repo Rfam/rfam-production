@@ -40,25 +40,25 @@ Alternatively, use virtualenv to install the [requirements](../requirements.txt)
 
 ## Start the release process
 
-1. Update the release version in pipelines/release/local.config 
-2. Create a release_x folder in the release directory 
+1. Update the release version in pipelines/release/local.config
+2. Create a release_x folder in the release directory
 
 3. Start the pipeline
 ```
-nextflow run scripts/release/workflows/release_pipeline.nf 
+nextflow run scripts/release/workflows/release_pipeline.nf
 ```
 
-This will begin a pipeline that runs the below workflows, in order. If you wish to run these workflows individually, the commands are outlined below. 
+This will begin a pipeline that runs the below workflows, in order. If you wish to run these workflows individually, the commands are outlined below.
 
-**Note:** This is not working correctly, so it is best to run the pipelines individually. 
+**Note:** This is not working correctly, so it is best to run the pipelines individually.
 
 ## Generate annotated files
 
-This workflow will: 
+This workflow will:
 - Export SEED and CM files
 - Generate CM archive zip
-- Create tar file 
-- Load the SEED and CM files into rfam_live 
+- Create tar file
+- Load the SEED and CM files into rfam_live
 
 ```
 nextflow run pipelines/release/annotated_files.nf
@@ -69,8 +69,8 @@ nextflow run pipelines/release/annotated_files.nf
 ## Update PDB mapping
 
 Run the PDB mapping pipeline
-- The pipeline will update PDB mapping, and then will update the FTP file in nfs/ftp/public/databases/Rfam/.preview, update the Rfam text search, and begin the process of updating the website database. 
-- This script needs some modification to run for release. It usually runs weekly, using the Rfam.cm file from the FTP site. For release, we need it to use the newly created CM file. 
+- The pipeline will update PDB mapping, and then will update the FTP file in nfs/ftp/public/databases/Rfam/.preview, update the Rfam text search, and begin the process of updating the website database.
+- This script needs some modification to run for release. It usually runs weekly, using the Rfam.cm file from the FTP site. For release, we need it to use the newly created CM file.
 
     ```
     nextflow run pdb_mapping/pdb_mapping.nf -profile cluster
@@ -78,15 +78,15 @@ Run the PDB mapping pipeline
 
 <details>
   <summary>Legacy steps for manually updating PDB mapping</summary>
-Please note these steps for updating PDB Mapping have been replaced with the introduction of the above PDB mapping pipeline. 
- 
+Please note these steps for updating PDB Mapping have been replaced with the introduction of the above PDB mapping pipeline.
+
 
 This step requires a finalised `Rfam.cm` file with the latest families, including descriptions (see FTP section for instructions).
- 
+
 1. Get PDB sequences in FASTA format
 
     ```
-    wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+    wget https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     ```
 
@@ -148,7 +148,7 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
 
     ```
     python infernal_2_pdb_full_region.py --tblout /path/to/pdb_full_region.tbl --dest-dir /path/to/dest/dir
-    ```    
+    ```
 
     The script will generate a file like `pdb_full_region_YYYY-MM-DD.txt`.
 
@@ -175,7 +175,7 @@ This step requires a finalised `Rfam.cm` file with the latest families, includin
     select count(distinct rfam_acc) from `pdb_full_region_old` where is_significant = 1;
 
     # number of families with 3D after
-    select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1;    
+    select count(distinct rfam_acc) from `pdb_full_region` where is_significant = 1;
 
     # new families with 3D
     select distinct rfam_acc
@@ -211,10 +211,10 @@ nextflow run pipelines/release/clan_competition.nf
 
 ## Prepare rfam_live for a new release
 
-This workflow runs the following scripts : 
+This workflow runs the following scripts :
 - [populate_rfamlive_for_release.py](https://github.com/rfam/rfam-production/blob/master/scripts/release/populate_rfamlive_for_release.py)
 - [make_rfam_keywords_table.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/release/make_rfam_keywords_table.pl)
-- [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl) 
+- [updateTaxonomyWebsearch.pl](https://github.com/Rfam/rfam-family-pipeline/blob/master/Rfam/Scripts/jiffies/updateTaxonomyWebsearch.pl)
 
 ```
 nextflow run pipelines/release/prepare_rfam_live.nf
@@ -225,7 +225,7 @@ nextflow run pipelines/release/prepare_rfam_live.nf
 ## Generate FTP files
 
 This workflow will generate:
-- annotated tree files 
+- annotated tree files
 - `Rfam.full_region` file
 - `Rfam.pdb` file
 - `Rfam.clanin` file
@@ -247,8 +247,8 @@ The main `rfam_live` database is running with the `secure-file-priv` setting, so
 
 1. Export a the .sql files of the rfam_live database (using Sequel Ace or via command line), then recreate a local copy, for example
    ```
-   mysql > use rfam_live_14_8; 
-   mysql > source /Users/user/Desktop/sql_queries/14_8_copy.sql; 
+   mysql > use rfam_live_14_8;
+   mysql > source /Users/user/Desktop/sql_queries/14_8_copy.sql;
    ```
 2. Create a new database dump of the local copy of rfam_love using mysqldump:
 
@@ -287,7 +287,7 @@ nextflow run pipelines/release/rfam2go.nf
 
 ## Stage RfamLive for a new release
 
-This workflow will generate a new MySQL dump to replicate the database on REL and PUBLIC servers. Then the MySQL instance is restored on REL and PUBLIC. 
+This workflow will generate a new MySQL dump to replicate the database on REL and PUBLIC servers. Then the MySQL instance is restored on REL and PUBLIC.
 
 ```
 nextflow run pipelines/release/stage_rfam_live.nf

@@ -17,19 +17,19 @@ process setup_files {
     gunzip Rfam.cm.gz
     mv Rfam.cm $params.pdb_files
     cmpress $params.pdb_files/Rfam.cm
-    wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+    wget https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
     gunzip pdb_seqres.txt.gz
     """
 }
 
-process remove_illegal_characters {  
+process remove_illegal_characters {
     input:
     path(query)
 
     output:
     path("pdb_trimmed_noillegals.fa")
 
-    """ 
+    """
     sed -e '/^[^>]/s/[^ATGCURYMKSWHBVDatgcurymkswhbvd]/N/g' $query > pdb_trimmed_noillegals.fa
     """
 }
@@ -39,10 +39,10 @@ process run_cmscan {
 
     input:
     path(query)
-    
+
     output:
     path('*.tbl')
-    
+
     """
     cmscan -o ${query}.output --tblout ${query}.tbl --cut_ga --toponly $params.pdb_files/Rfam.cm $query
     """
@@ -50,15 +50,15 @@ process run_cmscan {
 
 process combine_cmscan_results {
     publishDir "$params.pdb_files", mode: "copy"
-    
+
     input:
     path('raw*.tbl')
-    
+
     output:
     path('PDB_RFAM_X_Y.tbl')
-    
+
     """
-    grep -v '#' raw*.tbl | sort > PDB_RFAM_X_Y.tbl 
+    grep -v '#' raw*.tbl | sort > PDB_RFAM_X_Y.tbl
     """
 }
 
@@ -67,10 +67,10 @@ process create_text_file_for_db {
 
     input:
     path(query)
-    
+
     output:
     path('pdb_full_region_*.txt')
-    
+
     """
     python $params.rfamprod/scripts/processing/infernal_2_pdb_full_region.py --tblout $query --dest-dir .
     """
@@ -79,7 +79,7 @@ process create_text_file_for_db {
 process import_db_and_generate_clan_files {
     input:
     path(query)
-    
+
     output:
     path('CL*.txt')
 
@@ -93,19 +93,19 @@ process import_db_and_generate_clan_files {
 
 process sort_clan_files {
     publishDir "$params.pdb_files/clan_competition/sorted", mode: "copy"
-    
+
     input:
     path(query)
 
     output:
     path('*_s.txt')
 
-    """ 
+    """
     for file in ./CL*; do sort -k2 -t \$'\t' \${file:2:7}.txt > \${file:2:7}_s.txt; done
     """
 }
 
-process run_clan_competition { 
+process run_clan_competition {
     publishDir "$params.pdb_files/clan_competition", mode: "copy"
 
     input:
@@ -121,10 +121,10 @@ process run_clan_competition {
 
 process get_new_families {
     publishDir "$params.pdb_files", mode: "copy"
-    
+
     input:
     path(query)
-    
+
     output:
     path('pdb_families_*.txt')
 
@@ -327,14 +327,14 @@ workflow update_search_index {
 }
 
 workflow sync_rel_web {
-    take: 
+    take:
         pdb_txt
-    emit: synced 
+    emit: synced
     main:
         pdb_txt \
         | sync_rel_db
         pdb_txt \
-        | sync_web_production_db | set { synced } 
+        | sync_web_production_db | set { synced }
 }
 
 workflow add_3d {

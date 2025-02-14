@@ -16,13 +16,15 @@ process GENERATE_SEED_FILE {
 
 process MERGE_SEEDS {
   input:
-  path("*.seed")
+  path("family*.seed")
 
   output:
-  path('Rfam.seed')
+  path('Rfam.seed'), emit: seed
+  path("Rfam.seed.gz"), emit: seed_gz
 
   """
-  find . -name '*.seed' | xargs -I {} cat {} >> Rfam.seed
+  find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.seed
+  gzip -k Rfam.seed
   """
 }
 
@@ -30,13 +32,12 @@ workflow GENERATE_SEED {
   take:
     families
   emit:
-    rfam_seed
+    MERGE_SEEDS.out.seed
   main:
     families \
       | GENERATE_SEED_FILE \
       | collect \
-      | MERGE_SEEDS \
-      | set { rfam_seed }
+      | MERGE_SEEDS
   publish:
-    rfam_seed >> 'seed'
+    MERGE_SEEDS.out.seed_gz >> 'seed'
 }

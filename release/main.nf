@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 nextflow.enable.dsl = 2
+nextflow.preview.output = true
 
 include { GENERATE_CM } from './workflows/cm'
 include { GENERATE_TREE } from './workflows/tree'
@@ -13,9 +14,9 @@ workflow {
   main:
     FETCH_FAMILIES | set { family_file }
 
-    family_file | splitText | set { families }
+    family_file | splitText | map { it.trim() } | set { families }
 
-    families | GENERATE_RFAM_SEED | set { rfam_seed }
+    families | GENERATE_SEED | set { rfam_seed }
     families | GENERATE_TREE
 
     GENERATE_CM(family_file, families, rfam_seed) | set { cm }

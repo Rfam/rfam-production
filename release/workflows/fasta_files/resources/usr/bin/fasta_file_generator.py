@@ -123,12 +123,12 @@ def extract_family_sequences(
 @click.option("--database")
 @click.argument("sequence-database", type=click.Path())
 @click.argument("rfam-seed", type=click.Path())
-@click.argument("accession")
+@click.argument("rfam-accession")
 @click.argument("output", type=click.File("w"), default="-")
 def main(
     sequence_database,
     rfam_seed,
-    accession,
+    rfam_accession,
     output,
     host=None,
     port=None,
@@ -144,7 +144,7 @@ def main(
     ----------\b
     sequence-database: The path to the combined Rfam.fa in Rfamseq.\b
     rfam-seed: The path to Rfam.seed for this release.\b
-    accession: The accession to write sequences for.\b
+    rfam-accession: The Rfam accession to write sequences for.\b
     output: The output file to write to.\b
     """
     connection = pymysql.connect(
@@ -157,7 +157,7 @@ def main(
     )
     with connection:
         extract_family_sequences(
-            connection, Path(sequence_database), Path(rfam_seed), accession, output
+            connection, Path(sequence_database), Path(rfam_seed), rfam_accession, output
         )
     if not os.path.exists(output) or not os.path.getsize(output) > 0:
         raise ValueError(f"File {output} is empty")

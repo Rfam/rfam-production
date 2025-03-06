@@ -8,7 +8,7 @@ include { GENERATE_TREE } from './workflows/tree'
 include { GENERATE_SEED } from './workflows/seed'
 include { GENERATE_FASTA_FILES } from './workflows/fasta_files'
 include { FETCH_FAMILIES } from './workflows/fetch_families'
-include { GENERATE_ALIGNMENTS } from './workflows/generate_alignments'
+// include { GENERATE_ALIGNMENTS } from './workflows/generate_alignments'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 
 workflow {
@@ -22,7 +22,7 @@ workflow {
 
     GENERATE_CM(family_file, families, rfam_seed) | set { cm }
     GENERATE_FASTA_FILES(families, rfam_seed) | set { fasta }
-    GENERATE_ALIGNMENTS(fasta, rfam_seed)
+    // GENERATE_ALIGNMENTS(fasta, rfam_seed)
 
     // LOAD_CM_AND_SEED(family_file, cm, rfam_seed)
 }

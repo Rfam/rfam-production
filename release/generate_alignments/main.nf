@@ -18,7 +18,8 @@ process BUILD_ALIGNMENT {
 
 workflow GENERATE_ALIGNMENTS {
   take:
-    families
+    fasta
+    seed
   emit:
     alignments
   main:

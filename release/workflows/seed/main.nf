@@ -1,4 +1,5 @@
 process GENERATE_SEED_FILE {
+  memory { acc == "RF00005" ? "20GB" : "2.5GB" }
   tag "${acc}"
   maxForks 50
 

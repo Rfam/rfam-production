@@ -21,8 +21,8 @@ workflow {
     families | GENERATE_TREE
 
     GENERATE_CM(family_file, families, rfam_seed) | set { cm }
-    GENERATE_FASTA_FILES(families, rfam_seed)
-    GENERATE_ALIGNMENTS(families)
+    GENERATE_FASTA_FILES(families, rfam_seed) | set { fasta }
+    GENERATE_ALIGNMENTS(fasta, rfam_seed)
 
     // LOAD_CM_AND_SEED(family_file, cm, rfam_seed)
 }

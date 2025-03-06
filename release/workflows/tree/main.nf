@@ -1,12 +1,13 @@
 process GENERATE {
+  memory { acc == "RF00005" ? "20GB" : "2.5GB" }
   tag "${acc}"
-  memory '10GB'
+  maxForks 50
 
   input:
   val(acc)
 
   output:
-  val("${acc}.tree")
+  val("${acc}.seed_tree")
 
   """
   writeAnnotatedTree.pl '${acc}'
@@ -14,27 +15,13 @@ process GENERATE {
   """
 }
 
-process MERGE_TREE {
-  input:
-  path(trees)
-
-  output:
-  path("Rfam.seed_tree.tar.gz")
-
-  """
-  mkdir Rfam.seed_tree
-  cp ${trees} Rfam.seed_tree
-  tar -cf Rfam.seed_tree.tar.gz Rfam.seed_tree
-  """
-}
-
 workflow GENERATE_TREE {
   take:
     families
   emit:
-    tree
+    trees
   main:
-    families | GENERATE | collect | MERGE_TREE | set { tree }
+    families | GENERATE | set { trees }
   publish:
-    tree >> 'seed_tree'
+    trees >> 'Rfam.seed_tree'
 }

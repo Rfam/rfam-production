@@ -1,7 +1,6 @@
 process GENERATE_CM_FILE {
   tag "${acc}"
   maxForks 50
-  container '' // This is not in a container to use the existing perl tools
 
   input:
   tuple val(acc), path(seed)

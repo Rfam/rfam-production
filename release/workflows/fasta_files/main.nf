@@ -32,7 +32,7 @@ workflow GENERATE_FASTA_FILES {
   take:
     families
     rfam_seed
-  emit: done
+  emit: all_fasta
   main:
     families \
     | combine(rfam_seed) \
@@ -41,11 +41,10 @@ workflow GENERATE_FASTA_FILES {
 
     fasta \
     | collect \
-    | COMBINE_FASTA \
-    | map { 'fasta' }
-    | set { done }
+    | COMBINE_FASTA
+    | set { all_fasta }
 
   publish:
     fasta >> 'fasta_files'
-    COMBINED_FASTA.out >> 'fasta_files'
+    all_fasta >> 'fasta_files'
 }

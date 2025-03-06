@@ -1,6 +1,7 @@
 process GENERATE_CM_FILE {
   tag "${acc}"
   maxForks 50
+  container '' // This is not in a container to use the existing perl tools
 
   input:
   tuple val(acc), path(seed)
@@ -21,12 +22,14 @@ process MERGE_CMS {
   tuple path('family*.cm'), path(accession_file)
 
   output:
-  path('Rfam.cm')
+  path('Rfam.cm'), emit: cm
+  path('Rfam.cm.gz'), emit: cm_gz
 
   """
   find . 'family*.cm' | xargs -I {} cat {} > Rfam.cm
   cmstat Rfam.cm > cmstat.txt
   cm_check.py '${accession_file}' cmstat_file.txt Rfam.cm
+  gzip -k Rfam.cm
   """
 }
 
@@ -56,7 +59,7 @@ workflow GENERATE_CM {
       | collect \
       | set { all_cms }
 
-    all_cms | combine(accessions) | MERGE_CMS | set { cm_gz }
+    all_cms | combine(accessions) | MERGE_CMS | set { cm_gzip }
     all_cms | TAR_CMS | set { cm_tar }
 
   publish:

@@ -32,12 +32,13 @@ workflow GENERATE_SEED {
   take:
     families
   emit:
-    MERGE_SEEDS.out.seed
+    seed
   main:
     families \
       | GENERATE_SEED_FILE \
       | collect \
       | MERGE_SEEDS
+    MERGE_SEEDS.out.seed | set { seed }
   publish:
     MERGE_SEEDS.out.seed_gz >> 'seed'
 }

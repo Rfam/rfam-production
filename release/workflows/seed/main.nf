@@ -7,7 +7,7 @@ process GENERATE_SEED_FILE {
   val(acc)
 
   output:
-  path("${acc}.seed")
+  tuple val(acc), path("${acc}.seed")
 
   """
   writeAnnotatedSeed.pl '${acc}'
@@ -20,12 +20,11 @@ process MERGE_SEEDS {
   path("family*.seed")
 
   output:
-  path('Rfam.seed'), emit: seed
   path("Rfam.seed.gz"), emit: seed_gz
 
   """
   find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.seed
-  gzip -k Rfam.seed
+  gzip Rfam.seed
   """
 }
 
@@ -33,13 +32,10 @@ workflow GENERATE_SEED {
   take:
     families
   emit:
-    seed
+    seeds
   main:
-    families \
-      | GENERATE_SEED_FILE \
-      | collect \
-      | MERGE_SEEDS
-    MERGE_SEEDS.out.seed | set { seed }
+    families | GENERATE_SEED_FILE | set { seeds }
+    seeds | map { it[1] } | collect | MERGE_SEEDS
   publish:
     MERGE_SEEDS.out.seed_gz >> 'seed'
 }

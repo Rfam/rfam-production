@@ -1,6 +1,6 @@
 process GENERATE_FASTA {
   tag "${acc}"
-  maxForks 100
+  maxForks 50
 
   input:
   tuple val(acc), path(rfam_seed)
@@ -9,8 +9,19 @@ process GENERATE_FASTA {
   val("${acc}.fa.gz")
 
   """
-  fasta_file_generator.py ${params.rfamseq.combined_fasta} $rfam_seed $acc ${acc}.fa
-  gzip ${acc}.fa
+  {
+    esl-reformat fasta '${family_seed}'
+    export-full.sh \
+      '${acc}' \
+      '${params.rfamseq.directory}/${params.rfamseq.combined_fasta}' \
+      '${params.db.host}' \
+      '${params.db.port}' \
+      '${params.db.user}' \
+      '${params.db.password}' \
+      '${params.db.database}'
+  } > '${acc}.unsorted.fa'
+  seqkit rmdup '${acc}.unsorted.fa' > '${acc}.fa'
+  gzip '${acc}.fa'
   """
 }
 
@@ -30,20 +41,13 @@ process COMBINE_FASTA {
 
 workflow GENERATE_FASTA_FILES {
   take:
-    families
-    rfam_seed
-  emit: all_fasta
+    seed_alignments
+  emit:
+    fasta
   main:
-    families \
-    | combine(rfam_seed) \
-    | GENERATE_FASTA \
-    | set { fasta }
+    seed_alignments | GENERATE_FASTA | set { fasta }
 
-    fasta \
-    | collect \
-    | COMBINE_FASTA
-    | set { all_fasta }
-
+    fasta | collect | COMBINE_FASTA | set { all_fasta }
   publish:
     fasta >> 'fasta_files'
     all_fasta >> 'fasta_files'

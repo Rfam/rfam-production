@@ -18,50 +18,27 @@ process GENERATE_CM_FILE {
 
 process MERGE_CMS {
   input:
-  tuple path('family*.cm'), path(accession_file)
+  path('family*.cm')
 
   output:
-  path('Rfam.cm'), emit: cm
   path('Rfam.cm.gz'), emit: cm_gz
 
   """
   find . 'family*.cm' | xargs -I {} cat {} > Rfam.cm
-  cmstat Rfam.cm > cmstat.txt
-  cm_check.py '${accession_file}' cmstat_file.txt Rfam.cm
-  gzip -k Rfam.cm
-  """
-}
-
-process TAR_CMS {
-  input:
-  path(cms)
-
-  output:
-  path("Rfam.tar.gz")
-
-  """
-  tar -czvf Rfam.tar.gz RF0*.cm
+  gzip Rfam.cm
   """
 }
 
 workflow GENERATE_CM {
   take:
-    accessions
-    families
-    rfam_seed
+    seed_alignments
   emit:
-    cm_tar
+    cm_gzip
   main:
-    families \
-      | combine(rfam_seed) \
-      | GENERATE_CM_FILE \
-      | collect \
-      | set { all_cms }
+    seed_alignments | GENERATE_CM_FILE | set { all_cms }
 
-    all_cms | combine(accessions) | MERGE_CMS | set { cm_gzip }
-    all_cms | TAR_CMS | set { cm_tar }
-
+    all_cms | collect | MERGE_CMS | set { cm_gzip }
   publish:
-    cm_tar >> 'cms'
+    all_cms >> 'all_cms'
     cm_gzip >> 'cms'
 }

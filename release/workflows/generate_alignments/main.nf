@@ -1,18 +1,18 @@
 process BUILD_ALIGNMENT {
-  tag { "$family" }
+  tag { "$acc" }
 
   input:
-  val(family)
+  val(acc)
 
   output:
   path('full-alignment.sto')
 
   """
-  rfco.pl '$family'
-  cd '$family'
+  rfco.pl '$acc'
+  cd '$acc'
   rfbuild -a
   cd ..
-  esl-alimerge $family/SEED $family/align > ../full-alignment.sto
+  esl-alimerge $acc/SEED $acc/align > ../full-alignment.sto
   """
 }
 

@@ -19,9 +19,7 @@ workflow GENERATE_TREE {
   take:
     families
   emit:
-    trees
+    seed_trees
   main:
-    families | GENERATE | set { trees }
-  publish:
-    trees >> 'Rfam.seed_tree'
+    families | GENERATE | set { seed_trees }
 }

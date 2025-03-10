@@ -34,11 +34,9 @@ workflow GENERATE_CM {
     seed_alignments
   emit:
     cm_gzip
+    all_cms
   main:
     seed_alignments | GENERATE_CM_FILE | set { all_cms }
 
     all_cms | collect | MERGE_CMS | set { cm_gzip }
-  publish:
-    all_cms >> 'all_cms'
-    cm_gzip >> 'cms'
 }

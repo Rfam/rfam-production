@@ -33,9 +33,9 @@ workflow GENERATE_SEED {
     families
   emit:
     seeds
+    seed_gz
   main:
     families | GENERATE_SEED_FILE | set { seeds }
     seeds | map { it[1] } | collect | MERGE_SEEDS
-  publish:
-    MERGE_SEEDS.out.seed_gz >> 'seed'
+    MERGE_SEEDS.out.seed_gz | set { seed_gz }
 }

@@ -21,7 +21,5 @@ workflow GENERATE_PDB {
   emit:
     pdb
   main:
-    channel.fromPath('sql/pdb.sql') \
-    | BUILD \
-    | set { pdb }
+    channel.fromPath("${moduleDir}/sql/pdb.sql") | BUILD | set { pdb }
 }

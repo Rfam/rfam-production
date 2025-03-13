@@ -21,7 +21,5 @@ workflow GENERATE_FULL_REGION {
   emit:
     full_region
   main:
-    channel.fromPath('sql/full_region.sql') \
-    | BUILD  \
-    | set { full_region }
+    channel.fromPath("${moduleDir}/sql/full_region.sql") | BUILD | set { full_region }
 }

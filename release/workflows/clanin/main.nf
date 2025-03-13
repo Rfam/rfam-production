@@ -20,7 +20,5 @@ workflow GENERATE_CLANIN {
   emit:
     clanin
   main:
-    channel.fromPath('sql/clanin.sql') \
-    | GENERATE \
-    | set { clanin }
+    channel.fromPath("${moduleDir}/sql/clanin.sql") | BUILD | set { clanin }
 }

@@ -1,26 +1,27 @@
 process BUILD_ALIGNMENT {
   tag { "$acc" }
+  maxForks 50
 
   input:
-  tuple val(acc), path(seed_alignment)
+  val(acc)
 
   output:
-  path('full-alignment.sto')
+  path("${acc}.sto")
 
   """
   rfco.pl '$acc'
   cd '$acc'
   rfbuild -a
   cd ..
-  esl-alimerge '${seed_alignment}' '$acc/align' > full-alignment.sto
+  mv $acc/align "${acc}.sto"
   """
 }
 
 workflow GENERATE_FULL_ALIGNMENTS {
   take:
-    seed_alignments
+    accessions
   emit:
     full_alignments
   main:
-    families | BUILD_ALIGNMENT | set { full_alignments }
+    accessions | BUILD_ALIGNMENT | set { full_alignments }
 }

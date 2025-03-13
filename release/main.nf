@@ -12,14 +12,12 @@ include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 include { GENERATE_FULL_REGION } from './workflows/full_region'
 include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_PDB } from './workflows/pdb'
+include { GENERATE_RFAM2GO } from './workflows/rfam2go'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 
 // TODO: Setup publishing properly
 
 // Easy:
-// TODO: Rfam.clanin
-// TODO: Rfam.full_region
-// TODO: Rfam.pdb
 // TODO: Rfam2go
 
 // Harder:
@@ -33,15 +31,16 @@ workflow {
     GENERATE_CLANIN | set { clanin }
     GENERATE_FULL_REGION | set { full_region }
     GENERATE_PDB | set { pdb }
+    GENERATE_RFAM2GO | set { rfam2go }
 
     family_file | splitText | map { it.trim() } | set { families }
 
-    families | GENERATE_SEED | set { seed_alignments }
     families | GENERATE_TREE
+    families | GENERATE_FULL_ALIGNMENTS
+    families | GENERATE_SEED | set { seed_alignments }
 
     seed_alignments | GENERATE_CM
     seed_alignments | GENERATE_FASTA_FILES
-    seed_alignments | GENERATE_FULL_ALIGNMENTS
 
     // LOAD_CM_AND_SEED(GENERATE_FASTA_FILES.out.all_fasta, GENERATE_CM.out.all_cms, seed_alignments)
   publish:
@@ -51,17 +50,42 @@ workflow {
     clanin >> 'ftp'
     full_region >> 'ftp'
     pdb >> 'ftp'
-    rfam2go >> 'ftp/rfam2go'
-    GENERATE_FASTA_FILES.out.fasta >> 'ftp/fasta_files'
-    GENERATE_FASTA_FILES.out.all_fasta >> 'ftp/fasta_files'
-    GENERATE_FULL_ALIGNMENTS.out.full_alignments >> 'ftp/full_alignments'
 
-    /// This files require further steps before publishing, generally building
+    // These end up as subdirectories within the ftp directory, but are
+    // otherwise complete and ready to be put in place
+    rfam2go >> 'rfam2go'
+    GENERATE_FASTA_FILES.out.fasta >> 'fasta_files'
+    GENERATE_FASTA_FILES.out.all_fasta >> 'fasta_files'
+    GENERATE_FULL_ALIGNMENTS.out.full_alignments >> 'full_alignments'
+
+    // This files require further steps before publishing, generally building
     // a tarball, which seems to be an issue for me in nextflow.
-    GENERATE_TREE.out.seed_trees >> 'Rfam.seed_tree'
+    GENERATE_TREE.out.seed_trees >> 'seed_tree'
     GENERATE_CM.out.all_cms >> 'Rfam'
 }
 
 output {
-  mode 'copy'
+  ftp {
+    mode 'copy'
+    path 'ftp'
+  }
+
+  fasta_files {
+    mode 'copy'
+    path 'ftp/fasta_files'
+  }
+
+  Rfam {
+    mode 'copy'
+  }
+
+  rfam2go {
+    mode 'copy'
+    directory 'ftp/rfam2go'
+  }
+
+  seed_tree {
+    mode 'copy'
+    path 'Rfam.seed_tree'
+  }
 }

@@ -1,26 +1,18 @@
-process GENERATE_FASTA {
+// It is a slightly odd design to split getting ids from building the files. But
+// for some reason sometimes the cluster kills the combined process. So this way
+// there is less to redo. Plus we don't have to limit the number of jobs for
+// GENERATE_FASTA.
+process FETCH_IDS {
   tag "${acc}"
   maxForks 50
 
   input:
-  tuple val(acc), path(rfam_seed)
+  tuple val(acc), val(sql)
 
   output:
-  val("${acc}.fa.gz")
+  tuple val(acc), path("${acc}.ids")
 
   script:
-  sql = """SELECT
-    CONCAT(fr.rfamseq_acc, '/', fr.seq_start, '-', fr.seq_end),
-    fr.seq_start,
-    fr.seq_end,
-    fr.rfamseq_acc,
-    rf.description
-FROM full_region fr
-JOIN rfamseq rf USING (rfamseq_acc)
-WHERE
-    fr.is_significant = 1
-    AND fr.rfam_acc = '${acc}';"""
-
   """
   mysql \
     --host='${params.db.live.host}' \
@@ -28,10 +20,29 @@ WHERE
     --user='${params.db.live.user}' \
     -p'${params.db.live.password}' \
     --database='${params.db.live.database}' \
-    --skip-column-names <<< "$sql" > ids
+    --skip-column-names <<< "$sql" > ${acc}.ids
+  """
+}
 
-  esl-reformat fasta '${rfam_seed}'                                                  > '${acc}.unsorted.fa'
-  esl-sfetch -Cf '${params.rfamseq.directory}/${params.rfamseq.combined_fasta}' ids >> '${acc}.unsorted.fa'
+process GENERATE_FASTA {
+  tag "${acc}"
+  memory {  params.fasta.largeFamilies.contains(acc) ? 10.GB : 2.GB }
+
+  // For some reason this will fail with no error message. This seems to mean
+  // the process was killed by something outside our control. To better deal
+  // with that we just retry and hope for the best.
+  errorStrategy 'retry'
+  maxRetries 5
+
+  input:
+  tuple val(acc), path(ids), path(rfam_seed)
+
+  output:
+  val("${acc}.fa.gz")
+
+  """
+  esl-reformat fasta '${rfam_seed}'                                                     > '${acc}.unsorted.fa'
+  esl-sfetch -Cf '${params.rfamseq.directory}/${params.rfamseq.combined_fasta}' ${ids} >> '${acc}.unsorted.fa'
   seqkit rmdup '${acc}.unsorted.fa' > '${acc}.fa'
   gzip '${acc}.fa'
   """
@@ -46,7 +57,7 @@ process COMBINE_FASTA {
 
   """
   find . -name 'family*.fa.gz' | xargs -I {} zcat {} > Rfam.fa.unsorted
-  seqkit rmdup Rfam.fa.unsorted > Rfam.fa
+  seqkit rmdup Rfam.fa.unsorted | seqkit seq --upper-case > Rfam.fa
   gzip Rfam.fa
   """
 }
@@ -58,6 +69,20 @@ workflow GENERATE_FASTA_FILES {
     fasta
     all_fasta
   main:
-    seed_alignments | GENERATE_FASTA | set { fasta }
+    query_template = channel.fromPath('sql/ids.sql')
+
+    seed_alignments \
+    | combine(query_template) \
+    | map { acc, seed_align, template ->
+      def binding = [acc: acc]
+      def engine = new groovy.text.GStringTemplateEngine()
+      def result = engine.createTemplate(template).make(binding)
+      [acc, result.toString()]
+    } \
+    | FETCH_IDS \
+    | join(seed_alignments) \
+    | GENERATE_FASTA \
+    | set { fasta }
+
     fasta | collect | COMBINE_FASTA | set { all_fasta }
 }

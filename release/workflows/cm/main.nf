@@ -1,6 +1,7 @@
 process GENERATE_CM_FILE {
   tag "${acc}"
   maxForks 50
+  memory { acc == "RF00005" ? 10.GB 2.GB }
 
   input:
   tuple val(acc), path(seed)
@@ -24,7 +25,7 @@ process MERGE_CMS {
   path('Rfam.cm.gz'), emit: cm_gz
 
   """
-  find . 'family*.cm' | xargs -I {} cat {} > Rfam.cm
+  find . -name 'family*.cm' | xargs -I {} cat {} > Rfam.cm
   gzip Rfam.cm
   """
 }

@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 process fetch_families_and_uuids {
   input:
   val(_flag)
-  
+
   output:
   file('family_info')
 
@@ -35,7 +35,8 @@ workflow view_process {
   take: start
   emit: done
   main:
-    start | fetch_families_and_uuids \
+    start \
+    | fetch_families_and_uuids \
     | splitCsv(sep: "\t") \
     | run_rfam_view \
     | set { done }

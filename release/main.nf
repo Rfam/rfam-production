@@ -3,29 +3,24 @@
 nextflow.enable.dsl = 2
 nextflow.preview.output = true
 
-include { GENERATE_CM } from './workflows/cm'
-include { GENERATE_TREE } from './workflows/tree'
-include { GENERATE_SEED } from './workflows/seed'
-include { GENERATE_FASTA_FILES } from './workflows/fasta'
 include { FETCH_FAMILIES } from './workflows/fetch_families'
+include { GENERATE_3D_SEED } from './workflows/3d_seed'
+include { GENERATE_CLANIN } from './workflows/clanin'
+include { GENERATE_CM } from './workflows/cm'
+include { GENERATE_FASTA_FILES } from './workflows/fasta'
 include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 include { GENERATE_FULL_REGION } from './workflows/full_region'
-include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_PDB } from './workflows/pdb'
 include { GENERATE_RFAM2GO } from './workflows/rfam2go'
+include { GENERATE_SEED } from './workflows/seed'
+include { GENERATE_TREE } from './workflows/tree'
+include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
+include { RUN_VIEW_PROCESSES } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
-
-// TODO: Setup publishing properly
-
-// Easy:
-// TODO: Rfam2go
-
-// Harder:
-// TODO: Upload ENA mapping
-// TODO: 3D seed - Need to get list of families with 3D
 
 workflow {
   main:
+    UPLOAD_ENA_MAPPING()
     FETCH_FAMILIES | set { family_file }
 
     GENERATE_CLANIN | set { clanin }
@@ -41,12 +36,14 @@ workflow {
 
     seed_alignments | GENERATE_CM
     seed_alignments | GENERATE_FASTA_FILES
+    seed_alignments | GENERATE_3D_SEED
 
     // LOAD_CM_AND_SEED(GENERATE_FASTA_FILES.out.all_fasta, GENERATE_CM.out.all_cms, seed_alignments)
   publish:
     // Files published to 'ftp' can be copied directly to the final location as they are already complete
     GENERATE_SEED.out.seed_gz >> 'ftp'
     GENERATE_CM.out.cm_gzip >> 'ftp'
+    GENERATE_3D_SEED.out.seeds >> 'ftp'
     clanin >> 'ftp'
     full_region >> 'ftp'
     pdb >> 'ftp'

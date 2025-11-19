@@ -21,6 +21,7 @@ include { RUN_VIEW_PROCESSES } from './workflows/view_process'
 workflow {
   main:
     UPLOAD_ENA_MAPPING()
+    RUN_VIEW_PROCESSES()
     FETCH_FAMILIES | set { family_file }
 
     GENERATE_CLANIN | set { clanin }

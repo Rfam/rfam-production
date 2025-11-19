@@ -31,7 +31,7 @@ process MERGE_3D {
 }
 
 workflow GENERATE_3D_SEED {
-  input:
+  take:
     seeds
   main:
     seeds \

@@ -44,7 +44,7 @@ process GENERATE_FASTA {
   """
   esl-reformat fasta '${rfam_seed}'                                                     > '${acc}.unsorted.fa'
   esl-sfetch -Cf '${params.rfamseq.directory}/${params.rfamseq.combined_fasta}' ${ids} >> '${acc}.unsorted.fa'
-  seqkit rmdup '${acc}.unsorted.fa' > '${acc}.fa'
+  seqkit rmdup '${acc}.unsorted.fa' | seqkit seq --upper-case > '${acc}.fa'
   gzip '${acc}.fa'
   """
 }

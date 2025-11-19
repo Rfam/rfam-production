@@ -1,4 +1,6 @@
 process CHECK_3D_ANNOTATION {
+  tag { "$acc" }
+
   input:
   tuple val(acc), path(seed)
 

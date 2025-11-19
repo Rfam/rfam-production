@@ -65,6 +65,7 @@ process COMBINE_FASTA {
 
 workflow GENERATE_FASTA_FILES {
   take:
+    accessions
     seed_alignments
   emit:
     fasta
@@ -72,9 +73,9 @@ workflow GENERATE_FASTA_FILES {
   main:
     query_template = channel.fromPath('sql/ids.sql')
 
-    seed_alignments \
+    accessions \
     | combine(query_template) \
-    | map { acc, seed_align, template ->
+    | map { acc, template ->
       def binding = [acc: acc]
       def engine = new groovy.text.GStringTemplateEngine()
       def result = engine.createTemplate(template).make(binding)

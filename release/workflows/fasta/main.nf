@@ -26,7 +26,8 @@ process FETCH_IDS {
 
 process GENERATE_FASTA {
   tag "${acc}"
-  memory {  params.fasta.largeFamilies.contains(acc) ? 10.GB : 2.GB }
+  memory { params.fasta.largeFamilies.contains(acc) ? 10.GB : 2.GB }
+  time 12.hours
 
   // For some reason this will fail with no error message. This seems to mean
   // the process was killed by something outside our control. To better deal

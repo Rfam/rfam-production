@@ -4,7 +4,7 @@
 // GENERATE_FASTA.
 process FETCH_IDS {
   tag "${acc}"
-  maxForks 50
+  maxForks 100
 
   input:
   tuple val(acc), val(sql)

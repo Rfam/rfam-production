@@ -1,7 +1,7 @@
-process GENERATE_CM_FILE {
-  tag "${acc}"
+process BUILD {
+  tag { "${acc}" }
   maxForks 50
-  memory { acc == "RF00005" ? 10.GB 2.GB }
+  memory { acc == "RF00005" ? 10.GB : 2.GB }
 
   input:
   tuple val(acc), path(seed)
@@ -37,7 +37,7 @@ workflow GENERATE_CM {
     cm_gzip
     all_cms
   main:
-    seed_alignments | GENERATE_CM_FILE | set { all_cms }
+    seed_alignments | BUILD | set { all_cms }
 
     all_cms | collect | MERGE_CMS | set { cm_gzip }
 }

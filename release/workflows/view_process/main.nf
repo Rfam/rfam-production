@@ -7,11 +7,11 @@ process FETCH_UUIDS {
 
   """
   mysql -s \
-    --host=${params.db.live.host} \
-    --port=${params.db.live.port} \
-    --user=${params.db.live.user} \
-    --database=${params.db.live.database} \
-    --password=${params.db.live.password} \
+    --host=${params.db.host} \
+    --port=${params.db.port} \
+    --user=${params.db.user} \
+    --database=${params.db.name} \
+    --password=${params.db.password} \
   <<< "select rfam_acc, uuid from _post_process where status='PEND'" > family_info
   """
 }
@@ -32,7 +32,7 @@ process VIEW_PROCESS {
 
 workflow RUN_VIEW_PROCESS {
   main:
-    FETCH_UUIDS \
+    FETCH_UUIDS(true) \
     | splitCsv(sep: "\t")
     | VIEW_PROCESS
 }

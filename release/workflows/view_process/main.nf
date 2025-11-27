@@ -19,8 +19,8 @@ process FETCH_UUIDS {
 process VIEW_PROCESS {
   tag { "$acc" }
   memory { ["RF00002", "RF00005", "RF00177", "RF02542"].contains(acc) ? "10GB" : "20GB" }
-  maxForks 20
-  when params.view_process.run
+  maxForks 1 // 20 Lower concurrency to reduce the likelihood of db deadlocks
+  errorStrategy 'ignore'
 
   input:
   tuple val(acc), val(uuid)
@@ -33,6 +33,6 @@ process VIEW_PROCESS {
 workflow RUN_VIEW_PROCESS {
   main:
     FETCH_UUIDS(true) \
-    | splitCsv(sep: "\t")
+    | splitCsv(sep: "\t") \
     | VIEW_PROCESS
 }

@@ -152,3 +152,8 @@ work/
 *.py.bak
 
 nextflow
+
+# hpc
+*.err
+*.out
+

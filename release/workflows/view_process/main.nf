@@ -26,6 +26,7 @@ process VIEW_PROCESS {
   tuple val(acc), val(uuid)
 
   """
+  # rfam-family-pipeline repo must be cloned and installed
   rfam_family_view.pl -id $uuid -f $acc family
   """
 }

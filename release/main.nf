@@ -17,6 +17,7 @@ nextflow.preview.output = true
 // include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
+// include { clan_competition } from './workflows/clan_competition'
 
 workflow {
   main:
@@ -25,6 +26,7 @@ workflow {
 
     //UPLOAD_ENA_MAPPING()
     //RUN_VIEW_PROCESS()
+    // clan_competition(Channel.of('start'))
     //FETCH_FAMILIES | set { family_file }
 
     //GENERATE_CLANIN | set { clanin }

@@ -1,18 +1,3 @@
-// process FETCH_FAMILIES {
-//   output:
-//   path('families')
-//
-//   """
-//   mysql -s \
-//     --host=${params.db.host} \
-//     --port=${params.db.port} \
-//     --user=${params.db.user} \
-//     --database=${params.db.name} \
-//     --password=${params.db.password} \
-//     <<< "select rfam_acc from family" > families
-//   """
-// }
-
 
 process FETCH_FAMILIES {
   output:

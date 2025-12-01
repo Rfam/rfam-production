@@ -16,7 +16,7 @@ process apicuron_report {
     # python $params.rfamprod/scripts/apicuron/bulk_upload.py -f bulk_report_svn.json
     # startrev: svn log -r "{2023-08-17}:HEAD" --limit 1
     # do we need to run this in the datamover queue?
-    python $params.rfamprod/scripts/apicuron/bulk_upload.py \
+    python ${projectDir}/../scripts/apicuron/bulk_upload.py \
         --start $params.svn.startrev \
         --end $params.svn.endrev \
         --svn $params.svn.svnrepo

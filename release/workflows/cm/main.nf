@@ -9,6 +9,7 @@ process BUILD {
   output:
   path("${acc}.cm")
 
+  script:
   """
   writeAnnotatedCM.pl '$acc'
   mv '${acc}.CM' initial.cm
@@ -24,6 +25,7 @@ process MERGE_CMS {
   output:
   path('Rfam.cm.gz'), emit: cm_gz
 
+  script:
   """
   find . -name 'family*.cm' | xargs -I {} cat {} > Rfam.cm
   gzip Rfam.cm
@@ -32,12 +34,11 @@ process MERGE_CMS {
 
 workflow GENERATE_CM {
   take:
-    seed_alignments
+  seed_alignments
   emit:
-    cm_gzip
-    all_cms
+  cm_gzip
+  all_cms
   main:
-    seed_alignments | BUILD | set { all_cms }
-
-    all_cms | collect | MERGE_CMS | set { cm_gzip }
+  seed_alignments | BUILD | set { all_cms }
+  all_cms | collect | MERGE_CMS | set { cm_gzip }
 }

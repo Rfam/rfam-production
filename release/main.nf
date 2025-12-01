@@ -7,7 +7,7 @@ nextflow.preview.output = true
 include { FETCH_FAMILIES } from './workflows/fetch_families'
 // include { GENERATE_3D_SEED } from './workflows/3d_seed'
 include { GENERATE_CLANIN } from './workflows/clanin'
-// include { GENERATE_CM } from './workflows/cm'
+include { GENERATE_CM } from './workflows/cm'
 // include { GENERATE_FASTA_FILES } from './workflows/fasta'
 // include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 // include { GENERATE_FULL_REGION } from './workflows/full_region'
@@ -19,14 +19,17 @@ include { GENERATE_CLANIN } from './workflows/clanin'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 // include { clan_competition } from './workflows/clan_competition'
-include { apicuron } from './workflows/apicuron'
+
+// requires troubleshooting
+// include { apicuron } from './workflows/apicuron'
 
 workflow {
   main:
     //RUN_VIEW_PROCESS()
     //FETCH_FAMILIES | set { family_file }
     // GENERATE_CLANIN | set { clanin }
-    apicuron(Channel.of('start'))
+    //apicuron(Channel.of('start'))
+    seed_alignments | GENERATE_CM
 }
 
     //UPLOAD_ENA_MAPPING()

@@ -1,4 +1,5 @@
 process apicuron_report {
+    queue 'datamover'
 
     input:
     val(ready)

@@ -33,8 +33,10 @@ workflow {
     family_file | splitText | map { it.trim() } | set { families }
     families | GENERATE_TREE
     families | GENERATE_FULL_ALIGNMENTS
-    families | GENERATE_SEED | set { seed_alignments }
-    seed_alignments | GENERATE_CM
+    // families | GENERATE_SEED | set { seed_alignments }
+    //seed_alignments | GENERATE_CM
+    families | GENERATE_SEED
+    GENERATE_SEED.out.seeds | GENERATE_CM
 }
 
     //UPLOAD_ENA_MAPPING()

@@ -9,12 +9,12 @@ include { FETCH_FAMILIES } from './workflows/fetch_families'
 include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_CM } from './workflows/cm'
 // include { GENERATE_FASTA_FILES } from './workflows/fasta'
-// include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
+include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 // include { GENERATE_FULL_REGION } from './workflows/full_region'
 // include { GENERATE_PDB } from './workflows/pdb'
 // include { GENERATE_RFAM2GO } from './workflows/rfam2go'
-// include { GENERATE_SEED } from './workflows/seed'
-// include { GENERATE_TREE } from './workflows/tree'
+include { GENERATE_SEED } from './workflows/seed'
+include { GENERATE_TREE } from './workflows/tree'
 // include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
@@ -26,9 +26,14 @@ include { RUN_VIEW_PROCESS } from './workflows/view_process'
 workflow {
   main:
     //RUN_VIEW_PROCESS()
-    //FETCH_FAMILIES | set { family_file }
+    FETCH_FAMILIES | set { family_file }
     // GENERATE_CLANIN | set { clanin }
     //apicuron(Channel.of('start'))
+
+    family_file | splitText | map { it.trim() } | set { families }
+    families | GENERATE_TREE
+    families | GENERATE_FULL_ALIGNMENTS
+    families | GENERATE_SEED | set { seed_alignments }
     seed_alignments | GENERATE_CM
 }
 

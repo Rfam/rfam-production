@@ -9,6 +9,7 @@ process GENERATE {
   output:
   val("${acc}.seed_tree")
 
+  script:
   """
   writeAnnotatedTree.pl '${acc}'
   mv '${acc}'.taxtree '${acc}'.seed_tree
@@ -17,9 +18,9 @@ process GENERATE {
 
 workflow GENERATE_TREE {
   take:
-    families
+  families
   emit:
-    seed_trees
+  seed_trees
   main:
-    families | GENERATE | set { seed_trees }
+  families | GENERATE | set { seed_trees }
 }

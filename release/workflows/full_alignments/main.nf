@@ -8,6 +8,7 @@ process BUILD_ALIGNMENT {
   output:
   path("${acc}.sto")
 
+  script:
   """
   rfco.pl '$acc'
   cd '$acc'
@@ -19,9 +20,9 @@ process BUILD_ALIGNMENT {
 
 workflow GENERATE_FULL_ALIGNMENTS {
   take:
-    accessions
+  accessions
   emit:
-    full_alignments
+  full_alignments
   main:
-    accessions | BUILD_ALIGNMENT | set { full_alignments }
+  accessions | BUILD_ALIGNMENT | set { full_alignments }
 }

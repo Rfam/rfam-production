@@ -2,7 +2,8 @@
 
 nextflow.enable.dsl = 2
 nextflow.preview.output = true
-
+ 
+// -- those uncommented below have been completed --
 include { FETCH_FAMILIES } from './workflows/fetch_families'
 // include { GENERATE_3D_SEED } from './workflows/3d_seed'
 include { GENERATE_CLANIN } from './workflows/clanin'
@@ -18,12 +19,14 @@ include { GENERATE_CLANIN } from './workflows/clanin'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 // include { clan_competition } from './workflows/clan_competition'
+include { apicuron } from './workflows/apicuron'
 
 workflow {
   main:
     //RUN_VIEW_PROCESS()
-    FETCH_FAMILIES | set { family_file }
-    GENERATE_CLANIN | set { clanin }
+    //FETCH_FAMILIES | set { family_file }
+    // GENERATE_CLANIN | set { clanin }
+    apicuron(Channel.of('start'))
 }
 
     //UPLOAD_ENA_MAPPING()

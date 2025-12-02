@@ -20,8 +20,13 @@ include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 // include { clan_competition } from './workflows/clan_competition'
 
-// requires troubleshooting
+// include { text_search } from './workflows/update_text_search_dev'
+
+// requires troubleshooting, not compulsory for release
 // include { apicuron } from './workflows/apicuron'
+
+// final step (must be run last)
+// include { stage_rfam_live } from './workflows/stage_rfam_live'
 
 workflow {
   main:
@@ -37,6 +42,10 @@ workflow {
     //seed_alignments | GENERATE_CM
     families | GENERATE_SEED
     GENERATE_SEED.out.seeds | GENERATE_CM
+
+
+    // stage_rfam_live(Channel.of('start'))
+    // text_search(Channel.of('start'))
 }
 
     //UPLOAD_ENA_MAPPING()

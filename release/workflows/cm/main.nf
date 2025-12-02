@@ -1,7 +1,9 @@
 process BUILD {
   tag { "${acc}" }
   maxForks 50
-  memory { acc == "RF00005" ? 10.GB : 2.GB }
+  errorStrategy 'retry'
+  maxRetries 3
+  memory { (acc == "RF00005" ? 30.GB : 2.GB) * task.attempt }
 
   input:
   tuple val(acc), path(seed)

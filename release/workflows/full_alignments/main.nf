@@ -12,7 +12,7 @@ process BUILD_ALIGNMENT {
   """
   rfco.pl '$acc'
   cd '$acc'
-  rfbuild -a
+  rfmake.pl -a -forcethr
   cd ..
   mv $acc/align "${acc}.sto"
   """

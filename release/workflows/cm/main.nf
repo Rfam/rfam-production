@@ -1,9 +1,11 @@
 process BUILD {
-  tag { "${acc}" }
+  tag "${acc}"
   maxForks 50
-  errorStrategy 'retry'
+  errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
   maxRetries 3
-  memory { (acc == "RF00005" ? 30.GB : 2.GB) * task.attempt }
+  memory { 
+    [2.GB, 30.GB, 120.GB][task.attempt - 1] ?: 120.GB
+  }
 
   input:
   tuple val(acc), path(seed)
@@ -13,10 +15,10 @@ process BUILD {
 
   script:
   """
-  writeAnnotatedCM.pl '$acc'
+  writeAnnotatedCM.pl '${acc}'
   mv '${acc}.CM' initial.cm
   grep -v DESC initial.cm > '${acc}.nodesc.cm'
-  seed-desc-to-cm.pl '$seed' '${acc}.nodesc.cm' > '${acc}.cm'
+  seed-desc-to-cm.pl '${seed}' '${acc}.nodesc.cm' > '${acc}.cm'
   """
 }
 

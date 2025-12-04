@@ -2,6 +2,7 @@ process BUILD {
   output:
   path('rfam2go')
 
+  script:
   """
   perl ${params.perl_path}/export/rfam2go.pl
   """
@@ -14,6 +15,7 @@ process ADD_HEADER {
   output:
   path("rfam2go")
 
+  script:
   """
   cat <<EOS headerless >rfam2go
   !version date: ${params.release.date}
@@ -33,6 +35,7 @@ process checksum {
   output:
   path('md5.txt')
 
+  script:
   """
   md5sum $rfam2go > md5.txt
   """

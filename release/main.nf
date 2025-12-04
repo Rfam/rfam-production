@@ -11,16 +11,18 @@ include { GENERATE_CM } from './workflows/cm'
 // include { GENERATE_FASTA_FILES } from './workflows/fasta'
 include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 // include { GENERATE_FULL_REGION } from './workflows/full_region'
-// include { GENERATE_PDB } from './workflows/pdb'
+include { GENERATE_PDB } from './workflows/pdb'
 // include { GENERATE_RFAM2GO } from './workflows/rfam2go'
 include { GENERATE_SEED } from './workflows/seed'
 include { GENERATE_TREE } from './workflows/tree'
-include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 // include { clan_competition } from './workflows/clan_competition'
 
 // include { text_search } from './workflows/update_text_search_dev'
+
+// missing params.ena.password, user and hostname
+//include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 
 // requires troubleshooting, not compulsory for release
 // include { apicuron } from './workflows/apicuron'
@@ -41,8 +43,8 @@ workflow {
     //families | GENERATE_SEED
     //GENERATE_SEED.out.seeds | GENERATE_CM
 
-    UPLOAD_ENA_MAPPING()
-
+    //UPLOAD_ENA_MAPPING()
+    GENERATE_PDB | set { pdb }
 
     // GENERATE_CLANIN | set { clanin }
     //apicuron(Channel.of('start'))

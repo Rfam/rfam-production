@@ -6,9 +6,10 @@ nextflow.preview.output = true
 // -- those uncommented below have been completed --
 include { FETCH_FAMILIES } from './workflows/fetch_families'
 // include { GENERATE_3D_SEED } from './workflows/3d_seed'
+// include { GENERATE_FASTA_FILES } from './workflows/fasta'
+
 include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_CM } from './workflows/cm'
-// include { GENERATE_FASTA_FILES } from './workflows/fasta'
 include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
 include { GENERATE_FULL_REGION } from './workflows/full_region'
 include { GENERATE_PDB } from './workflows/pdb'
@@ -17,7 +18,7 @@ include { GENERATE_SEED } from './workflows/seed'
 include { GENERATE_TREE } from './workflows/tree'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
-// include { clan_competition } from './workflows/clan_competition'
+include { clan_competition } from './workflows/clan_competition'
 
 // include { text_search } from './workflows/update_text_search_dev'
 
@@ -36,19 +37,25 @@ workflow {
     
     //FETCH_FAMILIES | set { family_file }
     //family_file | splitText | map { it.trim() } | set { families }
+
     //families | GENERATE_TREE
     //families | GENERATE_FULL_ALIGNMENTS
-    // families | GENERATE_SEED | set { seed_alignments }
+    //families | GENERATE_SEED | set { seed_alignments }
     //seed_alignments | GENERATE_CM
     //families | GENERATE_SEED
     //GENERATE_SEED.out.seeds | GENERATE_CM
 
-    //UPLOAD_ENA_MAPPING()
+    
     //GENERATE_PDB | set { pdb }
     //GENERATE_FULL_REGION | set { full_region }
-    GENERATE_RFAM2GO | set { rfam2go }
+    //GENERATE_RFAM2GO | set { rfam2go }
 
     // GENERATE_CLANIN | set { clanin }
+    
+    clan_competition(Channel.of('start'))
+
+    //pending
+    //UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
 
     // stage_rfam_live(Channel.of('start'))

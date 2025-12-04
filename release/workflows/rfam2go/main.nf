@@ -17,7 +17,7 @@ process ADD_HEADER {
 
   script:
   """
-  cat <<EOS headerless >rfam2go
+  cat <<EOS >rfam2go
   !version date: ${params.release.date}
   !description: A mapping of GO terms to Rfam release ${params.release.version}
   !external resource: https://rfam.org/
@@ -25,10 +25,11 @@ process ADD_HEADER {
   !contact: rfam-help@ebi.ac.uk
   !
   EOS
+  cat ${headerless} >>rfam2go
   """
 }
 
-process checksum {
+process MD5 {
   input:
   path(rfam2go)
 
@@ -42,10 +43,10 @@ process checksum {
 }
 
 workflow GENERATE_RFAM2GO {
-  emit:
-    rfam2go
-    rfam2go_md5
   main:
     BUILD | ADD_HEADER | set { rfam2go }
     rfam2go | MD5 | set { rfam2go_md5 }
+  emit:
+    rfam2go
+    rfam2go_md5
 }

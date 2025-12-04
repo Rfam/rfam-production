@@ -10,7 +10,7 @@ include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_CM } from './workflows/cm'
 // include { GENERATE_FASTA_FILES } from './workflows/fasta'
 include { GENERATE_FULL_ALIGNMENTS } from './workflows/full_alignments'
-// include { GENERATE_FULL_REGION } from './workflows/full_region'
+include { GENERATE_FULL_REGION } from './workflows/full_region'
 include { GENERATE_PDB } from './workflows/pdb'
 // include { GENERATE_RFAM2GO } from './workflows/rfam2go'
 include { GENERATE_SEED } from './workflows/seed'
@@ -44,7 +44,8 @@ workflow {
     //GENERATE_SEED.out.seeds | GENERATE_CM
 
     //UPLOAD_ENA_MAPPING()
-    GENERATE_PDB | set { pdb }
+    //GENERATE_PDB | set { pdb }
+    GENERATE_FULL_REGION | set { full_region }
 
     // GENERATE_CLANIN | set { clanin }
     //apicuron(Channel.of('start'))

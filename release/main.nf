@@ -58,8 +58,9 @@ workflow {
     //UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
 
-    // stage_rfam_live(Channel.of('start'))
     // text_search(Channel.of('start'))
+    
+    // stage_rfam_live(Channel.of('start'))
 }
 
     //UPLOAD_ENA_MAPPING()

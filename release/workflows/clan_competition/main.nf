@@ -54,10 +54,9 @@ process run_clan_competition {
 workflow clan_competition {
     take: start
     main:
-        start | generate_clan_files \
-        | sort_clan_files \
-        | run_clan_competition \
-        | set { done }
+        done = start | generate_clan_files \
+               | sort_clan_files \
+               | run_clan_competition
     emit: done
 }
 

@@ -20,8 +20,8 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory '10GB'
-    cpus 2
+    memory '32GB'
+    cpus 1
     errorStrategy 'terminate'
 
     input:
@@ -34,6 +34,11 @@ process xml_dump {
     """
     #!/bin/bash
     set -euo pipefail
+
+    # Set UTF-8 encoding to handle non-ASCII characters
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export PYTHONIOENCODING=utf-8
 
     cd ${params.rfamprod} && source django_settings.sh
 
@@ -54,11 +59,16 @@ process xml_dump {
     mkdir -p ${params.text_search}/{families,clans,motifs,genomes,full_region}
     
     # run XML dumps with error checking
-    python ${params.xml_dumper} --type F --out ${params.text_search}/families || exit 1
-    python ${params.xml_dumper} --type C --out ${params.text_search}/clans || exit 1
-    python ${params.xml_dumper} --type M --out ${params.text_search}/motifs || exit 1
-    python ${params.xml_dumper} --type G --out ${params.text_search}/genomes || exit 1
-    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region || exit 1
+    python ${params.xml_dumper} --type F --out ${params.text_search}/families
+    echo "Families completed"
+    python ${params.xml_dumper} --type C --out ${params.text_search}/clans
+    echo "Clans completed"
+    python ${params.xml_dumper} --type M --out ${params.text_search}/motifs
+    echo "Motifs completed"
+    python ${params.xml_dumper} --type G --out ${params.text_search}/genomes
+    echo "Genomes completed"
+    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
+    echo "Full_region completed"
     
     echo "XML dump completed successfully"
     """

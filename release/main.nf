@@ -55,6 +55,9 @@ workflow {
     
     //clan_competition(Channel.of('start'))
 
+
+    // Dumps Rfam database XML files, validates them, checks error logs are empty, 
+    // creates a release note, and symlinks the data to a dev directory for text search indexing
     text_search(Channel.of('start'))
 
     //pending

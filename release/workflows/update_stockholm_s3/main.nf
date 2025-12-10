@@ -21,8 +21,8 @@ if (!params.s3?.s3_base_path) {
 }
 
 process run_svn_to_s3 {
-    memory '4 GB'
-    cpus 2
+    memory '6 GB'
+    cpus 1
     errorStrategy 'terminate'
     
     input:
@@ -36,8 +36,8 @@ process run_svn_to_s3 {
     #!/bin/bash
     set -euo pipefail
     
-    # Create .env file in current directory
-    cat > .env << EOF
+    # Create .env file in the script's directory
+    cat > ${projectDir}/rna-alignment-api/.env << EOF
 S3_HOST=${params.s3.s3_host}
 S3_KEY=${params.s3.s3_key}
 S3_SECRET=${params.s3.s3_secret}
@@ -53,7 +53,7 @@ EOF
     bash ${projectDir}/rna-alignment-api/scripts/svn_to_s3.sh
     
     # Delete the .env file
-    rm -f .env
+    rm -f ${projectDir}/rna-alignment-api/.env
 
     echo "SVN to S3 sync completed successfully"
     """

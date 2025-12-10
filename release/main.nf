@@ -19,9 +19,7 @@ include { GENERATE_TREE } from './workflows/tree'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 include { clan_competition } from './workflows/clan_competition'
-
-include { text_search } from './workflows/update_text_search_dev'
-
+include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
 
 // missing params.ena.password, user and hostname
 //include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
@@ -31,6 +29,9 @@ include { text_search } from './workflows/update_text_search_dev'
 
 // final step (must be run last)
 // include { stage_rfam_live } from './workflows/stage_rfam_live'
+
+// finally
+// include { text_search } from './workflows/update_text_search_dev'
 
 workflow {
   main:
@@ -54,18 +55,22 @@ workflow {
     // GENERATE_CLANIN | set { clanin }
     
     //clan_competition(Channel.of('start'))
+    update_stockholm_s3(Channel.of(true))
 
 
-    // Dumps Rfam database XML files, validates them, checks error logs are empty, 
-    // creates a release note, and symlinks the data to a dev directory for text search indexing
-    text_search(Channel.of('start'))
 
     //pending
     //UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
     
     // stage_rfam_live(Channel.of('start'))
+
+    // Dumps Rfam database XML files, validates them, checks error logs are empty, 
+    // creates a release note, and symlinks the data to a dev directory for text search indexing
+    // text_search(Channel.of('start'))
 }
+
+
 
     //UPLOAD_ENA_MAPPING()
     //RUN_VIEW_PROCESS()

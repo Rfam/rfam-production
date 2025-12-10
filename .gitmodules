@@ -1,3 +1,0 @@
-[submodule "pipelines/release/rna-alignment-api"]
-	path = pipelines/release/rna-alignment-api
-	url = https://github.com/RNAcentral/rna-alignment-api.git

@@ -36,13 +36,15 @@ process run_svn_to_s3 {
     #!/bin/bash
     set -euo pipefail
     
-    # Set environment variables for the script
-    export S3_HOST="${params.s3.s3_host}"
-    export S3_KEY="${params.s3.s3_key}"
-    export S3_SECRET="${params.s3.s3_secret}"
-    export BUCKET_NAME="${params.s3.bucket_name}"
-    export ENVIRONMENT="${params.s3.environment}"
-    export S3_BASE_PATH="${params.s3.s3_base_path}"
+    # Create .env file in current directory
+    cat > .env << EOF
+S3_HOST=${params.s3.s3_host}
+S3_KEY=${params.s3.s3_key}
+S3_SECRET=${params.s3.s3_secret}
+BUCKET_NAME=${params.s3.bucket_name}
+ENVIRONMENT=${params.s3.environment}
+S3_BASE_PATH=${params.s3.s3_base_path}
+EOF
     
     # Make script executable if needed
     chmod +x ${projectDir}/rna-alignment-api/scripts/svn_to_s3.sh
@@ -50,6 +52,9 @@ process run_svn_to_s3 {
     # Run the SVN to S3 script
     bash ${projectDir}/rna-alignment-api/scripts/svn_to_s3.sh
     
+    # Delete the .env file
+    rm -f .env
+
     echo "SVN to S3 sync completed successfully"
     """
 }

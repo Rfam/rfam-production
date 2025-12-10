@@ -55,12 +55,16 @@ process run_svn_to_s3 {
 }
 
 workflow update_stockholm_s3 {
-    take:
+    take: 
     start
     
-    emit:
-    done
-    
     main:
-    done = update_stockholm_s3(start)
+    run_svn_to_s3(start)
+
+    emit:
+    done = run_svn_to_s3.out
+}
+
+workflow {
+    update_stockholm_s3(Channel.of('start'))
 }

@@ -27,7 +27,9 @@ process MERGE_SEEDS {
   script:
   """
   #find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.seed
-  find . -name '*.seed' | xargs -I {} cat {} > Rfam.seed
+  #find . -name '*.seed' | xargs -I {} cat {} > Rfam.seed
+  # Exclude Rfam.seed from the find to prevent input=output error
+  find . -name '*.seed' -not -name 'Rfam.seed' | xargs -I {} cat {} > Rfam.seed
   gzip Rfam.seed
   """
 }

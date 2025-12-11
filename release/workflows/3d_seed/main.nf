@@ -26,7 +26,8 @@ process CHECK_3D_ANNOTATION {
 process MERGE_3D {
   input:
   //path("family*.seed")
-  path "*.seed"
+  //path "*.seed"
+  path(seeds)
 
   output:
   path("Rfam.3d.seed.gz"), emit: seed_gz
@@ -35,8 +36,17 @@ process MERGE_3D {
   """
   #find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.3d.seed
   #gzip Rfam.3d.seed
-  if ls *.seed 1> /dev/null 2>&1; then
-    cat *.seed > Rfam.3d.seed
+
+  #if ls *.seed 1> /dev/null 2>&1; then
+  #  cat *.seed > Rfam.3d.seed
+  #else
+  #  touch Rfam.3d.seed
+  #fi
+  #
+  #gzip -f Rfam.3d.seed
+
+  if [ -n "${seeds}" ]; then
+    cat ${seeds} > Rfam.3d.seed
   else
     touch Rfam.3d.seed
   fi

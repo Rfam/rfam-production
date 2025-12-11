@@ -18,14 +18,16 @@ process GENERATE_SEED_FILE {
 
 process MERGE_SEEDS {
   input:
-  path("family*.seed")
+  //path("family*.seed")
+  path "*.seed"
 
   output:
   path("Rfam.seed.gz"), emit: seed_gz
 
   script:
   """
-  find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.seed
+  #find . -name 'family*.seed' | xargs -I {} cat {} > Rfam.seed
+  find . -name '*.seed' | xargs -I {} cat {} > Rfam.seed
   gzip Rfam.seed
   """
 }

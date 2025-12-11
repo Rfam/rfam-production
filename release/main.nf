@@ -2,11 +2,12 @@
 
 nextflow.enable.dsl = 2
 nextflow.preview.output = true
- 
+
 // -- those uncommented below have been completed --
 include { FETCH_FAMILIES } from './workflows/fetch_families'
-// include { GENERATE_3D_SEED } from './workflows/3d_seed'
-// include { GENERATE_FASTA_FILES } from './workflows/fasta'
+
+include { GENERATE_3D_SEED } from './workflows/3d_seed'
+//include { GENERATE_FASTA_FILES } from './workflows/fasta'
 
 include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_CM } from './workflows/cm'
@@ -18,9 +19,12 @@ include { GENERATE_SEED } from './workflows/seed'
 include { GENERATE_TREE } from './workflows/tree'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
+
 include { clan_competition } from './workflows/clan_competition'
 include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
-include { prepare_rfam_live } from './workflows/prepare_rfam_live'
+
+// nice to do, not crucial - needs fixing
+// include { prepare_rfam_live } from './workflows/prepare_rfam_live'
 
 // missing params.ena.password, user and hostname
 //include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
@@ -38,16 +42,19 @@ workflow {
   main:
     //RUN_VIEW_PROCESS()
     
-    //FETCH_FAMILIES | set { family_file }
-    //family_file | splitText | map { it.trim() } | set { families }
+    FETCH_FAMILIES | set { family_file }
+    family_file | splitText | map { it.trim() } | set { families }
 
     //families | GENERATE_TREE
     //families | GENERATE_FULL_ALIGNMENTS
-    //families | GENERATE_SEED | set { seed_alignments }
-    //seed_alignments | GENERATE_CM
-    //families | GENERATE_SEED
-    //GENERATE_SEED.out.seeds | GENERATE_CM
+    // //families | GENERATE_SEED | set { seed_alignments }
+    // //seed_alignments | GENERATE_CM
+    families | GENERATE_SEED
 
+    //GENERATE_SEED.out.seeds | GENERATE_CM
+    GENERATE_SEED.out.seeds | GENERATE_3D_SEED
+    //GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
+    
     
     //GENERATE_PDB | set { pdb }
     //GENERATE_FULL_REGION | set { full_region }
@@ -57,12 +64,12 @@ workflow {
     
     //clan_competition(Channel.of('start'))
     //update_stockholm_s3(Channel.of(true))
-    prepare_rfam_live(Channel.of('start'))
 
 
     //pending
     //UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
+    //prepare_rfam_live(Channel.of('start'))
     
     // stage_rfam_live(Channel.of('start'))
 

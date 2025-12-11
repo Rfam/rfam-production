@@ -12,6 +12,8 @@ process populate_rfam_live {
     python $params.rfamprod/scripts/release/populate_rfamlive_for_release.py --all
     """
 }
+
+// the db this points to doesn't exist anymore
 process make_keywords {
     
     input:

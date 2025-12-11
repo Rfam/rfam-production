@@ -20,6 +20,7 @@ include { RUN_VIEW_PROCESS } from './workflows/view_process'
 // include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 include { clan_competition } from './workflows/clan_competition'
 include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
+include { prepare_rfam_live } from './workflows/prepare_rfam_live'
 
 // missing params.ena.password, user and hostname
 //include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
@@ -55,8 +56,8 @@ workflow {
     // GENERATE_CLANIN | set { clanin }
     
     //clan_competition(Channel.of('start'))
-    update_stockholm_s3(Channel.of(true))
-
+    //update_stockholm_s3(Channel.of(true))
+    prepare_rfam_live(Channel.of('start'))
 
 
     //pending

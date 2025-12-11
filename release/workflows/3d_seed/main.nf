@@ -15,7 +15,7 @@ process CHECK_3D_ANNOTATION {
   # extract GC annotation column 3
   grep '^#=GC' "$seed" | awk '{ print \$3 }' > annotations
 
-  if grep -q '_SS$' annotations ; then
+  if grep -q '_SS\$' annotations ; then
     #cat $seed > found
     # keep original filename
     cp "$seed" "${acc}.seed"
@@ -54,4 +54,7 @@ workflow GENERATE_3D_SEED {
       | CHECK_3D_ANNOTATION \
       | collect \
       | MERGE_3D
+  
+  emit:
+    seeds = MERGE_3D.out.seed_gz
 }

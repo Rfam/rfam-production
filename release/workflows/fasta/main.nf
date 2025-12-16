@@ -85,6 +85,7 @@ workflow GENERATE_FASTA_FILES {
     
     seeds \
       | flatten \
+      | map { file(it) } \
       | map { seed -> 
           def acc = seed.baseName.replaceAll(/\.seed$/, '')
           [acc, seed] 
@@ -100,6 +101,7 @@ workflow GENERATE_FASTA_FILES {
       | join(
           seeds \
           | flatten \
+          | map { file(it) } \
           | map { seed -> 
               def acc = seed.baseName.replaceAll(/\.seed$/, '')
               [acc, seed]
@@ -109,9 +111,8 @@ workflow GENERATE_FASTA_FILES {
       | collect \
       | COMBINE_FASTA
 
-  emit:
-    combined = COMBINE_FASTA.out.combined
-
+    emit:
+      combined = COMBINE_FASTA.out.combined
 }
 
 //workflow GENERATE_FASTA_FILES {

@@ -78,13 +78,17 @@ process COMBINE_FASTA {
 
 workflow GENERATE_FASTA_FILES {
   take:
-    seeds
+    seeds  // This is coming in as a list/collection
 
   main:
     query_template = channel.fromPath('sql/ids.sql')
     
     seeds \
-      | map { seed -> [seed.baseName.replaceAll(/\.seed$/, ''), seed] } \
+      | flatten \
+      | map { seed -> 
+          def acc = seed.baseName.replaceAll(/\.seed$/, '')
+          [acc, seed] 
+      } \
       | combine(query_template) \
       | map { acc, seed, template ->
         def binding = [acc: acc]
@@ -93,13 +97,21 @@ workflow GENERATE_FASTA_FILES {
         [acc, result.toString()]
       } \
       | FETCH_IDS \
-      | join(seeds.map { [it.baseName.replaceAll(/\.seed$/, ''), it] }) \
+      | join(
+          seeds \
+          | flatten \
+          | map { seed -> 
+              def acc = seed.baseName.replaceAll(/\.seed$/, '')
+              [acc, seed]
+          }
+      ) \
       | GENERATE_FASTA \
       | collect \
       | COMBINE_FASTA
 
   emit:
     combined = COMBINE_FASTA.out.combined
+
 }
 
 //workflow GENERATE_FASTA_FILES {

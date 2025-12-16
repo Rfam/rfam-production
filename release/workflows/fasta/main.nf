@@ -81,7 +81,7 @@ workflow GENERATE_FASTA_FILES {
     seeds  // This is a channel of tuples: [acc, seed_file]
 
   main:
-    query_template = channel.fromPath('sql/ids.sql')
+    query_template = channel.fromPath('workflows/fasta/sql/ids.sql')
     
     // Extract only the seed file (second element of tuple)
     seeds \

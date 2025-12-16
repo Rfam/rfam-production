@@ -7,7 +7,7 @@ nextflow.preview.output = true
 include { FETCH_FAMILIES } from './workflows/fetch_families'
 
 include { GENERATE_3D_SEED } from './workflows/3d_seed'
-//include { GENERATE_FASTA_FILES } from './workflows/fasta'
+include { GENERATE_FASTA_FILES } from './workflows/fasta'
 
 include { GENERATE_CLANIN } from './workflows/clanin'
 include { GENERATE_CM } from './workflows/cm'
@@ -52,8 +52,8 @@ workflow {
     families | GENERATE_SEED
 
     //GENERATE_SEED.out.seeds | GENERATE_CM
-    GENERATE_SEED.out.seeds | GENERATE_3D_SEED
-    //GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
+    //GENERATE_SEED.out.seeds | GENERATE_3D_SEED
+    GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
     
     
     //GENERATE_PDB | set { pdb }

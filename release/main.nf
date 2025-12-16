@@ -18,7 +18,7 @@ include { GENERATE_RFAM2GO } from './workflows/rfam2go'
 include { GENERATE_SEED } from './workflows/seed'
 include { GENERATE_TREE } from './workflows/tree'
 include { RUN_VIEW_PROCESS } from './workflows/view_process'
-// include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
+include { LOAD_CM_AND_SEED } from './workflows/load_cm_seed_in_db'
 
 include { clan_competition } from './workflows/clan_competition'
 include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
@@ -51,11 +51,17 @@ workflow {
     // //seed_alignments | GENERATE_CM
     families | GENERATE_SEED
 
-    //GENERATE_SEED.out.seeds | GENERATE_CM
+    GENERATE_SEED.out.seeds | GENERATE_CM
     //GENERATE_SEED.out.seeds | GENERATE_3D_SEED
     GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
-    
-    
+    // Load CM and seed into database
+    LOAD_CM_AND_SEED(
+      GENERATE_CM.out.cm_gzip,
+      GENERATE_SEED.out.seed_gz
+    )
+
+
+
     //GENERATE_PDB | set { pdb }
     //GENERATE_FULL_REGION | set { full_region }
     //GENERATE_RFAM2GO | set { rfam2go }

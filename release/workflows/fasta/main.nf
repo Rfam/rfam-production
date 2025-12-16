@@ -29,7 +29,7 @@ process GENERATE_FASTA {
   //memory { params.fasta.largeFamilies.contains(acc) ? '10 GB' : '4 GB' }
   // Increase memory with each retry attempt
   memory { 
-    def baseMemory = params.fasta.largeFamilies.contains(acc) ? 10.GB : 4.GB
+    def baseMemory = params.fasta.largeFamilies.contains(acc) ? 30.GB : 5.GB
     baseMemory * (task.attempt)
   }
   time '12h'

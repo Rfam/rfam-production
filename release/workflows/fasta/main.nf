@@ -78,30 +78,30 @@ process COMBINE_FASTA {
 
 workflow GENERATE_FASTA_FILES {
   take:
-    seeds  // This is coming in as a list/collection
+    seeds  // This is a channel of tuples: [acc, seed_file]
 
   main:
     query_template = channel.fromPath('sql/ids.sql')
     
+    // Extract only the seed file (second element of tuple)
     seeds \
-      | flatten \
-      | map { file(it) } \
+      | map { it[1] } \
       | map { seed -> 
           def acc = seed.baseName.replaceAll(/\.seed$/, '')
           [acc, seed] 
       } \
       | combine(query_template) \
-      | map { acc, seed, template ->
+      | map { acc, _seed, template ->
         def binding = [acc: acc]
         def engine = new groovy.text.GStringTemplateEngine()
-        def result = engine.createTemplate(template).make(binding)
+        def templateText = template.text
+        def result = engine.createTemplate(templateText).make(binding)
         [acc, result.toString()]
       } \
       | FETCH_IDS \
       | join(
           seeds \
-          | flatten \
-          | map { file(it) } \
+          | map { it[1] } \
           | map { seed -> 
               def acc = seed.baseName.replaceAll(/\.seed$/, '')
               [acc, seed]
@@ -111,9 +111,11 @@ workflow GENERATE_FASTA_FILES {
       | collect \
       | COMBINE_FASTA
 
-    emit:
-      combined = COMBINE_FASTA.out.combined
+  emit:
+    combined = COMBINE_FASTA.out.combined
 }
+
+
 
 //workflow GENERATE_FASTA_FILES {
 //  take:

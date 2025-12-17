@@ -32,7 +32,7 @@ process GENERATE_FASTA {
     def baseMemory = params.fasta.largeFamilies.contains(acc) ? 30.GB : 5.GB
     baseMemory * (task.attempt)
   }
-  time '16h'
+  time '30h'
 
   // For some reason this will fail with no error message. This seems to mean
   // the process was killed by something outside our control. To better deal

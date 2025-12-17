@@ -51,14 +51,14 @@ workflow {
     // //seed_alignments | GENERATE_CM
     families | GENERATE_SEED
 
-    GENERATE_SEED.out.seeds | GENERATE_CM
+    //GENERATE_SEED.out.seeds | GENERATE_CM
     //GENERATE_SEED.out.seeds | GENERATE_3D_SEED
-    //GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
+    GENERATE_SEED.out.seeds | GENERATE_FASTA_FILES
     // Load CM and seed into database
-    LOAD_CM_AND_SEED(
-      GENERATE_CM.out.cm_gzip,
-      GENERATE_SEED.out.seed_gz
-    )
+    //LOAD_CM_AND_SEED(
+    //  GENERATE_CM.out.cm_gzip,
+    //  GENERATE_SEED.out.seed_gz
+    //)
 
 
 

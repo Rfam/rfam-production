@@ -18,7 +18,7 @@ process PREPARE_MERGED_FILES {
   """
 }
 
-
+// replaces load_cm_seed_in_db.py
 process LOAD_CM_AND_SEED_ONCE {
   tag "load-cm-seed-db"
   maxForks 1

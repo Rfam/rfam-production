@@ -18,7 +18,6 @@ process mysql_dump {
         --port=${params.db.port} \
         --user=${params.db.user} \
         --password=${params.db.password} \
-        --database=${params.db.name} \
         --single-transaction \
         --add-locks \
         --lock-tables \
@@ -28,6 +27,7 @@ process mysql_dump {
         --allow-keywords \
         --max-allowed-packet=1G \
         --no-create-db \
+        ${params.db.name} \
         > ${params.release}/rfam_live_rel_${params.releasex}.sql
     
     sed -i.bak '/USE `rfam_live`;/d' ${params.release}/rfam_live_rel_${params.releasex}.sql

@@ -1,7 +1,7 @@
 process mysql_dump {
     errorStrategy 'retry'
     maxRetries 2
-    memory { 8.GB * task.attempt }
+    memory { 16.GB * task.attempt }
 
     input:
         val(_flag)
@@ -37,8 +37,8 @@ process mysql_dump {
 process restore_mysql {
     errorStrategy 'retry'
     maxRetries 2
-    memory { 8.GB * task.attempt }
-    time { 4.h * task.attempt }
+    memory { 24.GB * task.attempt }
+    time { 30.h * task.attempt }
     
     input:
         val(mysqldump_done)

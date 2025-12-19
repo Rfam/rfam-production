@@ -32,11 +32,10 @@ include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
 // requires troubleshooting, not compulsory for release
 // include { apicuron } from './workflows/apicuron'
 
-// final step (must be run last)
+// penultimate step
 include { stage_rfam_live } from './workflows/stage_rfam_live'
-
-// finally
-// include { text_search } from './workflows/update_text_search_dev'
+// finally (must be run last)
+include { text_search } from './workflows/update_text_search_dev'
 
 workflow {
   main:
@@ -75,11 +74,11 @@ workflow {
     //apicuron(Channel.of('start'))
     //prepare_rfam_live(Channel.of('start'))
     
-    stage_rfam_live(Channel.of('start'))
+    //stage_rfam_live(Channel.of('start'))
 
     // Dumps Rfam database XML files, validates them, checks error logs are empty, 
     // creates a release note, and symlinks the data to a dev directory for text search indexing
-    // text_search(Channel.of('start'))
+    text_search(Channel.of('start'))
 }
 
 

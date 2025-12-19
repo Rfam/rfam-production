@@ -20,9 +20,10 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory '32GB'
+    memory { 32.GB * task.attempt }
     cpus 1
-    errorStrategy 'terminate'
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    maxRetries 2
 
     input:
     val flag
@@ -75,7 +76,7 @@ process xml_dump {
 }
 
 process xml_validate {
-    memory '8 GB'
+    memory 8.GB
     cpus 2
     errorStrategy 'terminate'
 
@@ -97,11 +98,11 @@ process xml_validate {
     #python $params.validate --input $params.text_search/full_region --log
 
     # Validate XML files with error checking
-    python ${params.validate} --input ${params.text_search}/families --log || exit 1
-    python ${params.validate} --input ${params.text_search}/clans --log || exit 1
-    python ${params.validate} --input ${params.text_search}/motifs --log || exit 1
-    python ${params.validate} --input ${params.text_search}/genomes --log || exit 1
-    python ${params.validate} --input ${params.text_search}/full_region --log || exit 1
+    python ${params.validate} --input ${params.text_search}/families --log
+    python ${params.validate} --input ${params.text_search}/clans --log
+    python ${params.validate} --input ${params.text_search}/motifs --log
+    python ${params.validate} --input ${params.text_search}/genomes --log
+    python ${params.validate} --input ${params.text_search}/full_region --log
 
     echo "Validation completed successfully"
     """
@@ -132,7 +133,7 @@ process check_error_logs_are_empty {
 
 process create_release_note {
     publishDir "${params.text_search}", mode: "copy"
-    memory '2 GB'
+    memory 2.GB
     errorStrategy 'terminate'
     
     input:
@@ -147,7 +148,9 @@ process create_release_note {
     set -euo pipefail
 
     #python $params.rfamprod/scripts/release/create_release_note.py --version=$params.releasex --entries=`grep -r 'entry id' $params.text_search | wc -l`
-    ENTRIES=\$(grep -r 'entry id' $params.text_search | wc -l || echo "0")
+    
+    ENTRIES=\$(grep -r 'entry id' ${params.text_search} | wc -l || echo "0")
+    
     python ${params.rfamprod}/scripts/release/create_release_note.py \
       --version=${params.releasex} \
       --entries=\$ENTRIES > release_note.txt
@@ -155,6 +158,7 @@ process create_release_note {
     echo "Created release note with \$ENTRIES entries"
     """
 }
+
 process index_data_on_dev {
     input:
     path release_note
@@ -188,17 +192,17 @@ process index_data_on_dev {
 
 workflow text_search {
     take: 
-    start
+        start
     
-main:
-    xml_dump(start)
-    xml_validate(xml_dump.out)
-    check_error_logs_are_empty(xml_validate.out)
-    create_release_note(check_error_logs_are_empty.out)
-    index_data_on_dev(create_release_note.out)
+    main:
+        xml_dump(start)
+        xml_validate(xml_dump.out)
+        check_error_logs_are_empty(xml_validate.out)
+        create_release_note(check_error_logs_are_empty.out)
+        index_data_on_dev(create_release_note.out)
 
-emit:
-    done = index_data_on_dev.out
+    emit:
+        done = index_data_on_dev.out
 }
 
 workflow {

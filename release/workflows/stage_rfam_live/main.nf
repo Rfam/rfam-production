@@ -66,20 +66,6 @@ process restore_mysql {
         --password=${params.db_rel.password} \
         ${params.db_schema_name} < ${params.release}/rfam_live_rel_${params.releasex}.sql
 
-    # Restore to public database (db_pub)
-    mysql \
-        --host=${params.db_pub.host} \
-        --port=${params.db_pub.port} \
-        --user=${params.db_pub.user} \
-        --password=${params.db_pub.password} \
-        -e "CREATE DATABASE IF NOT EXISTS ${params.db_schema_name};"
-    
-    mysql \
-        --host=${params.db_pub.host} \
-        --port=${params.db_pub.port} \
-        --user=${params.db_pub.user} \
-        --password=${params.db_pub.password} \
-        ${params.db_schema_name} < ${params.release}/rfam_live_rel_${params.releasex}.sql
     """
 }
 

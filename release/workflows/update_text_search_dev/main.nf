@@ -20,10 +20,10 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory { 32.GB * task.attempt }
+    memory { 96.GB * task.attempt }
     cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
-    maxRetries 2
+    maxRetries 1
 
     input:
     val flag
@@ -121,11 +121,11 @@ process check_error_logs_are_empty {
     set -euo pipefail
 
     # Check that all error logs are empty
-    bash ${params.empty} "${params.text_search}/families/error.log" || exit 1
-    bash ${params.empty} "${params.text_search}/clans/error.log" || exit 1
-    bash ${params.empty} "${params.text_search}/motifs/error.log" || exit 1
-    bash ${params.empty} "${params.text_search}/genomes/error.log" || exit 1
-    bash ${params.empty} "${params.text_search}/full_region/error.log" || exit 1
+    bash ${params.empty} "${params.text_search}/families/error.log"
+    bash ${params.empty} "${params.text_search}/clans/error.log"
+    bash ${params.empty} "${params.text_search}/motifs/error.log"
+    bash ${params.empty} "${params.text_search}/genomes/error.log"
+    bash ${params.empty} "${params.text_search}/full_region/error.log"
     
     echo "All error logs are empty"
     """
@@ -133,7 +133,7 @@ process check_error_logs_are_empty {
 
 process create_release_note {
     publishDir "${params.text_search}", mode: "copy"
-    memory 2.GB
+    memory 4.GB
     errorStrategy 'terminate'
     
     input:

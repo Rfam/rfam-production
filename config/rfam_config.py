@@ -29,7 +29,7 @@ ENA_URL = cfl.ENA_URL
 TAX_NODES_DUMP = cfl.TAX_NODES_DUMP
 TAX_NAMES_DUMP = cfl.TAX_NAMES_DUMP
 BIN_LOC = cfl.BIN_LOC
-RFAM_SEED_SEQ_14_1 = cfl.RFAM_SEED_SEQ_14_1
+RFAM_SEED_SEQ_15_1 = cfl.RFAM_SEED_SEQ_15_1
 PDB_FILES = cfl.PDB_FILES
 
 # ---------------------------------GEN CONFIG----------------------------------
@@ -61,7 +61,7 @@ RFAMLIVE_DJANGO = cfl.RFAMLIVE_DJANGO
 SECRET_KEY = cfl.SECRET_KEY
 
 # ---------------------------------SEQDBs--------------------------------------
-RFAM_SEED_DB = cfl.RFAM_SEED_SEQ_14_1
+RFAM_SEED_DB = cfl.RFAM_SEED_SEQ_15_1
 
 # -------------------------------LSF------------------------------------
 # rfamprod privileges required

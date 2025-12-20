@@ -20,7 +20,7 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory { Math.min(64.GB * task.attempt, 256.GB) }
+    memory { task.attempt * 64.GB <= 256.GB ? task.attempt * 64.GB : 256.GB }
     cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 2
@@ -77,7 +77,7 @@ process xml_dump {
 
 process xml_dump_full_regions {
     // will run in queue 'bigmem'
-    memory { Math.min(200.GB * task.attempt, 1900.GB) }
+    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
     cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3

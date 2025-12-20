@@ -20,10 +20,10 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory { 96.GB * task.attempt }
+    memory { Math.min(64.GB * task.attempt, 256.GB) }
     cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
-    maxRetries 1
+    maxRetries 2
 
     input:
     val flag
@@ -68,10 +68,37 @@ process xml_dump {
     echo "Motifs completed"
     python ${params.xml_dumper} --type G --out ${params.text_search}/genomes
     echo "Genomes completed"
-    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
-    echo "Full_region completed"
+    #python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
+    #echo "Full_region completed"
     
     echo "XML dump completed successfully"
+    """
+}
+
+process xml_dump_full_regions {
+    // will run in queue 'bigmem'
+    memory { Math.min(200.GB * task.attempt, 1900.GB) }
+    cpus 1
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    maxRetries 3
+    
+    input:
+    val xml_done
+    
+    output:
+    val true
+    
+    script:
+    """
+    #!/bin/bash
+    set -euo pipefail
+    
+    cd ${params.rfamprod} && source django_settings.sh
+    
+    # Only do full regions with more memory
+    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
+    
+    echo "Full region export completed"
     """
 }
 
@@ -196,7 +223,8 @@ workflow text_search {
     
     main:
         xml_dump(start)
-        xml_validate(xml_dump.out)
+        xml_dump_full_regions(xml_dump.out) 
+        xml_validate(xml_dump_full_regions.out)
         check_error_logs_are_empty(xml_validate.out)
         create_release_note(check_error_logs_are_empty.out)
         index_data_on_dev(create_release_note.out)

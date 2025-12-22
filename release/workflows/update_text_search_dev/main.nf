@@ -60,8 +60,8 @@ process xml_dump {
     mkdir -p ${params.text_search}/{families,clans,motifs,genomes,full_region}
     
     # run XML dumps with error checking
-    python ${params.xml_dumper} --type F --out ${params.text_search}/families
-    echo "Families completed"
+    #python ${params.xml_dumper} --type F --out ${params.text_search}/families
+    #echo "Families completed"
     python ${params.xml_dumper} --type C --out ${params.text_search}/clans
     echo "Clans completed"
     python ${params.xml_dumper} --type M --out ${params.text_search}/motifs
@@ -71,10 +71,80 @@ process xml_dump {
     #python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
     #echo "Full_region completed"
     
-    echo "XML dump completed successfully"
+    echo "XML dump (C,M,G) completed successfully"
     """
 }
 
+// Get list of all families from database
+process get_family_list {
+    output:
+    path 'families.txt'
+    
+    script:
+    """
+    mysql -h ${params.db.host} -P ${params.db.port} -u ${params.db.user} -p${params.db.password} ${params.db.name} \
+        -N -B -e "SELECT rfam_acc FROM family ORDER BY rfam_acc" \
+        > families.txt
+    
+    if [ ! -s families.txt ]; then
+        echo "ERROR: Failed to retrieve family list" >&2
+        exit 1
+    fi
+    
+    echo "Retrieved \$(wc -l < families.txt) families" >&2
+    """
+}
+
+// Process each family individually in parallel
+process xml_dump_family {
+    tag "$family_acc"
+    time '2.h'
+    cpus 1
+    maxForks 50  // Parallel families
+    memory { task.attempt * 40.GB <= 320.GB ? task.attempt * 40.GB : 320.GB }
+    errorStrategy { task.attempt <= maxRetries ? 'retry' : 'ignore' }
+    maxRetries 3
+    
+    input:
+    val family_acc
+    
+    output:
+    val true
+    
+    script:
+    """
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Set UTF-8 encoding
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export PYTHONIOENCODING=utf-8
+    
+    cd ${params.rfamprod} && source django_settings.sh
+    
+    # Small delay to stagger starts
+    sleep \$((RANDOM % 10))
+    
+    # Process single family
+    python ${params.xml_dumper} --type F --acc ${family_acc} --out ${params.text_search}/families
+    
+    # Verify output
+    OUTPUT_FILE="${params.text_search}/families/${family_acc}.xml"
+    
+    if [ ! -f "\$OUTPUT_FILE" ]; then
+        echo "ERROR: Output file not created for family ${family_acc}" >&2
+        exit 1
+    fi
+    
+    if [ ! -s "\$OUTPUT_FILE" ]; then
+        echo "ERROR: Output file is empty for family ${family_acc}" >&2
+        exit 1
+    fi
+    
+    echo "Completed family ${family_acc}"
+    """
+}
 //process xml_dump_full_regions {
 //    // will run in queue 'bigmem'
 //    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
@@ -128,7 +198,7 @@ process xml_dump_full_regions_per_genome {
     tag "$genome_upid"  
     time '5.d'
     cpus 1
-    maxForks 80
+    maxForks 85
     memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
     errorStrategy { task.attempt < maxRetries ? 'retry' : 'ignore' } 
     maxRetries 5
@@ -168,7 +238,6 @@ process xml_dump_full_regions_per_genome {
     echo "Completed genome ${genome_upid}"
     """
 }
-
 
 
 process xml_validate {
@@ -292,7 +361,16 @@ workflow text_search {
         start
     
     main:
+        // Start non-family exports (C, M, G)
         xml_dump(start)
+        
+        // Get list of families and process in parallel
+        get_family_list()
+        family_channel = get_family_list.out
+            .splitText()
+            .map { it.trim() }
+        
+        xml_dump_family(family_channel)
         
         // Get list of genomes and process in parallel
         get_genome_list()
@@ -302,18 +380,19 @@ workflow text_search {
         
         xml_dump_full_regions_per_genome(genome_channel)
         
-        // Wait for all genome processing to complete
-        all_genomes_done = xml_dump_full_regions_per_genome.out.collect()
+        // Wait for ALL processing to complete
+        all_xml_done = xml_dump.out
+            .mix(
+                xml_dump_family.out.collect(),
+                xml_dump_full_regions_per_genome.out.collect()
+            )
+            .collect()
         
-        xml_validate(all_genomes_done)
+        xml_validate(all_xml_done)
         check_error_logs_are_empty(xml_validate.out)
         create_release_note(check_error_logs_are_empty.out)
         index_data_on_dev(create_release_note.out)
 
     emit:
         done = index_data_on_dev.out
-}
-
-workflow {
-    text_search(Channel.of('start'))
 }

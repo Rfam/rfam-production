@@ -129,9 +129,9 @@ process xml_dump_full_regions_per_genome {
     time '5.d'
     cpus 1
     maxForks 80
-    memory { task.attempt * 100.GB <= 1900.GB ? task.attempt * 100.GB : 1900.GB }
+    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
     errorStrategy { task.attempt < maxRetries ? 'retry' : 'ignore' } 
-    maxRetries 10
+    maxRetries 5
     
     input:
     val genome_upid

@@ -111,7 +111,7 @@ process get_genome_list {
     
     script:
     """
-    mysql -h ${params.db.host} -P ${params.db.port} -u ${params.db.user} -p ${params.db.password} ${params.db.name} \
+    mysql -h ${params.db.host} -P ${params.db.port} -u ${params.db.user} -p${params.db.password} ${params.db.name} \
         -N -B -e "SELECT upid FROM genome WHERE num_families > 0" \
         > genomes.txt
     

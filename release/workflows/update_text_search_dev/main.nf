@@ -139,7 +139,7 @@ process xml_dump_full_regions_per_genome {
     val genome_upid
     
     output:
-    val true, optional: true
+    val true
     
     script:
     """

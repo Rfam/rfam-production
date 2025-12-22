@@ -111,19 +111,16 @@ process get_genome_list {
     
     script:
     """
-    #!/bin/bash
-    cd ${params.rfamprod} && source django_settings.sh
-    python -c "
-from utils import RfamDB
-from config.rfam_config import RFAMLIVE
-cnx = RfamDB.connect(db_config=RFAMLIVE)
-cursor = cnx.cursor()
-cursor.execute('SELECT upid FROM genome WHERE num_families > 0')
-for row in cursor:
-    print(row[0])
-cursor.close()
-cnx.disconnect()
-    " > genomes.txt
+    mysql -h ${params.db.host} -P ${params.db.port} -u ${params.db.user} -p ${params.db.password} ${params.db.name} \
+        -N -B -e "SELECT upid FROM genome WHERE num_families > 0" \
+        > genomes.txt
+    
+    if [ ! -s genomes.txt ]; then
+        echo "ERROR: Failed to retrieve genome list" >&2
+        exit 1
+    fi
+    
+    echo "Retrieved \$(wc -l < genomes.txt) genomes" >&2
     """
 }
 

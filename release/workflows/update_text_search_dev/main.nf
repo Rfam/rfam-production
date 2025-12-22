@@ -125,12 +125,13 @@ process get_genome_list {
 }
 
 process xml_dump_full_regions_per_genome {
+    tag "$genome_upid"  
     time '5.d'
     cpus 1
-    maxForks 500
-    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
-    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
-    maxRetries 4
+    maxForks 80
+    memory { task.attempt * 100.GB <= 1900.GB ? task.attempt * 100.GB : 1900.GB }
+    errorStrategy { task.attempt < maxRetries ? 'retry' : 'ignore' } 
+    maxRetries 10
     
     input:
     val genome_upid
@@ -144,6 +145,9 @@ process xml_dump_full_regions_per_genome {
     set -euo pipefail
     
     cd ${params.rfamprod} && source django_settings.sh
+
+    # Stagger start times to reduce DB load
+    sleep \$((RANDOM % 30))
     
     # Process one genome at a time
     python ${params.xml_dumper} --type R --acc ${genome_upid} --out ${params.text_search}/full_region

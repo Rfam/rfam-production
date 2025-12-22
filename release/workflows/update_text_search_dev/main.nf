@@ -20,7 +20,7 @@ if (!params.rfam_dev) {
 
 
 process xml_dump {  
-    memory { task.attempt * 64.GB <= 256.GB ? task.attempt * 64.GB : 256.GB }
+    memory { task.attempt * 96.GB <= 256.GB ? task.attempt * 96.GB : 256.GB }
     cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 2
@@ -75,18 +75,71 @@ process xml_dump {
     """
 }
 
-process xml_dump_full_regions {
-    // will run in queue 'bigmem'
-    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
+//process xml_dump_full_regions {
+//    // will run in queue 'bigmem'
+//    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
+//    cpus 2
+//    time '25.d'
+//    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+//    maxRetries 3
+//    
+//    input:
+//    val xml_done
+//    
+//    output:
+//    val true
+//    
+//    script:
+//    """
+//    #!/bin/bash
+//    set -euo pipefail
+//    
+//    cd ${params.rfamprod} && source django_settings.sh
+//    
+//    # Only do full regions with more memory
+//    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
+//    
+//    echo "Full region export completed"
+//    """
+//}
+
+// Instead of processing all genomes sequentially in one massive job, 
+// process each genome in a separate parallel job
+process get_genome_list {
+    output:
+    path 'genomes.txt'
+    
+    script:
+    """
+    #!/bin/bash
+    cd ${params.rfamprod} && source django_settings.sh
+    python -c "
+from utils import RfamDB
+from config.rfam_config import RFAMLIVE
+cnx = RfamDB.connect(db_config=RFAMLIVE)
+cursor = cnx.cursor()
+cursor.execute('SELECT upid FROM genome WHERE num_families > 0')
+for row in cursor:
+    print(row[0])
+cursor.close()
+cnx.disconnect()
+    " > genomes.txt
+    """
+}
+
+process xml_dump_full_regions_per_genome {
+    time '5.d'
     cpus 1
-    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
-    maxRetries 3
+    maxForks 500
+    memory { task.attempt * 200.GB <= 1900.GB ? task.attempt * 200.GB : 1900.GB }
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
+    maxRetries 4
     
     input:
-    val xml_done
+    val genome_upid
     
     output:
-    val true
+    val true, optional: true
     
     script:
     """
@@ -95,12 +148,27 @@ process xml_dump_full_regions {
     
     cd ${params.rfamprod} && source django_settings.sh
     
-    # Only do full regions with more memory
-    python ${params.xml_dumper} --type R --out ${params.text_search}/full_region
+    # Process one genome at a time
+    python ${params.xml_dumper} --type R --acc ${genome_upid} --out ${params.text_search}/full_region
     
-    echo "Full region export completed"
+    # Verify the output file exists and is not empty
+    OUTPUT_FILE="${params.text_search}/full_region/${genome_upid}.xml"
+    
+    if [ ! -f "\$OUTPUT_FILE" ]; then
+        echo "ERROR: Output file not created for genome ${genome_upid}" >&2
+        exit 1
+    fi
+    
+    if [ ! -s "\$OUTPUT_FILE" ]; then
+        echo "ERROR: Output file is empty for genome ${genome_upid}" >&2
+        exit 1
+    fi
+    
+    echo "Completed genome ${genome_upid}"
     """
 }
+
+
 
 process xml_validate {
     memory 8.GB
@@ -217,14 +285,26 @@ process index_data_on_dev {
     """
 }
 
+
 workflow text_search {
     take: 
         start
     
     main:
         xml_dump(start)
-        xml_dump_full_regions(xml_dump.out) 
-        xml_validate(xml_dump_full_regions.out)
+        
+        // Get list of genomes and process in parallel
+        get_genome_list()
+        genome_channel = get_genome_list.out
+            .splitText()
+            .map { it.trim() }
+        
+        xml_dump_full_regions_per_genome(genome_channel)
+        
+        // Wait for all genome processing to complete
+        all_genomes_done = xml_dump_full_regions_per_genome.out.collect()
+        
+        xml_validate(all_genomes_done)
         check_error_logs_are_empty(xml_validate.out)
         create_release_note(check_error_logs_are_empty.out)
         index_data_on_dev(create_release_note.out)

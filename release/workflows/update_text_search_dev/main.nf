@@ -241,9 +241,10 @@ process xml_dump_full_regions_per_genome {
 
 
 process xml_validate {
-    memory 8.GB
+    memory { 12.GB * task.attempt }
     cpus 2
-    errorStrategy 'terminate'
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
+    maxRetries 3
 
     input:
     val xml_done

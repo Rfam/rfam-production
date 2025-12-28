@@ -241,8 +241,8 @@ process xml_dump_full_regions_per_genome {
 
 
 process xml_validate {
-    memory { 12.GB * task.attempt }
-    cpus 2
+    memory { 120.GB * task.attempt }
+    cpus 1
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
     maxRetries 3
 
@@ -350,9 +350,6 @@ process index_data_on_dev {
     
     echo "Indexed data on dev: ${params.rfam_dev}"
 
-    #unlink $params.rfam_dev
-    #ln -s $params.text_search $params.rfam_dev
-    #cp $query $params.rfam_dev
     """
 }
 

@@ -2,7 +2,7 @@
 
 This scripts extracts information from the miRNA summary dashboard, which is a Google Sheets file. The script was initially 
 required to prepare the info from this sheet for APICURON submissions. It is not required to run regularly, as we now
-have a regaulr way to upload APICURON info via bulk_upload.py. However, if any information is lost or needs to be 
+have a regular way to upload APICURON info via bulk_upload.py. However, if any information is lost or needs to be 
 recreated, this script will be useful. 
 """
 

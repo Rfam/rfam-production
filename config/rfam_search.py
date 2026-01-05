@@ -24,7 +24,7 @@ import datetime
 # MAIN XML Fields
 DB_NAME = "Rfam"  # DB name
 DB_DESC = "A database for non-protein coding RNA families"  # DB description
-DB_RELEASE = "14.8"  # release version
+DB_RELEASE = "15.1"  # release version
 # DB_REL_DATE = datetime.date.today()  # datetime.date.today()
 
 # DELIMITERS
@@ -127,7 +127,7 @@ FULL_REGION_FIELDS = """
     AND fr.is_significant=1
     AND fr.type = 'full'
     AND gs.upid = '%s'
-    AND gs.version = '14.0'
+    AND gs.version = '15.0'
 """
 
 FULL_REGION_SEEDS = """
@@ -144,7 +144,7 @@ FULL_REGION_SEEDS = """
     AND fr.is_significant=1
     AND fr.type='seed'
     AND gs.upid = '%s'
-    AND gs.version='14.0'
+    AND gs.version='15.0'
 """
 
 # -----------------------------CROSS REFERENCES---------------------------
@@ -182,7 +182,7 @@ FAMILY_UPIDS = """
                WHERE gs.rfamseq_acc=fr.rfamseq_acc
                AND fr.rfam_acc='%s'
                AND fr.is_significant = 1
-               AND gs.version='14.0'
+               AND gs.version='15.0'
                """
 
 
@@ -215,7 +215,7 @@ GENOME_FAMS = """
               WHERE fr.rfamseq_acc=gs.rfamseq_acc
               AND fr.is_significant = 1
               AND gs.upid='%s'
-              AND gs.version='14.0'
+              AND gs.version='15.0'
               """
 
 
@@ -240,7 +240,7 @@ COUNT_FULL_REGION = """
                     AND fr.is_significant = 1
                     AND fr.type='full'
                     AND gs.upid = '%s'
-                    AND gs.version='14.0'
+                    AND gs.version='15.0'
                     """
 
 AU_ORCIDS = """

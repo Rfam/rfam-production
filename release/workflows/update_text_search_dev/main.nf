@@ -268,7 +268,7 @@ process xml_validate {
     python ${params.validate} --input ${params.text_search}/clans --log
     python ${params.validate} --input ${params.text_search}/motifs --log
     python ${params.validate} --input ${params.text_search}/genomes --log
-    #python ${params.validate} --input ${params.text_search}/full_region --log
+    python ${params.validate} --input ${params.text_search}/full_region --log
 
     echo "Validation completed successfully"
     """
@@ -291,7 +291,7 @@ process check_error_logs_are_empty {
     bash ${params.empty} "${params.text_search}/clans/error.log"
     bash ${params.empty} "${params.text_search}/motifs/error.log"
     bash ${params.empty} "${params.text_search}/genomes/error.log"
-    #bash ${params.empty} "${params.text_search}/full_region/error.log"
+    bash ${params.empty} "${params.text_search}/full_region/error.log"
     
     echo "All error logs are empty"
     """
@@ -370,26 +370,22 @@ workflow text_search {
         
         xml_dump_family(family_channel)
         
-        // SKIP Get list of genomes and process in parallel
-        //get_genome_list()
-        //genome_channel = get_genome_list.out
-        //    .splitText()
-        //    .map { it.trim() }
-        //
-        //xml_dump_full_regions_per_genome(genome_channel)
+        // Get list of genomes and process in parallel
+        get_genome_list()
+        genome_channel = get_genome_list.out
+            .splitText()
+            .map { it.trim() }
+        
+        xml_dump_full_regions_per_genome(genome_channel)
         
         // Wait for ALL processing to complete
-        // all_xml_done = xml_dump.out
-        //     .mix(
-        //         xml_dump_family.out.collect(),
-        //         xml_dump_full_regions_per_genome.out.collect()
-        //     )
-        //     .collect()
-
-        // Wait for family and CMG processing to complete
         all_xml_done = xml_dump.out
-            .mix(xml_dump_family.out.collect())
-            .collect()
+             .mix(
+                 xml_dump_family.out.collect(),
+                 xml_dump_full_regions_per_genome.out.collect()
+             )
+             .collect()
+
 
         xml_validate(all_xml_done)
         check_error_logs_are_empty(xml_validate.out)

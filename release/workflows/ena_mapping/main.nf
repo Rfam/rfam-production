@@ -18,6 +18,8 @@ process BUILD {
 }
 
 process UPLOAD {
+  conda 'lftp'
+
   when:
   params.ena_mapping.upload
 
@@ -30,12 +32,14 @@ process UPLOAD {
 
   script:
   """
-  ftp -n <<'EOF'
-  open ${params.ena.hostname}
-  user ${params.ena.user} ${params.ena.password}
-  cwd /xref
-  stor ${crossref_file}
-  EOF
+  lftp -c "
+      set ftp:ssl-allow no;
+      open -u ${params.ena.user},${params.ena.password} ${params.ena.hostname};
+      cd /xref || exit 1;
+      put ${crossref_file} || exit 1;
+      ls -l ${crossref_file};
+      quit;
+  "
   """
 }
 

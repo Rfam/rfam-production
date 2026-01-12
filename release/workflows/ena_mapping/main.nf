@@ -30,7 +30,7 @@ process UPLOAD {
 
   script:
   """
-  ftp -n <<EOF
+  ftp -n <<'EOF'
   open ${params.ena.hostname}
   user ${params.ena.user} ${params.ena.password}
   cwd /xref

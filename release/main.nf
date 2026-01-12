@@ -27,7 +27,7 @@ include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
 // include { prepare_rfam_live } from './workflows/prepare_rfam_live'
 
 // missing params.ena.password, user and hostname
-//include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
+include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 
 // requires troubleshooting, not compulsory for release
 // include { apicuron } from './workflows/apicuron'
@@ -70,7 +70,7 @@ workflow {
 
 
     //pending
-    //UPLOAD_ENA_MAPPING()
+    UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
     //prepare_rfam_live(Channel.of('start'))
     
@@ -78,7 +78,7 @@ workflow {
 
     // Dumps Rfam database XML files, validates them, checks error logs are empty, 
     // creates a release note, and symlinks the data to a dev directory for text search indexing
-    text_search(Channel.of('start'))
+    // text_search(Channel.of('start'))
 }
 
 

@@ -13,7 +13,7 @@ process BUILD {
     --user=${params.db.user} \
     --database=${params.db.name} \
     --password=${params.db.password} \
-    < ${query} > Rfam_${params.date}_rfam2embl_crossrefs.txt
+    < ${query} > Rfam_${params.release_info.date}_rfam2embl_crossrefs.txt
   """
 }
 

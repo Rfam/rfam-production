@@ -18,8 +18,6 @@ process BUILD {
 }
 
 process UPLOAD {
-  conda 'lftp'
-
   when:
   params.ena_mapping.upload
 
@@ -32,14 +30,22 @@ process UPLOAD {
 
   script:
   """
-  lftp -c "
-      set ftp:ssl-allow no;
-      open -u ${params.ena.user},${params.ena.password} ${params.ena.hostname};
-      cd /xref || exit 1;
-      put ${crossref_file} || exit 1;
-      ls -l ${crossref_file};
-      quit;
-  "
+  # Upload file using curl
+  curl -T ${crossref_file} \
+       -u ${params.ena.user}:${params.ena.password} \
+       ftp://${params.ena.hostname}/xref/
+  
+  # Verify upload
+  echo "Verifying upload..."
+  curl -u ${params.ena.user}:${params.ena.password} \
+       --head ftp://${params.ena.hostname}/xref/${crossref_file}
+  
+  if [ \$? -eq 0 ]; then
+    echo "Upload successful!"
+  else
+    echo "Upload verification failed"
+    exit 1
+  fi
   """
 }
 

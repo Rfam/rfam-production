@@ -3,7 +3,7 @@ process BUILD {
   path(query)
 
   output:
-  path("Rfam_${params.date}_rfam2embl_crossrefs.txt")
+  path("Rfam_${params.release_info.date}_rfam2embl_crossrefs.txt")
 
   script:
   """

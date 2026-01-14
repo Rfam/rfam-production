@@ -66,14 +66,15 @@ workflow {
     // GENERATE_CLANIN | set { clanin }
     
     //clan_competition(Channel.of('start'))
-    //update_stockholm_s3(Channel.of(true))
+    update_stockholm_s3(Channel.of(true))
 
+    //UPLOAD_ENA_MAPPING()
 
     //pending
-    UPLOAD_ENA_MAPPING()
     //apicuron(Channel.of('start'))
     //prepare_rfam_live(Channel.of('start'))
     
+
     //stage_rfam_live(Channel.of('start'))
 
     // Dumps Rfam database XML files, validates them, checks error logs are empty, 

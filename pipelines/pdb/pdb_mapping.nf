@@ -249,6 +249,7 @@ process clan_compete_rel_web {
 
 }
 
+// Unused: superseded by run.sh in rfam-3d-seed-alignments (see mapping_and_updates).
 process add_all_3d {
     container 'docker://rfam/rfam-3d-seed-alignments:latest'
     errorStrategy 'finish'
@@ -271,6 +272,7 @@ process add_all_3d {
     """
 }
 
+// Unused: only runs after add_all_3d.
 process update_3d_message{
     input:
     val('3d_done')
@@ -338,6 +340,7 @@ workflow sync_rel_web {
         | sync_web_production_db | set { synced }
 }
 
+// Unused: no longer called from mapping_and_updates.
 workflow add_3d {
     take:
         pdb_txt

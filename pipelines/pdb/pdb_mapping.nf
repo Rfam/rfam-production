@@ -1,6 +1,7 @@
 nextflow.enable.dsl=2
 
 process setup_files {
+    memory '8GB'
     publishDir "$params.pdb_files", mode: "copy"
 
     input:
@@ -248,6 +249,7 @@ process clan_compete_rel_web {
 
 }
 
+// Unused: superseded by run.sh in rfam-3d-seed-alignments (see mapping_and_updates).
 process add_all_3d {
     container 'docker://rfam/rfam-3d-seed-alignments:latest'
     errorStrategy 'finish'
@@ -270,6 +272,7 @@ process add_all_3d {
     """
 }
 
+// Unused: only runs after add_all_3d.
 process update_3d_message{
     input:
     val('3d_done')
@@ -337,6 +340,7 @@ workflow sync_rel_web {
         | sync_web_production_db | set { synced }
 }
 
+// Unused: no longer called from mapping_and_updates.
 workflow add_3d {
     take:
         pdb_txt
@@ -349,15 +353,20 @@ workflow add_3d {
 
 workflow mapping_and_updates {
     take: start
-    emit: done
     main:
         pdb_mapping(start)
         ftp(pdb_mapping.out.new_families)
-        update_search_index(pdb_mapping.out.new_families)
+        // Disabled (PR #179): the release pipeline rebuilds the text search
+        // index (release/workflows/update_text_search_dev), so new PDB links
+        // reach website search at the next release rather than weekly.
+        // update_search_index(pdb_mapping.out.new_families)
         sync_rel_web(pdb_mapping.out.pdb_txt)
         clan_compete_rel_web(sync_rel_web.out.synced)
-        add_3d(pdb_mapping.out.new_families) \
-        | set { done }
+        // add_3d is not called: 3D seed alignments are rebuilt by run.sh in
+        // rfam-3d-seed-alignments, which the weekly SLURM batch script runs
+        // after this pipeline. add_all_3d clones that repo's master and
+        // pushes from a compute node, so calling it would duplicate the work
+        // with different code.
 }
 
 workflow {
@@ -382,6 +391,6 @@ def msg = """\
         """
         .stripIndent()
 
-sendMail(to: $params.email, subject: 'PDB pipeline execution', body: msg)
+sendMail(to: params.email, subject: 'PDB pipeline execution', body: msg)
 println msg
 }

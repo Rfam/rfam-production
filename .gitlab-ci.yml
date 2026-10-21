@@ -6,14 +6,17 @@ include:
 # No Container-Scanning template: no workflow builds or publishes this repo's
 # Dockerfiles, so there is no image for container_scanning to pull.
 #
-# Dependency Scanning reads the pinned requirements.txt and the poetry.lock
-# files under scripts/ directly. No pipdeptree prep job (unlike the other
-# Rfam/RNAcentral repos): requirements.txt is Python 2-era (MySQL-python,
-# functools32) and can't be pip-installed on a current Python image.
+# Dependency Scanning reads the poetry.lock files under scripts/ directly, and
+# requirements.txt via manifest fallback (direct dependencies only; this
+# instance's analyzer has the fallback off by default). No pipdeptree prep job
+# (unlike the other Rfam/RNAcentral repos): requirements.txt is Python 2-era
+# (MySQL-python, functools32) and can't be pip-installed on a current Python
+# image to resolve the full dependency graph.
 
 variables:
   GIT_STRATEGY: clone
   DS_ENFORCE_NEW_ANALYZER: 'true'
+  DS_ENABLE_MANIFEST_FALLBACK: 'true'
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
 
 sast:

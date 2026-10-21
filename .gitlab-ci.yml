@@ -1,0 +1,34 @@
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+# No Container-Scanning template: no workflow builds or publishes this repo's
+# Dockerfiles, so there is no image for container_scanning to pull.
+#
+# Dependency Scanning reads the pinned requirements.txt and the poetry.lock
+# files under scripts/ directly. No pipdeptree prep job (unlike the other
+# Rfam/RNAcentral repos): requirements.txt is Python 2-era (MySQL-python,
+# functools32) and can't be pip-installed on a current Python image.
+
+variables:
+  GIT_STRATEGY: clone
+  DS_ENFORCE_NEW_ANALYZER: 'true'
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+
+sast:
+  tags:
+    - dind
+
+gitlab-advanced-sast:
+  variables:
+    SEARCH_MAX_DEPTH: 20
+    SAST_ANALYZER_IMAGE_TAG: '2.50'
+
+secret_detection:
+  tags:
+    - dind
+
+dependency_scanning:
+  tags:
+    - dind

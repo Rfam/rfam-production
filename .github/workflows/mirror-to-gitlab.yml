@@ -24,11 +24,15 @@ jobs:
           PARENT_REF="$BRANCH"
           PARENT=$(git ls-remote gitlab "refs/heads/$BRANCH" | cut -f1)
           if [ -z "$PARENT" ]; then
-            # New branch: base it on master's tip instead of a true orphan
-            # commit (a parentless commit on a non-empty project trips the
-            # "commit author is a GitLab user" push rule).
-            PARENT_REF="master"
-            PARENT=$(git ls-remote gitlab refs/heads/master | cut -f1)
+            # New branch: base it on GitLab's default branch tip instead of a
+            # true orphan commit (a parentless commit on a non-empty project
+            # trips the "commit author is a GitLab user" push rule). Uses the
+            # default branch rather than master so that master's own first
+            # push works while another branch is still the default.
+            PARENT_REF=$(git ls-remote --symref gitlab HEAD | awk '$1 == "ref:" { sub("refs/heads/", "", $2); print $2 }')
+            if [ -n "$PARENT_REF" ]; then
+              PARENT=$(git ls-remote gitlab "refs/heads/$PARENT_REF" | cut -f1)
+            fi
           fi
           if [ -n "$PARENT" ]; then
             git fetch --depth=1 gitlab "$PARENT_REF"

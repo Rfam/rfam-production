@@ -27,7 +27,8 @@ def send_notification():
         ]
     }
     try:
-        response = requests.post(webhook_url, json=slack_json, headers={'Content-Type': 'application/json'})
+        response = requests.post(webhook_url, json=slack_json, headers={'Content-Type': 'application/json'},
+                                 timeout=30)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         raise SystemExit(e)

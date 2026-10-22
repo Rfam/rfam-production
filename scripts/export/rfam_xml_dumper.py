@@ -504,12 +504,12 @@ def get_rnacentral_mapping(upid):
     AND fr.seq_end = rm.seq_end
     AND fr.is_significant = 1
     AND rm.rnacentral_id IS NOT NULL
-    AND gs.upid = '%s'
+    AND gs.upid = %s
     AND gs.version='14.0'
     """
     cnx = RfamDB.connect(db_config=DB_CONFIG)
     cursor = cnx.cursor(dictionary=True, buffered=True)
-    cursor.execute(query % upid)
+    cursor.execute(query, (upid,))
     rnacentral_ids = {}
     for row in result_iterator(cursor):
         rfamseq_acc = row["rfamseq_acc"]

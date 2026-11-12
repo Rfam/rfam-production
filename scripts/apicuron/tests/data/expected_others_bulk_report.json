@@ -1,0 +1,11 @@
+{
+    "reports": [
+        {
+            "activity_term": "create_family",
+            "curator_orcid": "joanna",
+            "entity_uri": "https://rfam.org/family/RF04300",
+            "timestamp": "2026-11-13T12:00:00Z"
+        }
+    ],
+    "resource_id": "rfam"
+}

@@ -29,8 +29,8 @@ include { update_stockholm_s3 } from './workflows/update_stockholm_s3'
 // missing params.ena.password, user and hostname
 include { UPLOAD_ENA_MAPPING } from './workflows/ena_mapping'
 
-// requires troubleshooting, not compulsory for release
-// include { apicuron } from './workflows/apicuron'
+// runs only with --apicuron (params.apicuron, default false)
+include { apicuron } from './workflows/apicuron'
 
 // penultimate step
 include { stage_rfam_live } from './workflows/stage_rfam_live'
@@ -70,8 +70,12 @@ workflow {
 
     //UPLOAD_ENA_MAPPING()
 
+    // Credit curators on APICURON; arguments come from ext.args in nextflow.config
+    if (params.apicuron) {
+      apicuron(channel.of('start'))
+    }
+
     //pending
-    //apicuron(Channel.of('start'))
     //prepare_rfam_live(Channel.of('start'))
     
 

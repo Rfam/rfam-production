@@ -23,8 +23,23 @@ curator_orcids = {
     'nancyontiveros': '0000-0001-8457-4455',
     'bsweeney': '0000-0002-6497-2883',
     'apetrov': '0000-0001-7279-2682',
-    'ecooke': '0000-0002-7894-8112'
+    'ecooke': '0000-0002-7894-8112',
+    'nawrocki': '0000-0002-2497-3427',
+    'ksong': '0009-0000-9708-9918'
 }
+
+# Shared account; its commits don't say who curated.
+shared_svn_account = 'rfamprod'
+
+# Default curator for rfamprod commits without an ORCID (--rfamprod-orcid).
+rfamprod_orcid = curator_orcids['Nancy']
+
+# ORCIDs for commits whose message has a wrong ORCID, by revision. They replace
+# the message's ORCIDs; [] = never upload that commit. E.g.
+#     26160: ['0000-0002-6497-2883'],  # message had 0000-0002-6497-2884
+orcid_corrections = {
+}
+
 checkin_terms = {
     'CI': 'update_family',
     'NEW': 'create_family',

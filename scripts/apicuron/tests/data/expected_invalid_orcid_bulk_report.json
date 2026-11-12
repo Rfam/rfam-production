@@ -1,0 +1,12 @@
+{
+    "reports": [
+        {
+            "activity_term": "update_family",
+            "curator_orcid": "0000-0002-6497-2884",
+            "entity_uri": "https://rfam.org/family/RF00030",
+            "revision": 26153,
+            "timestamp": "2026-11-13T13:00:00Z"
+        }
+    ],
+    "resource_id": "rfam"
+}

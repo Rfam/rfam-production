@@ -1,0 +1,47 @@
+{
+    "reports": [
+        {
+            "activity_term": "create_family",
+            "curator_orcid": "0000-0002-2497-3427",
+            "entity_uri": "https://rfam.org/family/RF02540",
+            "timestamp": "2014-06-11T15:02:31Z"
+        },
+        {
+            "activity_term": "update_family",
+            "curator_orcid": "0000-0001-8457-4455",
+            "entity_uri": "https://rfam.org/family/RF04247",
+            "timestamp": "2023-08-08T11:13:25Z"
+        },
+        {
+            "activity_term": "update_family",
+            "curator_orcid": "0000-0002-6497-2883",
+            "entity_uri": "https://rfam.org/family/RF00005",
+            "timestamp": "2026-11-13T09:00:00Z"
+        },
+        {
+            "activity_term": "update_family",
+            "curator_orcid": "0000-0001-7279-2682",
+            "entity_uri": "https://rfam.org/family/RF00005",
+            "timestamp": "2026-11-13T09:00:00Z"
+        },
+        {
+            "activity_term": "delete_family",
+            "curator_orcid": "0000-0001-8457-4455",
+            "entity_uri": "https://rfam.org/family/RF00010",
+            "timestamp": "2026-11-13T10:00:00Z"
+        },
+        {
+            "activity_term": "update_clan",
+            "curator_orcid": "0000-0001-8457-4455",
+            "entity_uri": "https://rfam.org/family/RF00020",
+            "timestamp": "2026-11-13T11:00:00Z"
+        },
+        {
+            "activity_term": "update_family",
+            "curator_orcid": "0000-0002-6497-2883",
+            "entity_uri": "https://rfam.org/family/RF00030",
+            "timestamp": "2026-11-13T13:00:00Z"
+        }
+    ],
+    "resource_id": "rfam"
+}
